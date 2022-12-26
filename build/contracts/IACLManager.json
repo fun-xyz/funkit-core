@@ -1,0 +1,2528 @@
+{
+  "contractName": "IACLManager",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "ADDRESSES_PROVIDER",
+      "outputs": [
+        {
+          "internalType": "contract IPoolAddressesProvider",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "POOL_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "EMERGENCY_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RISK_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FLASH_BORROWER_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BRIDGE_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ASSET_LISTING_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "adminRole",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setRoleAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "addPoolAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "removePoolAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "isPoolAdmin",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "addEmergencyAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "removeEmergencyAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "isEmergencyAdmin",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "addRiskAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "removeRiskAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "isRiskAdmin",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "borrower",
+          "type": "address"
+        }
+      ],
+      "name": "addFlashBorrower",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "borrower",
+          "type": "address"
+        }
+      ],
+      "name": "removeFlashBorrower",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "borrower",
+          "type": "address"
+        }
+      ],
+      "name": "isFlashBorrower",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "bridge",
+          "type": "address"
+        }
+      ],
+      "name": "addBridge",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "bridge",
+          "type": "address"
+        }
+      ],
+      "name": "removeBridge",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "bridge",
+          "type": "address"
+        }
+      ],
+      "name": "isBridge",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "addAssetListingAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "removeAssetListingAdmin",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        }
+      ],
+      "name": "isAssetListingAdmin",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"ADDRESSES_PROVIDER\",\"outputs\":[{\"internalType\":\"contract IPoolAddressesProvider\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ASSET_LISTING_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"BRIDGE_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"EMERGENCY_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FLASH_BORROWER_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"POOL_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"RISK_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"addAssetListingAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"bridge\",\"type\":\"address\"}],\"name\":\"addBridge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"addEmergencyAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"borrower\",\"type\":\"address\"}],\"name\":\"addFlashBorrower\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"addPoolAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"addRiskAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"isAssetListingAdmin\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"bridge\",\"type\":\"address\"}],\"name\":\"isBridge\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"isEmergencyAdmin\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"borrower\",\"type\":\"address\"}],\"name\":\"isFlashBorrower\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"isPoolAdmin\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"isRiskAdmin\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"removeAssetListingAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"bridge\",\"type\":\"address\"}],\"name\":\"removeBridge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"removeEmergencyAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"borrower\",\"type\":\"address\"}],\"name\":\"removeFlashBorrower\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"removePoolAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"removeRiskAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"adminRole\",\"type\":\"bytes32\"}],\"name\":\"setRoleAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Aave\",\"kind\":\"dev\",\"methods\":{\"ADDRESSES_PROVIDER()\":{\"returns\":{\"_0\":\"The address of the PoolAddressesProvider\"}},\"ASSET_LISTING_ADMIN_ROLE()\":{\"returns\":{\"_0\":\"The id of the AssetListingAdmin role\"}},\"BRIDGE_ROLE()\":{\"returns\":{\"_0\":\"The id of the Bridge role\"}},\"EMERGENCY_ADMIN_ROLE()\":{\"returns\":{\"_0\":\"The id of the EmergencyAdmin role\"}},\"FLASH_BORROWER_ROLE()\":{\"returns\":{\"_0\":\"The id of the FlashBorrower role\"}},\"POOL_ADMIN_ROLE()\":{\"returns\":{\"_0\":\"The id of the PoolAdmin role\"}},\"RISK_ADMIN_ROLE()\":{\"returns\":{\"_0\":\"The id of the RiskAdmin role\"}},\"addAssetListingAdmin(address)\":{\"params\":{\"admin\":\"The address of the new admin\"}},\"addBridge(address)\":{\"params\":{\"bridge\":\"The address of the new Bridge\"}},\"addEmergencyAdmin(address)\":{\"params\":{\"admin\":\"The address of the new admin\"}},\"addFlashBorrower(address)\":{\"params\":{\"borrower\":\"The address of the new FlashBorrower\"}},\"addPoolAdmin(address)\":{\"params\":{\"admin\":\"The address of the new admin\"}},\"addRiskAdmin(address)\":{\"params\":{\"admin\":\"The address of the new admin\"}},\"isAssetListingAdmin(address)\":{\"params\":{\"admin\":\"The address to check\"},\"returns\":{\"_0\":\"True if the given address is AssetListingAdmin, false otherwise\"}},\"isBridge(address)\":{\"params\":{\"bridge\":\"The address to check\"},\"returns\":{\"_0\":\"True if the given address is Bridge, false otherwise\"}},\"isEmergencyAdmin(address)\":{\"params\":{\"admin\":\"The address to check\"},\"returns\":{\"_0\":\"True if the given address is EmergencyAdmin, false otherwise\"}},\"isFlashBorrower(address)\":{\"params\":{\"borrower\":\"The address to check\"},\"returns\":{\"_0\":\"True if the given address is FlashBorrower, false otherwise\"}},\"isPoolAdmin(address)\":{\"params\":{\"admin\":\"The address to check\"},\"returns\":{\"_0\":\"True if the given address is PoolAdmin, false otherwise\"}},\"isRiskAdmin(address)\":{\"params\":{\"admin\":\"The address to check\"},\"returns\":{\"_0\":\"True if the given address is RiskAdmin, false otherwise\"}},\"removeAssetListingAdmin(address)\":{\"params\":{\"admin\":\"The address of the admin to remove\"}},\"removeBridge(address)\":{\"params\":{\"bridge\":\"The address of the bridge to remove\"}},\"removeEmergencyAdmin(address)\":{\"params\":{\"admin\":\"The address of the admin to remove\"}},\"removeFlashBorrower(address)\":{\"params\":{\"borrower\":\"The address of the FlashBorrower to remove\"}},\"removePoolAdmin(address)\":{\"params\":{\"admin\":\"The address of the admin to remove\"}},\"removeRiskAdmin(address)\":{\"params\":{\"admin\":\"The address of the admin to remove\"}},\"setRoleAdmin(bytes32,bytes32)\":{\"details\":\"By default the admin role for all roles is `DEFAULT_ADMIN_ROLE`.\",\"params\":{\"adminRole\":\"The admin role\",\"role\":\"The role to be managed by the admin role\"}}},\"title\":\"IACLManager\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"ADDRESSES_PROVIDER()\":{\"notice\":\"Returns the contract address of the PoolAddressesProvider\"},\"ASSET_LISTING_ADMIN_ROLE()\":{\"notice\":\"Returns the identifier of the AssetListingAdmin role\"},\"BRIDGE_ROLE()\":{\"notice\":\"Returns the identifier of the Bridge role\"},\"EMERGENCY_ADMIN_ROLE()\":{\"notice\":\"Returns the identifier of the EmergencyAdmin role\"},\"FLASH_BORROWER_ROLE()\":{\"notice\":\"Returns the identifier of the FlashBorrower role\"},\"POOL_ADMIN_ROLE()\":{\"notice\":\"Returns the identifier of the PoolAdmin role\"},\"RISK_ADMIN_ROLE()\":{\"notice\":\"Returns the identifier of the RiskAdmin role\"},\"addAssetListingAdmin(address)\":{\"notice\":\"Adds a new admin as AssetListingAdmin\"},\"addBridge(address)\":{\"notice\":\"Adds a new address as Bridge\"},\"addEmergencyAdmin(address)\":{\"notice\":\"Adds a new admin as EmergencyAdmin\"},\"addFlashBorrower(address)\":{\"notice\":\"Adds a new address as FlashBorrower\"},\"addPoolAdmin(address)\":{\"notice\":\"Adds a new admin as PoolAdmin\"},\"addRiskAdmin(address)\":{\"notice\":\"Adds a new admin as RiskAdmin\"},\"isAssetListingAdmin(address)\":{\"notice\":\"Returns true if the address is AssetListingAdmin, false otherwise\"},\"isBridge(address)\":{\"notice\":\"Returns true if the address is Bridge, false otherwise\"},\"isEmergencyAdmin(address)\":{\"notice\":\"Returns true if the address is EmergencyAdmin, false otherwise\"},\"isFlashBorrower(address)\":{\"notice\":\"Returns true if the address is FlashBorrower, false otherwise\"},\"isPoolAdmin(address)\":{\"notice\":\"Returns true if the address is PoolAdmin, false otherwise\"},\"isRiskAdmin(address)\":{\"notice\":\"Returns true if the address is RiskAdmin, false otherwise\"},\"removeAssetListingAdmin(address)\":{\"notice\":\"Removes an admin as AssetListingAdmin\"},\"removeBridge(address)\":{\"notice\":\"Removes an address as Bridge\"},\"removeEmergencyAdmin(address)\":{\"notice\":\"Removes an admin as EmergencyAdmin\"},\"removeFlashBorrower(address)\":{\"notice\":\"Removes an address as FlashBorrower\"},\"removePoolAdmin(address)\":{\"notice\":\"Removes an admin as PoolAdmin\"},\"removeRiskAdmin(address)\":{\"notice\":\"Removes an admin as RiskAdmin\"},\"setRoleAdmin(bytes32,bytes32)\":{\"notice\":\"Set the role as admin of a specific role.\"}},\"notice\":\"Defines the basic interface for the ACL Manager\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"@aave/core-v3/contracts/interfaces/IACLManager.sol\":\"IACLManager\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"@aave/core-v3/contracts/interfaces/IACLManager.sol\":{\"keccak256\":\"0xe39a407a074d8ac950deb7d1d855b39d53e35a5a441a7074c3d26cddef10406b\",\"license\":\"AGPL-3.0\",\"urls\":[\"bzz-raw://e509aa66e54f44ce2d2e1b49639ed60a6b2decd17694f60052b02ad1c2c65f34\",\"dweb:/ipfs/QmZtjZk7KcfRJrqSsMA4BUjBzFBynp6fPZ8eDNKLKLaY1P\"]},\"@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol\":{\"keccak256\":\"0x33d4308d9407b4ee2297fc4ba5acce1a96a6c658189e2778a4f6b90e032fb3b5\",\"license\":\"AGPL-3.0\",\"urls\":[\"bzz-raw://978336a2a40229ccc7749344be890862ea12e17e9fffe5bb977ba3841de07b5a\",\"dweb:/ipfs/QmScNrQfDSPg1afJmkCty6fZkETUrWTmEXWeTmHoe7mSqa\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: AGPL-3.0\npragma solidity ^0.8.0;\n\nimport {IPoolAddressesProvider} from './IPoolAddressesProvider.sol';\n\n/**\n * @title IACLManager\n * @author Aave\n * @notice Defines the basic interface for the ACL Manager\n */\ninterface IACLManager {\n  /**\n   * @notice Returns the contract address of the PoolAddressesProvider\n   * @return The address of the PoolAddressesProvider\n   */\n  function ADDRESSES_PROVIDER() external view returns (IPoolAddressesProvider);\n\n  /**\n   * @notice Returns the identifier of the PoolAdmin role\n   * @return The id of the PoolAdmin role\n   */\n  function POOL_ADMIN_ROLE() external view returns (bytes32);\n\n  /**\n   * @notice Returns the identifier of the EmergencyAdmin role\n   * @return The id of the EmergencyAdmin role\n   */\n  function EMERGENCY_ADMIN_ROLE() external view returns (bytes32);\n\n  /**\n   * @notice Returns the identifier of the RiskAdmin role\n   * @return The id of the RiskAdmin role\n   */\n  function RISK_ADMIN_ROLE() external view returns (bytes32);\n\n  /**\n   * @notice Returns the identifier of the FlashBorrower role\n   * @return The id of the FlashBorrower role\n   */\n  function FLASH_BORROWER_ROLE() external view returns (bytes32);\n\n  /**\n   * @notice Returns the identifier of the Bridge role\n   * @return The id of the Bridge role\n   */\n  function BRIDGE_ROLE() external view returns (bytes32);\n\n  /**\n   * @notice Returns the identifier of the AssetListingAdmin role\n   * @return The id of the AssetListingAdmin role\n   */\n  function ASSET_LISTING_ADMIN_ROLE() external view returns (bytes32);\n\n  /**\n   * @notice Set the role as admin of a specific role.\n   * @dev By default the admin role for all roles is `DEFAULT_ADMIN_ROLE`.\n   * @param role The role to be managed by the admin role\n   * @param adminRole The admin role\n   */\n  function setRoleAdmin(bytes32 role, bytes32 adminRole) external;\n\n  /**\n   * @notice Adds a new admin as PoolAdmin\n   * @param admin The address of the new admin\n   */\n  function addPoolAdmin(address admin) external;\n\n  /**\n   * @notice Removes an admin as PoolAdmin\n   * @param admin The address of the admin to remove\n   */\n  function removePoolAdmin(address admin) external;\n\n  /**\n   * @notice Returns true if the address is PoolAdmin, false otherwise\n   * @param admin The address to check\n   * @return True if the given address is PoolAdmin, false otherwise\n   */\n  function isPoolAdmin(address admin) external view returns (bool);\n\n  /**\n   * @notice Adds a new admin as EmergencyAdmin\n   * @param admin The address of the new admin\n   */\n  function addEmergencyAdmin(address admin) external;\n\n  /**\n   * @notice Removes an admin as EmergencyAdmin\n   * @param admin The address of the admin to remove\n   */\n  function removeEmergencyAdmin(address admin) external;\n\n  /**\n   * @notice Returns true if the address is EmergencyAdmin, false otherwise\n   * @param admin The address to check\n   * @return True if the given address is EmergencyAdmin, false otherwise\n   */\n  function isEmergencyAdmin(address admin) external view returns (bool);\n\n  /**\n   * @notice Adds a new admin as RiskAdmin\n   * @param admin The address of the new admin\n   */\n  function addRiskAdmin(address admin) external;\n\n  /**\n   * @notice Removes an admin as RiskAdmin\n   * @param admin The address of the admin to remove\n   */\n  function removeRiskAdmin(address admin) external;\n\n  /**\n   * @notice Returns true if the address is RiskAdmin, false otherwise\n   * @param admin The address to check\n   * @return True if the given address is RiskAdmin, false otherwise\n   */\n  function isRiskAdmin(address admin) external view returns (bool);\n\n  /**\n   * @notice Adds a new address as FlashBorrower\n   * @param borrower The address of the new FlashBorrower\n   */\n  function addFlashBorrower(address borrower) external;\n\n  /**\n   * @notice Removes an address as FlashBorrower\n   * @param borrower The address of the FlashBorrower to remove\n   */\n  function removeFlashBorrower(address borrower) external;\n\n  /**\n   * @notice Returns true if the address is FlashBorrower, false otherwise\n   * @param borrower The address to check\n   * @return True if the given address is FlashBorrower, false otherwise\n   */\n  function isFlashBorrower(address borrower) external view returns (bool);\n\n  /**\n   * @notice Adds a new address as Bridge\n   * @param bridge The address of the new Bridge\n   */\n  function addBridge(address bridge) external;\n\n  /**\n   * @notice Removes an address as Bridge\n   * @param bridge The address of the bridge to remove\n   */\n  function removeBridge(address bridge) external;\n\n  /**\n   * @notice Returns true if the address is Bridge, false otherwise\n   * @param bridge The address to check\n   * @return True if the given address is Bridge, false otherwise\n   */\n  function isBridge(address bridge) external view returns (bool);\n\n  /**\n   * @notice Adds a new admin as AssetListingAdmin\n   * @param admin The address of the new admin\n   */\n  function addAssetListingAdmin(address admin) external;\n\n  /**\n   * @notice Removes an admin as AssetListingAdmin\n   * @param admin The address of the admin to remove\n   */\n  function removeAssetListingAdmin(address admin) external;\n\n  /**\n   * @notice Returns true if the address is AssetListingAdmin, false otherwise\n   * @param admin The address to check\n   * @return True if the given address is AssetListingAdmin, false otherwise\n   */\n  function isAssetListingAdmin(address admin) external view returns (bool);\n}\n",
+  "sourcePath": "@aave/core-v3/contracts/interfaces/IACLManager.sol",
+  "ast": {
+    "absolutePath": "@aave/core-v3/contracts/interfaces/IACLManager.sol",
+    "exportedSymbols": {
+      "IACLManager": [
+        766
+      ],
+      "IPoolAddressesProvider": [
+        1820
+      ]
+    },
+    "id": 767,
+    "license": "AGPL-3.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 591,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "37:23:5"
+      },
+      {
+        "absolutePath": "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol",
+        "file": "./IPoolAddressesProvider.sol",
+        "id": 593,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 767,
+        "sourceUnit": 1821,
+        "src": "62:68:5",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 592,
+              "name": "IPoolAddressesProvider",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "src": "70:22:5",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IACLManager",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 594,
+          "nodeType": "StructuredDocumentation",
+          "src": "132:104:5",
+          "text": " @title IACLManager\n @author Aave\n @notice Defines the basic interface for the ACL Manager"
+        },
+        "fullyImplemented": false,
+        "id": 766,
+        "linearizedBaseContracts": [
+          766
+        ],
+        "name": "IACLManager",
+        "nameLocation": "247:11:5",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "documentation": {
+              "id": 595,
+              "nodeType": "StructuredDocumentation",
+              "src": "263:134:5",
+              "text": " @notice Returns the contract address of the PoolAddressesProvider\n @return The address of the PoolAddressesProvider"
+            },
+            "functionSelector": "0542975c",
+            "id": 601,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "ADDRESSES_PROVIDER",
+            "nameLocation": "409:18:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 596,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "427:2:5"
+            },
+            "returnParameters": {
+              "id": 600,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 599,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 601,
+                  "src": "453:22:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IPoolAddressesProvider_$1820",
+                    "typeString": "contract IPoolAddressesProvider"
+                  },
+                  "typeName": {
+                    "id": 598,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 597,
+                      "name": "IPoolAddressesProvider",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 1820,
+                      "src": "453:22:5"
+                    },
+                    "referencedDeclaration": 1820,
+                    "src": "453:22:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IPoolAddressesProvider_$1820",
+                      "typeString": "contract IPoolAddressesProvider"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "452:24:5"
+            },
+            "scope": 766,
+            "src": "400:77:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 602,
+              "nodeType": "StructuredDocumentation",
+              "src": "481:109:5",
+              "text": " @notice Returns the identifier of the PoolAdmin role\n @return The id of the PoolAdmin role"
+            },
+            "functionSelector": "b8f6dba7",
+            "id": 607,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "POOL_ADMIN_ROLE",
+            "nameLocation": "602:15:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 603,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "617:2:5"
+            },
+            "returnParameters": {
+              "id": 606,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 605,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 607,
+                  "src": "643:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 604,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "643:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "642:9:5"
+            },
+            "scope": 766,
+            "src": "593:59:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 608,
+              "nodeType": "StructuredDocumentation",
+              "src": "656:119:5",
+              "text": " @notice Returns the identifier of the EmergencyAdmin role\n @return The id of the EmergencyAdmin role"
+            },
+            "functionSelector": "6e76fc8f",
+            "id": 613,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "EMERGENCY_ADMIN_ROLE",
+            "nameLocation": "787:20:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 609,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "807:2:5"
+            },
+            "returnParameters": {
+              "id": 612,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 611,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 613,
+                  "src": "833:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 610,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "833:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "832:9:5"
+            },
+            "scope": 766,
+            "src": "778:64:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 614,
+              "nodeType": "StructuredDocumentation",
+              "src": "846:109:5",
+              "text": " @notice Returns the identifier of the RiskAdmin role\n @return The id of the RiskAdmin role"
+            },
+            "functionSelector": "4f16b425",
+            "id": 619,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "RISK_ADMIN_ROLE",
+            "nameLocation": "967:15:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 615,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "982:2:5"
+            },
+            "returnParameters": {
+              "id": 618,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 617,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 619,
+                  "src": "1008:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 616,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1008:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1007:9:5"
+            },
+            "scope": 766,
+            "src": "958:59:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 620,
+              "nodeType": "StructuredDocumentation",
+              "src": "1021:117:5",
+              "text": " @notice Returns the identifier of the FlashBorrower role\n @return The id of the FlashBorrower role"
+            },
+            "functionSelector": "5577b7a9",
+            "id": 625,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "FLASH_BORROWER_ROLE",
+            "nameLocation": "1150:19:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 621,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1169:2:5"
+            },
+            "returnParameters": {
+              "id": 624,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 623,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 625,
+                  "src": "1195:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 622,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1195:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1194:9:5"
+            },
+            "scope": 766,
+            "src": "1141:63:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 626,
+              "nodeType": "StructuredDocumentation",
+              "src": "1208:103:5",
+              "text": " @notice Returns the identifier of the Bridge role\n @return The id of the Bridge role"
+            },
+            "functionSelector": "b5bfddea",
+            "id": 631,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "BRIDGE_ROLE",
+            "nameLocation": "1323:11:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 627,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1334:2:5"
+            },
+            "returnParameters": {
+              "id": 630,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 629,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 631,
+                  "src": "1360:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 628,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1360:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1359:9:5"
+            },
+            "scope": 766,
+            "src": "1314:55:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 632,
+              "nodeType": "StructuredDocumentation",
+              "src": "1373:125:5",
+              "text": " @notice Returns the identifier of the AssetListingAdmin role\n @return The id of the AssetListingAdmin role"
+            },
+            "functionSelector": "78bb0a43",
+            "id": 637,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "ASSET_LISTING_ADMIN_ROLE",
+            "nameLocation": "1510:24:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 633,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1534:2:5"
+            },
+            "returnParameters": {
+              "id": 636,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 635,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 637,
+                  "src": "1560:7:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 634,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1560:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1559:9:5"
+            },
+            "scope": 766,
+            "src": "1501:68:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 638,
+              "nodeType": "StructuredDocumentation",
+              "src": "1573:234:5",
+              "text": " @notice Set the role as admin of a specific role.\n @dev By default the admin role for all roles is `DEFAULT_ADMIN_ROLE`.\n @param role The role to be managed by the admin role\n @param adminRole The admin role"
+            },
+            "functionSelector": "1e4e0091",
+            "id": 645,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setRoleAdmin",
+            "nameLocation": "1819:12:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 643,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 640,
+                  "mutability": "mutable",
+                  "name": "role",
+                  "nameLocation": "1840:4:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 645,
+                  "src": "1832:12:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 639,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1832:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 642,
+                  "mutability": "mutable",
+                  "name": "adminRole",
+                  "nameLocation": "1854:9:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 645,
+                  "src": "1846:17:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 641,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1846:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1831:33:5"
+            },
+            "returnParameters": {
+              "id": 644,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1873:0:5"
+            },
+            "scope": 766,
+            "src": "1810:64:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 646,
+              "nodeType": "StructuredDocumentation",
+              "src": "1878:99:5",
+              "text": " @notice Adds a new admin as PoolAdmin\n @param admin The address of the new admin"
+            },
+            "functionSelector": "22650caf",
+            "id": 651,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addPoolAdmin",
+            "nameLocation": "1989:12:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 649,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 648,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "2010:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 651,
+                  "src": "2002:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 647,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2002:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2001:15:5"
+            },
+            "returnParameters": {
+              "id": 650,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2025:0:5"
+            },
+            "scope": 766,
+            "src": "1980:46:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 652,
+              "nodeType": "StructuredDocumentation",
+              "src": "2030:105:5",
+              "text": " @notice Removes an admin as PoolAdmin\n @param admin The address of the admin to remove"
+            },
+            "functionSelector": "f83695cb",
+            "id": 657,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removePoolAdmin",
+            "nameLocation": "2147:15:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 655,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 654,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "2171:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 657,
+                  "src": "2163:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 653,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2163:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2162:15:5"
+            },
+            "returnParameters": {
+              "id": 656,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2186:0:5"
+            },
+            "scope": 766,
+            "src": "2138:49:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 658,
+              "nodeType": "StructuredDocumentation",
+              "src": "2191:188:5",
+              "text": " @notice Returns true if the address is PoolAdmin, false otherwise\n @param admin The address to check\n @return True if the given address is PoolAdmin, false otherwise"
+            },
+            "functionSelector": "7be53ca1",
+            "id": 665,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isPoolAdmin",
+            "nameLocation": "2391:11:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 661,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 660,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "2411:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 665,
+                  "src": "2403:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 659,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2403:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2402:15:5"
+            },
+            "returnParameters": {
+              "id": 664,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 663,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 665,
+                  "src": "2441:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 662,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2441:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2440:6:5"
+            },
+            "scope": 766,
+            "src": "2382:65:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 666,
+              "nodeType": "StructuredDocumentation",
+              "src": "2451:104:5",
+              "text": " @notice Adds a new admin as EmergencyAdmin\n @param admin The address of the new admin"
+            },
+            "functionSelector": "179efb09",
+            "id": 671,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addEmergencyAdmin",
+            "nameLocation": "2567:17:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 669,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 668,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "2593:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 671,
+                  "src": "2585:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 667,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2585:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2584:15:5"
+            },
+            "returnParameters": {
+              "id": 670,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2608:0:5"
+            },
+            "scope": 766,
+            "src": "2558:51:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 672,
+              "nodeType": "StructuredDocumentation",
+              "src": "2613:110:5",
+              "text": " @notice Removes an admin as EmergencyAdmin\n @param admin The address of the admin to remove"
+            },
+            "functionSelector": "7a9a93f4",
+            "id": 677,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeEmergencyAdmin",
+            "nameLocation": "2735:20:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 675,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 674,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "2764:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 677,
+                  "src": "2756:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 673,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2756:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2755:15:5"
+            },
+            "returnParameters": {
+              "id": 676,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2779:0:5"
+            },
+            "scope": 766,
+            "src": "2726:54:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 678,
+              "nodeType": "StructuredDocumentation",
+              "src": "2784:198:5",
+              "text": " @notice Returns true if the address is EmergencyAdmin, false otherwise\n @param admin The address to check\n @return True if the given address is EmergencyAdmin, false otherwise"
+            },
+            "functionSelector": "2500f2b6",
+            "id": 685,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isEmergencyAdmin",
+            "nameLocation": "2994:16:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 681,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 680,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "3019:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 685,
+                  "src": "3011:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 679,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3011:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3010:15:5"
+            },
+            "returnParameters": {
+              "id": 684,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 683,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 685,
+                  "src": "3049:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 682,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3049:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3048:6:5"
+            },
+            "scope": 766,
+            "src": "2985:70:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 686,
+              "nodeType": "StructuredDocumentation",
+              "src": "3059:99:5",
+              "text": " @notice Adds a new admin as RiskAdmin\n @param admin The address of the new admin"
+            },
+            "functionSelector": "5b9a94e4",
+            "id": 691,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addRiskAdmin",
+            "nameLocation": "3170:12:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 689,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 688,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "3191:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 691,
+                  "src": "3183:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 687,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3183:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3182:15:5"
+            },
+            "returnParameters": {
+              "id": 690,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3206:0:5"
+            },
+            "scope": 766,
+            "src": "3161:46:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 692,
+              "nodeType": "StructuredDocumentation",
+              "src": "3211:105:5",
+              "text": " @notice Removes an admin as RiskAdmin\n @param admin The address of the admin to remove"
+            },
+            "functionSelector": "3c5a08e5",
+            "id": 697,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeRiskAdmin",
+            "nameLocation": "3328:15:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 695,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 694,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "3352:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 697,
+                  "src": "3344:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 693,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3344:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3343:15:5"
+            },
+            "returnParameters": {
+              "id": 696,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3367:0:5"
+            },
+            "scope": 766,
+            "src": "3319:49:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 698,
+              "nodeType": "StructuredDocumentation",
+              "src": "3372:188:5",
+              "text": " @notice Returns true if the address is RiskAdmin, false otherwise\n @param admin The address to check\n @return True if the given address is RiskAdmin, false otherwise"
+            },
+            "functionSelector": "674b5e4d",
+            "id": 705,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isRiskAdmin",
+            "nameLocation": "3572:11:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 701,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 700,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "3592:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 705,
+                  "src": "3584:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 699,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3584:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3583:15:5"
+            },
+            "returnParameters": {
+              "id": 704,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 703,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 705,
+                  "src": "3622:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 702,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3622:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3621:6:5"
+            },
+            "scope": 766,
+            "src": "3563:65:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 706,
+              "nodeType": "StructuredDocumentation",
+              "src": "3632:116:5",
+              "text": " @notice Adds a new address as FlashBorrower\n @param borrower The address of the new FlashBorrower"
+            },
+            "functionSelector": "9ac9d80b",
+            "id": 711,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addFlashBorrower",
+            "nameLocation": "3760:16:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 709,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 708,
+                  "mutability": "mutable",
+                  "name": "borrower",
+                  "nameLocation": "3785:8:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 711,
+                  "src": "3777:16:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 707,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3777:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3776:18:5"
+            },
+            "returnParameters": {
+              "id": 710,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3803:0:5"
+            },
+            "scope": 766,
+            "src": "3751:53:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 712,
+              "nodeType": "StructuredDocumentation",
+              "src": "3808:122:5",
+              "text": " @notice Removes an address as FlashBorrower\n @param borrower The address of the FlashBorrower to remove"
+            },
+            "functionSelector": "253cf980",
+            "id": 717,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeFlashBorrower",
+            "nameLocation": "3942:19:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 715,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 714,
+                  "mutability": "mutable",
+                  "name": "borrower",
+                  "nameLocation": "3970:8:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 717,
+                  "src": "3962:16:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 713,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3962:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3961:18:5"
+            },
+            "returnParameters": {
+              "id": 716,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3988:0:5"
+            },
+            "scope": 766,
+            "src": "3933:56:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 718,
+              "nodeType": "StructuredDocumentation",
+              "src": "3993:199:5",
+              "text": " @notice Returns true if the address is FlashBorrower, false otherwise\n @param borrower The address to check\n @return True if the given address is FlashBorrower, false otherwise"
+            },
+            "functionSelector": "fa50f297",
+            "id": 725,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isFlashBorrower",
+            "nameLocation": "4204:15:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 721,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 720,
+                  "mutability": "mutable",
+                  "name": "borrower",
+                  "nameLocation": "4228:8:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 725,
+                  "src": "4220:16:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 719,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4220:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4219:18:5"
+            },
+            "returnParameters": {
+              "id": 724,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 723,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 725,
+                  "src": "4261:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 722,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4261:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4260:6:5"
+            },
+            "scope": 766,
+            "src": "4195:72:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 726,
+              "nodeType": "StructuredDocumentation",
+              "src": "4271:100:5",
+              "text": " @notice Adds a new address as Bridge\n @param bridge The address of the new Bridge"
+            },
+            "functionSelector": "9712fdf8",
+            "id": 731,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addBridge",
+            "nameLocation": "4383:9:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 729,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 728,
+                  "mutability": "mutable",
+                  "name": "bridge",
+                  "nameLocation": "4401:6:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 731,
+                  "src": "4393:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 727,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4393:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4392:16:5"
+            },
+            "returnParameters": {
+              "id": 730,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4417:0:5"
+            },
+            "scope": 766,
+            "src": "4374:44:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 732,
+              "nodeType": "StructuredDocumentation",
+              "src": "4422:106:5",
+              "text": " @notice Removes an address as Bridge\n @param bridge The address of the bridge to remove"
+            },
+            "functionSelector": "04df017d",
+            "id": 737,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeBridge",
+            "nameLocation": "4540:12:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 735,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 734,
+                  "mutability": "mutable",
+                  "name": "bridge",
+                  "nameLocation": "4561:6:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 737,
+                  "src": "4553:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 733,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4553:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4552:16:5"
+            },
+            "returnParameters": {
+              "id": 736,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4577:0:5"
+            },
+            "scope": 766,
+            "src": "4531:47:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 738,
+              "nodeType": "StructuredDocumentation",
+              "src": "4582:183:5",
+              "text": " @notice Returns true if the address is Bridge, false otherwise\n @param bridge The address to check\n @return True if the given address is Bridge, false otherwise"
+            },
+            "functionSelector": "726600ce",
+            "id": 745,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isBridge",
+            "nameLocation": "4777:8:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 741,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 740,
+                  "mutability": "mutable",
+                  "name": "bridge",
+                  "nameLocation": "4794:6:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 745,
+                  "src": "4786:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 739,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4786:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4785:16:5"
+            },
+            "returnParameters": {
+              "id": 744,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 743,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 745,
+                  "src": "4825:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 742,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4825:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4824:6:5"
+            },
+            "scope": 766,
+            "src": "4768:63:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 746,
+              "nodeType": "StructuredDocumentation",
+              "src": "4835:107:5",
+              "text": " @notice Adds a new admin as AssetListingAdmin\n @param admin The address of the new admin"
+            },
+            "functionSelector": "9a2b96f7",
+            "id": 751,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "addAssetListingAdmin",
+            "nameLocation": "4954:20:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 749,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 748,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "4983:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 751,
+                  "src": "4975:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 747,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4975:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4974:15:5"
+            },
+            "returnParameters": {
+              "id": 750,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4998:0:5"
+            },
+            "scope": 766,
+            "src": "4945:54:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 752,
+              "nodeType": "StructuredDocumentation",
+              "src": "5003:113:5",
+              "text": " @notice Removes an admin as AssetListingAdmin\n @param admin The address of the admin to remove"
+            },
+            "functionSelector": "a21bce15",
+            "id": 757,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "removeAssetListingAdmin",
+            "nameLocation": "5128:23:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 755,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 754,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "5160:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 757,
+                  "src": "5152:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 753,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5152:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5151:15:5"
+            },
+            "returnParameters": {
+              "id": 756,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "5175:0:5"
+            },
+            "scope": 766,
+            "src": "5119:57:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 758,
+              "nodeType": "StructuredDocumentation",
+              "src": "5180:204:5",
+              "text": " @notice Returns true if the address is AssetListingAdmin, false otherwise\n @param admin The address to check\n @return True if the given address is AssetListingAdmin, false otherwise"
+            },
+            "functionSelector": "13ee32e0",
+            "id": 765,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isAssetListingAdmin",
+            "nameLocation": "5396:19:5",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 761,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 760,
+                  "mutability": "mutable",
+                  "name": "admin",
+                  "nameLocation": "5424:5:5",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 765,
+                  "src": "5416:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 759,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5416:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5415:15:5"
+            },
+            "returnParameters": {
+              "id": 764,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 763,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 765,
+                  "src": "5454:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 762,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5454:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5453:6:5"
+            },
+            "scope": 766,
+            "src": "5387:73:5",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 767,
+        "src": "237:5225:5",
+        "usedErrors": []
+      }
+    ],
+    "src": "37:5426:5"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.10+commit.fc410830.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2022-12-24T03:38:20.972Z",
+  "devdoc": {
+    "author": "Aave",
+    "kind": "dev",
+    "methods": {
+      "ADDRESSES_PROVIDER()": {
+        "returns": {
+          "_0": "The address of the PoolAddressesProvider"
+        }
+      },
+      "ASSET_LISTING_ADMIN_ROLE()": {
+        "returns": {
+          "_0": "The id of the AssetListingAdmin role"
+        }
+      },
+      "BRIDGE_ROLE()": {
+        "returns": {
+          "_0": "The id of the Bridge role"
+        }
+      },
+      "EMERGENCY_ADMIN_ROLE()": {
+        "returns": {
+          "_0": "The id of the EmergencyAdmin role"
+        }
+      },
+      "FLASH_BORROWER_ROLE()": {
+        "returns": {
+          "_0": "The id of the FlashBorrower role"
+        }
+      },
+      "POOL_ADMIN_ROLE()": {
+        "returns": {
+          "_0": "The id of the PoolAdmin role"
+        }
+      },
+      "RISK_ADMIN_ROLE()": {
+        "returns": {
+          "_0": "The id of the RiskAdmin role"
+        }
+      },
+      "addAssetListingAdmin(address)": {
+        "params": {
+          "admin": "The address of the new admin"
+        }
+      },
+      "addBridge(address)": {
+        "params": {
+          "bridge": "The address of the new Bridge"
+        }
+      },
+      "addEmergencyAdmin(address)": {
+        "params": {
+          "admin": "The address of the new admin"
+        }
+      },
+      "addFlashBorrower(address)": {
+        "params": {
+          "borrower": "The address of the new FlashBorrower"
+        }
+      },
+      "addPoolAdmin(address)": {
+        "params": {
+          "admin": "The address of the new admin"
+        }
+      },
+      "addRiskAdmin(address)": {
+        "params": {
+          "admin": "The address of the new admin"
+        }
+      },
+      "isAssetListingAdmin(address)": {
+        "params": {
+          "admin": "The address to check"
+        },
+        "returns": {
+          "_0": "True if the given address is AssetListingAdmin, false otherwise"
+        }
+      },
+      "isBridge(address)": {
+        "params": {
+          "bridge": "The address to check"
+        },
+        "returns": {
+          "_0": "True if the given address is Bridge, false otherwise"
+        }
+      },
+      "isEmergencyAdmin(address)": {
+        "params": {
+          "admin": "The address to check"
+        },
+        "returns": {
+          "_0": "True if the given address is EmergencyAdmin, false otherwise"
+        }
+      },
+      "isFlashBorrower(address)": {
+        "params": {
+          "borrower": "The address to check"
+        },
+        "returns": {
+          "_0": "True if the given address is FlashBorrower, false otherwise"
+        }
+      },
+      "isPoolAdmin(address)": {
+        "params": {
+          "admin": "The address to check"
+        },
+        "returns": {
+          "_0": "True if the given address is PoolAdmin, false otherwise"
+        }
+      },
+      "isRiskAdmin(address)": {
+        "params": {
+          "admin": "The address to check"
+        },
+        "returns": {
+          "_0": "True if the given address is RiskAdmin, false otherwise"
+        }
+      },
+      "removeAssetListingAdmin(address)": {
+        "params": {
+          "admin": "The address of the admin to remove"
+        }
+      },
+      "removeBridge(address)": {
+        "params": {
+          "bridge": "The address of the bridge to remove"
+        }
+      },
+      "removeEmergencyAdmin(address)": {
+        "params": {
+          "admin": "The address of the admin to remove"
+        }
+      },
+      "removeFlashBorrower(address)": {
+        "params": {
+          "borrower": "The address of the FlashBorrower to remove"
+        }
+      },
+      "removePoolAdmin(address)": {
+        "params": {
+          "admin": "The address of the admin to remove"
+        }
+      },
+      "removeRiskAdmin(address)": {
+        "params": {
+          "admin": "The address of the admin to remove"
+        }
+      },
+      "setRoleAdmin(bytes32,bytes32)": {
+        "details": "By default the admin role for all roles is `DEFAULT_ADMIN_ROLE`.",
+        "params": {
+          "adminRole": "The admin role",
+          "role": "The role to be managed by the admin role"
+        }
+      }
+    },
+    "title": "IACLManager",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "ADDRESSES_PROVIDER()": {
+        "notice": "Returns the contract address of the PoolAddressesProvider"
+      },
+      "ASSET_LISTING_ADMIN_ROLE()": {
+        "notice": "Returns the identifier of the AssetListingAdmin role"
+      },
+      "BRIDGE_ROLE()": {
+        "notice": "Returns the identifier of the Bridge role"
+      },
+      "EMERGENCY_ADMIN_ROLE()": {
+        "notice": "Returns the identifier of the EmergencyAdmin role"
+      },
+      "FLASH_BORROWER_ROLE()": {
+        "notice": "Returns the identifier of the FlashBorrower role"
+      },
+      "POOL_ADMIN_ROLE()": {
+        "notice": "Returns the identifier of the PoolAdmin role"
+      },
+      "RISK_ADMIN_ROLE()": {
+        "notice": "Returns the identifier of the RiskAdmin role"
+      },
+      "addAssetListingAdmin(address)": {
+        "notice": "Adds a new admin as AssetListingAdmin"
+      },
+      "addBridge(address)": {
+        "notice": "Adds a new address as Bridge"
+      },
+      "addEmergencyAdmin(address)": {
+        "notice": "Adds a new admin as EmergencyAdmin"
+      },
+      "addFlashBorrower(address)": {
+        "notice": "Adds a new address as FlashBorrower"
+      },
+      "addPoolAdmin(address)": {
+        "notice": "Adds a new admin as PoolAdmin"
+      },
+      "addRiskAdmin(address)": {
+        "notice": "Adds a new admin as RiskAdmin"
+      },
+      "isAssetListingAdmin(address)": {
+        "notice": "Returns true if the address is AssetListingAdmin, false otherwise"
+      },
+      "isBridge(address)": {
+        "notice": "Returns true if the address is Bridge, false otherwise"
+      },
+      "isEmergencyAdmin(address)": {
+        "notice": "Returns true if the address is EmergencyAdmin, false otherwise"
+      },
+      "isFlashBorrower(address)": {
+        "notice": "Returns true if the address is FlashBorrower, false otherwise"
+      },
+      "isPoolAdmin(address)": {
+        "notice": "Returns true if the address is PoolAdmin, false otherwise"
+      },
+      "isRiskAdmin(address)": {
+        "notice": "Returns true if the address is RiskAdmin, false otherwise"
+      },
+      "removeAssetListingAdmin(address)": {
+        "notice": "Removes an admin as AssetListingAdmin"
+      },
+      "removeBridge(address)": {
+        "notice": "Removes an address as Bridge"
+      },
+      "removeEmergencyAdmin(address)": {
+        "notice": "Removes an admin as EmergencyAdmin"
+      },
+      "removeFlashBorrower(address)": {
+        "notice": "Removes an address as FlashBorrower"
+      },
+      "removePoolAdmin(address)": {
+        "notice": "Removes an admin as PoolAdmin"
+      },
+      "removeRiskAdmin(address)": {
+        "notice": "Removes an admin as RiskAdmin"
+      },
+      "setRoleAdmin(bytes32,bytes32)": {
+        "notice": "Set the role as admin of a specific role."
+      }
+    },
+    "notice": "Defines the basic interface for the ACL Manager",
+    "version": 1
+  }
+}
