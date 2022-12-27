@@ -20,21 +20,6 @@ contract Treasury is BaseAccount {
         return _call(addr, value, data);
     }
 
-    // internal delegate call from EIP-4337
-    function _call(
-        address target,
-        uint256 value,
-        bytes memory data
-    ) internal returns (bytes memory) {
-        (bool success, bytes memory result) = target.call{value: value}(data);
-        if (!success) {
-            assembly {
-                revert(add(result, 32), mload(result))
-            }
-        }
-        return result;
-    }
-
     // state view and update function
     function getStateVal(string calldata key)
         public
@@ -60,17 +45,15 @@ contract Treasury is BaseAccount {
     uint96 private _nonce;
     address public owner;
 
-    function nonce(uint256 attempt)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function nonce() public view override returns (uint256) {
+        return 0;
+    }
+
+    function checkNonce(uint256 attempt) public view returns (bool) {
         return nonceMap[attempt];
     }
 
-    function entryPoint() public view virtual override returns (IEntryPoint) {
+    function entryPoint() public view override returns (IEntryPoint) {
         return _entryPoint;
     }
 
@@ -103,19 +86,21 @@ contract Treasury is BaseAccount {
         );
     }
 
-    function addAccessToUser(address user) public _onlyOwner {
+    function addAccessToUser(address user) public {
+        _onlyOwner();
+
         allowedEOAsMap[user] = true;
     }
 
-    function removeAccessFromUser(address user) public _onlyOwner {
+    function removeAccessFromUser(address user) public {
+        _onlyOwner();
+
         allowedEOAsMap[user] = false;
     }
 
-    function addActionToUser(address user, address actionAddress)
-        public
-        _onlyOwner
-    {
-        actionToUserMap[user] == actionAddress;
+    function addActionToUser(address user, address actionAddress) public {
+        _onlyOwner();
+        actionToUserMap[user] = actionAddress;
     }
 
     /**
@@ -214,42 +199,33 @@ contract Treasury is BaseAccount {
             "account: wrong signature"
         );
 
-        require(
-            _externalValidation(userOp.callData),
-            "account: wrong signature"
-        );
+        _externalValidation(userOp.callData);
 
         return 0;
     }
 
-    function _externalValidation(bytes calldata op)
-        internal
-        view
-        returns (bool)
-    {
-        (address actionAddress, bytes calldata data) = abi.decode(
+    function _externalValidation(bytes memory op) internal view {
+        (address actionAddress, bytes memory data) = abi.decode(
             op,
             (address, bytes)
         );
         address verificationAddress = IAction(actionAddress)
             .getVerificationContract(address(this));
-        require(
-            IValidation(verificationAddress).validate(data),
-            "Incorrect data or invalid access"
-        );
+        IValidation(verificationAddress).validate(data);
     }
 
     function _call(
         address target,
         uint256 value,
         bytes memory data
-    ) internal {
+    ) internal returns (bytes memory) {
         (bool success, bytes memory result) = target.call{value: value}(data);
         if (!success) {
             assembly {
                 revert(add(result, 32), mload(result))
             }
         }
+        return result;
     }
 
     /**
