@@ -1,0 +1,332 @@
+{
+  "contractName": "IAggregatedAccount",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "initCode",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "callGasLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "verificationGasLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "preVerificationGas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxFeePerGas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPriorityFeePerGas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "paymasterAndData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct UserOperation",
+          "name": "userOp",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "userOpHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "aggregator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "missingAccountFunds",
+          "type": "uint256"
+        }
+      ],
+      "name": "validateUserOp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAggregator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"getAggregator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initCode\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"callGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"verificationGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"preVerificationGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxPriorityFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"paymasterAndData\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"struct UserOperation\",\"name\":\"userOp\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"userOpHash\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"aggregator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"missingAccountFunds\",\"type\":\"uint256\"}],\"name\":\"validateUserOp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)\":{\"details\":\"Must validate caller is the entryPoint.      Must validate the signature and nonce\",\"params\":{\"aggregator\":\"the aggregator used to validate the signature. NULL for non-aggregated signature accounts.\",\"missingAccountFunds\":\"missing funds on the account's deposit in the entrypoint.      This is the minimum amount to transfer to the sender(entryPoint) to be able to make the call.      The excess is left as a deposit in the entrypoint, for future calls.      can be withdrawn anytime using \\\"entryPoint.withdrawTo()\\\"      In case there is a paymaster in the request (or the current deposit is high enough), this value will be zero.\",\"userOp\":\"the operation that is about to be executed.\",\"userOpHash\":\"hash of the user's request data. can be used as the basis for signature.\"},\"returns\":{\"deadline\":\"the last block timestamp this operation is valid, or zero if it is valid indefinitely.      Note that the validation code cannot use block.timestamp (or block.number) directly.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getAggregator()\":{\"notice\":\"return the address of the signature aggregator the account supports.\"},\"validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)\":{\"notice\":\"Validate user's signature and nonce the entryPoint will make the call to the recipient only if this validation call returns successfully.\"}},\"notice\":\"Aggregated account, that support IAggregator. - the validateUserOp will be called only after the aggregator validated this account (with all other accounts of this aggregator). - the validateUserOp MUST valiate the aggregator parameter, and MAY ignore the userOp.signature field.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/lib/interfaces/IAggregatedAccount.sol\":\"IAggregatedAccount\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/lib/interfaces/IAccount.sol\":{\"keccak256\":\"0x53d7eb9fd6a2479e3e68366fa36a38d09c744b16969e4640d6a230e2da1208a6\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://aba23b56da49142fc30d668d9737932f829f22f7f7899b27198146cee41c67c6\",\"dweb:/ipfs/QmTgu4e3kjQieigS9euHxruGNKXmuFUPoXKtQFFmvQNSeg\"]},\"project:/contracts/lib/interfaces/IAggregatedAccount.sol\":{\"keccak256\":\"0x9117514c01a240b26c62f7523bdb3cfe29b71e9ce78a4b4495cffd3c60864433\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://b8ab2ff6f14da84c6a9c64516655a7055474acf2ff601c18fc703694e2b8fad2\",\"dweb:/ipfs/QmTTLzD65C8Zbm7dRb5gunD8QNVy99MAGANNz8wAZdK7Z9\"]},\"project:/contracts/lib/interfaces/IAggregator.sol\":{\"keccak256\":\"0x79641935e8d014077e5d5cd63c208203b27a8cbd158bed6b4440244362a63704\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://1263b0f19585b57fbc2bdfc77079e30e1374620815af4194226e355da3c6066f\",\"dweb:/ipfs/Qmc3Q4imwwzJFfDgqdW7W8CjqPieXfToGjQhXrtKMKWRT9\"]},\"project:/contracts/lib/interfaces/UserOperation.sol\":{\"keccak256\":\"0xcf96efa5c7977c2ce3ff11542951a8d74e15dd99f02bcb1d57c5f9684632d9eb\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://bf59c90ab4d49c50b32035363f431061adb7e1b2558d641523c7cc6bb8701e5b\",\"dweb:/ipfs/QmQAvCR5fh16fHG1yp9uu9puUuAuqEngXSFErhFohwDF2B\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.8.10;\n\nimport \"./UserOperation.sol\";\nimport \"./IAccount.sol\";\nimport \"./IAggregator.sol\";\n\n/**\n * Aggregated account, that support IAggregator.\n * - the validateUserOp will be called only after the aggregator validated this account (with all other accounts of this aggregator).\n * - the validateUserOp MUST valiate the aggregator parameter, and MAY ignore the userOp.signature field.\n */\ninterface IAggregatedAccount is IAccount {\n\n    /**\n     * return the address of the signature aggregator the account supports.\n     */\n    function getAggregator() external view returns (address);\n}\n",
+  "sourcePath": "/Users/calebsirak/fun/wallet-sdk-v1/contracts/lib/interfaces/IAggregatedAccount.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/lib/interfaces/IAggregatedAccount.sol",
+    "exportedSymbols": {
+      "IAccount": [
+        9238
+      ],
+      "IAggregatedAccount": [
+        9253
+      ],
+      "IAggregator": [
+        9287
+      ],
+      "UserOperation": [
+        9662
+      ],
+      "UserOperationLib": [
+        9766
+      ]
+    },
+    "id": 9254,
+    "license": "GPL-3.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 9240,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".10"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "36:24:33"
+      },
+      {
+        "absolutePath": "project:/contracts/lib/interfaces/UserOperation.sol",
+        "file": "./UserOperation.sol",
+        "id": 9241,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 9254,
+        "sourceUnit": 9767,
+        "src": "62:29:33",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/lib/interfaces/IAccount.sol",
+        "file": "./IAccount.sol",
+        "id": 9242,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 9254,
+        "sourceUnit": 9239,
+        "src": "92:24:33",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/lib/interfaces/IAggregator.sol",
+        "file": "./IAggregator.sol",
+        "id": 9243,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 9254,
+        "sourceUnit": 9288,
+        "src": "117:27:33",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 9245,
+              "name": "IAccount",
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 9238,
+              "src": "475:8:33"
+            },
+            "id": 9246,
+            "nodeType": "InheritanceSpecifier",
+            "src": "475:8:33"
+          }
+        ],
+        "canonicalName": "IAggregatedAccount",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 9244,
+          "nodeType": "StructuredDocumentation",
+          "src": "146:296:33",
+          "text": " Aggregated account, that support IAggregator.\n - the validateUserOp will be called only after the aggregator validated this account (with all other accounts of this aggregator).\n - the validateUserOp MUST valiate the aggregator parameter, and MAY ignore the userOp.signature field."
+        },
+        "fullyImplemented": false,
+        "id": 9253,
+        "linearizedBaseContracts": [
+          9253,
+          9238
+        ],
+        "name": "IAggregatedAccount",
+        "nameLocation": "453:18:33",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "documentation": {
+              "id": 9247,
+              "nodeType": "StructuredDocumentation",
+              "src": "491:87:33",
+              "text": " return the address of the signature aggregator the account supports."
+            },
+            "functionSelector": "3ad59dbc",
+            "id": 9252,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getAggregator",
+            "nameLocation": "592:13:33",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 9248,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "605:2:33"
+            },
+            "returnParameters": {
+              "id": 9251,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9250,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9252,
+                  "src": "631:7:33",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 9249,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "631:7:33",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "630:9:33"
+            },
+            "scope": 9253,
+            "src": "583:57:33",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 9254,
+        "src": "443:199:33",
+        "usedErrors": []
+      }
+    ],
+    "src": "36:607:33"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.10+commit.fc410830.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2022-12-27T09:24:11.375Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)": {
+        "details": "Must validate caller is the entryPoint.      Must validate the signature and nonce",
+        "params": {
+          "aggregator": "the aggregator used to validate the signature. NULL for non-aggregated signature accounts.",
+          "missingAccountFunds": "missing funds on the account's deposit in the entrypoint.      This is the minimum amount to transfer to the sender(entryPoint) to be able to make the call.      The excess is left as a deposit in the entrypoint, for future calls.      can be withdrawn anytime using \"entryPoint.withdrawTo()\"      In case there is a paymaster in the request (or the current deposit is high enough), this value will be zero.",
+          "userOp": "the operation that is about to be executed.",
+          "userOpHash": "hash of the user's request data. can be used as the basis for signature."
+        },
+        "returns": {
+          "deadline": "the last block timestamp this operation is valid, or zero if it is valid indefinitely.      Note that the validation code cannot use block.timestamp (or block.number) directly."
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getAggregator()": {
+        "notice": "return the address of the signature aggregator the account supports."
+      },
+      "validateUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,address,uint256)": {
+        "notice": "Validate user's signature and nonce the entryPoint will make the call to the recipient only if this validation call returns successfully."
+      }
+    },
+    "notice": "Aggregated account, that support IAggregator. - the validateUserOp will be called only after the aggregator validated this account (with all other accounts of this aggregator). - the validateUserOp MUST valiate the aggregator parameter, and MAY ignore the userOp.signature field.",
+    "version": 1
+  }
+}
