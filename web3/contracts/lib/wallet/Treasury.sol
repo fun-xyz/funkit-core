@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 contract Treasury is BaseAccount {
     mapping(address => bool) private whitelist;
     mapping(string => bytes) private state;
+    mapping(address => mapping(string => bool)) internalActions;
 
     function main() public {}
 
@@ -17,6 +18,7 @@ contract Treasury is BaseAccount {
         uint256 value,
         bytes calldata data
     ) public returns (bytes memory) {
+        require(whitelist[msg.sender]);
         return _call(addr, value, data);
     }
 
@@ -37,7 +39,7 @@ contract Treasury is BaseAccount {
 
     mapping(uint256 => bool) nonceMap;
     mapping(address => bool) allowedEOAsMap;
-    mapping(address => address) actionToUserMap;
+    mapping(address => mapping(address => bool)) actionToUserMap;
 
     using ECDSA for bytes32;
 
@@ -88,7 +90,6 @@ contract Treasury is BaseAccount {
 
     function addAccessToUser(address user) public {
         _onlyOwner();
-
         allowedEOAsMap[user] = true;
     }
 
@@ -100,7 +101,11 @@ contract Treasury is BaseAccount {
 
     function addActionToUser(address user, address actionAddress) public {
         _onlyOwner();
-        actionToUserMap[user] = actionAddress;
+        actionToUserMap[user][actionAddress] = true;
+    }
+
+    function addAction(address actionAddress) public {
+        whitelist[actionAddress] = true;
     }
 
     /**

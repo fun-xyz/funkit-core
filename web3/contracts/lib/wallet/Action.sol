@@ -3,17 +3,6 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/ITreasury.sol";
 
-struct ActionRequest {
-    bytes data;
-}
-
-// bytes memory callData = abi.encodeWithSignature(
-//     "updateStateVal(string,bytes)",
-//     key,
-//     data
-// );
-// return _call(treasury, 0, callData);
-
 abstract contract Action {
     function getVerificationContract(address user) public view virtual {}
 
@@ -34,6 +23,15 @@ abstract contract Action {
     {
         string memory subkey = string(abi.encodePacked(address(this), key));
         return ITreasury(treasury).getStateVal(subkey);
+    }
+
+    function sendCallOp(
+        address treasury,
+        address location,
+        bytes memory data,
+        uint256 value
+    ) internal returns (bytes memory) {
+        return ITreasury(treasury).callOp(location, value, data);
     }
 
     function _call(

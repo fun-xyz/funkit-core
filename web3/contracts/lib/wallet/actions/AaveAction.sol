@@ -16,7 +16,7 @@ contract AaveLiquadation is Action {
         string memory key,
         bytes calldata data
     ) private {
-        verifyAccessToAToken(userAddr, aTokenAddr, positionMax, address(this));
+        verifyAccessToAToken(userAddr, aTokenAddr, positionMax, msg.sender);
         storeData(msg.sender, key, data);
     }
 
@@ -97,16 +97,26 @@ contract AaveLiquadation is Action {
             string memory throwaway
         ) = decodeMem(getData(msg.sender, key));
 
-        verifyAccessToAToken(userAddr, aTokenAddr, positionMax, address(this));
+        verifyAccessToAToken(userAddr, aTokenAddr, positionMax, msg.sender);
 
         uint256 balance = AToken(aTokenAddr).balanceOf(userAddr);
 
-        AToken(aTokenAddr).transferFrom(userAddr, msg.sender, balance);
+        bytes memory actionData = abi.encodeWithSignature(
+            "transferFrom(address,address,uint256)",
+            userAddr, msg.sender, balance
+        );
+        sendCallOp(msg.sender, aTokenAddr, actionData, 0);
 
         IPool pool = AToken(aTokenAddr).POOL();
         address assetAddr = AToken(aTokenAddr).UNDERLYING_ASSET_ADDRESS();
 
-        pool.withdraw(assetAddr, balance, userAddr);
+        pool.withdraw(assetAddr, balance, userAddr); //call op
+        actionData = abi.encodeWithSignature(
+            "withdraw(address,uint256,address)",
+            assetAddr, balance, userAddr
+        );
+        sendCallOp(msg.sender, address(pool), actionData, 0);
+
         return bytes("");
     }
 }
