@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "../interfaces/ITreasury.sol";
 
 abstract contract Action {
+    mapping(address => bool) internal whitelist;
+
     function getVerificationContract(address user) public view virtual {}
 
     function storeData(
@@ -48,12 +50,20 @@ abstract contract Action {
         return result;
     }
 
+    function init() external payable virtual returns (bytes memory) {
+        whitelist[msg.sender] = true;
+        return bytes("");
+    }
+
     function init(bytes calldata data)
         external
         payable
         virtual
         returns (bytes memory)
-    {}
+    {
+        whitelist[msg.sender] = true;
+        return bytes("");
+    }
 
     function execute(bytes calldata data)
         external

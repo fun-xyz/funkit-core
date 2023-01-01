@@ -72,18 +72,92 @@ interface INonfungiblePositionManager {
         returns (uint256 amount0, uint256 amount1);
 }
 
-interface IERC721Receiver {
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4);
-}
 
 contract UniV3Close is Action {
-    function collectAllFees(uint256 tokenId, address positionManagerAddress)
+    // function _init(
+    //     uint256 tokenId,
+    //     address positionManagerAddress,
+    //     bytes calldata data,
+    //     string memory key
+    // ) internal {
+    //     storeData(msg.sender, key, data);
+    // }
+
+    function execute(bytes calldata data)
         external
+        payable
+        override
+        returns (bytes memory)
+    {
+        (
+            uint256 tokenId,
+            address positionManagerAddress,
+            bytes memory sigInfo
+        ) = decode(data);
+        verifyPermitTransfer(sigInfo, positionManagerAddress);
+        collectAllFees(tokenId, positionManagerAddress);
+        return bytes("");
+    }
+
+    function decodeSig(bytes memory data)
+        internal
+        pure
+        returns (
+            address spender,
+            uint256 tokenId,
+            uint256 deadline,
+            uint8 v,
+            bytes32 r,
+            bytes32 s
+        )
+    {
+        (spender, tokenId, deadline, v, r, s) = abi.decode(
+            data,
+            (address, uint256, uint256, uint8, bytes32, bytes32)
+        );
+    }
+
+    function decode(bytes calldata data)
+        internal
+        pure
+        returns (
+            uint256 tokenId,
+            address positionManagerAddress,
+            bytes memory sigInfo
+        )
+    {
+        (tokenId, positionManagerAddress, sigInfo) = abi.decode(
+            data,
+            (uint256, address, bytes)
+        );
+    }
+
+    function verifyPermitTransfer(
+        bytes memory sigInfo,
+        address positionManagerAddress
+    ) private {
+        (
+            address spender,
+            uint256 tokenId,
+            uint256 deadline,
+            uint8 v,
+            bytes32 r,
+            bytes32 s
+        ) = decodeSig(sigInfo);
+        bytes memory data = abi.encodeWithSignature(
+            "permit(address,uint256,uint256,uint8,bytes32,bytes32)",
+            spender,
+            tokenId,
+            deadline,
+            v,
+            r,
+            s
+        );
+        sendCallOp(msg.sender, positionManagerAddress, data, 0);
+    }
+
+    function collectAllFees(uint256 tokenId, address positionManagerAddress)
+        internal
         returns (uint256 amount0, uint256 amount1)
     {
         INonfungiblePositionManager nonfungiblePositionManager = INonfungiblePositionManager(
@@ -98,5 +172,10 @@ contract UniV3Close is Action {
             });
 
         (amount0, amount1) = nonfungiblePositionManager.collect(params);
+        bytes memory data = abi.encodeWithSignature(
+            "collect((uint256,address,uint128,uint128))",
+            params
+        );
+        sendCallOp(msg.sender, positionManagerAddress, data, 0);
     }
 }
