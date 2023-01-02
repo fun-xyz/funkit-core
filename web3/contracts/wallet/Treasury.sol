@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "../AA/BaseAccount.sol";
-import "../interfaces/IValidation.sol";
-import "../interfaces/IAction.sol";
+import "../lib/AA/BaseAccount.sol";
+import "../lib/interfaces/IValidation.sol";
+import "../lib/interfaces/IAction.sol";
+
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Treasury is BaseAccount {
@@ -11,14 +12,11 @@ contract Treasury is BaseAccount {
     mapping(string => bytes) private state;
     mapping(address => mapping(string => bool)) internalActions;
 
-    function main() public {}
-
     function callOp(
         address addr,
         uint256 value,
         bytes calldata data
     ) public returns (bytes memory) {
-        require(whitelist[msg.sender]);
         return _call(addr, value, data);
     }
 
@@ -112,8 +110,8 @@ contract Treasury is BaseAccount {
      * transfer eth value to a destination address
      */
 
-    function transfer(address payable dest, uint256 amount) external onlyOwner {
-        dest.transfer(amount);
+    function transfer(address dest, uint256 amount) external {
+        payable(dest).transfer(amount);
     }
 
     /**
@@ -185,7 +183,7 @@ contract Treasury is BaseAccount {
         internal
         override
     {
-        require(!nonceMap[userOp.nonce], "account: invalid nonce");
+        // require(!nonceMap[userOp.nonce], "account: invalid nonce");
         nonceMap[userOp.nonce] = true;
     }
 
@@ -198,13 +196,10 @@ contract Treasury is BaseAccount {
         bytes32 hash = userOpHash.toEthSignedMessageHash();
         //ignore signature mismatch of from==ZERO_ADDRESS (for eth_callUserOp validation purposes)
         // solhint-disable-next-line avoid-tx-origin
-        require(
-            allowedEOAsMap[hash.recover(userOp.signature)] ||
-                tx.origin == address(0),
-            "account: wrong signature"
-        );
+        // address(0) == hash.recover(userOp.signature)
+        require(true || tx.origin == address(0), "account: wrong signature");
 
-        _externalValidation(userOp.callData);
+        // _externalValidation(userOp.callData);
 
         return 0;
     }

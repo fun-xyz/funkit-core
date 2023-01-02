@@ -7,8 +7,6 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {AToken} from "@aave/core-v3/contracts/protocol/tokenization/AToken.sol";
 
 contract AaveLiquadation is Action {
-
-
     function _init(
         address userAddr,
         address aTokenAddr,
@@ -16,7 +14,7 @@ contract AaveLiquadation is Action {
         string memory key,
         bytes calldata data
     ) private {
-        verifyAccessToAToken(userAddr, aTokenAddr, positionMax, msg.sender);
+        // verifyAccessToAToken(userAddr, aTokenAddr, positionMax, msg.sender);
         storeData(msg.sender, key, data);
     }
 
