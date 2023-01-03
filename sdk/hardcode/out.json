@@ -1,0 +1,38 @@
+{
+    "types": [
+        {
+            "name": "entryPoint",
+            "type": "address",
+            "indexed": null,
+            "components": null,
+            "arrayLength": null,
+            "arrayChildren": null,
+            "baseType": "address",
+            "_isParamType": true
+        },
+        {
+            "name": "owner",
+            "type": "address",
+            "indexed": null,
+            "components": null,
+            "arrayLength": null,
+            "arrayChildren": null,
+            "baseType": "address",
+            "_isParamType": true
+        },
+        {
+            "name": "salt",
+            "type": "uint256",
+            "indexed": null,
+            "components": null,
+            "arrayLength": null,
+            "arrayChildren": null,
+            "baseType": "uint256",
+            "_isParamType": true
+        }
+    ],
+    "values": [
+        "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+        0
+    ]
+}
