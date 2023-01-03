@@ -296,8 +296,8 @@ export abstract class BaseAccountAPI {
    * helper method: create and sign a user operation.
    * @param info transaction details for the userOp
    */
-  async createSignedUserOp(info: TransactionDetailsForUserOp, unsignedOp: UserOperationStruct): Promise<UserOperationStruct> {
-    return await this.signUserOp(unsignedOp)
+  async createSignedUserOp(info: TransactionDetailsForUserOp): Promise<UserOperationStruct> {
+    return await this.signUserOp(await this.createUnsignedUserOp(info))
   }
 
   /**
@@ -319,8 +319,15 @@ export abstract class BaseAccountAPI {
     return null
   }
 
-  getUnsignedUserOp = async (address: string, amount: BigNumber, providerURL: string) => {
+  getAddressFromType(type:string):string{
+    const map:string[]=[]
+    return ""
+    
+  }
+  getUnsignedUserOp = async (type: string, amount: BigNumber, providerURL: string):Promise<UserOperationStruct> => {
     //check this
+    const address=this.getAddressFromType(type)
+
     const Web3 = require('web3')
     const web3 = new Web3(new Web3.providers.HttpProvider(providerURL));
 
@@ -348,12 +355,11 @@ export abstract class BaseAccountAPI {
   }
 
   getSignedUserOp = (unsignedUserOp: UserOperationStruct, signature: string) => {
+    let signedUserOp=this.signUserOp(unsignedUserOp)
     return {
-      ...unsignedUserOp,
+      ...signedUserOp,
       signature
     }
   }
-
-  
 
 }
