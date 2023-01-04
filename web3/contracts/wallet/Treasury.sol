@@ -222,7 +222,8 @@ contract Treasury is BaseAccount {
         uint256 value,
         bytes memory data
     ) internal returns (bytes memory) {
-        (bool success, bytes memory result) = target.call{value: value}(data);
+        (bool success, bytes memory result) = payable(target).call{value: value}(data);
+        require(success, "External Call Failed");
         if (!success) {
             assembly {
                 revert(add(result, 32), mload(result))

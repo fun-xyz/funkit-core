@@ -56,7 +56,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
      */
     async encodeExecute(target, value, data) {
         const accountContract = await this._getAccountContract();
-        return accountContract.interface.encodeFunctionData('execFromEntryPoint', [
+        return accountContract.interface.encodeFunctionData('callOp', [
             target,
             value,
             data
