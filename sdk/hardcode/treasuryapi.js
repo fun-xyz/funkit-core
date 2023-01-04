@@ -5,6 +5,8 @@ const utils_1 = require("ethers/lib/utils");
 const BaseAccountAPI_1 = require("./BaseAccountAPI");
 const { TreasuryFactory__factory } = require("./treasuryfactory")
 const TreasurySRC = require("./../../web3/build/contracts/Treasury.json")
+const Web3 = require('web3')
+const web3 = new Web3();
 /**c
  * An implementation of the BaseAccountAPI using the SimpleAccount contract.
  * - contract deployer gets "entrypoint", "owner" addresses and "index" nonce
@@ -55,13 +57,37 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
      * @param data
      */
     async encodeExecute(target, value, data) {
-        const accountContract = await this._getAccountContract();
-        return accountContract.interface.encodeFunctionData('callOp', [
-            target,
-            value,
-            data
-        ]);
+        return web3.eth.abi.encodeFunctionCall({
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "addr",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "data",
+                    "type": "bytes"
+                }
+            ],
+            "name": "callOp",
+            "outputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }, [target, value, data])
     }
+
     async signUserOpHash(userOpHash) {
         return await this.owner.signMessage((0, utils_1.arrayify)(userOpHash));
     }

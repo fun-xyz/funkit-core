@@ -21,8 +21,8 @@ const provider = new ethers.providers.JsonRpcProvider(url);
 const Web3 = require('web3')
 const web3 = new Web3(url);
 
-const factoryAddress = "0xef11D1c2aA48826D4c41e54ab82D1Ff5Ad8A64Ca"
-const aaveActionAddr = "0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37"
+const factoryAddress = "0xcc783140446C68edC7B3C601E63665E17e232eE8"
+const aaveActionAddr = "0x4026F10CAB74300fC2AF54215532d0b75088FcE2"
 const entryPointAddress = "0x1306b01bC3e4AD202612D3843387e94737673F53"
 const key = "key1"
 
@@ -52,14 +52,10 @@ const main = async () => {
 
     }
 
-
-
     const config = {
         entryPointAddress,
         bundlerUrl: 'http://localhost:3000/rpc'
     }
-
-
 
     // use this as signer (instead of node's first account)
 
@@ -69,18 +65,12 @@ const main = async () => {
         config,
         ownerAccount
     )
-    // console.log(erc4337Provider)
-    // const erc4337Signer = erc4337Provider.getSigner();
-    // const simpleAccountPhantomAddress = await erc4337Signer.getAddress()
 
     await DeterministicDeployer.init(provider)
 
     const net = await erc4337Provider.getNetwork()
     const accs = await web3.eth.getAccounts()
     const rpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, net.chainId)
-
-
-
 
     const accountApi = new TreasuryAPI({
         provider: erc4337Provider,
@@ -96,12 +86,9 @@ const main = async () => {
     const aavedata = web3.eth.abi.encodeParameters(["address", "address", "uint256", "string"], ['0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10', key]);
     const aavecall = aavactioncontract.methods.init(aavedata)
 
-
     // const aavedata2 = web3.eth.abi.encodeParameters(["address", "address", "uint256", "string"], ['0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10', "key2"]);
     // const aavecall2 = aavactioncontract.methods.init(aavedata2)
     // await web3.eth.sendTransaction({ to: aaveActionAddr, from: accs[0], data: aavecall2.encodeABI() })
-
-
 
     try {
         const op = await accountApi.createSignedUserOp({
@@ -109,7 +96,8 @@ const main = async () => {
             data: aavecall.encodeABI()
         })
         // console.log(op)
-        await sendTestOP(accountAddress, op.callData)
+        // await sendTestOP(accountAddress, encodeCallOp(aaveActionAddr, aavecall.encodeABI()))
+        // await sendTestOP(aaveActionAddr, aavecall.encodeABI())
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         // const receipt = await rpcClient.userOpJsonRpcProvider
@@ -117,10 +105,10 @@ const main = async () => {
         console.log('reqId', userOpHash, 'txid=', txid)
         // console.log(JSON.stringify(receipt))
     } catch (e) {
-        // console.log(e.error)
+        console.log(e.error)
     }
 
-    // await getEntryPointLogs()
+    await getTestData()
 }
 
 const encodeCallOp = (addr, data, value = "0") => {
@@ -153,7 +141,6 @@ const encodeCallOp = (addr, data, value = "0") => {
         "stateMutability": "nonpayable",
         "type": "function"
     }, [addr, value, data])
-
 }
 
 
