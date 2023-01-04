@@ -1,11 +1,12 @@
 const ethers = require('ethers');
 const { ContractFactory } = ethers
 
-const factoryobj = require("../../web3/build/contracts/TreasuryFactory.json")
+// const contractobj = require("../../web3/build/contracts/TreasuryFactory.json")
+const contractobj = require("../../web3/build/contracts/AaveLiquadation.json")
 
 const walletaddr = "0x0F658A63205Aa9640BC628cc30eF9A57F1DB3F24"
-const contractAbi = factoryobj.abi
-const contractByteCode = factoryobj.bytecode
+const contractAbi = contractobj.abi
+const contractByteCode = contractobj.bytecode
 
 const url = "http://localhost:8545"
 const Web3 = require('web3')

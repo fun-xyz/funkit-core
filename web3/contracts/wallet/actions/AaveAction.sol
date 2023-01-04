@@ -7,6 +7,8 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {AToken} from "@aave/core-v3/contracts/protocol/tokenization/AToken.sol";
 
 contract AaveLiquadation is Action {
+    mapping(string => bytes) public requests;
+
     function _init(
         address userAddr,
         address aTokenAddr,
@@ -14,21 +16,7 @@ contract AaveLiquadation is Action {
         string memory key,
         bytes calldata data
     ) private {
-        // verifyAccessToAToken(userAddr, aTokenAddr, positionMax, msg.sender);
-        storeData(msg.sender, key, data);
-    }
-
-    function verifyAccessToAToken(
-        address userAddr,
-        address aTokenAddr,
-        uint256 positionMax,
-        address addr
-    ) private view {
-        if (positionMax < type(uint256).max) {
-            require(
-                AToken(aTokenAddr).allowance(userAddr, addr) >= positionMax
-            );
-        }
+        // require(AToken(aTokenAddr).allowance(userAddr, msg.sender) >= positionMax);
     }
 
     function init(bytes calldata data)
@@ -44,7 +32,9 @@ contract AaveLiquadation is Action {
             uint256 positionMax,
             string memory key
         ) = decode(data);
-        _init(userAddr, aTokenAddr, positionMax, key, data);
+
+        storeData(msg.sender, key, data);
+        // _init(userAddr, aTokenAddr, positionMax, key, data);
         return bytes("");
     }
 
@@ -95,13 +85,15 @@ contract AaveLiquadation is Action {
             string memory throwaway
         ) = decodeMem(getData(msg.sender, key));
 
-        verifyAccessToAToken(userAddr, aTokenAddr, positionMax, msg.sender);
+        // require(AToken(aTokenAddr).allowance(userAddr, msg.sender) >= positionMax);
 
         uint256 balance = AToken(aTokenAddr).balanceOf(userAddr);
 
         bytes memory actionData = abi.encodeWithSignature(
             "transferFrom(address,address,uint256)",
-            userAddr, msg.sender, balance
+            userAddr,
+            msg.sender,
+            balance
         );
         sendCallOp(msg.sender, aTokenAddr, actionData, 0);
 
@@ -111,7 +103,9 @@ contract AaveLiquadation is Action {
         pool.withdraw(assetAddr, balance, userAddr); //call op
         actionData = abi.encodeWithSignature(
             "withdraw(address,uint256,address)",
-            assetAddr, balance, userAddr
+            assetAddr,
+            balance,
+            userAddr
         );
         sendCallOp(msg.sender, address(pool), actionData, 0);
 

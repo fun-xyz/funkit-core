@@ -70,7 +70,7 @@ class BaseAccountAPI {
             await this.entryPointView.callStatic.getSenderAddress(initCode);
         }
         catch (e) {
-            console.log(e)
+            // console.log(e)
             return e.errorArgs.sender;
         }
         throw new Error('must handle revert');
@@ -191,7 +191,6 @@ class BaseAccountAPI {
             maxFeePerGas,
             maxPriorityFeePerGas
         };
-        console.log(partialUserOp)
         let paymasterAndData;
         if (this.paymasterAPI != null) {
             // fill (partial) preVerificationGas (all except the cost of the generated paymasterAndData)

@@ -4,6 +4,7 @@ const contracts_1 = require("@account-abstraction/contracts");
 const utils_1 = require("ethers/lib/utils");
 const BaseAccountAPI_1 = require("./BaseAccountAPI");
 const { TreasuryFactory__factory } = require("./treasuryfactory")
+const TreasurySRC = require("./../../web3/build/contracts/Treasury.json")
 /**c
  * An implementation of the BaseAccountAPI using the SimpleAccount contract.
  * - contract deployer gets "entrypoint", "owner" addresses and "index" nonce
@@ -22,7 +23,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
     }
     async _getAccountContract() {
         if (this.accountContract == null) {
-            this.accountContract = contracts_1.SimpleAccount__factory.connect(await this.getAccountAddress(), this.provider);
+            this.accountContract = new ethers_1.Contract(await this.getAccountAddress(), TreasurySRC.abi, this.provider);
         }
         return this.accountContract;
     }
@@ -55,7 +56,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
      */
     async encodeExecute(target, value, data) {
         const accountContract = await this._getAccountContract();
-        return accountContract.interface.encodeFunctionData('execute', [
+        return accountContract.interface.encodeFunctionData('execFromEntryPoint', [
             target,
             value,
             data
