@@ -33,6 +33,7 @@ contract AaveLiquadation is Action {
             string memory key
         ) = decode(data);
 
+        requests[key] = data;
         storeData(msg.sender, key, data);
         // _init(userAddr, aTokenAddr, positionMax, key, data);
         return bytes("");

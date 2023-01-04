@@ -13,8 +13,7 @@ abstract contract Action {
         string memory key,
         bytes memory data
     ) internal {
-        string memory subkey = string(abi.encodePacked(address(this), key));
-
+        string memory subkey = string(abi.encodePacked(abi.encode(address(this), key)));
         return ITreasury(treasury).updateStateVal(subkey, data);
     }
 
