@@ -2,12 +2,14 @@ import { BigNumber, BigNumberish } from 'ethers'
 import {
     SimpleAccount,
     SimpleAccount__factory, SimpleAccountDeployer,
-    SimpleAccountDeployer__factory
+    SimpleAccountDeployer__factory,
+    UserOperationStruct
 } from '@account-abstraction/contracts'
 
 import { arrayify, hexConcat } from 'ethers/lib/utils'
 import { Signer } from '@ethersproject/abstract-signer'
 import { BaseApiParams, BaseAccountAPI } from './BaseAccountAPI'
+import { TransactionDetailsForUserOp } from './TransactionDetailsForUserOp'
 
 /**
  * constructor params, added no top of base params:
@@ -55,7 +57,7 @@ export class TreasuryAPI extends BaseAccountAPI {
         }
         return this.accountContract
     }
-
+    
     /**
      * return the value to put into the "initCode" field, if the account is not yet deployed.
      * this value holds the "factory" address, followed by this account's information
@@ -102,4 +104,10 @@ export class TreasuryAPI extends BaseAccountAPI {
     async signUserOpHash(userOpHash: string): Promise<string> {
         return await this.owner.signMessage(arrayify(userOpHash))
     }
+
+    // getWalletOp(info:TransactionDetailsForUserOp): Promise<UserOperationStruct> {
+    //     const op=this.createUnsignedUserOp(info)
+    //     op.initCode=1
+    //     return 
+    // }
 }

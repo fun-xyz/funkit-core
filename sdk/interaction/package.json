@@ -8,6 +8,7 @@
     "README.md"
   ],
   "scripts": {
+    "test-immuna": "hardhat test ./test/ImmunaTest.test.ts",
     "clear": "rm -rf dist artifacts cache",
     "lint": "eslint -f unix .",
     "lint-fix": "eslint -f unix . --fix",
