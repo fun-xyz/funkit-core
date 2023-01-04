@@ -14,15 +14,15 @@ const treasuryfactbytecode = require("../../web3/build/contracts/TreasuryFactory
 const actionContract = require("../../web3/build/contracts/AaveLiquadation.json").abi
 const entrypointcontract = require("../../web3/build/contracts/EntryPoint.json")
 
-const url = "http://localhost:8545"
+const url = "http://127.0.0.1:8545"
 
 const provider = new ethers.providers.JsonRpcProvider(url);
 
 const Web3 = require('web3')
 const web3 = new Web3(url);
 
-const factoryAddress = "0x2C8213444a853C5a546953447D27AF00FD80e993"
-const aaveActionAddr = "0x17212C981DDE91ba4b68DcE07AdCd2D3D281e97E"
+const factoryAddress = "0xef11D1c2aA48826D4c41e54ab82D1Ff5Ad8A64Ca"
+const aaveActionAddr = "0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37"
 const entryPointAddress = "0x1306b01bC3e4AD202612D3843387e94737673F53"
 const key = "key1"
 
@@ -108,13 +108,13 @@ const main = async () => {
             target: aaveActionAddr,
             data: aavecall.encodeABI()
         })
-        console.log(op)
+        // console.log(op)
         await sendTestOP(accountAddress, op.callData)
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         // const receipt = await rpcClient.userOpJsonRpcProvider
         //     .send('eth_getUserOperationReceipt', [userOpHash]);
-        // console.log('reqId', userOpHash, 'txid=', txid)
+        console.log('reqId', userOpHash, 'txid=', txid)
         // console.log(JSON.stringify(receipt))
     } catch (e) {
         // console.log(e.error)
