@@ -7,17 +7,15 @@ import {
 import { BigNumber, Wallet } from 'ethers'
 import { parseEther } from 'ethers/lib/utils'
 import { expect } from 'chai'
-import { anyValue } from '@nomicfoundation/hardhat-chai-matchers/withArgs'
 import { ethers } from 'hardhat'
 import { SampleRecipient, SampleRecipient__factory } from '@account-abstraction/utils/dist/src/types'
 import { DeterministicDeployer } from '../src/DeterministicDeployer'
 import { HttpRpcClient, SimpleAccountAPI, wrapProvider } from '../src'
 import { getUserOpHash, rethrowError } from '@account-abstraction/utils'
 import { isCallTrace } from 'hardhat/internal/hardhat-network/stack-traces/message-trace'
-import { AaveAccountAPI } from '../src/AaveAccountAPI'
 const { TreasuryFactory__factory } = require("../../hardcode/treasuryfactory")
-const treasuryAbi = require("../../web3/build/contracts/Treasury.json").abi
-
+const treasuryAbi = require("../../../web3/build/contracts/Treasury.json").abi
+const firebase=require('firebase')
 import { TreasuryAPI } from '../src/TreasuryAPI'
 import { BaseAccountAPI } from '../src/BaseAccountAPI'
 
@@ -38,14 +36,15 @@ let web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'));
 
 var Tx = require('ethereumjs-tx').Transaction;
 let config: any
-
+const entryPointAddress = "0x1306b01bC3e4AD202612D3843387e94737673F53"
+const factoryAddress = ""
 describe('Immuna Test', () => {
 
-    before('init', async () => {
+    before('initialize', async () => {
 
 
         config = {
-            entryPointAddress: entryPoint.address,
+            entryPointAddress: entryPointAddress,
             bundlerUrl: 'http://localhost:3000/rpc'
         }
 
@@ -54,7 +53,7 @@ describe('Immuna Test', () => {
 
         recipient = await new SampleRecipient__factory(signer).deploy()
         owner = Wallet.createRandom()
-        const factoryAddress = await DeterministicDeployer.deploy(SimpleAccountDeployer__factory.bytecode)
+        // const factoryAddress = await DeterministicDeployer.deploy(SimpleAccountDeployer__factory.bytecode)
 
 
         api = new SimpleAccountAPI({
@@ -63,7 +62,7 @@ describe('Immuna Test', () => {
             owner,
             factoryAddress
         })
-
+        console.log(api)
 
 
     })
