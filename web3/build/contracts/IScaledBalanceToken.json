@@ -1,0 +1,986 @@
+{
+  "contractName": "IScaledBalanceToken",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "balanceIncrease",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "Burn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "onBehalfOf",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "balanceIncrease",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "Mint",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "scaledBalanceOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getScaledUserBalanceAndSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "scaledTotalSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getPreviousIndex",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"balanceIncrease\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"Burn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"onBehalfOf\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"balanceIncrease\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"Mint\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getPreviousIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getScaledUserBalanceAndSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"scaledBalanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"scaledTotalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Aave\",\"events\":{\"Burn(address,address,uint256,uint256,uint256)\":{\"details\":\"Emitted after the burn actionIf the burn function does not involve a transfer of the underlying asset, the target defaults to zero address\",\"params\":{\"balanceIncrease\":\"The increase in scaled-up balance since the last action of 'from'\",\"from\":\"The address from which the tokens will be burned\",\"index\":\"The next liquidity index of the reserve\",\"target\":\"The address that will receive the underlying, if any\",\"value\":\"The scaled-up amount being burned (user entered amount - balance increase from interest)\"}},\"Mint(address,address,uint256,uint256,uint256)\":{\"details\":\"Emitted after the mint action\",\"params\":{\"balanceIncrease\":\"The increase in scaled-up balance since the last action of 'onBehalfOf'\",\"caller\":\"The address performing the mint\",\"index\":\"The next liquidity index of the reserve\",\"onBehalfOf\":\"The address of the user that will receive the minted tokens\",\"value\":\"The scaled-up amount being minted (based on user entered amount and balance increase from interest)\"}}},\"kind\":\"dev\",\"methods\":{\"getPreviousIndex(address)\":{\"params\":{\"user\":\"The address of the user\"},\"returns\":{\"_0\":\"The last index interest was accrued to the user's balance, expressed in ray\"}},\"getScaledUserBalanceAndSupply(address)\":{\"params\":{\"user\":\"The address of the user\"},\"returns\":{\"_0\":\"The scaled balance of the user\",\"_1\":\"The scaled total supply\"}},\"scaledBalanceOf(address)\":{\"details\":\"The scaled balance is the sum of all the updated stored balance divided by the reserve's liquidity index at the moment of the update\",\"params\":{\"user\":\"The user whose balance is calculated\"},\"returns\":{\"_0\":\"The scaled balance of the user\"}},\"scaledTotalSupply()\":{\"returns\":{\"_0\":\"The scaled total supply\"}}},\"title\":\"IScaledBalanceToken\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"getPreviousIndex(address)\":{\"notice\":\"Returns last index interest was accrued to the user's balance\"},\"getScaledUserBalanceAndSupply(address)\":{\"notice\":\"Returns the scaled balance of the user and the scaled total supply.\"},\"scaledBalanceOf(address)\":{\"notice\":\"Returns the scaled balance of the user.\"},\"scaledTotalSupply()\":{\"notice\":\"Returns the scaled total supply of the scaled balance token. Represents sum(debt/index)\"}},\"notice\":\"Defines the basic interface for a scaled-balance token.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"@aave/core-v3/contracts/interfaces/IScaledBalanceToken.sol\":\"IScaledBalanceToken\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"@aave/core-v3/contracts/interfaces/IScaledBalanceToken.sol\":{\"keccak256\":\"0x72b3ea433cd3386f369f1643a154bf233ec60c02acd02c32088a97556207d2e4\",\"license\":\"AGPL-3.0\",\"urls\":[\"bzz-raw://a5907c61cf65126001feebd94c7a869eff95045106d97e21bf7f0d3de22caf9d\",\"dweb:/ipfs/QmPARkA7YpsBtd1F3JgszZREJk6TAkqRLBkjWZUadCu3sM\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: AGPL-3.0\npragma solidity ^0.8.0;\n\n/**\n * @title IScaledBalanceToken\n * @author Aave\n * @notice Defines the basic interface for a scaled-balance token.\n */\ninterface IScaledBalanceToken {\n  /**\n   * @dev Emitted after the mint action\n   * @param caller The address performing the mint\n   * @param onBehalfOf The address of the user that will receive the minted tokens\n   * @param value The scaled-up amount being minted (based on user entered amount and balance increase from interest)\n   * @param balanceIncrease The increase in scaled-up balance since the last action of 'onBehalfOf'\n   * @param index The next liquidity index of the reserve\n   */\n  event Mint(\n    address indexed caller,\n    address indexed onBehalfOf,\n    uint256 value,\n    uint256 balanceIncrease,\n    uint256 index\n  );\n\n  /**\n   * @dev Emitted after the burn action\n   * @dev If the burn function does not involve a transfer of the underlying asset, the target defaults to zero address\n   * @param from The address from which the tokens will be burned\n   * @param target The address that will receive the underlying, if any\n   * @param value The scaled-up amount being burned (user entered amount - balance increase from interest)\n   * @param balanceIncrease The increase in scaled-up balance since the last action of 'from'\n   * @param index The next liquidity index of the reserve\n   */\n  event Burn(\n    address indexed from,\n    address indexed target,\n    uint256 value,\n    uint256 balanceIncrease,\n    uint256 index\n  );\n\n  /**\n   * @notice Returns the scaled balance of the user.\n   * @dev The scaled balance is the sum of all the updated stored balance divided by the reserve's liquidity index\n   * at the moment of the update\n   * @param user The user whose balance is calculated\n   * @return The scaled balance of the user\n   */\n  function scaledBalanceOf(address user) external view returns (uint256);\n\n  /**\n   * @notice Returns the scaled balance of the user and the scaled total supply.\n   * @param user The address of the user\n   * @return The scaled balance of the user\n   * @return The scaled total supply\n   */\n  function getScaledUserBalanceAndSupply(address user) external view returns (uint256, uint256);\n\n  /**\n   * @notice Returns the scaled total supply of the scaled balance token. Represents sum(debt/index)\n   * @return The scaled total supply\n   */\n  function scaledTotalSupply() external view returns (uint256);\n\n  /**\n   * @notice Returns last index interest was accrued to the user's balance\n   * @param user The address of the user\n   * @return The last index interest was accrued to the user's balance, expressed in ray\n   */\n  function getPreviousIndex(address user) external view returns (uint256);\n}\n",
+  "sourcePath": "@aave/core-v3/contracts/interfaces/IScaledBalanceToken.sol",
+  "ast": {
+    "absolutePath": "@aave/core-v3/contracts/interfaces/IScaledBalanceToken.sol",
+    "exportedSymbols": {
+      "IScaledBalanceToken": [
+        1882
+      ]
+    },
+    "id": 1883,
+    "license": "AGPL-3.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1822,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "37:23:11"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IScaledBalanceToken",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 1823,
+          "nodeType": "StructuredDocumentation",
+          "src": "62:120:11",
+          "text": " @title IScaledBalanceToken\n @author Aave\n @notice Defines the basic interface for a scaled-balance token."
+        },
+        "fullyImplemented": false,
+        "id": 1882,
+        "linearizedBaseContracts": [
+          1882
+        ],
+        "name": "IScaledBalanceToken",
+        "nameLocation": "193:19:11",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 1824,
+              "nodeType": "StructuredDocumentation",
+              "src": "217:459:11",
+              "text": " @dev Emitted after the mint action\n @param caller The address performing the mint\n @param onBehalfOf The address of the user that will receive the minted tokens\n @param value The scaled-up amount being minted (based on user entered amount and balance increase from interest)\n @param balanceIncrease The increase in scaled-up balance since the last action of 'onBehalfOf'\n @param index The next liquidity index of the reserve"
+            },
+            "id": 1836,
+            "name": "Mint",
+            "nameLocation": "685:4:11",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1835,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1826,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "caller",
+                  "nameLocation": "711:6:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1836,
+                  "src": "695:22:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1825,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "695:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1828,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "onBehalfOf",
+                  "nameLocation": "739:10:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1836,
+                  "src": "723:26:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1827,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "723:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1830,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "value",
+                  "nameLocation": "763:5:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1836,
+                  "src": "755:13:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1829,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "755:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1832,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "balanceIncrease",
+                  "nameLocation": "782:15:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1836,
+                  "src": "774:23:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1831,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "774:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1834,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "index",
+                  "nameLocation": "811:5:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1836,
+                  "src": "803:13:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1833,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "803:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "689:131:11"
+            },
+            "src": "679:142:11"
+          },
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 1837,
+              "nodeType": "StructuredDocumentation",
+              "src": "825:566:11",
+              "text": " @dev Emitted after the burn action\n @dev If the burn function does not involve a transfer of the underlying asset, the target defaults to zero address\n @param from The address from which the tokens will be burned\n @param target The address that will receive the underlying, if any\n @param value The scaled-up amount being burned (user entered amount - balance increase from interest)\n @param balanceIncrease The increase in scaled-up balance since the last action of 'from'\n @param index The next liquidity index of the reserve"
+            },
+            "id": 1849,
+            "name": "Burn",
+            "nameLocation": "1400:4:11",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1848,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1839,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "from",
+                  "nameLocation": "1426:4:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1849,
+                  "src": "1410:20:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1838,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1410:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1841,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "target",
+                  "nameLocation": "1452:6:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1849,
+                  "src": "1436:22:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1840,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1436:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1843,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "value",
+                  "nameLocation": "1472:5:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1849,
+                  "src": "1464:13:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1842,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1464:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1845,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "balanceIncrease",
+                  "nameLocation": "1491:15:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1849,
+                  "src": "1483:23:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1844,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1483:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1847,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "index",
+                  "nameLocation": "1520:5:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1849,
+                  "src": "1512:13:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1846,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1512:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1404:125:11"
+            },
+            "src": "1394:136:11"
+          },
+          {
+            "documentation": {
+              "id": 1850,
+              "nodeType": "StructuredDocumentation",
+              "src": "1534:308:11",
+              "text": " @notice Returns the scaled balance of the user.\n @dev The scaled balance is the sum of all the updated stored balance divided by the reserve's liquidity index\n at the moment of the update\n @param user The user whose balance is calculated\n @return The scaled balance of the user"
+            },
+            "functionSelector": "1da24f3e",
+            "id": 1857,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "scaledBalanceOf",
+            "nameLocation": "1854:15:11",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1853,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1852,
+                  "mutability": "mutable",
+                  "name": "user",
+                  "nameLocation": "1878:4:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1857,
+                  "src": "1870:12:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1851,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1870:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1869:14:11"
+            },
+            "returnParameters": {
+              "id": 1856,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1855,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1857,
+                  "src": "1907:7:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1854,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1907:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1906:9:11"
+            },
+            "scope": 1882,
+            "src": "1845:71:11",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 1858,
+              "nodeType": "StructuredDocumentation",
+              "src": "1920:212:11",
+              "text": " @notice Returns the scaled balance of the user and the scaled total supply.\n @param user The address of the user\n @return The scaled balance of the user\n @return The scaled total supply"
+            },
+            "functionSelector": "0afbcdc9",
+            "id": 1867,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getScaledUserBalanceAndSupply",
+            "nameLocation": "2144:29:11",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1861,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1860,
+                  "mutability": "mutable",
+                  "name": "user",
+                  "nameLocation": "2182:4:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1867,
+                  "src": "2174:12:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1859,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2174:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2173:14:11"
+            },
+            "returnParameters": {
+              "id": 1866,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1863,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1867,
+                  "src": "2211:7:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1862,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2211:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1865,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1867,
+                  "src": "2220:7:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1864,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2220:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2210:18:11"
+            },
+            "scope": 1882,
+            "src": "2135:94:11",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 1868,
+              "nodeType": "StructuredDocumentation",
+              "src": "2233:147:11",
+              "text": " @notice Returns the scaled total supply of the scaled balance token. Represents sum(debt/index)\n @return The scaled total supply"
+            },
+            "functionSelector": "b1bf962d",
+            "id": 1873,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "scaledTotalSupply",
+            "nameLocation": "2392:17:11",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1869,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2409:2:11"
+            },
+            "returnParameters": {
+              "id": 1872,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1871,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1873,
+                  "src": "2435:7:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1870,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2435:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2434:9:11"
+            },
+            "scope": 1882,
+            "src": "2383:61:11",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 1874,
+              "nodeType": "StructuredDocumentation",
+              "src": "2448:214:11",
+              "text": " @notice Returns last index interest was accrued to the user's balance\n @param user The address of the user\n @return The last index interest was accrued to the user's balance, expressed in ray"
+            },
+            "functionSelector": "e0753986",
+            "id": 1881,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getPreviousIndex",
+            "nameLocation": "2674:16:11",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1877,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1876,
+                  "mutability": "mutable",
+                  "name": "user",
+                  "nameLocation": "2699:4:11",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1881,
+                  "src": "2691:12:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1875,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2691:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2690:14:11"
+            },
+            "returnParameters": {
+              "id": 1880,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1879,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1881,
+                  "src": "2728:7:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1878,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2728:7:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2727:9:11"
+            },
+            "scope": 1882,
+            "src": "2665:72:11",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1883,
+        "src": "183:2556:11",
+        "usedErrors": []
+      }
+    ],
+    "src": "37:2703:11"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.10+commit.fc410830.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2022-12-27T10:19:56.659Z",
+  "devdoc": {
+    "author": "Aave",
+    "events": {
+      "Burn(address,address,uint256,uint256,uint256)": {
+        "details": "Emitted after the burn actionIf the burn function does not involve a transfer of the underlying asset, the target defaults to zero address",
+        "params": {
+          "balanceIncrease": "The increase in scaled-up balance since the last action of 'from'",
+          "from": "The address from which the tokens will be burned",
+          "index": "The next liquidity index of the reserve",
+          "target": "The address that will receive the underlying, if any",
+          "value": "The scaled-up amount being burned (user entered amount - balance increase from interest)"
+        }
+      },
+      "Mint(address,address,uint256,uint256,uint256)": {
+        "details": "Emitted after the mint action",
+        "params": {
+          "balanceIncrease": "The increase in scaled-up balance since the last action of 'onBehalfOf'",
+          "caller": "The address performing the mint",
+          "index": "The next liquidity index of the reserve",
+          "onBehalfOf": "The address of the user that will receive the minted tokens",
+          "value": "The scaled-up amount being minted (based on user entered amount and balance increase from interest)"
+        }
+      }
+    },
+    "kind": "dev",
+    "methods": {
+      "getPreviousIndex(address)": {
+        "params": {
+          "user": "The address of the user"
+        },
+        "returns": {
+          "_0": "The last index interest was accrued to the user's balance, expressed in ray"
+        }
+      },
+      "getScaledUserBalanceAndSupply(address)": {
+        "params": {
+          "user": "The address of the user"
+        },
+        "returns": {
+          "_0": "The scaled balance of the user",
+          "_1": "The scaled total supply"
+        }
+      },
+      "scaledBalanceOf(address)": {
+        "details": "The scaled balance is the sum of all the updated stored balance divided by the reserve's liquidity index at the moment of the update",
+        "params": {
+          "user": "The user whose balance is calculated"
+        },
+        "returns": {
+          "_0": "The scaled balance of the user"
+        }
+      },
+      "scaledTotalSupply()": {
+        "returns": {
+          "_0": "The scaled total supply"
+        }
+      }
+    },
+    "title": "IScaledBalanceToken",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "getPreviousIndex(address)": {
+        "notice": "Returns last index interest was accrued to the user's balance"
+      },
+      "getScaledUserBalanceAndSupply(address)": {
+        "notice": "Returns the scaled balance of the user and the scaled total supply."
+      },
+      "scaledBalanceOf(address)": {
+        "notice": "Returns the scaled balance of the user."
+      },
+      "scaledTotalSupply()": {
+        "notice": "Returns the scaled total supply of the scaled balance token. Represents sum(debt/index)"
+      }
+    },
+    "notice": "Defines the basic interface for a scaled-balance token.",
+    "version": 1
+  }
+}

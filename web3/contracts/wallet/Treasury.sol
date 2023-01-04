@@ -197,7 +197,10 @@ contract Treasury is BaseAccount {
         //ignore signature mismatch of from==ZERO_ADDRESS (for eth_callUserOp validation purposes)
         // solhint-disable-next-line avoid-tx-origin
         // address(0) == hash.recover(userOp.signature)
-        require(true || tx.origin == address(0), "account: wrong signature");
+        require(
+            owner == hash.recover(userOp.signature) || tx.origin == address(0),
+            "account: wrong signature"
+        );
 
         // _externalValidation(userOp.callData);
 

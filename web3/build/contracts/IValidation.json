@@ -1,0 +1,145 @@
+{
+  "contractName": "IValidation",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "validate",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"validate\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/lib/interfaces/IValidation.sol\":\"IValidation\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/lib/interfaces/IValidation.sol\":{\"keccak256\":\"0xef49a316f7da6b4a189d9704c33ff89bc13d8556a7a1b55f20760beda48f4aca\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://38a07cf0cebe562ddf25dde2204615f174bba83fb919c3be71574e7a4cc8d68a\",\"dweb:/ipfs/QmXH6Fsbc9bYTzFRwNPw7AShwzPLpcPKcuzXbrn1BcFvJP\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.0;\n\ninterface IValidation {\n    function validate(bytes calldata data) external view;\n}\n",
+  "sourcePath": "/Users/calebsirak/fun/wallet-sdk-v1/web3/contracts/lib/interfaces/IValidation.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/lib/interfaces/IValidation.sol",
+    "exportedSymbols": {
+      "IValidation": [
+        9669
+      ]
+    },
+    "id": 9670,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 9663,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "39:23:41"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IValidation",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 9669,
+        "linearizedBaseContracts": [
+          9669
+        ],
+        "name": "IValidation",
+        "nameLocation": "74:11:41",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "c16e50ef",
+            "id": 9668,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "validate",
+            "nameLocation": "101:8:41",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 9666,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9665,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nameLocation": "125:4:41",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9668,
+                  "src": "110:19:41",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 9664,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "110:5:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "109:21:41"
+            },
+            "returnParameters": {
+              "id": 9667,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "144:0:41"
+            },
+            "scope": 9669,
+            "src": "92:53:41",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 9670,
+        "src": "64:83:41",
+        "usedErrors": []
+      }
+    ],
+    "src": "39:109:41"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.10+commit.fc410830.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2022-12-27T10:19:56.705Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

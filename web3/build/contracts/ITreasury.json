@@ -1,0 +1,480 @@
+{
+  "contractName": "ITreasury",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "main",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "addr",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "callOp",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "key",
+          "type": "string"
+        }
+      ],
+      "name": "getStateVal",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "key",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateStateVal",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"callOp\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"getStateVal\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"main\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"updateStateVal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/lib/interfaces/ITreasury.sol\":\"ITreasury\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/lib/interfaces/ITreasury.sol\":{\"keccak256\":\"0x124c04479358b024e0cb6a5081aaa7250ab35b9075ae7a3c691e50085c9d4ecf\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://3b9efc1e34bd14d2db9602c972d9da57d13c9b750aba78e438710b4fb3c96e3c\",\"dweb:/ipfs/QmQAY9cwF3zWE3E7qfJ5csXUNT6zx3qEknmkkj8bgr49mM\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.0;\n\n\ninterface ITreasury {\n    function main() external;\n\n    function callOp(\n        address addr,\n        uint256 value,\n        bytes calldata data\n    ) external returns (bytes memory);\n\n    function getStateVal(string calldata key)\n        external\n        view\n        returns (bytes memory);\n\n    function updateStateVal(string calldata key, bytes memory data) external;\n}\n",
+  "sourcePath": "/Users/calebsirak/fun/wallet-sdk-v1/web3/contracts/lib/interfaces/ITreasury.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/lib/interfaces/ITreasury.sol",
+    "exportedSymbols": {
+      "ITreasury": [
+        9661
+      ]
+    },
+    "id": 9662,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 9632,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "39:23:40"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "ITreasury",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 9661,
+        "linearizedBaseContracts": [
+          9661
+        ],
+        "name": "ITreasury",
+        "nameLocation": "75:9:40",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "dffeadd0",
+            "id": 9635,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "main",
+            "nameLocation": "100:4:40",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 9633,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "104:2:40"
+            },
+            "returnParameters": {
+              "id": 9634,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "115:0:40"
+            },
+            "scope": 9661,
+            "src": "91:25:40",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "3595a80d",
+            "id": 9646,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "callOp",
+            "nameLocation": "131:6:40",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 9642,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9637,
+                  "mutability": "mutable",
+                  "name": "addr",
+                  "nameLocation": "155:4:40",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9646,
+                  "src": "147:12:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 9636,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "147:7:40",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 9639,
+                  "mutability": "mutable",
+                  "name": "value",
+                  "nameLocation": "177:5:40",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9646,
+                  "src": "169:13:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 9638,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "169:7:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 9641,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nameLocation": "207:4:40",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9646,
+                  "src": "192:19:40",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 9640,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "192:5:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "137:80:40"
+            },
+            "returnParameters": {
+              "id": 9645,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9644,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9646,
+                  "src": "236:12:40",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 9643,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "236:5:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "235:14:40"
+            },
+            "scope": 9661,
+            "src": "122:128:40",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "9ff420b7",
+            "id": 9653,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getStateVal",
+            "nameLocation": "265:11:40",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 9649,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9648,
+                  "mutability": "mutable",
+                  "name": "key",
+                  "nameLocation": "293:3:40",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9653,
+                  "src": "277:19:40",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 9647,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "277:6:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "276:21:40"
+            },
+            "returnParameters": {
+              "id": 9652,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9651,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9653,
+                  "src": "345:12:40",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 9650,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "345:5:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "344:14:40"
+            },
+            "scope": 9661,
+            "src": "256:103:40",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "ae65c78b",
+            "id": 9660,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "updateStateVal",
+            "nameLocation": "374:14:40",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 9658,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 9655,
+                  "mutability": "mutable",
+                  "name": "key",
+                  "nameLocation": "405:3:40",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9660,
+                  "src": "389:19:40",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 9654,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "389:6:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 9657,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nameLocation": "423:4:40",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 9660,
+                  "src": "410:17:40",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 9656,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "410:5:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "388:40:40"
+            },
+            "returnParameters": {
+              "id": 9659,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "437:0:40"
+            },
+            "scope": 9661,
+            "src": "365:73:40",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 9662,
+        "src": "65:375:40",
+        "usedErrors": []
+      }
+    ],
+    "src": "39:402:40"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.10+commit.fc410830.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2022-12-27T10:19:56.704Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

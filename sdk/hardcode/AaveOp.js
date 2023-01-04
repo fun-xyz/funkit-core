@@ -46,9 +46,7 @@ const main = async () => {
     let addr = "0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6"
     let accountOwner = new Wallet("0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
     await DeterministicDeployer.init(provider)
-    const factoryAddress = "0x9323d71E54CFFE145Ae15Ad711a5aD52255A7866"
-    const address = await accountOwner.getAddress()
-
+    const factoryAddress = "0xBAb8e13DeF75a95321E9f48d3ec57f2c0141A6c3"
 
     const net = await erc4337Provider.getNetwork()
     const accs = await web3.eth.getAccounts()
@@ -100,8 +98,6 @@ const main = async () => {
         "type": "function"
     }, [aavedata])
 
-    const recipient = new ethers.Contract("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", treasuryAbi, erc4337Signer)
-
     let data = web3.eth.abi.encodeFunctionCall({
         name: 'transfer',
         type: 'function',
@@ -117,8 +113,8 @@ const main = async () => {
     }, [addr, amount]);
 
     const op = await accountApi.createSignedUserOp({
-        target: recipient.address,
-        data: recipient.interface.encodeFunctionData('callOp', [aaveActionAddr, 0, aavecall])
+        target: aaveActionAddr,
+        data: aavecall
     })
 
     console.log(op)
