@@ -173,56 +173,88 @@ const main = async () => {
         return serializedTx
     }
     const deployEthTx = async (signedTx: any) => { //forward to rpc
-
-
         web3.eth.sendSignedTransaction(signedTx).on('transactionHash', function (txHash: any) {
             console.log(txHash)
         })
     }
-    const getUnsignedUserOp = async (api: BaseAccountAPI, type: string, amount: BigNumber, providerURL: string) => {
-        let op = await api.getUnsignedUserOp(
-            'aave',
-            amount,
-            rpcURL
-        )
-        return op
-    }
-    const getSignedUserOp = async (api: BaseAccountAPI, unsignedUserOp: UserOperationStruct, signature: string) => {
-        let op = await api.getSignedUserOp(unsignedUserOp, signature)
-        return op
-    }
 
-    const executeUserOp = async (userOp: UserOperationStruct) => {
 
-        const EntryPointFactory = await ethers.getContractFactory('EntryPoint')
-        const entryPoint = await EntryPointFactory.deploy()
-        const config = {
-            entryPointAddress: entryPoint.address,
-            bundlerUrl: bundlerURL
+
+    const getSignedUserOp = async (wallet: any, actionAddr: string, type: string) => {
+        if (type === 'aave') {
+            let { op, key } = await wallet.createAAVETrackingPosition(actionAddr, '0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10')
+            const receipt = await wallet.sendOpToBundler(op)
+            await storeUserOp(op, key)
+            return key
         }
-        const ownerAccount = Wallet.createRandom()
+        else if (type === 'uniswap') {
 
-        const erc4337Provider = await wrapProvider(
-            ethers.provider,
-            // new JsonRpcProvider('http://localhost:8545/'),
-            config,
-            ownerAccount
-        )
-
-        const net = await erc4337Provider.getNetwork()
-
-        const rpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, net.chainId)
-
-        try {
-
-            const userOpHash = await rpcClient.sendUserOpToBundler(userOp)
-            return true
-            // console.log('reqId', userOpHash, 'txid=', txid)
-        } catch (e: any) {
-            console.log(e)
-            return false
+            return ''
+        }
+        else {
+            throw new Error(`${type} of wallet is not available`)
+            return null
         }
     }
+
+    const executeUserOp=async (wallet: any, key:string, actionAddr:string)=>{
+        let { op } = await wallet.executeAAVETrackingPosition(actionAddr, key)
+        const receipt = await wallet.sendOpToBundler(op)
+        console.log(receipt)
+    }
+
+    // const getUnsignedUserOp=async (api:BaseAccountAPI, type:string, amount: BigNumber)=>{
+    //     let { op, key } = await wallet.createAAVETrackingPosition(aaveActionAddr, '0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10')
+    //     const receipt = await wallet.sendOpToBundler(op)
+    //     return key;
+    // }
+    // const getUnsignedUserOp = async (api: BaseAccountAPI, type: string, amount: BigNumber, providerURL: string) => {
+    //     let op = await api.getUnsignedUserOp(
+    //         'aave',
+    //         amount,
+    //         rpcURL
+    //     )
+
+    //     return op
+    // }
+    // const getSignedUserOp = async (api: BaseAccountAPI, unsignedUserOp: UserOperationStruct, signature: string) => {
+
+
+    //     let op = await api.getSignedUserOp(unsignedUserOp, signature)
+    //     return op
+    // }
+
+    // const executeUserOp = async (userOp: UserOperationStruct) => {
+
+    //     const EntryPointFactory = await ethers.getContractFactory('EntryPoint')
+    //     const entryPoint = await EntryPointFactory.deploy()
+    //     const config = {
+    //         entryPointAddress: entryPoint.address,
+    //         bundlerUrl: bundlerURL
+    //     }
+    //     const ownerAccount = Wallet.createRandom()
+
+    //     const erc4337Provider = await wrapProvider(
+    //         ethers.provider,
+    //         // new JsonRpcProvider('http://localhost:8545/'),
+    //         config,
+    //         ownerAccount
+    //     )
+
+    //     const net = await erc4337Provider.getNetwork()
+
+    //     const rpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, net.chainId)
+
+    //     try {
+
+    //         const userOpHash = await rpcClient.sendUserOpToBundler(userOp)
+    //         return true
+    //         // console.log('reqId', userOpHash, 'txid=', txid)
+    //     } catch (e: any) {
+    //         console.log(e)
+    //         return false
+    //     }
+    // }
 
     const deployWallet = async (wallet: UserOperationStruct) => {
         const EntryPointFactory = await ethers.getContractFactory('EntryPoint')
@@ -313,53 +345,63 @@ const main = async () => {
         op.initCode = "1"
         return op;
     }
-    const storeUserOp = async (userOp: UserOperationStruct) => {
-        const userOp1=await resolveProperties(userOp)
-        const userOpHash=getUserOpHash(userOp1,entryPointAddress,5)
-        db.collection('immuna-userOps').doc(userOpHash).set({
+    const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
+        const userOp1 = await resolveProperties(userOp)
+        // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
+        db.collection('immuna-userOps').doc(hash).set({
             userOp
-        }).then(()=>{
+        }).then(() => {
             return true;
-        }).catch(()=>{
+        }).catch(() => {
             return false;
         })
     }
-    const getUserOp=async (userOpHash:string)=>{
-        let ref=await db.collection('immuna-userOps').doc(userOpHash)
-        ref.get().then((doc:any)=>{
+    const getUserOp = async (userOpHash: string) => {
+        let ref = await db.collection('immuna-userOps').doc(userOpHash)
+        ref.get().then((doc: any) => {
             return doc.data()
-        }).catch(()=>{
+        }).catch(() => {
             throw new Error('doc not found')
         })
     }
     const from = '0x71bE63f3384f5fb98995898A86B02Fb2426c5788' //eoa address
     const controllerAddr = await api.getAccountAddress() // our controller address
     const erc20Addr = "0xba3D9687Cf50fE253cd2e1cFeEdE1d6787344Ed5" //interest bearing token
-    const unsignedAuthTx = await getUnsignedAuthTx(from, controllerAddr, erc20Addr, 1e18, 'aave')
-    console.log(controllerAddr)
+    // const unsignedAuthTx = await getUnsignedAuthTx(from, controllerAddr, erc20Addr, 1e18, 'aave')
+    // console.log(controllerAddr)
     // const authTxSignature = Buffer.from(
     //     'ea6c44ac03bff858b476bba40716402b03e41b8e97e276d1baec7c37d42484a0',
     //     'hex',
     //   ) // get from user
-    let privateKey = Buffer.from('701b615bbdfb9de65240bc28bd21bbc0d996645a3dd57e7b12bc2bdf6f192c82', 'hex')
+    // let privateKey = Buffer.from('701b615bbdfb9de65240bc28bd21bbc0d996645a3dd57e7b12bc2bdf6f192c82', 'hex')
 
-    const signedAuthTx = await getSignedAuthTx(unsignedAuthTx, privateKey, 31337)
+    // const signedAuthTx = await getSignedAuthTx(unsignedAuthTx, privateKey, 31337)
     // await deployEthTx(signedAuthTx)
 
-    const unsignedUserOp = await getUnsignedUserOp(api,
-        'aave',
-        amountToSend,
-        rpcURL
-    )
-    const userOpSignature = "." // TODO
-    const signedUserOp = await getSignedUserOp(api, unsignedUserOp, userOpSignature)
-    storeUserOp(signedUserOp)
-    executeUserOp(signedUserOp)
-
-
+    // const unsignedUserOp = await getUnsignedUserOp(api,
+    //     'aave',
+    //     amountToSend,
+    //     rpcURL
+    // )
+    // const userOpSignature = "." // TODO
+    // const signedUserOp = await getSignedUserOp(api, unsignedUserOp, 'aave')
+    // storeUserOp(signedUserOp)
+    // executeUserOp(signedUserOp)
     // const walletSpec = await getWalletSpec("Aave")
     // deployWallet(walletSpec)
-
+    const test=()=>{
+        const ownerAccount = new ethers.Wallet(privateKey = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
+        // initialize wallet
+           const wallet = new FunWallet(url, 'http://localhost:3000/rpc', entryPointAddress, ownerAccount, factoryAddress)
+           const address = await wallet.init()
+           //fund wallet
+           const accs = await web3.eth.getAccounts()
+           await web3.eth.sendTransaction({ to: address, from: accs[0], value: web3.utils.toWei("10", "ether") })
+       
+           const key = await aaveCreateTest(wallet)
+           await aaveExecuteTest(wallet, key)
+    }
+    test()
 
 
 }
