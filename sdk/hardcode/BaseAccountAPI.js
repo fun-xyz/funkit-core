@@ -114,7 +114,7 @@ class BaseAccountAPI {
         }
         const value = (_a = parseNumber(detailsForUserOp.value)) !== null && _a !== void 0 ? _a : ethers_1.BigNumber.from(0);
         const callData = await this.encodeExecute(detailsForUserOp.target, value, detailsForUserOp.data);
-        const callGasLimit = (_b = parseNumber(detailsForUserOp.gasLimit)) !== null && _b !== void 0 ? _b : 2000000
+        const callGasLimit = (_b = parseNumber(detailsForUserOp.gasLimit)) !== null && _b !== void 0 ? _b : 200000
         // await this.provider.estimateGas({
         //     from: this.entryPointAddress,
         //     to: this.getAccountAddress(),

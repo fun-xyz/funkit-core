@@ -19,8 +19,8 @@ const ownerAccount = new ethers.Wallet("0x30b0731fb56a957fbf877da89fe40f59fadfdf
 const userWallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
 const key = "key"
 
-const url = "https://goerli.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-const bundlerUrl = "http://35.90.110.76:3000/rpc"
+const url = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+const bundlerUrl = "http://localhost:3000/rpc"
 
 // const url = "http://127.0.0.1:8545"
 // const bundlerUrl = "http://localhost:3000/rpc"
@@ -31,24 +31,13 @@ const Web3 = require('web3');
 const { clear } = require('console');
 const web3 = new Web3(url);
 
-const entryPointAddress = "0x2DF1592238420ecFe7f2431360e224707e77fA0E"
+const entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
 // const entryPointAddress = "0x1306b01bc3e4ad202612d3843387e94737673f53"
 
 
-const factoryAddress = "0xE8D70C6C85e8C2e8ab44aF7B3072bD985687a2c0"
-const aaveActionAddr = "0x9bAaB117304f7D6517048e371025dB8f89a8DbE5"
+const factoryAddress = "0x8e1519ad51625F5B934166D5D1ea468ab72aF7e1"
+const aaveActionAddr = "0x0f2586f441EA14384E0133Eb0D04258E0111D701"
 
-
-
-
-
-const getEntryPointLogs = async () => {
-    const entrypoint = await new web3.eth.Contract(entrypointcontract.abi, entryPointAddress);
-    const events = await entrypoint.getPastEvents('UserOperationEvent');
-    console.log(events)
-
-
-}
 const main = async () => {
     const aavactioncontract = await new web3.eth.Contract(actionContract, aaveActionAddr);
 
@@ -104,7 +93,7 @@ const main = async () => {
     const baseWallet = userWallet.connect(provider)
 
     //fund wallet
-    await baseWallet.sendTransaction({ to: accountAddress, value: ethers.utils.parseEther(".1") })
+    // await baseWallet.sendTransaction({ to: entryPointAddress, value: ethers.utils.parseEther(".3") })
 
     try {
         const op = await accountApi.createSignedUserOp({
@@ -304,64 +293,61 @@ class FunWallet {
     }
 }
 
-const getTestData = async (address, key) => {
-    const aavactioncontract = await new web3.eth.Contract(actionContract, address);
-    const data = await aavactioncontract.methods.requests(key).call()
-    const out = web3.eth.abi.decodeParameters(["address", "address", "uint256", "string"], data)
-    console.log(out)
-}
 
 const aaveCreateTest = async (wallet, userAddr, aTokenAddr, positionMax) => {
     //create and send user op
     let { op, key } = await wallet.createAAVETrackingPosition(aaveActionAddr, userAddr, aTokenAddr, positionMax)
     const receipt = await wallet.sendOpToBundler(op)
-    // getTestData(aaveActionAddr, key)
+    console.log(receipt)
     return key
 }
 
 const aaveExecuteTest = async (wallet, key) => {
     let { op } = await wallet.executeAAVETrackingPosition(aaveActionAddr, key)
     const receipt = await wallet.sendOpToBundler(op)
-    console.log(receipt)
+    return receipt
 }
 
+const timeout = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
 const aaveTest = async () => {
     // initialize wallet
     const wallet = new FunWallet(url, bundlerUrl, entryPointAddress, ownerAccount, factoryAddress)
     const address = await wallet.init()
     const baseWallet = userWallet.connect(provider)
-
     //fund wallet
-    // await baseWallet.sendTransaction({ to: address, value: ethers.utils.parseEther(".2") })
+    await baseWallet.sendTransaction({ to: address, value: ethers.utils.parseEther(".3") })
 
     // create and send user op
 
-    const userAddr = await baseWallet.getAddress();
-    const poolAddr = "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6"; //Pool-Proxy-Aave
-    const assetAddr = "0xDF1742fE5b0bFc12331D8EAec6b478DfDbD31464"; //AAVE DAI
-    const positionMax = ethers.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");;
+    const userAddr = baseWallet.address;
+    const poolAddr = "0xb47673b7a73D78743AFF1487AF69dBB5763F00cA"; //Pool-Proxy-Aave
+    const assetAddr = "0x407287b03D1167593AF113d32093942be13A535f"; // WAVAX
+    const positionMax = wallet.MAX_INT
+    // const aTokenAddr = "0xC50E6F9E8e6CAd53c42ddCB7A42d616d7420fd3e"
     const aTokenAddr = await FunWallet.getATokenAddress(poolAddr, assetAddr)
 
     const atokenContract = new web3.eth.Contract(ATokenContract, aTokenAddr);
 
     const preBalance = await atokenContract.methods.balanceOf(userAddr).call()
 
-    // Pre-Transaction Verification/Approval
+    // // Pre-Transaction Verification/Approval
     const rawTransaction = await wallet.getPreAAVEtransactions(aTokenAddr, positionMax)
-
-    // await baseWallet.sendTransaction(rawTransaction)
-    // const preBalanceAllowance = await atokenContract.methods.allowance(userAddr, address).call()
+    console.log(rawTransaction)
+    // const rc = await baseWallet.sendTransaction(rawTransaction)
+    // console.log(rc)
+    const preBalanceAllowance = await atokenContract.methods.allowance(userAddr, address).call()
 
     const key = await aaveCreateTest(wallet, userAddr, aTokenAddr, positionMax)
-    // await aaveExecuteTest(wallet, key)
-
-    // const postBalance = await atokenContract.methods.balanceOf(userAddr).call()
-
-    console.log(preBalance, preBalanceAllowance)
+    console.log("waiting")
+    await timeout(5000)
+    const rec = await aaveExecuteTest(wallet, key)
+    console.log(rec)
+    const postBalance = await atokenContract.methods.balanceOf(userAddr).call()
+    console.log(preBalance, preBalanceAllowance, postBalance)
 }
-
-
-main()
+aaveTest().catch(console.log)
 // aaveTest()
 // steps for goerli
 // 
