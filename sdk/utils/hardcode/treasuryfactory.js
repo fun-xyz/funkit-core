@@ -20,7 +20,7 @@ exports.SimpleAccountFactory__factory = void 0;
 /* tslint:disable */
 /* eslint-disable */
 var ethers_1 = require("ethers");
-const srcfile = require("../../web3/build/contracts/TreasuryFactory.json")
+const srcfile = require("../web3/build/contracts/TreasuryFactory.json")
 var _abi = srcfile.abi
 var _bytecode = srcfile.bytecode
 var isSuperArgs = function (xs) { return xs.length > 1; };

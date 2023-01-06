@@ -52,7 +52,7 @@ const getUnsignedAuthTx = async (from: string, controllerAddress: string, erc20A
       'value': 0x0,
       'data': myContract.methods.transfer(controllerAddress, amount).encodeABI(),
       'nonce': web3.utils.toHex(nonce),
-      'chainId':5
+      'chainId': 5
     }
 
 
@@ -97,18 +97,18 @@ const deployEthTx = (signedTx: any) => { //forward to rpc
 
 const getSignedUserOp = async (wallet: any, actionAddr: string, type: string) => {
   if (type === 'aave') {
-      let { op, key } = await wallet.createAAVETrackingPosition(actionAddr, '0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10')
-      const receipt = await wallet.sendOpToBundler(op)
-      await storeUserOp(op, key)
-      return key
+    let { op, key } = await wallet.createAAVETrackingPosition(actionAddr, '0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10')
+    const receipt = await wallet.sendOpToBundler(op)
+    await storeUserOp(op, key)
+    return key
   }
   else if (type === 'uniswap') {
 
-      return ''
+    return ''
   }
   else {
-      throw new Error(`${type} of wallet is not available`)
-      return null
+    throw new Error(`${type} of wallet is not available`)
+    return null
   }
 }
 
@@ -121,36 +121,34 @@ const executeUserOp = async (wallet: any, key: string, actionAddr: string) => {
 
 
 const storeUserOp = async (userOp: UserOperationStruct, userOpHash: string) => {
-  fetch('https://fun-mvp-api.herokuapp.com/storeUserOp',{
-    method: 'POST', 
+  fetch('https://fun-mvp-api.herokuapp.com/storeUserOp', {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    redirect: 'follow', 
-    referrerPolicy: 'no-referrer', 
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
     body: JSON.stringify({
-      userOpHash:userOpHash,
-      userOp:userOp
-    }) 
+      userOpHash: userOpHash,
+      userOp: userOp
+    })
   })
 
 }
 const getUserOp = async (userOpHash: string) => {
-  fetch('https://fun-mvp-api.herokuapp.com/getUserOp',{
-    method: 'POST', 
+  fetch('https://fun-mvp-api.herokuapp.com/getUserOp', {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    redirect: 'follow', 
-    referrerPolicy: 'no-referrer', 
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
     body: JSON.stringify({
-      userOpHash:userOpHash,
-    }) 
-  }).then((r:any)=>r.json()).then((r:any)=>console.log(r))
-  
-}
+      userOpHash: userOpHash,
+    })
+  }).then((r: any) => r.json()).then((r: any) => { return r })
 
-getUserOp("ajdlkajsldf")
+}
 
 
 
@@ -166,6 +164,27 @@ const flow1Test = async () => {
   await deployEthTx(signedAuthTx)
   console.log('flow1Test complete')
 }
+const chainInfo = {
+  fuji: {
+    dai: {
+      tokenAddr: "0xfc7215c9498fc12b22bc0ed335871db4315f03d3"
+    },
+    aave: {
+      tokenAddr: "0xCcbBaf8D40a5C34bf1c836e8dD33c7B7646706C5"
+    },
+    rpc: "https://api.avax-test.network/ext/bc/C/rpc"
+  },
+  goerli: {
+    dai: {
+      tokenAddr: "0xdf1742fe5b0bfc12331d8eaec6b478dfdbd31464"
+    },
+    aave: {
+      tokenAddr: "0x63242B9Bd3C22f18706d5c4E627B4735973f1f07"
+    },
+    rpc: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+  },
+}
+
 
 // const flow2Test = async () => {
 //   const ownerAccount = new ethers.Wallet("0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")

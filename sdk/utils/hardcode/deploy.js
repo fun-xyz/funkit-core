@@ -4,11 +4,11 @@ const ethers = require('ethers');
 
 const { ContractFactory } = ethers
 
-const TreasuryFactory = require("../../web3/build/contracts/TreasuryFactory.json")
-const Treasury = require("../../web3/build/contracts/Treasury.json")
-const AaveLiquadation = require("../../web3/build/contracts/AaveLiquadation.json")
-const entrypoint = require("../../web3/build/contracts/EntryPoint.json")
-const Token = require("../../web3/build/contracts/AToken.json")
+const TreasuryFactory = require("../../../web3/build/contracts/TreasuryFactory.json")
+const Treasury = require("../../../web3/build/contracts/Treasury.json")
+const AaveLiquadation = require("../../../web3/build/contracts/AaveLiquadation.json")
+const entrypoint = require("../../../web3/build/contracts/EntryPoint.json")
+const Token = require("../../../web3/build/contracts/AToken.json")
 
 // const walletaddr = "0x0F658A63205Aa9640BC628cc30eF9A57F1DB3F24"
 

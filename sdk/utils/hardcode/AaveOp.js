@@ -7,13 +7,13 @@ const { wrapProvider } = require("./Provider")
 const { TreasuryAPI } = require("./treasuryapi")
 const Tx = require('@ethereumjs/tx').Transaction;
 
-const treasuryAbi = require("../../web3/build/contracts/Treasury.json").abi
-const treasuryfactbytecode = require("../../web3/build/contracts/TreasuryFactory.json").bytecode
-const actionContract = require("../../web3/build/contracts/AaveLiquadation.json").abi
-const entrypointcontract = require("../../web3/build/contracts/EntryPoint.json")
-const ATokenContract = require("../../web3/build/contracts/AToken.json").abi
+const treasuryAbi = require("../web3/build/contracts/Treasury.json").abi
+const treasuryfactbytecode = require("../web3/build/contracts/TreasuryFactory.json").bytecode
+const actionContract = require("../web3/build/contracts/AaveLiquadation.json").abi
+const entrypointcontract = require("../web3/build/contracts/EntryPoint.json")
+const ATokenContract = require("../web3/build/contracts/AToken.json").abi
 
-const uniNFTABI = require("../../web3/build/contracts/INonfungiblePositionManager.json").abi
+const uniNFTABI = require("../web3/build/contracts/INonfungiblePositionManager.json").abi
 
 const ownerAccount = new ethers.Wallet("0x30b0731fb56a957fbf877da89fe40f59fadfdf86fed10f4c9eb158922e2518d4")
 const userWallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
@@ -190,7 +190,7 @@ class FunWallet {
     }
 
     static async getATokenAddress(poolAddr, underlyingAsset) {
-        const poolABI = require("../../web3/build/contracts/IPool.json").abi
+        const poolABI = require("../web3/build/contracts/IPool.json").abi
         const poolContract = new web3.eth.Contract(poolABI, poolAddr)
         const { aTokenAddress } = await poolContract.methods.getReserveData(underlyingAsset).call()
         return aTokenAddress

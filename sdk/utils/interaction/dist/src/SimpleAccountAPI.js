@@ -1,15 +1,11 @@
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SimpleAccountAPI = void 0;
 const ethers_1 = require("ethers");
 const contracts_1 = require("@account-abstraction/contracts");
 const utils_1 = require("ethers/lib/utils");
 const BaseAccountAPI_1 = require("./BaseAccountAPI");
-const { TreasuryFactory__factory } = require("./treasuryfactory")
-const srcfile = require("../../web3/build/contracts/TreasuryFactory.json")
-var _abi = srcfile.abi
-const TreasurySRC = require("./../../web3/build/contracts/Treasury.json")
-const Web3 = require('web3')
-const web3 = new Web3();
-/**c
+/**
  * An implementation of the BaseAccountAPI using the SimpleAccount contract.
  * - contract deployer gets "entrypoint", "owner" addresses and "index" nonce
  * - owner signs requests using normal "Ethereum Signed Message" (ether's signer.signMessage())
@@ -22,12 +18,11 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
         super(params);
         this.factoryAddress = params.factoryAddress;
         this.owner = params.owner;
-
         this.index = (_a = params.index) !== null && _a !== void 0 ? _a : 0;
     }
     async _getAccountContract() {
         if (this.accountContract == null) {
-            this.accountContract = new ethers_1.Contract(await this.getAccountAddress(), TreasurySRC.abi, this.provider);
+            this.accountContract = contracts_1.SimpleAccount__factory.connect(await this.getAccountAddress(), this.provider);
         }
         return this.accountContract;
     }
@@ -38,19 +33,23 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
     async getAccountInitCode() {
         if (this.factory == null) {
             if (this.factoryAddress != null && this.factoryAddress !== '') {
-                this.factory = new ethers_1.Contract(this.factoryAddress, _abi)
+                this.factory = contracts_1.SimpleAccountDeployer__factory.connect(this.factoryAddress, this.provider);
             }
             else {
                 throw new Error('no factory to get initCode');
             }
         }
         return (0, utils_1.hexConcat)([
-            this.factoryAddress,
-            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, this.owner.address, this.index])
+            this.factory.address,
+            this.factory.interface.encodeFunctionData('deployAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
         ]);
     }
     async getNonce() {
-        return ethers_1.BigNumber.from(parseInt(Math.random() * 2 ** 30));
+        if (await this.checkAccountPhantom()) {
+            return ethers_1.BigNumber.from(0);
+        }
+        const accountContract = await this._getAccountContract();
+        return await accountContract.nonce();
     }
     /**
      * encode a method call from entryPoint to our contract
@@ -59,39 +58,16 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
      * @param data
      */
     async encodeExecute(target, value, data) {
-        return web3.eth.abi.encodeFunctionCall({
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "addr",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "value",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "bytes",
-                    "name": "data",
-                    "type": "bytes"
-                }
-            ],
-            "name": "callOp",
-            "outputs": [
-                {
-                    "internalType": "bytes",
-                    "name": "",
-                    "type": "bytes"
-                }
-            ],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }, [target, value, data])
+        const accountContract = await this._getAccountContract();
+        return accountContract.interface.encodeFunctionData('execFromEntryPoint', [
+            target,
+            value,
+            data
+        ]);
     }
-
     async signUserOpHash(userOpHash) {
         return await this.owner.signMessage((0, utils_1.arrayify)(userOpHash));
     }
 }
-exports.TreasuryAPI = SimpleAccountAPI;
+exports.SimpleAccountAPI = SimpleAccountAPI;
+//# sourceMappingURL=SimpleAccountAPI.js.map
