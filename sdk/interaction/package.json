@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@account-abstraction/contracts": "0.3.0",
+    "@account-abstraction/sdk": "^0.4.0",
     "@account-abstraction/utils": "^0.3.0",
     "@ethersproject/abstract-provider": "^5.7.0",
     "@ethersproject/abstract-signer": "^5.7.0",
@@ -33,6 +34,7 @@
     "ethers": "^5.7.0",
     "firebase": "^8.10.1",
     "hardhat-gas-reporter": "^1.0.9",
+    "node-fetch": "^2.6.1",
     "solidity-coverage": "^0.8.2"
   },
   "devDependencies": {
