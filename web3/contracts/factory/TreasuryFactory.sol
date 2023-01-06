@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Create2.sol";
 import "../wallet/Treasury.sol";
+import "../lib/interfaces/IEntryPoint.sol";
 
 contract TreasuryFactory {
     /**

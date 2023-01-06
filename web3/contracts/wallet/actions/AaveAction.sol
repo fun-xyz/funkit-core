@@ -14,12 +14,12 @@ contract AaveLiquadation is Action {
         address aTokenAddr,
         uint256 positionMax,
         string memory key,
-        bytes calldata data
+        bytes memory data
     ) private {
         // require(AToken(aTokenAddr).allowance(userAddr, msg.sender) >= positionMax);
     }
 
-    function init(bytes calldata data)
+    function init(bytes memory data)
         external
         payable
         override
@@ -33,13 +33,13 @@ contract AaveLiquadation is Action {
             string memory key
         ) = decode(data);
 
-        requests[key] = data;
         storeData(msg.sender, key, data);
+
         // _init(userAddr, aTokenAddr, positionMax, key, data);
         return bytes("");
     }
 
-    function decode(bytes calldata data)
+    function decode(bytes memory data)
         internal
         pure
         returns (
@@ -55,38 +55,20 @@ contract AaveLiquadation is Action {
         );
     }
 
-    function decodeMem(bytes memory memData)
-        internal
-        pure
-        returns (
-            address userAddr,
-            address aTokenAddr,
-            uint256 positionMax,
-            string memory key
-        )
-    {
-        (userAddr, aTokenAddr, positionMax, key) = abi.decode(
-            memData,
-            (address, address, uint256, string)
-        );
-    }
-
-    function execute(bytes calldata data)
-        external
+    function execute(bytes memory data)
+        public
         payable
         override
         returns (bytes memory)
     {
         string memory key = abi.decode(data, (string));
-
+        bytes memory externaldata = getData(msg.sender, key);
         (
             address userAddr,
             address aTokenAddr,
             uint256 positionMax,
             string memory throwaway
-        ) = decodeMem(getData(msg.sender, key));
-
-        // require(AToken(aTokenAddr).allowance(userAddr, msg.sender) >= positionMax);
+        ) = decode(externaldata);
 
         uint256 balance = AToken(aTokenAddr).balanceOf(userAddr);
 
@@ -101,14 +83,13 @@ contract AaveLiquadation is Action {
         IPool pool = AToken(aTokenAddr).POOL();
         address assetAddr = AToken(aTokenAddr).UNDERLYING_ASSET_ADDRESS();
 
-        pool.withdraw(assetAddr, balance, userAddr); //call op
-        actionData = abi.encodeWithSignature(
-            "withdraw(address,uint256,address)",
-            assetAddr,
-            balance,
-            userAddr
-        );
-        sendCallOp(msg.sender, address(pool), actionData, 0);
+        // actionData = abi.encodeWithSignature(
+        //     "withdraw(address,uint256,address)",
+        //     assetAddr,
+        //     balance,
+        //     userAddr
+        // );
+        // sendCallOp(msg.sender, address(pool), actionData, 0);
 
         return bytes("");
     }

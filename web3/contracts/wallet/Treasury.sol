@@ -21,7 +21,7 @@ contract Treasury is BaseAccount {
     }
 
     // state view and update function
-    function getStateVal(string calldata key)
+    function getStateVal(string memory key)
         public
         view
         returns (bytes memory)
@@ -29,7 +29,7 @@ contract Treasury is BaseAccount {
         return state[key];
     }
 
-    function updateStateVal(string calldata key, bytes memory data) public {
+    function updateStateVal(string memory key, bytes memory data) public {
         state[key] = data;
     }
 

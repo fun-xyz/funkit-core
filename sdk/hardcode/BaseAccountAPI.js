@@ -63,14 +63,13 @@ class BaseAccountAPI {
      * calculate the account address even before it is deployed
      */
     async getCounterFactualAddress() {
-        const initCode = this.getAccountInitCode();
+        const initCode = await this.getAccountInitCode();
         // use entryPoint to query account address (factory can provide a helper method to do the same, but
         // this method attempts to be generic
         try {
             await this.entryPointView.callStatic.getSenderAddress(initCode);
         }
         catch (e) {
-            // console.log(e)
             return e.errorArgs.sender;
         }
         throw new Error('must handle revert');
@@ -115,7 +114,7 @@ class BaseAccountAPI {
         }
         const value = (_a = parseNumber(detailsForUserOp.value)) !== null && _a !== void 0 ? _a : ethers_1.BigNumber.from(0);
         const callData = await this.encodeExecute(detailsForUserOp.target, value, detailsForUserOp.data);
-        const callGasLimit = (_b = parseNumber(detailsForUserOp.gasLimit)) !== null && _b !== void 0 ? _b : 1000000
+        const callGasLimit = (_b = parseNumber(detailsForUserOp.gasLimit)) !== null && _b !== void 0 ? _b : 200000
         // await this.provider.estimateGas({
         //     from: this.entryPointAddress,
         //     to: this.getAccountAddress(),
