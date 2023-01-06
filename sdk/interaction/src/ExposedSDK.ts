@@ -1,12 +1,13 @@
 import { UserOperationStruct } from "@account-abstraction/contracts"
 import { ethers } from "ethers"
+const fetch = require('node-fetch');
 // import { FunWallet } from "./FunWallet"
 
 const Common = require("ethereumjs-common")
 const Web3 = require('web3')
 const Tx = require('ethereumjs-tx').Transaction
 
-const web3 = new Web3(new Web3.providers.HttpProvider('https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'))
+const web3 = new Web3(new Web3.providers.HttpProvider('https://api.avax-test.network/ext/bc/C/rpc'))
 
 const getUnsignedAuthTx = async (from: string, controllerAddress: string, erc20Addr: string, amount: number, type: string) => {
   if (type === 'aave') {
@@ -45,7 +46,7 @@ const getUnsignedAuthTx = async (from: string, controllerAddress: string, erc20A
     console.log(nonce)
     let rawTransaction = {
       'from': from,
-      'gasPrice': web3.utils.toHex(20 * 1e9),
+      'gasPrice': web3.utils.toHex(20 * 1e10),
       'gasLimit': web3.utils.toHex(5000000),
       'to': erc20Addr,
       'value': 0x0,
@@ -66,6 +67,7 @@ const getUnsignedAuthTx = async (from: string, controllerAddress: string, erc20A
   }
 
 }
+
 const getSignedAuthTx = (rawTx: any, privateKey: any, chainId: number) => {
   chainId = web3.utils.toHex(chainId).toString()
   const customCommon = Common.default.forCustomChain(
@@ -84,12 +86,12 @@ const getSignedAuthTx = (rawTx: any, privateKey: any, chainId: number) => {
   let serializedTx = '0x' + tx.serialize().toString('hex');
   return serializedTx
 }
-const deployEthTx = (signedTx: any) => { //forward to rpc
 
+const deployEthTx = (signedTx: any) => { //forward to rpc
   web3.eth.sendSignedTransaction(signedTx).on('transactionHash', function (txHash: any) {
     console.log(txHash)
   }).on('receipt', function (receipt: any) {
-    console.log("receipt:" + receipt);
+    console.log("receipt:" + JSON.stringify(receipt));
   })
 }
 
@@ -118,40 +120,48 @@ const executeUserOp = async (wallet: any, key: string, actionAddr: string) => {
 }
 
 
+const storeUserOp = async (userOp: UserOperationStruct, userOpHash: string) => {
+  fetch('https://fun-mvp-api.herokuapp.com/storeUserOp',{
+    method: 'POST', 
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow', 
+    referrerPolicy: 'no-referrer', 
+    body: JSON.stringify({
+      userOpHash:userOpHash,
+      userOp:userOp
+    }) 
+  })
 
-const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
-  // const userOp1 = await resolveProperties(userOp)
-  // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
-  // db.collection('immuna-userOps').doc(hash).set({
-  //     userOp
-  // }).then(() => {
-  //     return true;
-  // }).catch(() => {
-  //     return false;
-  // })
 }
 const getUserOp = async (userOpHash: string) => {
-  // let ref = await db.collection('immuna-userOps').doc(userOpHash)
-  // ref.get().then((doc: any) => {
-  //     return doc.data()
-  // }).catch(() => {
-  //     throw new Error('doc not found')
-  // })
+  fetch('https://fun-mvp-api.herokuapp.com/getUserOp',{
+    method: 'POST', 
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow', 
+    referrerPolicy: 'no-referrer', 
+    body: JSON.stringify({
+      userOpHash:userOpHash,
+    }) 
+  }).then((r:any)=>r.json()).then((r:any)=>console.log(r))
+  
 }
 
-
-
+getUserOp("ajdlkajsldf")
 
 
 
 const flow1Test = async () => {
   const from = '0x175C5611402815Eba550Dad16abd2ac366a63329' //eoa address
-  const erc20Addr = "0xDF1742fE5b0bFc12331D8EAec6b478DfDbD31464" //aave interest bearing token
+  const erc20Addr = "0xfc7215c9498fc12b22bc0ed335871db4315f03d3" //aave interest bearing token
   const unsignedAuthTx = await getUnsignedAuthTx(from, "0xDc054C4C5052F0F0c28AA8042BB333842160AEA2", erc20Addr, 1e18, 'aave') //1e18 = 1 token
 
   let privateKey = Buffer.from('6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064', 'hex')
 
-  const signedAuthTx = await getSignedAuthTx(unsignedAuthTx, privateKey, 5)
+  const signedAuthTx = await getSignedAuthTx(unsignedAuthTx, privateKey, 43113)
   // console.log(signedAuthTx)
   await deployEthTx(signedAuthTx)
   console.log('flow1Test complete')
@@ -173,9 +183,6 @@ const flow1Test = async () => {
 //   const key = await getSignedUserOp(wallet, aaveActionAddr, 'aave')
 //   await executeUserOp(wallet, key, '0xsdfsafasdasdfa')
 // }
-const flow3Test=async()=>{
-
-}
 
 flow1Test()
 // flow2Test()
@@ -184,6 +191,4 @@ export {
   deployEthTx,
   getUnsignedAuthTx,
   getSignedAuthTx,
-
-
 }
