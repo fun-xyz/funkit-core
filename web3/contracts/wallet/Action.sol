@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "../lib/interfaces/ITreasury.sol";
+import "./Treasury.sol";
 
 abstract contract Action {
     mapping(address => bool) internal whitelist;
@@ -13,17 +13,36 @@ abstract contract Action {
         string memory key,
         bytes memory data
     ) internal {
-        string memory subkey = string(abi.encodePacked(abi.encode(address(this), key)));
-        return ITreasury(treasury).updateStateVal(subkey, data);
+        string memory subkey = string(
+            abi.encodePacked(abi.encode(address(this), key))
+        );
+        Treasury(payable(treasury)).updateStateVal(subkey, data);
+
+        // bytes memory sdata = abi.encodeWithSignature(
+        //     "updateStateVal(string,bytes)",
+        //     subkey,
+        //     data
+        // );
+        // (bool success, ) = treasury.call(sdata);
+        // require(success);
     }
 
     function getData(address treasury, string memory key)
-        internal
+        public
         view
         returns (bytes memory)
     {
-        string memory subkey = string(abi.encodePacked(address(this), key));
-        return ITreasury(treasury).getStateVal(subkey);
+        string memory subkey = string(
+            abi.encodePacked(abi.encode(address(this), key))
+        );
+        return Treasury(payable(treasury)).getStateVal(subkey);
+        // bytes memory sdata = abi.encodeWithSignature(
+        //     "getStateVal(string)",
+        //     subkey
+        // );
+        // (bool success, bytes memory res) = treasury.staticcall(sdata);
+        // require(success);
+        // return res;
     }
 
     function sendCallOp(
@@ -32,7 +51,7 @@ abstract contract Action {
         bytes memory data,
         uint256 value
     ) internal returns (bytes memory) {
-        return ITreasury(treasury).callOp(location, value, data);
+        return Treasury(payable(treasury)).callOp(location, value, data);
     }
 
     function _call(
@@ -54,7 +73,7 @@ abstract contract Action {
         return bytes("");
     }
 
-    function init(bytes calldata data)
+    function init(bytes memory data)
         external
         payable
         virtual
@@ -64,7 +83,7 @@ abstract contract Action {
         return bytes("");
     }
 
-    function execute(bytes calldata data)
+    function execute(bytes memory data)
         external
         payable
         virtual

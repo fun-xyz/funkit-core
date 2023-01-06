@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-
 interface ITreasury {
     function main() external;
 
@@ -11,10 +10,10 @@ interface ITreasury {
         bytes calldata data
     ) external returns (bytes memory);
 
-    function getStateVal(string calldata key)
+    function getStateVal(string memory key)
         external
         view
         returns (bytes memory);
 
-    function updateStateVal(string calldata key, bytes memory data) external;
+    function updateStateVal(string memory key, bytes memory data) external;
 }

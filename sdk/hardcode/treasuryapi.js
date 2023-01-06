@@ -4,6 +4,8 @@ const contracts_1 = require("@account-abstraction/contracts");
 const utils_1 = require("ethers/lib/utils");
 const BaseAccountAPI_1 = require("./BaseAccountAPI");
 const { TreasuryFactory__factory } = require("./treasuryfactory")
+const srcfile = require("../../web3/build/contracts/TreasuryFactory.json")
+var _abi = srcfile.abi
 const TreasurySRC = require("./../../web3/build/contracts/Treasury.json")
 const Web3 = require('web3')
 const web3 = new Web3();
@@ -36,15 +38,15 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
     async getAccountInitCode() {
         if (this.factory == null) {
             if (this.factoryAddress != null && this.factoryAddress !== '') {
-                this.factory = TreasuryFactory__factory.connect(this.factoryAddress, this.provider);
+                this.factory = new ethers_1.Contract(this.factoryAddress, _abi)
             }
             else {
                 throw new Error('no factory to get initCode');
             }
         }
         return (0, utils_1.hexConcat)([
-            this.factory.address,
-            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
+            this.factoryAddress,
+            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, this.owner.address, this.index])
         ]);
     }
     async getNonce() {
