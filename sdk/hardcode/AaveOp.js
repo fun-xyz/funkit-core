@@ -2,8 +2,8 @@ require('dotenv').config();
 
 const ethers = require('ethers')
 const { createHash } = require("crypto")
-const { HttpRpcClient, wrapProvider, DeterministicDeployer, ERC4337EthersProvider } = require('@account-abstraction/sdk')
-// const { wrapProvider } = require("./Provider")
+const { HttpRpcClient, DeterministicDeployer, ERC4337EthersProvider } = require('@account-abstraction/sdk')
+const { wrapProvider } = require("./Provider")
 const { TreasuryAPI } = require("./treasuryapi")
 const Tx = require('@ethereumjs/tx').Transaction;
 
@@ -15,14 +15,15 @@ const ATokenContract = require("../../web3/build/contracts/AToken.json").abi
 
 const uniNFTABI = require("../../web3/build/contracts/INonfungiblePositionManager.json").abi
 
-const ownerAccount = new ethers.Wallet(privateKey = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
+const ownerAccount = new ethers.Wallet("0x30b0731fb56a957fbf877da89fe40f59fadfdf86fed10f4c9eb158922e2518d4")
 const userWallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
 const key = "key"
 
-// const url = "https://rpc.ankr.com/eth_goerli"
-const url = "http://127.0.0.1:8545"
-// const bundlerUrl = "http://35.90.110.76:3000/rpc"
-const bundlerUrl = "http://localhost:3000/rpc"
+const url = "https://goerli.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+const bundlerUrl = "http://35.90.110.76:3000/rpc"
+
+// const url = "http://127.0.0.1:8545"
+// const bundlerUrl = "http://localhost:3000/rpc"
 const provider = new ethers.providers.JsonRpcProvider(url);
 
 
@@ -30,11 +31,11 @@ const Web3 = require('web3');
 const { clear } = require('console');
 const web3 = new Web3(url);
 
-// const entryPointAddress = "0x2DF1592238420ecFe7f2431360e224707e77fA0E"
-const entryPointAddress = "0x1306b01bc3e4ad202612d3843387e94737673f53"
+const entryPointAddress = "0x2DF1592238420ecFe7f2431360e224707e77fA0E"
+// const entryPointAddress = "0x1306b01bc3e4ad202612d3843387e94737673f53"
 
 
-const factoryAddress = "0x0116686E2291dbd5e317F47faDBFb43B599786Ef"
+const factoryAddress = "0xE8D70C6C85e8C2e8ab44aF7B3072bD985687a2c0"
 const aaveActionAddr = "0x9bAaB117304f7D6517048e371025dB8f89a8DbE5"
 
 
@@ -72,17 +73,15 @@ const main = async () => {
 
     // use this as signer (instead of node's first account)
 
-    const ownerAccount = new ethers.Wallet(privateKey = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
+
     const erc4337Provider = await wrapProvider(
         provider,
         config,
-        ownerAccount
+        ownerAccount,
+        factoryAddress
     )
 
-    await DeterministicDeployer.init(provider)
-
     const net = await erc4337Provider.getNetwork()
-    const accs = await web3.eth.getAccounts()
     const rpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, net.chainId)
 
     const accountApi = new TreasuryAPI({
@@ -93,7 +92,7 @@ const main = async () => {
     })
 
     const accountAddress = await accountApi.getAccountAddress()
-    await web3.eth.sendTransaction({ to: accountAddress, from: accs[0], value: web3.utils.toWei("10", "ether") })
+    // await web3.eth.sendTransaction({ to: accountAddress, from: accs[0], value: web3.utils.toWei("10", "ether") })
 
     const aavedata = web3.eth.abi.encodeParameters(["address", "address", "uint256", "string"], ['0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10', key]);
     const aavecall = aavactioncontract.methods.init(aavedata)
@@ -101,12 +100,18 @@ const main = async () => {
     // const aavecall2 = aavactioncontract.methods.init(aavedata2)
     // await web3.eth.sendTransaction({ to: aaveActionAddr, from: accs[0], data: aavecall2.encodeABI() })
 
+
+    const baseWallet = userWallet.connect(provider)
+
+    //fund wallet
+    await baseWallet.sendTransaction({ to: accountAddress, value: ethers.utils.parseEther(".1") })
+
     try {
-        const op = accountApi.createSignedUserOp({
+        const op = await accountApi.createSignedUserOp({
             target: aaveActionAddr,
             data: aavecall.encodeABI()
         })
-        // console.log(op)
+
         // await sendTestOP(accountAddress, encodeCallOp(aaveActionAddr, aavecall.encodeABI()))
         // await sendTestOP(aaveActionAddr, aavecall.encodeABI())
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
@@ -163,37 +168,29 @@ class FunWallet {
     }
 
     constructor(rpcURL, bundlerUrl, entryPointAddress, ownerAccount, factoryAddress) {
-        this.provider = new ethers.providers.JsonRpcProvider(rpcURL);
+        const provider = new ethers.providers.JsonRpcProvider(rpcURL);
+        this.ownerAccount = ownerAccount.connect(provider)
+        this.provider = this.ownerAccount.provider
         this.config = { bundlerUrl, entryPointAddress }
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
-        this.ownerAccount = ownerAccount
         this.factoryAddress = factoryAddress
     }
     async init() {
         const net = await this.provider.getNetwork()
         this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, net.chainId)
-
-        const TEMPAPI = new TreasuryAPI({
-            provider: this.provider,
-            entryPointAddress: this.entryPointAddress,  //check this
-            owner: this.ownerAccount,
-            factoryAddress: this.factoryAddress,
-        })
-
-        this.erc4337Provider = await new ERC4337EthersProvider(net.chainId, this.config, this.ownerAccount, this.provider, this.rpcClient, this.entryPointAddress, TEMPAPI).init();
-
-        await DeterministicDeployer.init(this.provider)
+        this.erc4337Provider = await wrapProvider(this.provider, this.config, this.ownerAccount, this.factoryAddress)
 
         this.accountApi = new TreasuryAPI({
             provider: this.erc4337Provider,
             entryPointAddress: this.entryPointAddress,  //check this
             owner: this.ownerAccount,
             factoryAddress: this.factoryAddress,
-            // index: 3
+            index: 3
         })
 
         this.accountAddress = await this.accountApi.getAccountAddress()
+        // this.ownerAccount.sendTransaction({ to: this.accountAddress, value: ethers.utils.parseEther(".3") })
         return this.accountAddress
     }
 
@@ -271,7 +268,7 @@ class FunWallet {
                 deadline: transactionDeadline,
             };
         } catch (e) {
-            throw Error(`${e}`);
+            // throw Error(`${e}`);
         }
 
     }
@@ -332,12 +329,12 @@ const aaveTest = async () => {
     // initialize wallet
     const wallet = new FunWallet(url, bundlerUrl, entryPointAddress, ownerAccount, factoryAddress)
     const address = await wallet.init()
-    const baseWallet = userWallet.connect(wallet.provider)
+    const baseWallet = userWallet.connect(provider)
 
     //fund wallet
-    // await userWallet.sendTransaction({ to: address, value: ethers.utils.parseEther(".2") })
+    // await baseWallet.sendTransaction({ to: address, value: ethers.utils.parseEther(".2") })
 
-    //create and send user op
+    // create and send user op
 
     const userAddr = await baseWallet.getAddress();
     const poolAddr = "0x368EedF3f56ad10b9bC57eed4Dac65B26Bb667f6"; //Pool-Proxy-Aave
@@ -352,11 +349,11 @@ const aaveTest = async () => {
     // Pre-Transaction Verification/Approval
     const rawTransaction = await wallet.getPreAAVEtransactions(aTokenAddr, positionMax)
 
-    await baseWallet.sendTransaction(rawTransaction)
+    // await baseWallet.sendTransaction(rawTransaction)
     // const preBalanceAllowance = await atokenContract.methods.allowance(userAddr, address).call()
 
     const key = await aaveCreateTest(wallet, userAddr, aTokenAddr, positionMax)
-    await aaveExecuteTest(wallet, key)
+    // await aaveExecuteTest(wallet, key)
 
     // const postBalance = await atokenContract.methods.balanceOf(userAddr).call()
 

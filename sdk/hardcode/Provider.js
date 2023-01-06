@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.wrapProvider = void 0;
 const contracts_1 = require("@account-abstraction/contracts");
 const SimpleAccountAPI_1 = require("./treasuryapi");
+
+const factory = require("./treasuryfactory")
 const debug_1 = __importDefault(require("debug"));
 const debug = (0, debug_1.default)('aa.wrapProvider');
 
@@ -17,16 +19,15 @@ const { HttpRpcClient, DeterministicDeployer, ERC4337EthersProvider } = require(
  * @param config see ClientConfig for more info
  * @param originalSigner use this signer as the owner. of this wallet. By default, use the provider's signer
  */
-async function wrapProvider(originalProvider, config, originalSigner = originalProvider.getSigner()) {
+async function wrapProvider(originalProvider, config, originalSigner = originalProvider.getSigner(), factoryAddress) {
     const entryPoint = contracts_1.EntryPoint__factory.connect(config.entryPointAddress, originalProvider);
     // Initial SimpleAccount instance is not deployed and exists just for the interface
-    const detDeployer = new DeterministicDeployer(originalProvider);
-    const SimpleAccountFactory = await detDeployer.deterministicDeploy(new contracts_1.SimpleAccountFactory__factory(), 0, [entryPoint.address]);
-    const smartAccountAPI = new SimpleAccountAPI_1.SimpleAccountAPI({
+
+    const smartAccountAPI = new SimpleAccountAPI_1.TreasuryAPI({
         provider: originalProvider,
         entryPointAddress: entryPoint.address,
         owner: originalSigner,
-        factoryAddress: SimpleAccountFactory,
+        factoryAddress,
         paymasterAPI: config.paymasterAPI
     });
     debug('config=', config);
