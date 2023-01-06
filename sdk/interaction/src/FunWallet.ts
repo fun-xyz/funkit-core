@@ -5,9 +5,9 @@ const { TreasuryAPI } = require("./treasuryapi")
 const actionContract = require("../../web3/build/contracts/AaveLiquadation.json").abi
 
 const Web3 = require('web3')
-const web3 = new Web3(url);
 
-class FunWallet {
+
+export class FunWallet {
     MAX_INT = ethers.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     provider:any
     config:any
@@ -19,7 +19,7 @@ class FunWallet {
     rpcClient:any
     accountApi:any
     accountAddress:any
-
+    web3:any
     sha256(content:any) {
         return createHash('sha256').update(content).digest('hex')
     }
@@ -31,6 +31,7 @@ class FunWallet {
         this.entryPointAddress = entryPointAddress
         this.ownerAccount = ownerAccount
         this.factoryAddress = factoryAddress
+        this.web3 = new Web3(rpcURL);
     }
     async init() {
         this.erc4337Provider = await wrapProvider(
@@ -42,7 +43,7 @@ class FunWallet {
         await DeterministicDeployer.init(this.provider)
 
         const net = await this.erc4337Provider.getNetwork()
-        const accs = await web3.eth.getAccounts()
+        const accs = await this.web3.eth.getAccounts()
         this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, net.chainId)
 
         this.accountApi = new TreasuryAPI({
@@ -93,25 +94,25 @@ class FunWallet {
         ]
 
 
-        const atokenContract = new web3.eth.Contract(contractABI, aTokenAddr, { from });
-        amount = web3.utils.toHex(amount)
-        let nonce = await web3.eth.getTransactionCount(from)
+        const atokenContract = new this.web3.eth.Contract(contractABI, aTokenAddr, { from });
+        amount = this.web3.utils.toHex(amount)
+        let nonce = await this.web3.eth.getTransactionCount(from)
         let rawTransaction = {
             'from': from,
-            'gasPrice': web3.utils.toHex(20 * 1e9),
-            'gasLimit': web3.utils.toHex(210000),
+            'gasPrice': this.web3.utils.toHex(20 * 1e9),
+            'gasLimit': this.web3.utils.toHex(210000),
             'to': aTokenAddr,
             'data': atokenContract.methods.approve(controllerAddress, amount).encodeABI(),
-            'nonce': web3.utils.toHex(nonce),
+            'nonce': this.web3.utils.toHex(nonce),
         }
         return rawTransaction
     }
 
     async createAAVETrackingPosition(actionAddr:any, userAddr:any, aTokenAddr:any, positionMax:any, storageKey = "") {
-        const aavactioncontract = await new web3.eth.Contract(actionContract);
+        const aavactioncontract = await new this.web3.eth.Contract(actionContract);
         const hashinput = [userAddr, aTokenAddr, positionMax, storageKey].toString()
         const key = this.sha256(hashinput)
-        const aavedata = web3.eth.abi.encodeParameters(["address", "address", "uint256", "string"], [userAddr, aTokenAddr, positionMax, key]);
+        const aavedata = this.web3.eth.abi.encodeParameters(["address", "address", "uint256", "string"], [userAddr, aTokenAddr, positionMax, key]);
         const aavecall = aavactioncontract.methods.init(aavedata)
         const op = await this.accountApi.createSignedUserOp({
             target: actionAddr,
@@ -121,8 +122,8 @@ class FunWallet {
     }
 
     async executeAAVETrackingPosition(actionAddr:any, storageKey:any) {
-        const aavactioncontract = await new web3.eth.Contract(actionContract);
-        const aavedata = web3.eth.abi.encodeParameters(["string"], [storageKey]);
+        const aavactioncontract = await new this.web3.eth.Contract(actionContract);
+        const aavedata = this.web3.eth.abi.encodeParameters(["string"], [storageKey]);
         const aavecall = aavactioncontract.methods.execute(aavedata)
         const op = await this.accountApi.createSignedUserOp({
             target: actionAddr,

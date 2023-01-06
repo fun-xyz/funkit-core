@@ -18,7 +18,7 @@ const treasuryAbi = require("../../../web3/build/contracts/Treasury.json").abi
 const firebase = require('firebase')
 import { TreasuryAPI } from '../src/TreasuryAPI'
 import { BaseAccountAPI } from '../src/BaseAccountAPI'
-
+import { FunWallet } from '../src/FunWallet'
 const firebaseConfig = {
     apiKey: "AIzaSyDidOyxwsM4THzhtCACjApprDh5gXfJJOU",
     authDomain: "wallet-sdk.firebaseapp.com",
@@ -197,7 +197,7 @@ const main = async () => {
         }
     }
 
-    const executeUserOp=async (wallet: any, key:string, actionAddr:string)=>{
+    const executeUserOp = async (wallet: any, key: string, actionAddr: string) => {
         let { op } = await wallet.executeAAVETrackingPosition(actionAddr, key)
         const receipt = await wallet.sendOpToBundler(op)
         console.log(receipt)
@@ -345,25 +345,26 @@ const main = async () => {
         op.initCode = "1"
         return op;
     }
-    const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
-        const userOp1 = await resolveProperties(userOp)
-        // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
-        db.collection('immuna-userOps').doc(hash).set({
-            userOp
-        }).then(() => {
-            return true;
-        }).catch(() => {
-            return false;
-        })
-    }
-    const getUserOp = async (userOpHash: string) => {
-        let ref = await db.collection('immuna-userOps').doc(userOpHash)
-        ref.get().then((doc: any) => {
-            return doc.data()
-        }).catch(() => {
-            throw new Error('doc not found')
-        })
-    }
+    
+    // const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
+    //     const userOp1 = await resolveProperties(userOp)
+    //     // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
+    //     db.collection('immuna-userOps').doc(hash).set({
+    //         userOp
+    //     }).then(() => {
+    //         return true;
+    //     }).catch(() => {
+    //         return false;
+    //     })
+    // }
+    // const getUserOp = async (userOpHash: string) => {
+    //     let ref = await db.collection('immuna-userOps').doc(userOpHash)
+    //     ref.get().then((doc: any) => {
+    //         return doc.data()
+    //     }).catch(() => {
+    //         throw new Error('doc not found')
+    //     })
+    // }
     const from = '0x71bE63f3384f5fb98995898A86B02Fb2426c5788' //eoa address
     const controllerAddr = await api.getAccountAddress() // our controller address
     const erc20Addr = "0xba3D9687Cf50fE253cd2e1cFeEdE1d6787344Ed5" //interest bearing token
@@ -389,17 +390,20 @@ const main = async () => {
     // executeUserOp(signedUserOp)
     // const walletSpec = await getWalletSpec("Aave")
     // deployWallet(walletSpec)
-    const test=()=>{
-        const ownerAccount = new ethers.Wallet(privateKey = "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
+    const test = async () => {
+        const ownerAccount = new ethers.Wallet("0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
         // initialize wallet
-           const wallet = new FunWallet(url, 'http://localhost:3000/rpc', entryPointAddress, ownerAccount, factoryAddress)
-           const address = await wallet.init()
-           //fund wallet
-           const accs = await web3.eth.getAccounts()
-           await web3.eth.sendTransaction({ to: address, from: accs[0], value: web3.utils.toWei("10", "ether") })
-       
-           const key = await aaveCreateTest(wallet)
-           await aaveExecuteTest(wallet, key)
+
+        const url = "http://localhost:8545"
+        const wallet = new FunWallet(url, 'http://localhost:3000/rpc', entryPointAddress, ownerAccount, factoryAddress)
+        const address = await wallet.init()
+        //fund wallet
+        const aaveActionAddr = "0x4026F10CAB74300fC2AF54215532d0b75088FcE2"
+        const accs = await web3.eth.getAccounts()
+        await web3.eth.sendTransaction({ to: address, from: accs[0], value: web3.utils.toWei("10", "ether") })
+
+        const key = await getSignedUserOp(wallet, aaveActionAddr, 'aave')
+        await executeUserOp(wallet, key, '0xsdfsafasdasdfa')
     }
     test()
 
