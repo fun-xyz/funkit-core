@@ -346,25 +346,25 @@ const main = async () => {
         return op;
     }
     
-    // const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
-    //     const userOp1 = await resolveProperties(userOp)
-    //     // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
-    //     db.collection('immuna-userOps').doc(hash).set({
-    //         userOp
-    //     }).then(() => {
-    //         return true;
-    //     }).catch(() => {
-    //         return false;
-    //     })
-    // }
-    // const getUserOp = async (userOpHash: string) => {
-    //     let ref = await db.collection('immuna-userOps').doc(userOpHash)
-    //     ref.get().then((doc: any) => {
-    //         return doc.data()
-    //     }).catch(() => {
-    //         throw new Error('doc not found')
-    //     })
-    // }
+    const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
+        const userOp1 = await resolveProperties(userOp)
+        // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
+        db.collection('immuna-userOps').doc(hash).set({
+            userOp
+        }).then(() => {
+            return true;
+        }).catch(() => {
+            return false;
+        })
+    }
+    const getUserOp = async (userOpHash: string) => {
+        let ref = await db.collection('immuna-userOps').doc(userOpHash)
+        ref.get().then((doc: any) => {
+            return doc.data()
+        }).catch(() => {
+            throw new Error('doc not found')
+        })
+    }
     const from = '0x71bE63f3384f5fb98995898A86B02Fb2426c5788' //eoa address
     const controllerAddr = await api.getAccountAddress() // our controller address
     const erc20Addr = "0xba3D9687Cf50fE253cd2e1cFeEdE1d6787344Ed5" //interest bearing token

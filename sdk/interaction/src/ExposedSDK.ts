@@ -1,3 +1,7 @@
+import { UserOperationStruct } from "@account-abstraction/contracts"
+import { ethers } from "ethers"
+import { FunWallet } from "./FunWallet"
+
 const Common = require("ethereumjs-common")
 const Web3 = require('web3')
 const Tx = require('ethereumjs-tx').Transaction
@@ -63,7 +67,7 @@ const getUnsignedAuthTx = async (from: string, controllerAddress: string, erc20A
 
 }
 const getSignedAuthTx = (rawTx: any, privateKey: any, chainId: number) => {
-  chainId = web3.utils.toHex(31337).toString()
+  chainId = web3.utils.toHex(chainId).toString()
   const customCommon = Common.default.forCustomChain(
     'mainnet',
     {
@@ -89,7 +93,58 @@ const deployEthTx = (signedTx: any) => { //forward to rpc
   })
 }
 
-const main = async () => {
+const getSignedUserOp = async (wallet: any, actionAddr: string, type: string) => {
+  if (type === 'aave') {
+      let { op, key } = await wallet.createAAVETrackingPosition(actionAddr, '0x76ca03a67C049477FfB09694dFeF00416dB69746', '0x39dD11C243Ac4Ac250980FA3AEa016f73C509f37', '10')
+      const receipt = await wallet.sendOpToBundler(op)
+      await storeUserOp(op, key)
+      return key
+  }
+  else if (type === 'uniswap') {
+
+      return ''
+  }
+  else {
+      throw new Error(`${type} of wallet is not available`)
+      return null
+  }
+}
+
+
+const executeUserOp = async (wallet: any, key: string, actionAddr: string) => {
+  let { op } = await wallet.executeAAVETrackingPosition(actionAddr, key)
+  const receipt = await wallet.sendOpToBundler(op)
+  console.log(receipt)
+}
+
+
+
+const storeUserOp = async (userOp: UserOperationStruct, hash: string) => {
+  // const userOp1 = await resolveProperties(userOp)
+  // const userOpHash = getUserOpHash(userOp1, entryPointAddress, 5)
+  // db.collection('immuna-userOps').doc(hash).set({
+  //     userOp
+  // }).then(() => {
+  //     return true;
+  // }).catch(() => {
+  //     return false;
+  // })
+}
+const getUserOp = async (userOpHash: string) => {
+  // let ref = await db.collection('immuna-userOps').doc(userOpHash)
+  // ref.get().then((doc: any) => {
+  //     return doc.data()
+  // }).catch(() => {
+  //     throw new Error('doc not found')
+  // })
+}
+
+
+
+
+
+
+const flow1Test = async () => {
   const from = '0x71bE63f3384f5fb98995898A86B02Fb2426c5788' //eoa address
   const erc20Addr = "0xba3D9687Cf50fE253cd2e1cFeEdE1d6787344Ed5" //aave interest bearing token
   const unsignedAuthTx = await getUnsignedAuthTx(from, "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199", erc20Addr, 1e18, 'aave')
@@ -99,12 +154,36 @@ const main = async () => {
   const signedAuthTx = await getSignedAuthTx(unsignedAuthTx, privateKey, 31337)
   // console.log(signedAuthTx)
   await deployEthTx(signedAuthTx)
+  console.log('flow1test complete')
 }
-main()
+
+const flow2Test = async () => {
+  const ownerAccount = new ethers.Wallet("0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356")
+  // initialize wallet
+  const factoryAddress=""
+  const entryPointAddress=""
+  const url = "http://localhost:8545"
+  const wallet = new FunWallet(url, 'http://localhost:3000/rpc', entryPointAddress, ownerAccount, factoryAddress)
+  const address = await wallet.init()
+  //fund wallet
+  const aaveActionAddr = "0x4026F10CAB74300fC2AF54215532d0b75088FcE2"
+  const accs = await web3.eth.getAccounts()
+  await web3.eth.sendTransaction({ to: address, from: accs[0], value: web3.utils.toWei("10", "ether") })
+
+  const key = await getSignedUserOp(wallet, aaveActionAddr, 'aave')
+  await executeUserOp(wallet, key, '0xsdfsafasdasdfa')
+}
+const flow3Test=async()=>{
+
+}
+
+flow1Test()
+flow2Test()
 
 export {
   deployEthTx,
   getUnsignedAuthTx,
   getSignedAuthTx,
+
 
 }
