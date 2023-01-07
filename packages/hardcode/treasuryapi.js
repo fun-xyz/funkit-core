@@ -6,7 +6,7 @@ const BaseAccountAPI_1 = require("./BaseAccountAPI");
 const { TreasuryFactory__factory } = require("./treasuryfactory")
 const srcfile = require("../../web3/build/contracts/TreasuryFactory.json")
 var _abi = srcfile.abi
-const TreasurySRC = require("./../../web3/build/contracts/Treasury.json")
+const TreasurySRC = require("../../web3/build/contracts/Treasury.json")
 const Web3 = require('web3')
 const web3 = new Web3();
 /**c

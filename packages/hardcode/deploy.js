@@ -59,8 +59,8 @@ const abi = ethers.utils.defaultAbiCoder;
 
 const main = async () => {
     // console.log("TreasuryFactory address:", await deploy(TreasuryFactory))
+    // await deploy(AaveLiquadation)
     // await timeout(1000)
-    await deploy(AaveLiquadation)
     // await deploy(TreasuryFactory)
     // console.log("entrypoint address:", await deploy(entrypoint))
 }
@@ -80,7 +80,7 @@ const deploy = async (contractobj, params = []) => {
     return contract
 }
 
-// main()
+main()
 
 const test = async () => {
     const { chainId } = await provider.getNetwork()
@@ -91,14 +91,14 @@ const test = async () => {
     const amount = "1000000374007307417"
     const key = "key1"
 
-    // const treasury = await deploy(Treasury, ["0x71915CfA9db263F5e7440f11C157F66Fa70b03D6", "0x71915CfA9db263F5e7440f11C157F66Fa70b03D6"])
-    // await timeout(1000)
-    // const action = await deploy(AaveLiquadation)
-    // await timeout(1000)
+    const treasury = await deploy(TreasuryFactory)
+    await timeout(1000)
+    const action = await deploy(AaveLiquadation)
+    await timeout(1000)
 
-    const treasury = new ethers.Contract(treasuryAddr, Treasury.abi, wallet)
+    // const treasury = new ethers.Contract(treasuryAddr, Treasury.abi, wallet)
     const token = new ethers.Contract(tokenAddr, AToken.abi, wallet)
-    const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, wallet)
+    // const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, wallet)
 
     const [tokenContract, treasuryContract, actionContract] = wrapMultipleContracts(wallet, provider, chainId, [token, treasury, action])
     const underlyingassetAddr = await tokenContract.callMethod("UNDERLYING_ASSET_ADDRESS")
