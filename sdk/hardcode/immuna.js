@@ -1,7 +1,12 @@
 require('dotenv').config();
 
-const ethers = require('ethers');
+const { createHash } = require("crypto")
+const { HttpRpcClient } = require('@account-abstraction/sdk')
+const { wrapProvider } = require("./Provider")
+const { TreasuryAPI } = require("./treasuryapi")
+const Tx = require('@ethereumjs/tx').Transaction;
 
+const ethers = require('ethers')
 const { ContractFactory } = ethers
 
 const TreasuryFactory = require("../../web3/build/contracts/TreasuryFactory.json")
@@ -34,13 +39,21 @@ const ERCToken = {
 }
 
 
+const url = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+const bundlerUrl = "http://localhost:3000/rpc"
+
+const entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
+const factoryAddress = "0xd627e195E4E0Aa7A3e2d8Ed8Cd39B574bdfe1322"
+
+const tokenAddr = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2"
+const actionAddr = "0x7BA312a59758F210F200E4fe80539e96BFfabAc7"
 
 
 const timeout = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-const url = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+
 const provider = new ethers.providers.JsonRpcProvider(url)
 
 // const url = "http://127.0.0.1:8545"
@@ -86,19 +99,21 @@ const test = async () => {
     const { chainId } = await provider.getNetwork()
     const userAddr = wallet.address
     const tokenAddr = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2"
-    const treasuryAddr = "0x14B230D905BEb4Fb2651eDB3c6CDC942ad49C1d5"
-    const actionAddr = "0x7a3F99b8B979dAC457037c728b207569cBC2424a"
-    const amount = "1000000374007307417"
+    const actionAddr = "0x38FA30749cdcE0B867B2E87d6e80B6e0fd335736"
+    const amount = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     const key = "key1"
+
+    const funWallet = new FunWallet(url, bundlerUrl, entryPointAddress, wallet, factoryAddress)
+    const treasuryAddr = await funWallet.init()
 
     // const treasury = await deploy(Treasury, ["0x71915CfA9db263F5e7440f11C157F66Fa70b03D6", "0x71915CfA9db263F5e7440f11C157F66Fa70b03D6"])
     // await timeout(1000)
-    // const action = await deploy(AaveLiquadation)
+    const action = await deploy(AaveLiquadation)
     // await timeout(1000)
 
     const treasury = new ethers.Contract(treasuryAddr, Treasury.abi, wallet)
     const token = new ethers.Contract(tokenAddr, AToken.abi, wallet)
-    const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, wallet)
+    // const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, wallet)
 
     const [tokenContract, treasuryContract, actionContract] = wrapMultipleContracts(wallet, provider, chainId, [token, treasury, action])
     const underlyingassetAddr = await tokenContract.callMethod("UNDERLYING_ASSET_ADDRESS")
@@ -112,11 +127,13 @@ const test = async () => {
     console.log("Tokens Approved")
 
     const aaveData = abi.encode(["address", "address", "string"], [userAddr, tokenAddr, key]);
-    const actionInitData = await actionContract.getMethodEncoding("init", [aaveData])
-    const actionInitCall = await treasuryContract.sendMethodTx('callOp', [actionInitData.to, 0, actionInitData.data])
-    console.log("Action Initialized")
-    // const l = await actionContract.callMethod("getData", [treasury.address, key])
 
+    const actionInitData = await actionContract.getMethodEncoding("init", [aaveData])
+
+    // const actionInitCall = await treasuryContract.sendMethodTx('callOp', [actionInitData.to, 0, actionInitData.data])
+    const op = await funWallet.createOp(actionInitData)
+    const receipt = await funWallet.sendOpToBundler(op)
+    console.log("Action Initialized: ", receipt)
 
     const preTreasuryAllowance = await tokenContract.callMethod("allowance", [userAddr, treasury.address])
     logBalances(preUserBalance, preTreasuryBalance, "Pre Balance")
@@ -125,8 +142,14 @@ const test = async () => {
 
     const aaveexec = abi.encode(["string"], [key])
     const actionExecuteCallData = await actionContract.getMethodEncoding("execute", [aaveexec])
-    const actionExecuteCall = await treasuryContract.sendMethodTx('callOp', [actionExecuteCallData.to, 0, actionExecuteCallData.data])
-    console.log(actionExecuteCall)
+
+    const op2 = await funWallet.createOp(actionExecuteCallData)
+    const receipt2 = await funWallet.sendOpToBundler(op2)
+    console.log("Execution Complete: ", receipt2)
+
+
+    // const actionExecuteCall = await treasuryContract.sendMethodTx('callOp', [actionExecuteCallData.to, 0, actionExecuteCallData.data])
+
 
     // const transferFromData = await tokenContract.getMethodEncoding("transfer", [userAddr, preTreasuryBalance])
     // const actionExecuteCall = await treasuryContract.sendMethodTx('callOp', [transferFromData.to, 0, transferFromData.data])
@@ -136,8 +159,8 @@ const test = async () => {
     const postTreasuryBalance = await tokenContract.callMethod("balanceOf", [treasuryAddr])
     const postUserBalance = await tokenContract.callMethod("balanceOf", [userAddr])
 
-    logBalances(postUserBalance, postTreasuryBalance, "Post Balance")
     logBalances(0, postTreasuryAllowance, "Post Allowance")
+    logBalances(postUserBalance, postTreasuryBalance, "Post Balance")
 
     const underlyingassetBalance = await UnderlyingAssetContract.callMethod("balanceOf", [userAddr])
     console.log("Underlying Asset User Balance: ", underlyingassetBalance.toString())
@@ -196,3 +219,49 @@ const wrapMultipleContracts = (wallet, provider, chainId, contracts) => {
 
 test()
 // main()
+
+class FunWallet {
+    MAX_INT = ethers.BigNumber.from("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    sha256(content) {
+        return createHash('sha256').update(content).digest('hex')
+    }
+
+    constructor(rpcURL, bundlerUrl, entryPointAddress, ownerAccount, factoryAddress) {
+        this.provider = new ethers.providers.JsonRpcProvider(rpcURL);
+        this.ownerAccount = ownerAccount
+        this.config = { bundlerUrl, entryPointAddress }
+        this.bundlerUrl = bundlerUrl
+        this.entryPointAddress = entryPointAddress
+        this.factoryAddress = factoryAddress
+        this.eoaAddr = this.ownerAccount.address
+        this.contracts = {}
+    }
+    async init() {
+        const net = await this.provider.getNetwork()
+        this.chainId = net.chainId
+        this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, this.chainId)
+        this.erc4337Provider = await wrapProvider(this.provider, this.config, this.ownerAccount, this.factoryAddress)
+
+        this.accountApi = new TreasuryAPI({
+            provider: this.erc4337Provider,
+            entryPointAddress: this.entryPointAddress,  //check this
+            owner: this.ownerAccount,
+            factoryAddress: this.factoryAddress,
+            index: 3
+        })
+
+        this.accountAddress = await this.accountApi.getAccountAddress()
+        return this.accountAddress
+    }
+
+    async sendOpToBundler(op) {
+        const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
+        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+        return { userOpHash, txid }
+    }
+
+    async createOp({ to, data }) {
+        return await this.accountApi.createSignedUserOp({ target: to, data })
+    }
+
+}

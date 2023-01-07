@@ -63,7 +63,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
             "inputs": [
                 {
                     "internalType": "address",
-                    "name": "addr",
+                    "name": "dest",
                     "type": "address"
                 },
                 {
@@ -73,18 +73,12 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
                 },
                 {
                     "internalType": "bytes",
-                    "name": "data",
+                    "name": "func",
                     "type": "bytes"
                 }
             ],
-            "name": "callOp",
-            "outputs": [
-                {
-                    "internalType": "bytes",
-                    "name": "",
-                    "type": "bytes"
-                }
-            ],
+            "name": "execFromEntryPoint",
+            "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
         }, [target, value, data])

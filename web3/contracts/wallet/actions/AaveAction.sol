@@ -7,7 +7,7 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {AToken} from "@aave/core-v3/contracts/protocol/tokenization/AToken.sol";
 
 contract AaveLiquadation is Action {
-    mapping(string => uint256) public requests;
+    mapping(string => address) public requests;
 
     function _init(
         address userAddr,
@@ -57,42 +57,45 @@ contract AaveLiquadation is Action {
     {
         string memory key = abi.decode(data, (string));
         bytes memory externaldata = getData(msg.sender, key);
+
         (
             address userAddr,
             address aTokenAddr,
             string memory throwaway
         ) = decode(externaldata);
+        IPool pool = AToken(aTokenAddr).POOL();
 
         uint256 allowance = AToken(aTokenAddr).allowance(userAddr, msg.sender);
         uint256 userbalance = AToken(aTokenAddr).balanceOf(userAddr);
-        uint256 positionSize = allowance < userbalance
-            ? allowance
-            : userbalance;
-        if (positionSize > 0) {
-            bytes memory actionData = abi.encodeWithSignature(
-                "transferFrom(address,address,uint256)",
-                userAddr,
-                msg.sender,
-                positionSize
-            );
-            bytes memory resBytes = sendCallOp(
-                msg.sender,
-                aTokenAddr,
-                0,
-                actionData
-            );
+        uint256 position = allowance < userbalance ? allowance : userbalance;
 
-            // bool res = abi.decode(resBytes, (bool));
-            IPool pool = AToken(aTokenAddr).POOL();
-            address assetAddr = AToken(aTokenAddr).UNDERLYING_ASSET_ADDRESS();
-            actionData = abi.encodeWithSignature(
-                "withdraw(address,uint256,address)",
-                assetAddr,
-                positionSize,
-                userAddr
-            );
-            sendCallOp(msg.sender, address(pool), 0, actionData);
-        }
+        address assetAddr = AToken(aTokenAddr).UNDERLYING_ASSET_ADDRESS();
+
+        bytes memory actionData = abi.encodeWithSignature(
+            "transferFrom(address,address,uint256)",
+            userAddr,
+            msg.sender,
+            position
+        );
+
+        bytes memory resBytes = sendCallOp(
+            msg.sender,
+            aTokenAddr,
+            0,
+            actionData
+        );
+
+        bool res = abi.decode(resBytes, (bool));
+
+        bytes memory withdrawdata = abi.encodeWithSignature(
+            "withdraw(address,uint256,address)",
+            assetAddr,
+            position,
+            userAddr
+        );
+
+        sendCallOp(msg.sender, address(pool), 0, withdrawdata);
+
         return bytes("");
     }
 }

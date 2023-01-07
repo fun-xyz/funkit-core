@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const ethers = require('ethers')
 const { createHash } = require("crypto")
-const { HttpRpcClient, DeterministicDeployer, ERC4337EthersProvider } = require('@account-abstraction/sdk')
+const { HttpRpcClient } = require('@account-abstraction/sdk')
 const { wrapProvider } = require("./Provider")
 const { TreasuryAPI } = require("./treasuryapi")
 const Tx = require('@ethereumjs/tx').Transaction;
@@ -15,7 +15,7 @@ const timeout = (ms) => {
 const treasuryAbi = require("../../web3/build/contracts/Treasury.json").abi
 const treasuryfactbytecode = require("../../web3/build/contracts/TreasuryFactory.json").bytecode
 const aaveActionContract = require("../../web3/build/contracts/AaveLiquadation.json").abi
-const entrypointcontract = require("../../web3/build/contracts/EntryPoint.json")
+const entrypointcontract = require("../../web3/build/contracts/EntryPoint.json").abi
 const ATokenContract = require("../../web3/build/contracts/AToken.json").abi
 
 const TreasuryFactory = require("../../web3/build/contracts/TreasuryFactory.json")
@@ -55,23 +55,28 @@ const abi = ethers.utils.defaultAbiCoder;
 
 const url = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 const bundlerUrl = "http://localhost:3000/rpc"
-const entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
-const factoryAddress = "0x97E3a36026ab28269122c011d4C5e5435384f266"
 
+const entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
+const factoryAddress = "0xd627e195E4E0Aa7A3e2d8Ed8Cd39B574bdfe1322"
+
+const tokenAddr = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2"
+const actionAddr = "0x7BA312a59758F210F200E4fe80539e96BFfabAc7"
 
 const provider = new ethers.providers.JsonRpcProvider(url);
 const ownerAccount = new ethers.Wallet("0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206", provider)
-const userWallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
+
+// const userWallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
+// const ownerAccount = userWallet.connect(provider)
 
 class FunWallet {
-    MAX_INT = ethers.BigNumber.from("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    MAX_INT = ethers.BigNumber.from("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     sha256(content) {
         return createHash('sha256').update(content).digest('hex')
     }
 
     constructor(rpcURL, bundlerUrl, entryPointAddress, ownerAccount, factoryAddress) {
         this.provider = new ethers.providers.JsonRpcProvider(rpcURL);
-        this.ownerAccount = ownerAccount.connect(this.provider)
+        this.ownerAccount = ownerAccount
         this.config = { bundlerUrl, entryPointAddress }
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
@@ -94,7 +99,6 @@ class FunWallet {
         })
 
         this.accountAddress = await this.accountApi.getAccountAddress()
-        // this.ownerAccount.sendTransaction({ to: this.accountAddress, value: ethers.utils.parseEther(".3") })
         return this.accountAddress
     }
 
@@ -111,50 +115,38 @@ class FunWallet {
         return aTokenAddress
     }
 
-    async getPreAAVEtransactions(tokenContract, amount = this.MAX_INT) {
-        const approveTokenTX = await tokenContract.sendMethodTx("approve", [this.accountAddress, amount])
-        return approveTokenTX
-    }
-
-
-    async createAAVETrackingPosition(storageKey = "") {
-        const aaveActionContract = this.contracts.aaveActionContract
-        const aTokenAddr = this.contracts.aTokenContract.address
+    async createAAVETrackingPosition(key, aaveActionContract, aTokenAddr) {
         const userAddr = this.eoaAddr
-        const hashinput = [userAddr, aTokenAddr, storageKey].toString()
-        const key = this.sha256(hashinput)
         const aaveData = abi.encode(["address", "address", "string"], [userAddr, aTokenAddr, key]);
         const actionInitData = await aaveActionContract.getMethodEncoding("init", [aaveData])
         const op = await this.accountApi.createSignedUserOp({
             target: actionInitData.to,
             data: actionInitData.data,
         })
-        return { op, key }
+        return op
     }
 
-    async executeAAVETrackingPosition(storageKey) {
-        const aaveActionContract = this.contracts.aaveActionContract
+    async executeAAVETrackingPosition(storageKey, aaveActionContract, treasuryContract) {
         const aaveexec = abi.encode(["string"], [storageKey])
         const actionExecuteCallData = await aaveActionContract.getMethodEncoding("execute", [aaveexec])
-        const op = await this.accountApi.createSignedUserOp({
-            target: actionExecuteCallData.to,
-            data: actionExecuteCallData.data,
-            gasLimit: 80000000,
-        })
-        return { op }
+        const actionExecuteCall = await treasuryContract.sendMethodTx('callOp', [actionExecuteCallData.to, 0, actionExecuteCallData.data])
+        console.log(actionExecuteCall)
+
+        // const op = await this.accountApi.createSignedUserOp({
+        //     target: actionExecuteCallData.to,
+        //     data: actionExecuteCallData.data,
+        //     gasLimit: 657355
+        // })
+        // return { op }
     }
 
-    createContract(contractObj) {
-        const name = Object.keys(contractObj)[0]
-        const contract = contractObj[name]
-        const body = new WrappedEthersContract(this.ownerAccount, this.chainId, contract, this.provider)
-        this.contracts[name] = body
-        return body
+    createContract(contract) {
+        return new WrappedEthersContract(this.ownerAccount, this.chainId, contract, this.provider)
     }
 
     wrapMultipleContracts(contracts) {
-        contracts.map((contract => {
-            this.createContract(contract)
+        return contracts.map((contract => {
+            return this.createContract(contract)
         }))
     }
 }
@@ -174,8 +166,8 @@ class WrappedEthersContract {
         return { gasLimit, gasPrice }
     }
 
-    async sendMethodTx(method, params = [], nonceAdd = 0) {
-        return await ethersTransaction(this.wallet, this.provider, this.chainId, this.contract, method, params, nonceAdd)
+    async sendMethodTx(method, params = [], value = 0, nonceAdd = 0) {
+        return await ethersTransaction(this.wallet, this.provider, this.chainId, this.contract, method, params, value, nonceAdd)
     }
 
     async getMethodEncoding(method, params = []) {
@@ -192,14 +184,12 @@ class WrappedEthersContract {
 }
 
 
-
-
-
-const ethersTransaction = async (wallet, provider, chainId, contract, method, params, nonceAdd = 0) => {
+const ethersTransaction = async (wallet, provider, chainId, contract, method, params, value = 0, nonceAdd = 0) => {
     const estimatedGasLimit = await contract.estimateGas[method](...params)
     const approveTxUnsigned = await contract.populateTransaction[method](...params)
     approveTxUnsigned.gasLimit = estimatedGasLimit;
     approveTxUnsigned.gasPrice = await provider.getGasPrice();
+    approveTxUnsigned.value = value;
     approveTxUnsigned.nonce = (await provider.getTransactionCount(wallet.address)) + nonceAdd;
     approveTxUnsigned.chainId = chainId;
     const approveTxSigned = await wallet.signTransaction(approveTxUnsigned);
@@ -213,50 +203,60 @@ const aaveTest = async () => {
     // initialize wallet
     const wallet = new FunWallet(url, bundlerUrl, entryPointAddress, ownerAccount, factoryAddress)
     // const baseWallet = userWallet.connect(provider)
-
     const treasuryAddr = await wallet.init()
     console.log("Treasury: ", treasuryAddr)
-    const tokenAddr = "0xC50E6F9E8e6CAd53c42ddCB7A42d616d7420fd3e"
-    const actionAddr = "0x32e7C5085C1338c96095037C109Bb5b4B64d0384"
+
+
 
     // fund wallet
-    await ownerAccount.sendTransaction({ to: treasuryAddr, value: ethers.utils.parseEther("1") })
 
-    const amount = wallet.MAX_INT
-    const treasury = new ethers.Contract(treasuryAddr, Treasury.abi, wallet.ownerAccount)
-    const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, wallet.ownerAccount)
-    const token = new ethers.Contract(tokenAddr, AToken.abi, wallet.ownerAccount)
-    wallet.wrapMultipleContracts([{ aTokenContract: token }, { treasuryContract: treasury }, { aaveActionContract: action }])
+    const amount = "1000000374007307417"
+    const entrypoint = new ethers.Contract(entryPointAddress, entrypointcontract, ownerAccount)
+    const treasury = new ethers.Contract(treasuryAddr, Treasury.abi, ownerAccount)
+    const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, ownerAccount)
+    const token = new ethers.Contract(tokenAddr, AToken.abi, ownerAccount)
+    const [entryPointContract, treasuryContract, aaveActionContract, aTokenContract,] = wallet.wrapMultipleContracts([entrypoint, treasury, action, token,])
 
-    const underlyingassetAddr = await wallet.contracts.aTokenContract.callMethod("UNDERLYING_ASSET_ADDRESS")
-    const underlyingasset = new ethers.Contract(underlyingassetAddr, ERCToken.abi)
-    wallet.createContract({ UnderlyingAssetContract: underlyingasset })
 
-    const preUserBalance = await wallet.contracts.aTokenContract.callMethod("balanceOf", [wallet.eoaAddr])
-    const preTreasuryBalance = await wallet.contracts.aTokenContract.callMethod("balanceOf", [treasuryAddr])
+    // console.log(data)
+    // const tx = await ownerAccount.sendTransaction({ value: ethers.utils.parseEther(".2"), to: treasuryAddr })
+    // const r = await tx.wait()
+    // console.log(r)
+
+    const underlyingassetAddr = await aTokenContract.callMethod("UNDERLYING_ASSET_ADDRESS")
+    const underlyingasset = new ethers.Contract(underlyingassetAddr, ERCToken.abi, ownerAccount)
+    const UnderlyingAssetContract = wallet.createContract(underlyingasset)
+
+    const preUserBalance = await aTokenContract.callMethod("balanceOf", [wallet.eoaAddr])
+    const preTreasuryBalance = await aTokenContract.callMethod("balanceOf", [treasuryAddr])
     logBalances(preUserBalance, preTreasuryBalance, "Pre AToken Balance")
 
-    const approveTokenTX = await wallet.contracts.aTokenContract.sendMethodTx("approve", [treasuryAddr, amount])
+    const approveTokenTX = await aTokenContract.sendMethodTx("approve", [treasuryAddr, amount])
     console.log("Tokens Approved: ", approveTokenTX.hash)
 
-    const preTreasuryAllowance = await wallet.contracts.aTokenContract.callMethod("allowance", [wallet.eoaAddr, treasuryAddr])
+    const preTreasuryAllowance = await aTokenContract.callMethod("allowance", [wallet.eoaAddr, treasuryAddr])
     logBalances(0, preTreasuryAllowance, "Pre Allowance")
 
-
-    const { receipt, key } = await aaveCreateTest(wallet)
+    const key = "key1"
+    const receipt = await aaveCreateTest(wallet, aaveActionContract, aTokenContract)
     console.log("Action Created: ", receipt)
-    console.log("Key: ", key)
-    await timeout(4000)
-    const rec = await aaveExecuteTest(wallet, key)
+
+
+    const rec = await aaveExecuteTest(wallet, key, aaveActionContract, treasuryContract)
     console.log("Execution Complete: ", rec)
 
-    const postTreasuryBalance = await wallet.contracts.aTokenContract.callMethod("balanceOf", [treasuryAddr])
-    const postUserBalance = await wallet.contracts.aTokenContract.callMethod("balanceOf", [wallet.eoaAddr])
-    logBalances(postUserBalance, postTreasuryBalance, "Post AToken Balance")
+    // const transferFromData = await aTokenContract.getMethodEncoding("transfer", [wallet.eoaAddr, preTreasuryBalance])
+    // const actionExecuteCall = await treasuryContract.sendMethodTx('callOp', [transferFromData.to, 0, transferFromData.data])
 
-    const underlyingassetBalance = await wallet.contracts.UnderlyingAssetContract.callMethod("balanceOf", [wallet.eoaAddr])
-    console.log("Underlying Asset User Balance: ", underlyingassetBalance.toString())
+    // const postTreasuryBalance = await aTokenContract.callMethod("balanceOf", [treasuryAddr])
+    // const postUserBalance = await aTokenContract.callMethod("balanceOf", [wallet.eoaAddr])
+    // logBalances(postUserBalance, postTreasuryBalance, "Post AToken Balance")
+
+    // const underlyingassetBalance = await UnderlyingAssetContract.callMethod("balanceOf", [wallet.eoaAddr])
+    // console.log("Underlying Asset User Balance: ", underlyingassetBalance.toString())
+
 }
+
 
 aaveTest()
 
@@ -265,16 +265,18 @@ const logBalances = (u, t, title) => {
 }
 
 
-const aaveCreateTest = async (wallet) => {
+const aaveCreateTest = async (wallet, aaveActionContract, aTokenContract) => {
     //create and send user op
-    let { op, key } = await wallet.createAAVETrackingPosition()
-    const receipt = await wallet.sendOpToBundler(op)
-    return { receipt, key }
+    let op = await wallet.createAAVETrackingPosition("key1", aaveActionContract, aTokenContract.address)
+    return await wallet.sendOpToBundler(op)
+
 }
 
 
-const aaveExecuteTest = async (wallet, key) => {
-    let { op } = await wallet.executeAAVETrackingPosition(key)
-    const receipt = await wallet.sendOpToBundler(op)
+const aaveExecuteTest = async (wallet, key, aaveActionContract, treasuryContract) => {
+    // let { op } = await wallet.executeAAVETrackingPosition( key)
+    // const receipt = await wallet.sendOpToBundler(op)
+
+    const receipt = await wallet.executeAAVETrackingPosition(key, aaveActionContract, treasuryContract)
     return receipt
 }
