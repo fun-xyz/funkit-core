@@ -302,11 +302,6 @@ const aaveCreateTest = async (wallet, userAddr, aTokenAddr, positionMax) => {
     return key
 }
 
-const aaveExecuteTest = async (wallet, key) => {
-    let { op } = await wallet.executeAAVETrackingPosition(aaveActionAddr, key)
-    const receipt = await wallet.sendOpToBundler(op)
-    return receipt
-}
 
 const timeout = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -347,7 +342,8 @@ const aaveTest = async () => {
     const postBalance = await atokenContract.methods.balanceOf(userAddr).call()
     console.log(preBalance, preBalanceAllowance, postBalance)
 }
-aaveTest().catch(console.log)
+// aaveTest().catch(console.log)
 // aaveTest()
 // steps for goerli
 // 
+
