@@ -48,8 +48,8 @@ abstract contract Action {
     function sendCallOp(
         address treasury,
         address location,
-        bytes memory data,
-        uint256 value
+        uint256 value,
+        bytes memory data
     ) internal returns (bytes memory) {
         return Treasury(payable(treasury)).callOp(location, value, data);
     }
@@ -68,13 +68,8 @@ abstract contract Action {
         return result;
     }
 
-    function init() external payable virtual returns (bytes memory) {
-        whitelist[msg.sender] = true;
-        return bytes("");
-    }
-
     function init(bytes memory data)
-        external
+        public
         payable
         virtual
         returns (bytes memory)
@@ -84,7 +79,7 @@ abstract contract Action {
     }
 
     function execute(bytes memory data)
-        external
+        public
         payable
         virtual
         returns (bytes memory)

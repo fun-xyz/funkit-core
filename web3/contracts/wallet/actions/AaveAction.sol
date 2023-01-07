@@ -7,12 +7,11 @@ import {IPool} from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import {AToken} from "@aave/core-v3/contracts/protocol/tokenization/AToken.sol";
 
 contract AaveLiquadation is Action {
-    mapping(string => bytes) public requests;
+    mapping(string => uint256) public requests;
 
     function _init(
         address userAddr,
         address aTokenAddr,
-        uint256 positionMax,
         string memory key,
         bytes memory data
     ) private {
@@ -20,22 +19,18 @@ contract AaveLiquadation is Action {
     }
 
     function init(bytes memory data)
-        external
+        public
         payable
         override
         returns (bytes memory)
     {
         whitelist[msg.sender] = true;
-        (
-            address userAddr,
-            address aTokenAddr,
-            uint256 positionMax,
-            string memory key
-        ) = decode(data);
+        (address userAddr, address aTokenAddr, string memory key) = decode(
+            data
+        );
 
         storeData(msg.sender, key, data);
 
-        // _init(userAddr, aTokenAddr, positionMax, key, data);
         return bytes("");
     }
 
@@ -45,13 +40,12 @@ contract AaveLiquadation is Action {
         returns (
             address userAddr,
             address aTokenAddr,
-            uint256 positionMax,
             string memory key
         )
     {
-        (userAddr, aTokenAddr, positionMax, key) = abi.decode(
+        (userAddr, aTokenAddr, key) = abi.decode(
             data,
-            (address, address, uint256, string)
+            (address, address, string)
         );
     }
 
@@ -66,31 +60,39 @@ contract AaveLiquadation is Action {
         (
             address userAddr,
             address aTokenAddr,
-            uint256 positionMax,
             string memory throwaway
         ) = decode(externaldata);
 
-        uint256 balance = AToken(aTokenAddr).balanceOf(userAddr);
+        uint256 allowance = AToken(aTokenAddr).allowance(userAddr, msg.sender);
+        uint256 userbalance = AToken(aTokenAddr).balanceOf(userAddr);
+        uint256 positionSize = allowance < userbalance
+            ? allowance
+            : userbalance;
+        if (positionSize > 0) {
+            bytes memory actionData = abi.encodeWithSignature(
+                "transferFrom(address,address,uint256)",
+                userAddr,
+                msg.sender,
+                positionSize
+            );
+            bytes memory resBytes = sendCallOp(
+                msg.sender,
+                aTokenAddr,
+                0,
+                actionData
+            );
 
-        bytes memory actionData = abi.encodeWithSignature(
-            "transferFrom(address,address,uint256)",
-            userAddr,
-            msg.sender,
-            balance
-        );
-        sendCallOp(msg.sender, aTokenAddr, actionData, 0);
-
-        IPool pool = AToken(aTokenAddr).POOL();
-        address assetAddr = AToken(aTokenAddr).UNDERLYING_ASSET_ADDRESS();
-
-        // actionData = abi.encodeWithSignature(
-        //     "withdraw(address,uint256,address)",
-        //     assetAddr,
-        //     balance,
-        //     userAddr
-        // );
-        // sendCallOp(msg.sender, address(pool), actionData, 0);
-
+            // bool res = abi.decode(resBytes, (bool));
+            IPool pool = AToken(aTokenAddr).POOL();
+            address assetAddr = AToken(aTokenAddr).UNDERLYING_ASSET_ADDRESS();
+            actionData = abi.encodeWithSignature(
+                "withdraw(address,uint256,address)",
+                assetAddr,
+                positionSize,
+                userAddr
+            );
+            sendCallOp(msg.sender, address(pool), 0, actionData);
+        }
         return bytes("");
     }
 }
