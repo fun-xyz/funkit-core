@@ -54,6 +54,24 @@ abstract contract Action {
         return Treasury(payable(treasury)).callOp(location, value, data);
     }
 
+    function subCallOp(
+        address treasury,
+        address location,
+        uint256 value,
+        bytes memory data
+    ) internal returns (bytes memory) {
+        bytes memory actionData = abi.encodeWithSignature(
+            "callOp(address,uint256,bytes)",
+            location,
+            value,
+            data
+        );
+        (bool success, bytes memory result) = payable(treasury).call(
+            actionData
+        );
+        return result;
+    }
+
     function _call(
         address target,
         uint256 value,

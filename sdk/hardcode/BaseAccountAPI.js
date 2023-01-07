@@ -89,7 +89,7 @@ class BaseAccountAPI {
      * NOTE: createUnsignedUserOp will add to this value the cost of creation, if the contract is not yet created.
      */
     async getVerificationGasLimit() {
-        return 100000;
+        return 5000000;
     }
     /**
      * should cover cost of putting calldata on-chain, and some overhead.
@@ -114,12 +114,12 @@ class BaseAccountAPI {
         }
         const value = (_a = parseNumber(detailsForUserOp.value)) !== null && _a !== void 0 ? _a : ethers_1.BigNumber.from(0);
         const callData = await this.encodeExecute(detailsForUserOp.target, value, detailsForUserOp.data);
-        const callGasLimit = (_b = parseNumber(detailsForUserOp.gasLimit)) !== null && _b !== void 0 ? _b : 80000000
-        // await this.provider.estimateGas({
-        //     from: this.entryPointAddress,
-        //     to: this.getAccountAddress(),
-        //     data: callData
-        // });
+        const callGasLimit = (_b = parseNumber(detailsForUserOp.gasLimit)) !== null && _b !== void 0 ? _b :
+            await this.provider.estimateGas({
+                from: this.entryPointAddress,
+                to: this.getAccountAddress(),
+                data: callData
+            });
         return {
             callData,
             callGasLimit
@@ -185,7 +185,7 @@ class BaseAccountAPI {
             nonce: this.getNonce(),
             initCode,
             callData,
-            callGasLimit,
+            callGasLimit: 569438,
             verificationGasLimit,
             maxFeePerGas,
             maxPriorityFeePerGas
