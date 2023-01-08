@@ -16,20 +16,19 @@ const abi = ethers.utils.defaultAbiCoder;
 
 
 class FunWallet {
-    static async init(eoa, walletType, preFundAmt, params, index = 0) {
-        const wallet = new FunWallet(eoa)
-        await wallet.internalInit(preFundAmt, walletType, params, index)
-        return wallet
+    constructor(eoa, walletType, preFundAmt, params, index = 0) {
+        this.eoa = eoa
+        this.preFundAmt = preFundAmt
+        this.walletType = walletType
+        this.params = params
+        this.index = index
     }
+
 
     static AAVEWalletParams(tokenAddress) {
         return { tokenAddress }
     }
 
-    constructor(eoa) {
-        this.eoa = eoa
-    }
-    tempCache = {}
 
     rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
     // bundlerUrl = "http://35.90.110.76:3000/rpc"
@@ -44,10 +43,9 @@ class FunWallet {
         return createHash('sha256').update(content).digest('hex')
     }
 
-    async internalInit(preFundAmt, walletType, params, index = 0) {
+    async init() {
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.eoa = this.eoa.connect(this.provider)
-        this.params = params
 
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
 
@@ -63,18 +61,18 @@ class FunWallet {
             entryPointAddress: this.entryPointAddress,  //check this
             owner: this.eoa,
             factoryAddress: this.factoryAddress,
-            index
+            index: this.index
         })
 
         this.address = await this.accountApi.getAccountAddress()
-        if (parseFloat(preFundAmt) > 0) {
-            const tx = await this.eoa.sendTransaction({ to: this.address, from: this.eoa.address, value: ethers.utils.parseEther(preFundAmt) })
+        if (parseFloat(this.preFundAmt) > 0) {
+            const tx = await this.eoa.sendTransaction({ to: this.address, from: this.eoa.address, value: ethers.utils.parseEther(this.preFundAmt) })
             const fundReceipt = await tx.wait()
             console.log("Wallet has been Funded:\n", fundReceipt)
         }
 
 
-        const aaveWalletOps = await this.createWallet(walletType)
+        const aaveWalletOps = await this.createWallet(this.walletType)
         this.createWalletOP = aaveWalletOps.walletCreationOp
         this.actionExecutionOpHash = aaveWalletOps.actionExecutionOpHash
     }
@@ -205,7 +203,7 @@ class FunWallet {
             const receipt = await this.sendOpToBundler(this.createWalletOP)
             return { receipt, executionHash: this.actionExecutionOpHash }
         } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this.createWallet(walletType)
+            const { walletCreationOp, actionExecutionOpHash } = await this.createWallet(this.walletType)
             const receipt = await this.sendOpToBundler(walletCreationOp)
             return { receipt, executionHash: actionExecutionOpHash }
 
