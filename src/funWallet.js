@@ -1,5 +1,5 @@
 const { createHash } = require("crypto")
-
+const fetch = require("node-fetch")
 const { wrapProvider } = require("../utils/Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
 
@@ -73,7 +73,6 @@ class FunWallet {
 
 
         const aaveWalletOps = await this.createWallet(walletType)
-        console.log(aaveWalletOps)
         this.createWalletOP = aaveWalletOps.walletCreationOp
         this.actionExecutionOpHash = aaveWalletOps.actionExecutionOpHash
     }
@@ -117,7 +116,7 @@ class FunWallet {
         const aaveexec = abi.encode(["string"], [key])
         const actionExecuteCallData = await this.AaveActionContract.getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this.createAction(actionExecuteCallData)
-        
+
         const actionExecutionOpHash = await this.storeUserOp(actionExecutionOp)
 
         return {
@@ -134,12 +133,56 @@ class FunWallet {
     }
 
     async storeUserOp(op) {
-        const sig = this.sha256(op.toString())
-        this.tempCache[sig] = op
+        const outOp = await this.getPromiseFromOp(op)
+        const sig = this.sha256(outOp.toString())
+        await this.storeUserOpInternal(outOp, sig)
         return sig
     }
+    async getPromiseFromOp(op) {
+        const out = {}
+        await Promise.all(Object.keys(op).map(async (key) => {
+            out[key] = await op[key]
+        }))
+        return out
+    }
 
-    async getStoredUserOp(signature) { return this.tempCache[signature] }
+    async getStoredUserOp(opHash) {
+        const op = await this.getUserOpInternal(opHash)
+        Object.keys(op).map(key => {
+            if (op[key].type == "BigNumber") {
+                op[key] = ethers.BigNumber.from(op[key].hex)
+            }
+        })
+        return op
+    }
+
+    async getUserOpInternal(userOpHash) {
+        return await fetch('https://fun-mvp-api.herokuapp.com/getUserOp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                userOpHash: userOpHash,
+            })
+        }).then((r) => r.json()).then((r) => { return r })
+    }
+    async storeUserOpInternal(userOp, userOpHash) {
+        await fetch('https://fun-mvp-api.herokuapp.com/storeUserOp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                userOpHash: userOpHash,
+                userOp: userOp
+            })
+        })
+    }
 
     async deployWallet() {
         const receipt = await this.sendOpToBundler(this.createWalletOP)
