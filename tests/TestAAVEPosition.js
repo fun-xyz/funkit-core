@@ -7,7 +7,7 @@ const main = async () => {
 
     const params = { tokenAddress: ATokenAddress }
 
-    const wallet = new FunWallet(eoa, "AAVE", ".3", params)
+    const wallet = new FunWallet(eoa, "AAVE", ".3", params, 12)
     await wallet.init()
 
     const approveReceipt = await wallet.deployTokenApprovalTx()
