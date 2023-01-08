@@ -185,7 +185,7 @@ class BaseAccountAPI {
             nonce: this.getNonce(),
             initCode,
             callData,
-            callGasLimit: 569438,
+            callGasLimit: info.gasLimit,
             verificationGasLimit,
             maxFeePerGas,
             maxPriorityFeePerGas

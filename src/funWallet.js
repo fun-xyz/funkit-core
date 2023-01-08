@@ -32,7 +32,9 @@ class FunWallet {
     tempCache = {}
 
     rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-    bundlerUrl = "http://35.90.110.76:3000/rpc"
+    // bundlerUrl = "http://35.90.110.76:3000/rpc"
+    bundlerUrl = "http://localhost:3000/rpc"
+
     entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
     factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
     AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
@@ -111,11 +113,11 @@ class FunWallet {
         const aaveData = abi.encode(["address", "address", "string"], [eoaAddr, this.tokenContract.address, key]);
         const actionInitData = await this.AaveActionContract.getMethodEncoding("init", [aaveData])
 
-        const walletCreationOp = await this.createAction(actionInitData, 8000000)
+        const walletCreationOp = await this.createAction(actionInitData, 560000)
 
         const aaveexec = abi.encode(["string"], [key])
         const actionExecuteCallData = await this.AaveActionContract.getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await this.createAction(actionExecuteCallData)
+        const actionExecutionOp = await this.createAction(actionExecuteCallData, 500000)
 
         const actionExecutionOpHash = await this.storeUserOp(actionExecutionOp)
 
@@ -185,8 +187,14 @@ class FunWallet {
     }
 
     async deployWallet() {
-        const receipt = await this.sendOpToBundler(this.createWalletOP)
-        return receipt
+
+        try {
+            const receipt = await this.sendOpToBundler(this.createWalletOP)
+            return receipt
+        } catch {
+            const receipt = await this.sendOpToBundler(this.createWalletOP)
+            return receipt
+        }
     }
 
     async deployTokenApprovalTx() {

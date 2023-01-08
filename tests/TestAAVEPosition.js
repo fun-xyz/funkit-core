@@ -3,8 +3,8 @@ const ethers = require('ethers')
 
 const main = async () => {
     const ATokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
-    const eoa = new ethers.Wallet(privateKey = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206") // Metamask browser side etc
-
+    const eoa = new ethers.Wallet(privateKey = "c5ff68eee74d447b88d5d0dd1d438b37f30a4c0b1e41e9c485c6e2ea282d1489") // Metamask browser side etc
+    
     const params = FunWallet.AAVEWalletParams(ATokenAddress)
 
     const wallet = await FunWallet.init(eoa, "AAVE", "0", params)
