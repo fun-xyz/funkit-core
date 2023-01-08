@@ -16,11 +16,9 @@ const abi = ethers.utils.defaultAbiCoder;
 
 
 class FunWallet {
-    constructor(eoa, walletType, preFundAmt, params, index = 0) {
+    constructor(eoa, preFundAmt, index = 0) {
         this.eoa = eoa
         this.preFundAmt = preFundAmt
-        this.walletType = walletType
-        this.params = params
         this.index = index
     }
 
@@ -72,9 +70,7 @@ class FunWallet {
         }
 
 
-        const aaveWalletOps = await this.createWallet(this.walletType)
-        this.createWalletOP = aaveWalletOps.walletCreationOp
-        this.actionExecutionOpHash = aaveWalletOps.actionExecutionOpHash
+
     }
 
     async sendOpToBundler(op) {
@@ -87,21 +83,27 @@ class FunWallet {
         return await this.tokenContract.createSignedTransaction("approve", [this.address, amount])
     }
 
+    async addAction(type, ...params) {
+        this.walletType = type
+        const aaveWalletOps = await this.createWallet(type, params)
+        this.createWalletOP = aaveWalletOps.walletCreationOp
+        this.actionExecutionOpHash = aaveWalletOps.actionExecutionOpHash
+    }
 
     async createAction({ to, data }, gasLimit, noInit = false) {
         return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit })
     }
 
-    async createWallet(type) {
+    async createWallet(type, params) {
         switch (type) {
             case "AAVE": {
-                return await this.createAAVEWallet()
+                return await this.createAAVEWallet(params)
             }
         }
     }
 
-    async createAAVEWallet() {
-        const token = new ethers.Contract(this.params.tokenAddress, ERCToken.abi, this.eoa)
+    async createAAVEWallet(params) {
+        const token = new ethers.Contract(params[0], ERCToken.abi, this.eoa)
         this.tokenContract = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)
 
         const eoaAddr = this.eoa.address
