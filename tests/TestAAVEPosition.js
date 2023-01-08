@@ -4,33 +4,20 @@ const ethers = require('ethers')
 const main = async () => {
     const ATokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
     const eoa = new ethers.Wallet(privateKey = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206") // Metamask browser side etc
-    const wallet = new FunWallet(eoa)
-    const treasuryAddr = await wallet.init()
 
+    const params = FunWallet.AAVEWalletParams(ATokenAddress)
 
-    // Fund Wallet
-    const tx = await wallet.eoa.sendTransaction({ to: treasuryAddr, from: eoa.address, value: ethers.utils.parseEther(".3") })
-    const fundReceipt = await tx.wait()
+    const wallet = await FunWallet.init(eoa, "AAVE", "0", params)
 
-    const approveTokenTX = await wallet.createTokenApprovalTx(ATokenAddress)
-    await wallet.deployTokenApprovalTx(approveTokenTX)
+    const approveReceipt = await wallet.deployTokenApprovalTx()
+    console.log("Approval Succesful:\n", approveReceipt)
 
-
-
-    const aaveWalletOps = await wallet.createWallet("AAVE")
-    const { walletCreationOp, actionExecutionOpHash } = aaveWalletOps
-
-    const deplomentReceipt = await wallet.deployWallet(walletCreationOp)
-    console.log(deplomentReceipt)
-    console.log("Created Wallet")
-
-
-    // after some time
-    const executionReceipt = await wallet.executeAction(actionExecutionOpHash)
-    console.log(executionReceipt)
+    const deplomentReceipt = await wallet.deployWallet()
+    console.log("Creation Succesful:\n", deplomentReceipt)
+    // after some tim
+    const executionReceipt = await wallet.executeAction(wallet.actionExecutionOpHash)
+    console.log("Execution Succesful:\n", executionReceipt)
 
 }
-
-
 
 main()

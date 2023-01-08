@@ -6,8 +6,8 @@ const BaseAccountAPI_1 = require("./BaseAccountAPI");
 const Web3 = require('web3')
 const web3 = new Web3();
 
-const TreasurySRC = require("../abis/Treasury.json")
-const srcfile = require("../abis/TreasuryFactory.json")
+const TreasurySRC = require("./abis/Treasury.json")
+const srcfile = require("./abis/TreasuryFactory.json")
 var _abi = srcfile.abi
 
 

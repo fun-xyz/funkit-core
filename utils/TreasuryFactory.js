@@ -21,7 +21,7 @@ exports.SimpleAccountFactory__factory = void 0;
 /* eslint-disable */
 var ethers_1 = require("ethers");
 
-const srcfile = require("../abis/TreasuryFactory.json")
+const srcfile = require("./abis/TreasuryFactory.json")
 var _abi = srcfile.abi
 var _bytecode = srcfile.bytecode
 
