@@ -126,7 +126,13 @@ class FunWallet {
             actionExecutionOpHash
         }
     }
-
+    /**
+    * Liquidates one's aave position
+    * @params opHash - execution hash from deploying the wallet
+    * @return {receipt, executionHash} 
+    * userOpHash - string hash of the UserOperation 
+    * txid - transaction id of transfer of assets
+    */
     async executeAction(opHash = "", userOp = false) {
         if (!userOp && opHash) {
             userOp = await this.getStoredUserOp(opHash)
@@ -187,6 +193,12 @@ class FunWallet {
         })
     }
 
+    /**
+    * Deploys a wallet to chain that can initiate aave liquidation
+    * @return {receipt, executionHash} 
+    * receipt - receipt of transaction committed to chain.
+    * executionHash - string hash of the UserOperation 
+    */
     async deployWallet() {
 
         try {
@@ -199,7 +211,11 @@ class FunWallet {
 
         }
     }
-
+    /**
+    * Grants approval to controller wallet to liquidate funds
+    * @return {receipt} 
+    * receipt - TransactionReceipt of the approval confirmed on chain
+    */
     async deployTokenApprovalTx() {
         const ethTx = await this.createTokenApprovalTx()
         const submittedTx = await this.provider.sendTransaction(ethTx);
