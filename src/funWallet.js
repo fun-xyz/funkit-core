@@ -16,9 +16,9 @@ const abi = ethers.utils.defaultAbiCoder;
 
 
 class FunWallet {
-    static async init(eoa, walletType, preFundAmt, params) {
+    static async init(eoa, walletType, preFundAmt, params, index = 0) {
         const wallet = new FunWallet(eoa)
-        await wallet.internalInit(preFundAmt, walletType, params)
+        await wallet.internalInit(preFundAmt, walletType, params, index)
         return wallet
     }
 
@@ -44,7 +44,7 @@ class FunWallet {
         return createHash('sha256').update(content).digest('hex')
     }
 
-    async internalInit(preFundAmt, walletType, params) {
+    async internalInit(preFundAmt, walletType, params, index = 0) {
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.eoa = this.eoa.connect(this.provider)
         this.params = params
@@ -63,11 +63,11 @@ class FunWallet {
             entryPointAddress: this.entryPointAddress,  //check this
             owner: this.eoa,
             factoryAddress: this.factoryAddress,
-            index: 3
+            index
         })
 
         this.address = await this.accountApi.getAccountAddress()
-        if (parseInt(preFundAmt) > 0) {
+        if (parseFloat(preFundAmt) > 0) {
             const tx = await this.eoa.sendTransaction({ to: this.address, from: this.eoa.address, value: ethers.utils.parseEther(preFundAmt) })
             const fundReceipt = await tx.wait()
             console.log("Wallet has been Funded:\n", fundReceipt)
@@ -90,8 +90,8 @@ class FunWallet {
     }
 
 
-    async createAction({ to, data }, gasLimit) {
-        return await this.accountApi.createSignedUserOp({ target: to, data, gasLimit })
+    async createAction({ to, data }, gasLimit, noInit = false) {
+        return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit })
     }
 
     async createWallet(type) {
@@ -117,7 +117,7 @@ class FunWallet {
 
         const aaveexec = abi.encode(["string"], [key])
         const actionExecuteCallData = await this.AaveActionContract.getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await this.createAction(actionExecuteCallData, 500000)
+        const actionExecutionOp = await this.createAction(actionExecuteCallData, 500000, true)
 
         const actionExecutionOpHash = await this.storeUserOp(actionExecutionOp)
 
@@ -131,6 +131,7 @@ class FunWallet {
         if (!userOp && opHash) {
             userOp = await this.getStoredUserOp(opHash)
         }
+
         return await this.sendOpToBundler(userOp)
     }
 
@@ -190,10 +191,12 @@ class FunWallet {
 
         try {
             const receipt = await this.sendOpToBundler(this.createWalletOP)
-            return receipt
+            return { receipt, executionHash: this.actionExecutionOpHash }
         } catch {
-            const receipt = await this.sendOpToBundler(this.createWalletOP)
-            return receipt
+            const { walletCreationOp, actionExecutionOpHash } = await this.createWallet(walletType)
+            const receipt = await this.sendOpToBundler(walletCreationOp)
+            return { receipt, executionHash: actionExecutionOpHash }
+
         }
     }
 
