@@ -48,7 +48,7 @@ class FunWallet {
         return createHash('sha256').update(content).digest('hex')
     }
     /**
-    * Runs initializatin for a given wallet
+    * Runs initialization for a given wallet
     */
     async init() {
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
