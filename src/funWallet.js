@@ -16,6 +16,13 @@ const abi = ethers.utils.defaultAbiCoder;
 
 
 class FunWallet {
+    /**
+    * Standard constructor
+    * @params eoa, preFundAmt, index
+    * eoa - ethers.Wallet object
+    * preFundAmt - amount to prefund the wallet with, in eth/avax
+    * index - index of account (default 0)
+    */
     constructor(eoa, preFundAmt, index = 0) {
         this.eoa = eoa
         this.preFundAmt = preFundAmt
@@ -37,10 +44,12 @@ class FunWallet {
     AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
     MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
-    sha256(content) {
+    _sha256(content) {
         return createHash('sha256').update(content).digest('hex')
     }
-
+    /**
+    * Runs initializatin for a given wallet
+    */
     async init() {
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.eoa = this.eoa.connect(this.provider)
@@ -73,53 +82,58 @@ class FunWallet {
 
     }
 
-    async sendOpToBundler(op) {
+    async _sendOpToBundler(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
         return { userOpHash, txid }
     }
 
-    async createTokenApprovalTx(amount = this.MAX_INT) {
+    async _createTokenApprovalTx(amount = this.MAX_INT) {
         return await this.tokenContract.createSignedTransaction("approve", [this.address, amount])
     }
-
+    /**
+    * adds type of action for FunWallet
+    * @params type, params
+    * type - string of "AAVE" (uniswap and more will be supported later)
+    * params - parameters to insert, (token address)
+    */
     async addAction(type, ...params) {
         this.walletType = type
-        const aaveWalletOps = await this.createWallet(type, params)
+        const aaveWalletOps = await this._createWallet(type, params)
         this.createWalletOP = aaveWalletOps.walletCreationOp
         this.actionExecutionOpHash = aaveWalletOps.actionExecutionOpHash
     }
 
-    async createAction({ to, data }, gasLimit, noInit = false) {
+    async _createAction({ to, data }, gasLimit, noInit = false) {
         return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit })
     }
 
-    async createWallet(type, params) {
+    async _createWallet(type, params) {
         switch (type) {
             case "AAVE": {
-                return await this.createAAVEWallet(params)
+                return await this._createAAVEWallet(params)
             }
         }
     }
 
-    async createAAVEWallet(params) {
+    async _createAAVEWallet(params) {
         const token = new ethers.Contract(params[0], ERCToken.abi, this.eoa)
         this.tokenContract = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)
 
         const eoaAddr = this.eoa.address
         const input = [eoaAddr, this.tokenContract.address].toString()
 
-        const key = this.sha256(input)
+        const key = this._sha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [eoaAddr, this.tokenContract.address, key]);
         const actionInitData = await this.AaveActionContract.getMethodEncoding("init", [aaveData])
 
-        const walletCreationOp = await this.createAction(actionInitData, 560000)
+        const walletCreationOp = await this._createAction(actionInitData, 560000)
 
         const aaveexec = abi.encode(["string"], [key])
         const actionExecuteCallData = await this.AaveActionContract.getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await this.createAction(actionExecuteCallData, 500000, true)
+        const actionExecutionOp = await this._createAction(actionExecuteCallData, 500000, true)
 
-        const actionExecutionOpHash = await this.storeUserOp(actionExecutionOp)
+        const actionExecutionOpHash = await this._storeUserOp(actionExecutionOp)
 
         return {
             walletCreationOp,
@@ -135,19 +149,19 @@ class FunWallet {
     */
     async executeAction(opHash = "", userOp = false) {
         if (!userOp && opHash) {
-            userOp = await this.getStoredUserOp(opHash)
+            userOp = await this._getStoredUserOp(opHash)
         }
 
-        return await this.sendOpToBundler(userOp)
+        return await this._sendOpToBundler(userOp)
     }
 
-    async storeUserOp(op) {
-        const outOp = await this.getPromiseFromOp(op)
-        const sig = this.sha256(outOp.toString())
-        await this.storeUserOpInternal(outOp, sig)
+    async _storeUserOp(op) {
+        const outOp = await this._getPromiseFromOp(op)
+        const sig = this._sha256(outOp.toString())
+        await this._storeUserOpInternal(outOp, sig)
         return sig
     }
-    async getPromiseFromOp(op) {
+    async _getPromiseFromOp(op) {
         const out = {}
         await Promise.all(Object.keys(op).map(async (key) => {
             out[key] = await op[key]
@@ -155,8 +169,8 @@ class FunWallet {
         return out
     }
 
-    async getStoredUserOp(opHash) {
-        const op = await this.getUserOpInternal(opHash)
+    async _getStoredUserOp(opHash) {
+        const op = await this._getUserOpInternal(opHash)
         Object.keys(op).map(key => {
             if (op[key].type == "BigNumber") {
                 op[key] = ethers.BigNumber.from(op[key].hex)
@@ -165,7 +179,7 @@ class FunWallet {
         return op
     }
 
-    async getUserOpInternal(userOpHash) {
+    async _getUserOpInternal(userOpHash) {
         return await fetch('https://fun-mvp-api.herokuapp.com/getUserOp', {
             method: 'POST',
             headers: {
@@ -178,7 +192,7 @@ class FunWallet {
             })
         }).then((r) => r.json()).then((r) => { return r })
     }
-    async storeUserOpInternal(userOp, userOpHash) {
+    async _storeUserOpInternal(userOp, userOpHash) {
         await fetch('https://fun-mvp-api.herokuapp.com/storeUserOp', {
             method: 'POST',
             headers: {
@@ -202,11 +216,11 @@ class FunWallet {
     async deployWallet() {
 
         try {
-            const receipt = await this.sendOpToBundler(this.createWalletOP)
+            const receipt = await this._sendOpToBundler(this.createWalletOP)
             return { receipt, executionHash: this.actionExecutionOpHash }
         } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this.createWallet(this.walletType)
-            const receipt = await this.sendOpToBundler(walletCreationOp)
+            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType)
+            const receipt = await this._sendOpToBundler(walletCreationOp)
             return { receipt, executionHash: actionExecutionOpHash }
 
         }
@@ -217,7 +231,7 @@ class FunWallet {
     * receipt - TransactionReceipt of the approval confirmed on chain
     */
     async deployTokenApprovalTx() {
-        const ethTx = await this.createTokenApprovalTx()
+        const ethTx = await this._createTokenApprovalTx()
         const submittedTx = await this.provider.sendTransaction(ethTx);
         return await submittedTx.wait()
     }
