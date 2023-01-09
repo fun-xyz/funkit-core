@@ -2,6 +2,8 @@ const { createHash } = require("crypto")
 const fetch = require("node-fetch")
 const { wrapProvider } = require("../utils/Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
+const CryptoJS = require("crypto-js")
+
 
 const { WrappedEthersContract, wrapMultipleContracts } = require("../utils/WrappedEthersContract")
 
@@ -33,7 +35,6 @@ class FunWallet {
     }
 
     static bundlerUrl = "http://54.184.167.23:3000/rpc"
-    bundlerUrl = "http://54.184.167.23:3000/rpc"
 
     // static bundlerUrl = "http://localhost:3000/rpc"
     // bundlerUrl = "http://localhost:3000/rpc"
@@ -45,6 +46,7 @@ class FunWallet {
     static AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
     static MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
+    bundlerUrl = "http://54.184.167.23:3000/rpc"
     rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
     entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
     factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
@@ -52,7 +54,7 @@ class FunWallet {
     MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
     _sha256(content) {
-        return createHash('sha256').update(content).digest('hex')
+        return CryptoJS.SHA256(content).toString(CryptoJS.enc.Hex)
     }
     /**     
     * Runs initialization for a given wallet.
@@ -68,6 +70,7 @@ class FunWallet {
     * index - index of account (default 0)
     */
     async init(eoa, preFundAmt, index = 0) {
+        console.log(this._sha256("asdfasfsd"))
         this.eoa = eoa
         this.preFundAmt = preFundAmt
         this.index = index
@@ -248,7 +251,7 @@ class FunWallet {
             const receipt = await this._sendOpToBundler(this.createWalletOP)
             return { receipt, executionHash: this.actionExecutionOpHash }
         } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType,this.params)
+            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType, this.params)
             const receipt = await this._sendOpToBundler(walletCreationOp)
             return { receipt, executionHash: actionExecutionOpHash }
 
