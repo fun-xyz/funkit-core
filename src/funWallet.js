@@ -68,9 +68,6 @@ class FunWallet {
             const fundReceipt = await tx.wait()
             console.log("Wallet has been Funded:\n", fundReceipt)
         }
-
-
-
     }
 
     async sendOpToBundler(op) {
