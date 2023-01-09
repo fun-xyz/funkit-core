@@ -32,15 +32,11 @@ class FunWallet {
         return { tokenAddress }
     }
 
-
-
-
-
-    bundlerUrl = "http://54.184.167.23:3000/rpc"
     static bundlerUrl = "http://54.184.167.23:3000/rpc"
+    bundlerUrl = "http://54.184.167.23:3000/rpc"
 
-    // bundlerUrl = "http://localhost:3000/rpc"
     // static bundlerUrl = "http://localhost:3000/rpc"
+    // bundlerUrl = "http://localhost:3000/rpc"
 
 
     static rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
