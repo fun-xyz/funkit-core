@@ -8,7 +8,6 @@ const main = async () => {
     // Create an EOA instance with ethers
     const eoa = new ethers.Wallet(privKey)
 
-<<<<<<< HEAD
     // Create a new FunWallet instance, 
     const wallet = new FunWallet()
 
@@ -34,20 +33,6 @@ const main = async () => {
 
     // After some time, execute the Aave withdrawal action
     const executionReceipt = await wallet.executeAction(executionHash)
-=======
-    const wallet = new FunWallet()
-    await wallet.init(eoa, ".3",22)
-    await wallet.addAction("AAVE", ATokenAddress)
-
-    const { receipt: deplomentReceipt, executionHash } = await wallet.deployWallet()
-    console.log("Creation Succesful:\n", deplomentReceipt)
-
-    const approveReceipt = await wallet.deployTokenApprovalTx()
-    console.log("Approval Succesful:\n", approveReceipt)
-
-    // after some time
-    const executionReceipt = await FunWallet.executeAction(executionHash)
->>>>>>> c019f5b (updated via sdk doc)
     console.log("Execution Succesful:\n", executionReceipt)
 
 }

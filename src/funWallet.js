@@ -16,10 +16,6 @@ const abi = ethers.utils.defaultAbiCoder;
 
 
 class FunWallet {
-<<<<<<< HEAD
-    
-    constructor() {
-=======
     /**
     * Standard constructor
     * @params eoa, preFundAmt, index
@@ -29,7 +25,6 @@ class FunWallet {
     */
     constructor() {
 
->>>>>>> c019f5b (updated via sdk doc)
     }
 
 
@@ -64,17 +59,9 @@ class FunWallet {
     * index - index of account (default 0)
     */
     async init(eoa, preFundAmt, index = 0) {
-<<<<<<< HEAD
-        
-        this.preFundAmt = preFundAmt
-        this.eoa = eoa
-        this.index = index
-
-=======
         this.eoa = eoa
         this.preFundAmt = preFundAmt
         this.index = index
->>>>>>> c019f5b (updated via sdk doc)
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.eoa = this.eoa.connect(this.provider)
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
