@@ -17,20 +17,21 @@ const main = async () => {
     // Add the withdraw from aave action to the FunWallet
     await wallet.addAction("AAVE", aTokenAddress)
 
-    // Deploy the FunWallet with the withdraw from Aave action
+    /*
+    Deploy the FunWallet with the withdraw from Aave action.
+    User must store the returned executionHash variable to later execure the Aave withdrawal action
+    */
     const { receipt: deplomentReceipt, executionHash } = await wallet.deployWallet()
     console.log("Creation Succesful:\n", deplomentReceipt)    
 
     /* 
     Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
     Aave smart contract.
-
     */
     const approveReceipt = await wallet.deployTokenApprovalTx()
     console.log("Approval Succesful:\n", approveReceipt)
 
-    // after some time
-    // 
+    // After some time, execute the Aave withdrawal action
     const executionReceipt = await wallet.executeAction(executionHash)
     console.log("Execution Succesful:\n", executionReceipt)
 
