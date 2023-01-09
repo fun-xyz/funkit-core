@@ -1,4 +1,3 @@
-const { createHash } = require("crypto")
 const fetch = require("node-fetch")
 const { wrapProvider } = require("../utils/Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
