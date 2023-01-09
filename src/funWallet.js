@@ -36,8 +36,8 @@ class FunWallet {
 
 
 
-    bundlerUrl = "http://35.90.110.76:3000/rpc"
-    static bundlerUrl = "http://35.90.110.76:3000/rpc"
+    bundlerUrl = "http://54.184.167.23:3000/rpc"
+    static bundlerUrl = "http://54.184.167.23:3000/rpc"
 
     // bundlerUrl = "http://localhost:3000/rpc"
     // static bundlerUrl = "http://localhost:3000/rpc"
