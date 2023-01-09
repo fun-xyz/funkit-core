@@ -33,16 +33,22 @@ class FunWallet {
     }
 
 
-    // bundlerUrl = "http://35.90.110.76:3000/rpc"
 
-    static bundlerUrl = "http://localhost:3000/rpc"
+
+
+    bundlerUrl = "http://35.90.110.76:3000/rpc"
+    static bundlerUrl = "http://35.90.110.76:3000/rpc"
+
+    // bundlerUrl = "http://localhost:3000/rpc"
+    // static bundlerUrl = "http://localhost:3000/rpc"
+
+
     static rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
     static entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
     static factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
     static AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
     static MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
-    bundlerUrl = "http://localhost:3000/rpc"
     rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
     entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
     factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
