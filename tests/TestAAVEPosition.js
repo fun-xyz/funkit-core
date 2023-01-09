@@ -31,8 +31,6 @@ const main = async () => {
     const approveReceipt = await wallet.deployTokenApprovalTx()
     console.log("Approval Succesful:\n", approveReceipt)
 
-
-    // const executionHash = "b28c94b2195c8ed259f0b415aaee3f39b0b2920a4537611499fa044956917a21"
     // After some time, execute the Aave withdrawal action
     const executionReceipt = await FunWallet.executeAction(executionHash)
     console.log("Execution Succesful:\n", executionReceipt)
