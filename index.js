@@ -1,4 +1,4 @@
-const { FunWallet } = require("./src/FunWallet")
+const { FunWallet } = require("./src/funWallet")
 
 module.exports = {
     FunWallet

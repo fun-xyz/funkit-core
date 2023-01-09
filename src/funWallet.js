@@ -70,7 +70,6 @@ class FunWallet {
         this.preFundAmt = preFundAmt
         this.index = index
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
-        this.eoa = this.eoa.connect(this.provider)
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
 
         const AaveAction = new ethers.Contract(this.AaveActionAddress, AaveLiquadation.abi, this.eoa)
@@ -91,7 +90,7 @@ class FunWallet {
         this.address = await this.accountApi.getAccountAddress()
         if (parseFloat(this.preFundAmt) > 0) {
             //
-            const tx = await this.eoa.sendTransaction({ to: this.address, from: this.eoa.address, value: ethers.utils.parseEther(this.preFundAmt) })
+            const tx = await this.eoa.sendTransaction({ to: this.address, from: await this.eoa.getAddress(), value: ethers.utils.parseEther(this.preFundAmt) })
             const fundReceipt = await tx.wait()
             console.log("Wallet has been Funded:\n", fundReceipt)
         }
@@ -146,10 +145,11 @@ class FunWallet {
     }
 
     async _createAAVEWallet(params) {
-        const token = new ethers.Contract(params[0], ERCToken.abi, this.eoa)
+        this.params = params
+        const token = new ethers.Contract(this.params[0], ERCToken.abi, this.eoa)
         this.tokenContract = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)
 
-        const eoaAddr = this.eoa.address
+        const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, this.tokenContract.address].toString()
 
         const key = this._sha256(input)
@@ -242,12 +242,11 @@ class FunWallet {
     * executionHash - string hash of the UserOperation 
     */
     async deployWallet() {
-
         try {
             const receipt = await this._sendOpToBundler(this.createWalletOP)
             return { receipt, executionHash: this.actionExecutionOpHash }
         } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType)
+            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType,this.params)
             const receipt = await this._sendOpToBundler(walletCreationOp)
             return { receipt, executionHash: actionExecutionOpHash }
 
@@ -260,7 +259,7 @@ class FunWallet {
     */
     async deployTokenApprovalTx() {
         const ethTx = await this._createTokenApprovalTx()
-        const submittedTx = await this.provider.sendTransaction(ethTx);
+        const submittedTx = await this.eoa.sendTransaction(ethTx);
         return await submittedTx.wait()
     }
 

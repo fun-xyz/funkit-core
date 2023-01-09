@@ -48,7 +48,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
         }
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
-            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, this.owner.address, this.index])
+            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress,await this.owner.getAddress(), this.index])
         ]);
     }
     async getNonce() {

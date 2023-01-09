@@ -35,7 +35,8 @@ const ethersTransaction = async (wallet, provider, chainId, contract, method, pa
     const approveTxUnsigned = await contract.populateTransaction[method](...params)
     approveTxUnsigned.gasLimit = estimatedGasLimit;
     approveTxUnsigned.gasPrice = await provider.getGasPrice();
-    approveTxUnsigned.nonce = (await provider.getTransactionCount(wallet.address)) + nonceAdd;
+    const addr = await wallet.getAddress()
+    approveTxUnsigned.nonce = (await provider.getTransactionCount(addr)) + nonceAdd;
     approveTxUnsigned.chainId = chainId;
     const approveTxSigned = await wallet.signTransaction(approveTxUnsigned);
     const submittedTx = await provider.sendTransaction(approveTxSigned);
@@ -48,12 +49,13 @@ const createRawTransaction = async (wallet, provider, chainId, contract, method,
     const approveTxUnsigned = await contract.populateTransaction[method](...params)
     approveTxUnsigned.gasLimit = estimatedGasLimit;
     approveTxUnsigned.gasPrice = await provider.getGasPrice();
-    approveTxUnsigned.nonce = (await provider.getTransactionCount(wallet.address)) + nonceAdd;
+    const addr = await wallet.getAddress()
+    approveTxUnsigned.nonce = (await provider.getTransactionCount(addr)) + nonceAdd;
     approveTxUnsigned.chainId = chainId;
-    const approveTxSigned = await wallet.signTransaction(approveTxUnsigned);
+    // const approveTxSigned = await wallet.signTransaction(approveTxUnsigned);
     // const submittedTx = await provider.sendTransaction(approveTxSigned);
     // await submittedTx.wait()
-    return approveTxSigned
+    return approveTxUnsigned
 }
 
 const wrapMultipleContracts = (wallet, provider, chainId, contracts) => {
