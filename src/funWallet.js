@@ -33,10 +33,17 @@ class FunWallet {
     }
 
 
-    rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
     // bundlerUrl = "http://35.90.110.76:3000/rpc"
-    bundlerUrl = "http://localhost:3000/rpc"
 
+    static bundlerUrl = "http://localhost:3000/rpc"
+    static rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+    static entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
+    static factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
+    static AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
+    static MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+
+    bundlerUrl = "http://localhost:3000/rpc"
+    rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
     entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
     factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
     AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
@@ -93,6 +100,20 @@ class FunWallet {
     async _sendOpToBundler(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+        return { userOpHash, txid }
+    }
+
+    static async _sendOpToBundlerStatic(op) {
+        const provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
+        const chainId = (await provider.getNetwork()).chainId
+        const rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, chainId)
+        const accountApi = new TreasuryAPI({
+            provider: provider,
+            entryPointAddress: this.entryPointAddress,  //check this
+            factoryAddress: this.factoryAddress
+        })
+        const userOpHash = await rpcClient.sendUserOpToBundler(op)
+        const txid = await accountApi.getUserOpReceipt(userOpHash)
         return { userOpHash, txid }
     }
 
@@ -159,13 +180,12 @@ class FunWallet {
         if (!userOp && opHash) {
             userOp = await this._getStoredUserOp(opHash)
         }
-
-        return await this._sendOpToBundler(userOp)
+        return await this._sendOpToBundlerStatic(userOp)
     }
 
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
-        const sig = this._sha256(outOp.toString())
+        const sig = this._sha256(outOp.signature.toString())
         await this._storeUserOpInternal(outOp, sig)
         return sig
     }
