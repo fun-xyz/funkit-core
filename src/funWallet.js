@@ -69,7 +69,6 @@ class FunWallet {
     * index - index of account (default 0)
     */
     async init(eoa, preFundAmt, index = 0) {
-        console.log(this._sha256("asdfasfsd"))
         this.eoa = eoa
         this.preFundAmt = preFundAmt
         this.index = index
