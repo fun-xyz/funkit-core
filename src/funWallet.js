@@ -16,17 +16,8 @@ const abi = ethers.utils.defaultAbiCoder;
 
 
 class FunWallet {
-    /**
-    * Standard constructor
-    * @params eoa, preFundAmt, index
-    * eoa - ethers.Wallet object
-    * preFundAmt - amount to prefund the wallet with, in eth/avax
-    * index - index of account (default 0)
-    */
-    constructor(eoa, preFundAmt, index = 0) {
-        this.eoa = eoa
-        this.preFundAmt = preFundAmt
-        this.index = index
+    
+    constructor() {
     }
 
 
@@ -47,13 +38,27 @@ class FunWallet {
     _sha256(content) {
         return createHash('sha256').update(content).digest('hex')
     }
-    /**
-    * Runs initialization for a given wallet
+    /**     
+    * Runs initialization for a given wallet.
+    * The function acts as a constructor for many parameters in the class, creating
+    * an abstracted wallet account, with the correct providers and rpc client. 
+    * It also prefunds the account with the amount of eth/avax desired.
+    * 
+    * USER SIGNATURE REQUIRED to fund wallet
+    * 
+    * @params eoa, preFundAmt, index
+    * eoa - ethers.Wallet object (user's eoa account)
+    * preFundAmt - amount to prefund the wallet with, in eth/avax
+    * index - index of account (default 0)
     */
-    async init() {
+    async init(eoa, preFundAmt, index = 0) {
+        
+        this.preFundAmt = preFundAmt
+        this.eoa = eoa
+        this.index = index
+
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.eoa = this.eoa.connect(this.provider)
-
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
 
         const AaveAction = new ethers.Contract(this.AaveActionAddress, AaveLiquadation.abi, this.eoa)
@@ -73,6 +78,7 @@ class FunWallet {
 
         this.address = await this.accountApi.getAccountAddress()
         if (parseFloat(this.preFundAmt) > 0) {
+            //
             const tx = await this.eoa.sendTransaction({ to: this.address, from: this.eoa.address, value: ethers.utils.parseEther(this.preFundAmt) })
             const fundReceipt = await tx.wait()
             console.log("Wallet has been Funded:\n", fundReceipt)

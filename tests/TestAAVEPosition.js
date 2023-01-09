@@ -24,7 +24,7 @@ const main = async () => {
     /* 
     Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
     Aave smart contract.
-    
+
     */
     const approveReceipt = await wallet.deployTokenApprovalTx()
     console.log("Approval Succesful:\n", approveReceipt)
