@@ -1,8 +1,8 @@
 {
-  "name": "hardcode",
+  "name": "@funwallet/sdk",
   "version": "1.0.0",
   "description": "",
-  "main": "AaveOp.js",
+  "main": "index.js",
   "scripts": {
     "test": "node tests/TestAAVEPosition.js"
   },
