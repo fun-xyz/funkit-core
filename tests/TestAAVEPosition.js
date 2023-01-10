@@ -1,4 +1,4 @@
-const { FunWallet, AAVEWallet } = require("../index")
+const { FunWallet, AAVEWithdrawal } = require("../index")
 const ethers = require('ethers')
 
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
@@ -24,14 +24,18 @@ const main = async () => {
     const wallet = new FunWallet(eoa)
 
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    wallet.addAction(AAVEWallet(aTokenAddress))
+    wallet.addAction(AAVEWithdrawal(aTokenAddress))
+    
 
     // Add the withdraw from aave action to the FunWallet
     await wallet.init()
 
-    
+
     const prefundAmt = ethers.utils.parseEther(".4")
-    await wallet.preFund(prefundAmt)
+
+    const prefundReceipt = await wallet.preFund(prefundAmt)
+    console.log("Wallet has been Funded:\n", prefundReceipt)
+
     /*
     Deploy the FunWallet with the withdraw from Aave action.
     User must store the returned executionHash variable to later execure the Aave withdrawal action
