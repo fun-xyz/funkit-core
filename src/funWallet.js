@@ -102,8 +102,8 @@ class FunWallet {
     async preFund(amt) {
         if (parseFloat(amt) > 0) {
             const tx = await this.eoa.sendTransaction({ to: this.address, from: await this.eoa.getAddress(), value: ethers.utils.parseEther(amt) })
-            const fundReceipt = await tx.wait()
-            console.log("Wallet has been Funded:\n", fundReceipt)
+            return await tx.wait()
+
         }
 
 
@@ -152,15 +152,15 @@ class FunWallet {
         return await this.accountApi.createUnsignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
-    async _createWallet(type, params) {
+    async _createWallet({ type, params }) {
         switch (type) {
             case "AAVE": {
-                return await this._createAAVEWallet(params)
+                return await this._createAAVEWithdrawal(params)
             }
         }
     }
 
-    async _createAAVEWallet(params) {
+    async _createAAVEWithdrawal(params) {
         this.params = params
         const token = new ethers.Contract(this.params[0], ERCToken.abi, this.eoa)
         this.tokenContract = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)

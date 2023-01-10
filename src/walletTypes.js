@@ -1,5 +1,5 @@
-const AAVEWallet = (tokenAddress) => {
-    return { type: "AAVE", tokenAddress }
+const AAVEWithdrawal = (...params) => {
+    return { type: "AAVE", params }
 }
 
-module.exports = { AAVEWallet }
+module.exports = { AAVEWithdrawal }
