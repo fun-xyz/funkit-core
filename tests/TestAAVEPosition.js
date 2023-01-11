@@ -2,9 +2,10 @@ const { FunWallet } = require("../index")
 const ethers = require('ethers')
 
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+// const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
+
 const main = async () => {
 
-    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
     
     // Create an EOA instance with ethers
     
@@ -23,8 +24,12 @@ const main = async () => {
     // Create a new FunWallet instance, 
     const wallet = new FunWallet()
 
+    //getTokenAddress
+    const chainInfo=await wallet.getChainInfo()
+    const aTokenAddress=chainInfo.dai.tokenAddress
+
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    await wallet.init(eoa, "0", 155)
+    await wallet.init(eoa, "0.3")
 
     // Add the withdraw from aave action to the FunWallet
     await wallet.addAction("AAVE", aTokenAddress)
@@ -46,7 +51,8 @@ const main = async () => {
     // After some time, execute the Aave withdrawal action
     const executionReceipt = await FunWallet.executeAction(executionHash)
     console.log("Execution Succesful:\n", executionReceipt)
-
+    
+    
 }
 
 main()
