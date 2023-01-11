@@ -25,16 +25,16 @@ const main = async () => {
 
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     wallet.addAction(AAVEWithdrawal(aTokenAddress))
-    
+
 
     // Add the withdraw from aave action to the FunWallet
     await wallet.init()
 
 
-    const prefundAmt = ethers.utils.parseEther(".4")
+    // const prefundAmt = ethers.utils.parseEther(".3")
 
-    const prefundReceipt = await wallet.preFund(prefundAmt)
-    console.log("Wallet has been Funded:\n", prefundReceipt)
+    // const prefundReceipt = await wallet.preFund(prefundAmt)
+    // console.log("Wallet has been Funded:\n", prefundReceipt)
 
     /*
     Deploy the FunWallet with the withdraw from Aave action.
@@ -42,19 +42,20 @@ const main = async () => {
     */
     // const { receipt: deplomentReceipt, executionHash } = await wallet.deployWallet()
     const { createWalletOp, executionOps } = await wallet.getWalletOps()
-    const deplomentReceipt = await wallet.signAndSendOp(createWalletOp)
-    console.log("Creation Succesful:\n", deplomentReceipt)
+
+    const deploymentReceipt = await wallet.sendOpToBundler(createWalletOp)
+    console.log("Creation Succesful:\n", deploymentReceipt)
 
     /* 
     Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
     Aave smart contract.
     */
-    const tx = wallet.getTokenApprovalTx(aTokenAddress)
-    const approveReceipt = await wallet.signAndSendTx(tx)
+    const tx = await wallet.getTokenApprovalTx(aTokenAddress)
+    const approveReceipt = await wallet.sendTransaction(tx)
     console.log("Approval Succesful:\n", approveReceipt)
 
     // After some time, execute the Aave withdrawal action
-    // const executionReceipt = await FunWallet.executeAction(executionHash)
+    const executionReceipt = await FunWallet.sendOpToBundler(executionOps[0])
     console.log("Execution Succesful:\n", executionReceipt)
 
 }
