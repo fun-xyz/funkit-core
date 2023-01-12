@@ -1,10 +1,10 @@
-const { FunWallet, AAVEWithdrawal } = require("../index")
+const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 const main = async () => {
 
-    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
+  
 
     // Create an EOA instance with ethers
 
@@ -20,31 +20,25 @@ const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
+    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
+
+    const schema = new AccessControlSchema()
+
+    const withdrawEntirePosition = AAVEWithdrawal(aTokenAddress)
+    // Add the withdraw from aave action to the FunWallet
+    schema.addAction(withdrawEntirePosition)
+
+
     // Create a new FunWallet instance, 
-    const wallet = new FunWallet(eoa)
+    const prefundAmt = .3 // eth
 
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    wallet.addAction(AAVEWithdrawal(aTokenAddress))
+    const wallet = await schema.createFunWallet(eoa, prefundAmt)
 
-
-    // Add the withdraw from aave action to the FunWallet
-    await wallet.init()
-
-
-    // const prefundAmt = ethers.utils.parseEther(".3")
-
-    // const prefundReceipt = await wallet.preFund(prefundAmt)
-    // console.log("Wallet has been Funded:\n", prefundReceipt)
-
-    /*
-    Deploy the FunWallet with the withdraw from Aave action.
-    User must store the returned executionHash variable to later execure the Aave withdrawal action
-    */
-    // const { receipt: deplomentReceipt, executionHash } = await wallet.deployWallet()
-    const { createWalletOp, executionOps } = await wallet.getWalletOps()
-
-    const deploymentReceipt = await wallet.sendOpToBundler(createWalletOp)
-    console.log("Creation Succesful:\n", deploymentReceipt)
+    const createWalletReceipt = await wallet.initializeWallet()
+    console.log("Creation Succesful:\n", createWalletReceipt)
+    
+    const executionOp = await wallet.createExecutionOp(withdrawEntirePosition)
 
     /* 
     Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
@@ -55,7 +49,7 @@ const main = async () => {
     console.log("Approval Succesful:\n", approveReceipt)
 
     // After some time, execute the Aave withdrawal action
-    const executionReceipt = await FunWallet.sendOpToBundler(executionOps[0])
+    const executionReceipt = await FunWallet.sendOpToBundler(executionOp)
     console.log("Execution Succesful:\n", executionReceipt)
 
 }

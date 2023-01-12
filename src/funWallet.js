@@ -1,16 +1,17 @@
 const fetch = require("node-fetch")
 const { wrapProvider } = require("../utils/Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
-const CryptoJS = require("crypto-js")
+const { generateSha256 } = require("../utils/tools")
 
 
 const { WrappedEthersContract, wrapMultipleContracts } = require("../utils/WrappedEthersContract")
 
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
-const AaveLiquadation = require("../utils/abis/AaveLiquadation.json")
+const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
 const Treasury = require("../utils/abis/Treasury.json")
+
 
 const ethers = require('ethers')
 
@@ -33,16 +34,14 @@ class FunWallet {
     * index - index of account (default 0)
     */
 
-    actionStore = []
-    constructor(eoa, index = 0) {
+
+    constructor(eoa, actions, index = 0) {
         this.eoa = eoa
+        this.actions = actions
         this.index = index
     }
     contracts = {}
 
-    _sha256(content) {
-        return CryptoJS.SHA256(content).toString(CryptoJS.enc.Hex)
-    }
     /**     
     * Runs initialization for a given wallet.
     * The function acts as a constructor for many parameters in the class, creating
@@ -56,7 +55,7 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-    async init() {
+    async init(prefundAmt) {
         this.provider = new ethers.providers.JsonRpcProvider(rpcurl);
         this.config = { bundlerUrl, entryPointAddress }
 
@@ -73,11 +72,14 @@ class FunWallet {
             factoryAddress: factoryAddress,
             index: this.index
         })
-
         this.address = await this.accountApi.getAccountAddress()
 
         const treasury = new ethers.Contract(this.address, Treasury.abi, this.eoa)
         this.contracts[this.address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, treasury)
+
+        const amt = ethers.utils.parseEther(prefundAmt.toString())
+        const prefundReceipt = await this.preFund(amt)
+        return prefundReceipt
     }
 
     async preFund(amt) {
@@ -125,7 +127,7 @@ class FunWallet {
         return await this.accountApi.createUnsignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
-    async _createWallet({ type, params }) {
+    async _createWalletInitData({ type, params }) {
         switch (type) {
             case "AAVE": {
                 return await this._createAAVEWithdrawal(params)
@@ -137,40 +139,72 @@ class FunWallet {
         this.params = params
         const tokenAddr = this.params[0]
 
-        const action = new ethers.Contract(AaveActionAddress, AaveLiquadation.abi, this.eoa)
-        this.contracts[AaveActionAddress] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, action)
+        this._initActionContract(AaveActionAddress)
 
         const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, tokenAddr]
 
-        const key = this._sha256(input.toString())
+        const key = this.generateSha256(input.toString())
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
         const actionInitData = await this.contracts[AaveActionAddress].getMethodEncoding("init", [aaveData])
+        return actionInitData
+
+    }
+
+    async _createAAVEWithdrawalExec(params) {
+        this.params = params
+        const tokenAddr = this.params[0]
+
+        const eoaAddr = await this.eoa.getAddress()
+        const input = [eoaAddr, tokenAddr]
+        const key = this.generateSha256(input.toString())
 
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
-
-        return {
-            actionInitData,
-            actionExecutionOp
-        }
+        return actionExecutionOp
     }
 
     async getWalletOps() {
         const actionCreateData = { to: [], data: [] }
-        const executionOps = await Promise.all(this.actionStore.map(async (actionData) => {
-            const { actionInitData, actionExecutionOp } = await this._createWallet(actionData)
+        const executionOps = await Promise.all(Object.values(this.actionStore).map(async (actionData) => {
+            const actionInitData = await this._createWalletInitData(actionData)
             const { to, data } = actionInitData
             actionCreateData.to.push(to)
             actionCreateData.data.push(data)
             return actionExecutionOp
         }))
-
-        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const createWalletOp = await this._createAction(createWalleteData, 500000, true)
         return { createWalletOp, executionOps }
 
+    }
+
+    async initializeWallet() {
+        const actionCreateData = { to: [], data: [] }
+        await Promise.all(Object.values(this.actionStore).map(async (actionData) => {
+            const actionInitData = await this._createWalletInitData(actionData)
+            const { to, data } = actionInitData
+            actionCreateData.to.push(to)
+            actionCreateData.data.push(data)
+        }))
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+        const op = await this._createAction(createWalleteData, 560000, true)
+        return await this.sendOpToBundler(op)
+    }
+
+    async createExecutionOp(action) {
+        return _createAAVEWithdrawalExec(action)
+    }
+
+    async createExecutionOps(actions) {
+        return await Promise.all(actions.map((action) => {
+            return _createAAVEWithdrawalExec(action)
+        }))
+    }
+
+    async createAllExecutionOps() {
+        return await Promise.all(Object.values(this.actionStore).map((action) => {
+            return _createAAVEWithdrawalExec(action)
+        }))
     }
 
     /**
@@ -188,7 +222,7 @@ class FunWallet {
     }
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
-        const sig = this._sha256(outOp.signature.toString())
+        const sig = this.generateSha256(outOp.signature.toString())
         await this._storeUserOpInternal(outOp, sig)
         return sig
     }
@@ -221,6 +255,7 @@ class FunWallet {
             })
         }).then((r) => r.json()).then((r) => { return r })
     }
+
     async _storeUserOpInternal(userOp, userOpHash) {
         await fetch('https://fun-mvp-api.herokuapp.com/storeUserOp', {
             method: 'POST',
@@ -247,7 +282,7 @@ class FunWallet {
             const receipt = await this._sendOpToBundler(this.createWalletOP)
             return { receipt, executionHash: this.actionExecutionOpHash }
         } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType, this.params)
+            const { walletCreationOp, actionExecutionOpHash } = await this._createWalletInitData(this.walletType, this.params)
             const receipt = await this._sendOpToBundler(walletCreationOp)
             return { receipt, executionHash: actionExecutionOpHash }
 
@@ -260,16 +295,23 @@ class FunWallet {
     */
 
 
-    initTokenContract(address) {
+    _initTokenContract(address) {
         if (this.contracts[address]) {
             return
         }
         const token = new ethers.Contract(address, ERCToken.abi, this.eoa)
         this.contracts[address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)
     }
+    _initActionContract(address) {
+        if (this.contracts[address]) {
+            return
+        }
+        const action = new ethers.Contract(address, ERCToken.abi, this.eoa)
+        this.contracts[address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, action)
+    }
 
     async getTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
-        this.initTokenContract(aTokenAddress)
+        this._initTokenContract(aTokenAddress)
         return await this.contracts[aTokenAddress].createSignedTransaction("approve", [this.address, amount])
     }
 
