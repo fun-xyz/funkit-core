@@ -1,6 +1,6 @@
 {
-  "name": "@funwallet/sdk",
-  "version": "1.0.0",
+  "name": "@fun-wallet/sdk",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
