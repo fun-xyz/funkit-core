@@ -22,7 +22,7 @@ const abi = ethers.utils.defaultAbiCoder;
 // const entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
 // const factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
 // const AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
-// const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 class FunWallet {
     /**
@@ -34,10 +34,11 @@ class FunWallet {
     */
 
 
-    constructor(eoa, actions, index = 0) {
+    constructor(eoa, actions, chain, index = 0) {
         this.eoa = eoa
         this.actionsStore = actions
         this.index = index
+        this.chain=chain
     }
     contracts = {}
 
@@ -57,21 +58,14 @@ class FunWallet {
 
     async init(prefundAmt) {
 
-        let [_t, chainInfo] = await this.getChainInfo(this.chain)
-        console.log(chainInfo)
+        let chainInfo = await this.getChainInfo(this.chain)
 
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
         this.rpcurl = chainInfo.rpcdata.rpcurl
         this.entryPointAddress = chainInfo.aaData.entryPointAddress
         this.factoryAddress = chainInfo.aaData.factoryAddress
         this.AaveActionAddress = chainInfo.actionData.aave
-        console.log(
-            this.bundlerUrl,
-            this.rpcurl,
-            this.entryPointAddress,
-            this.factoryAddress,
-            this.AaveActionAddress,
-        )
+       
         // console.log(this.chainInfo)
 
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
@@ -85,9 +79,9 @@ class FunWallet {
 
         this.accountApi = new TreasuryAPI({
             provider: this.erc4337Provider,
-            entryPointAddress: entryPointAddress,  //check this
+            entryPointAddress: this.entryPointAddress,  //check this
             owner: this.eoa,
-            factoryAddress: factoryAddress,
+            factoryAddress: this.factoryAddress,
             index: this.index
         })
         this.address = await this.accountApi.getAccountAddress()
@@ -113,13 +107,13 @@ class FunWallet {
     }
 
     static async sendOpToBundler(op) {
-        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
+        const provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         const chainId = (await provider.getNetwork()).chainId
         const rpcClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const accountApi = new TreasuryAPI({
             provider: provider,
-            entryPointAddress: entryPointAddress,  //check this
-            factoryAddress: factoryAddress
+            entryPointAddress: this.entryPointAddress,  //check this
+            factoryAddress: this.factoryAddress
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
@@ -158,13 +152,13 @@ class FunWallet {
         this.params = params
         const tokenAddr = this.params[0]
 
-        this._initActionContract(AaveActionAddress)
+        this._initActionContract(this.AaveActionAddress)
 
         const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, tokenAddr]
         const key = generateSha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
-        const actionInitData = await this.contracts[AaveActionAddress].getMethodEncoding("init", [aaveData])
+        const actionInitData = await this.contracts[this.AaveActionAddress].getMethodEncoding("init", [aaveData])
         return actionInitData
 
     }
@@ -172,13 +166,13 @@ class FunWallet {
     async _createAAVEWithdrawalExec({ params }) {
         this.params = params
         const tokenAddr = this.params[0]
-        this._initActionContract(AaveActionAddress)
+        this._initActionContract(this.AaveActionAddress)
 
         const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, tokenAddr]
         const key = generateSha256(input)
         const aaveexec = abi.encode(["string"], [key])
-        const actionExec = await this.contracts[AaveActionAddress].getMethodEncoding("execute", [aaveexec])
+        const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
         return actionExecutionOp
     }
