@@ -6,8 +6,6 @@ const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab
 
 const main = async () => {
 
-    
-    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
 
     // Create an EOA instance with ethers
 
@@ -23,11 +21,14 @@ const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
+    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
 
     const schema = new AccessControlSchema()
 
     const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
     // Add the withdraw from aave action to the FunWallet
+
+
 
     // Create a new FunWallet instance, 
     const prefundAmt = 0 // eth

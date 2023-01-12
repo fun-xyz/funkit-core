@@ -85,9 +85,9 @@ class FunWallet {
 
         this.accountApi = new TreasuryAPI({
             provider: this.erc4337Provider,
-            entryPointAddress: this.entryPointAddress,  //check this
+            entryPointAddress: entryPointAddress,  //check this
             owner: this.eoa,
-            factoryAddress: this.factoryAddress,
+            factoryAddress: factoryAddress,
             index: this.index
         })
         this.address = await this.accountApi.getAccountAddress()
@@ -330,6 +330,13 @@ class FunWallet {
             return r.data
         })
     }
+    async getTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
+        this._initTokenContract(aTokenAddress)
+        return await this.contracts[aTokenAddress].createSignedTransaction("approve", [this.address, amount])
+    }
+
+
+
     async getTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
         this._initTokenContract(aTokenAddress)
         return await this.contracts[aTokenAddress].createSignedTransaction("approve", [this.address, amount])
