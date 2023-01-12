@@ -23,13 +23,17 @@ const main = async () => {
 
     // Create a new FunWallet instance, 
     const wallet = new FunWallet()
-
+    // const test=wallet._storeUserOpInternal({
+    //     "sdfjsdf":"sdfsd",
+    //     "jkjk":"jkjk"
+    // },"sodfjklsdjf",'immuna')
+    // const test=await wallet._getUserOpInternal('sodfjklsdjf')
+    // console.log(test)
     //getTokenAddress
-    const chainInfo=await wallet.getChainInfo()
-    const aTokenAddress=chainInfo.dai.tokenAddress
-
+    const chain = 'avax-fuji'
+    const chainInfo=await wallet.getChainInfo(chain)
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    await wallet.init(eoa, "0.3")
+    await wallet.init(eoa, "0.3", chain)
 
     // Add the withdraw from aave action to the FunWallet
     await wallet.addAction("AAVE", aTokenAddress)

@@ -76,12 +76,12 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-    async init(eoa, preFundAmt, index = 0) {
+    async init(eoa, preFundAmt, chain, index = 0) {
         this.eoa = eoa
         this.preFundAmt = preFundAmt
         this.index = index
 
-        let chainInfo=await this.getChainInfo()
+        let chainInfo=await this.getChainInfo(chain)
         this.bundlerUrl=chainInfo.bundlerUrl
         this.rpcurl=chainInfo.rpcUrl
         this.entryPointAddress=chainInfo.entryPointAddress
@@ -232,8 +232,8 @@ class FunWallet {
         return op
     }
 
-    static async _getUserOpInternal(userOpHash) {
-        return await fetch('https://fun-mvp-api.herokuapp.com/getUserOp', {
+    async _getUserOpInternal(userOpHash) {
+        return await fetch('http://localhost:3000/userops/getUserOpByHashAWS', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -243,10 +243,10 @@ class FunWallet {
             body: JSON.stringify({
                 userOpHash: userOpHash,
             })
-        }).then((r) => r.json()).then((r) => { return r })
+        }).then((r) => r.json()).then((r) => { return r.data })
     }
-    async _storeUserOpInternal(userOp, userOpHash) {
-        await fetch('https://fun-mvp-api.herokuapp.com/storeUserOp', {
+    async _storeUserOpInternal(userOp, userOpHash,user) {
+        await fetch('http://localhost:3000/userops/storeUserOpAWS', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -255,7 +255,8 @@ class FunWallet {
             referrerPolicy: 'no-referrer',
             body: JSON.stringify({
                 userOpHash: userOpHash,
-                userOp: userOp
+                userOp: userOp,
+                user
             })
         })
     }
@@ -289,7 +290,7 @@ class FunWallet {
     }
 
     getChainInfo=async (chain)=>{
-        return await fetch('https://fun-mvp-api.herokuapp.com/getChainInfo', {
+        return await fetch('http://localhost:3000/chaininfo/getChainInfo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
