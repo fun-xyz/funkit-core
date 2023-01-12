@@ -223,7 +223,7 @@ class FunWallet {
     }
 
     static async _getStoredUserOp(opHash) {
-        const op = await this._getUserOpInternal(opHash)
+        const op = await _getUserOpInternal(opHash)
         Object.keys(op).map(key => {
             if (op[key].type == "BigNumber") {
                 op[key] = ethers.BigNumber.from(op[key].hex)
@@ -232,7 +232,7 @@ class FunWallet {
         return op
     }
 
-    async _getUserOpInternal(userOpHash) {
+    static async _getUserOpInternal(userOpHash) {
         return await fetch('http://localhost:3000/userops/getUserOpByHashAWS', {
             method: 'POST',
             headers: {

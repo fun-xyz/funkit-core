@@ -32,11 +32,12 @@ const main = async () => {
     //getTokenAddress
     const chain = 'avax-fuji'
     const chainInfo=await wallet.getChainInfo(chain)
+    console.log(chainInfo)
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     await wallet.init(eoa, "0.3", chain)
 
     // Add the withdraw from aave action to the FunWallet
-    await wallet.addAction("AAVE", aTokenAddress)
+    await wallet.addAction("AAVE", chainInfo.dai.tokenAddress)
 
     /*
     Deploy the FunWallet with the withdraw from Aave action.
