@@ -12,7 +12,6 @@ const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
 const Treasury = require("../utils/abis/Treasury.json")
 
-
 const ethers = require('ethers')
 
 const abi = ethers.utils.defaultAbiCoder;
@@ -37,7 +36,7 @@ class FunWallet {
 
     constructor(eoa, actions, index = 0) {
         this.eoa = eoa
-        this.actions = actions
+        this.actionsStore = actions
         this.index = index
     }
     contracts = {}
@@ -90,10 +89,11 @@ class FunWallet {
 
         const treasury = new ethers.Contract(this.address, Treasury.abi, this.eoa)
         this.contracts[this.address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, treasury)
-
-        const amt = ethers.utils.parseEther(prefundAmt.toString())
-        const prefundReceipt = await this.preFund(amt)
-        return prefundReceipt
+        if (prefundAmt) {
+            const amt = ethers.utils.parseEther(prefundAmt.toString())
+            const prefundReceipt = await this.preFund(amt)
+            return prefundReceipt
+        }
     }
 
     async preFund(amt) {
@@ -133,8 +133,8 @@ class FunWallet {
         this.actionStore.push(info)
     }
 
-    async _createAction({ to, data }, gasLimit, noInit = false) {
-        return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit })
+    async _createAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
     async _createUnsignedAction({ to, data }, gasLimit, noInit = false, calldata = false) {
@@ -157,44 +157,30 @@ class FunWallet {
 
         const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, tokenAddr]
-
-        const key = this.generateSha256(input.toString())
+        const key = generateSha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
         const actionInitData = await this.contracts[AaveActionAddress].getMethodEncoding("init", [aaveData])
         return actionInitData
 
     }
 
-    async _createAAVEWithdrawalExec(params) {
+    async _createAAVEWithdrawalExec({ params }) {
         this.params = params
         const tokenAddr = this.params[0]
+        this._initActionContract(AaveActionAddress)
 
         const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, tokenAddr]
-        const key = this.generateSha256(input.toString())
-
+        const key = generateSha256(input)
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
         return actionExecutionOp
     }
 
-    async getWalletOps() {
-        const actionCreateData = { to: [], data: [] }
-        const executionOps = await Promise.all(Object.values(this.actionStore).map(async (actionData) => {
-            const actionInitData = await this._createWalletInitData(actionData)
-            const { to, data } = actionInitData
-            actionCreateData.to.push(to)
-            actionCreateData.data.push(data)
-            return actionExecutionOp
-        }))
-        return { createWalletOp, executionOps }
-
-    }
-
     async initializeWallet() {
         const actionCreateData = { to: [], data: [] }
-        await Promise.all(Object.values(this.actionStore).map(async (actionData) => {
+        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
             const actionInitData = await this._createWalletInitData(actionData)
             const { to, data } = actionInitData
             actionCreateData.to.push(to)
@@ -206,18 +192,18 @@ class FunWallet {
     }
 
     async createExecutionOp(action) {
-        return _createAAVEWithdrawalExec(action)
+        return this._createAAVEWithdrawalExec(action)
     }
 
     async createExecutionOps(actions) {
         return await Promise.all(actions.map((action) => {
-            return _createAAVEWithdrawalExec(action)
+            return this._createAAVEWithdrawalExec(action)
         }))
     }
 
     async createAllExecutionOps() {
         return await Promise.all(Object.values(this.actionStore).map((action) => {
-            return _createAAVEWithdrawalExec(action)
+            return this._createAAVEWithdrawalExec(action)
         }))
     }
 
@@ -236,8 +222,8 @@ class FunWallet {
     }
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
-        const sig = this._sha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig, 'immuna')
+        const sig = generateSha256(outOp.signature.toString())
+        await this._storeUserOpInternal(outOp, sig)
         return sig
     }
     async _getPromiseFromOp(op) {
@@ -320,7 +306,7 @@ class FunWallet {
         if (this.contracts[address]) {
             return
         }
-        const action = new ethers.Contract(address, ERCToken.abi, this.eoa)
+        const action = new ethers.Contract(address, Action.abi, this.eoa)
         this.contracts[address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, action)
     }
 
@@ -347,6 +333,11 @@ class FunWallet {
     async sendTransaction(tx) {
         const submittedTx = await this.provider.sendTransaction(tx);
         return await submittedTx.wait()
+    }
+
+    async sendTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
+        const tx = await this.getTokenApprovalTx(aTokenAddress, amount)
+        return await this.sendTransaction(tx)
     }
 }
 
