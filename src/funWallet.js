@@ -55,28 +55,33 @@ class FunWallet {
     * index - index of account (default 0)
     */
 
-     async init(prefundAmt) {
+    async init(prefundAmt) {
 
         let [_t, chainInfo] = await this.getChainInfo(this.chain)
-        console.log(chainInfo[1])
+        console.log(chainInfo)
 
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
-        this.rpcurl = chainInfo.rpcdata.rpcUrl
+        this.rpcurl = chainInfo.rpcdata.rpcurl
         this.entryPointAddress = chainInfo.aaData.entryPointAddress
         this.factoryAddress = chainInfo.aaData.factoryAddress
         this.AaveActionAddress = chainInfo.actionData.aave
+        console.log(
+            this.bundlerUrl,
+            this.rpcurl,
+            this.entryPointAddress,
+            this.factoryAddress,
+            this.AaveActionAddress,
+        )
         // console.log(this.chainInfo)
 
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
-        this.provider = new ethers.providers.JsonRpcProvider(rpcurl);
-        this.config = { bundlerUrl, entryPointAddress }
 
         const net = await this.provider.getNetwork()
         this.chainId = net.chainId
 
-        this.rpcClient = new HttpRpcClient(bundlerUrl, entryPointAddress, this.chainId)
-        this.erc4337Provider = await wrapProvider(this.provider, this.config, this.eoa, factoryAddress)
+        this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, this.chainId)
+        this.erc4337Provider = await wrapProvider(this.provider, this.config, this.eoa, this.factoryAddress)
 
         this.accountApi = new TreasuryAPI({
             provider: this.erc4337Provider,
