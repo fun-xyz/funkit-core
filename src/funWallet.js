@@ -211,7 +211,7 @@ class FunWallet {
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
         const sig = this._sha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig)
+        await this._storeUserOpInternal(outOp, sig, 'immuna')
         return sig
     }
     async _getPromiseFromOp(op) {
@@ -223,7 +223,7 @@ class FunWallet {
     }
 
     static async _getStoredUserOp(opHash) {
-        const op = await _getUserOpInternal(opHash)
+        const op = await this._getUserOpInternal(opHash)
         Object.keys(op).map(key => {
             if (op[key].type == "BigNumber") {
                 op[key] = ethers.BigNumber.from(op[key].hex)
@@ -233,7 +233,7 @@ class FunWallet {
     }
 
     static async _getUserOpInternal(userOpHash) {
-        return await fetch('http://localhost:3000/userops/getUserOpByHashAWS', {
+        return await fetch('http://34.222.30.234:3000/userops/getUserOpByHashAWS', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -246,7 +246,7 @@ class FunWallet {
         }).then((r) => r.json()).then((r) => { return r.data })
     }
     async _storeUserOpInternal(userOp, userOpHash,user) {
-        await fetch('http://localhost:3000/userops/storeUserOpAWS', {
+        await fetch('http://34.222.30.234:3000/userops/storeUserOpAWS', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -290,7 +290,7 @@ class FunWallet {
     }
 
     getChainInfo=async (chain)=>{
-        return await fetch('http://localhost:3000/chaininfo/getChainInfo', {
+        return await fetch('http://34.222.30.234:3000/chaininfo/getChainInfo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

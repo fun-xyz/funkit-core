@@ -23,13 +23,7 @@ const main = async () => {
 
     // Create a new FunWallet instance, 
     const wallet = new FunWallet()
-    // const test=wallet._storeUserOpInternal({
-    //     "sdfjsdf":"sdfsd",
-    //     "jkjk":"jkjk"
-    // },"sodfjklsdjf",'immuna')
-    // const test=await wallet._getUserOpInternal('sodfjklsdjf')
-    // console.log(test)
-    //getTokenAddress
+
     const chain = 'avax-fuji'
     const chainInfo=await wallet.getChainInfo(chain)
     console.log(chainInfo)
