@@ -51,14 +51,14 @@ class FunWallet {
     // factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
     // AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
     // MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    
+
     bundlerUrl = ""
     rpcurl = ""
     entryPointAddress = ""
     factoryAddress = ""
     AaveActionAddress = ""
     MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    
+
 
     _sha256(content) {
         return CryptoJS.SHA256(content).toString(CryptoJS.enc.Hex)
@@ -81,12 +81,12 @@ class FunWallet {
         this.preFundAmt = preFundAmt
         this.index = index
 
-        let chainInfo=await this.getChainInfo(chain)
-        this.bundlerUrl=chainInfo.bundlerUrl
-        this.rpcurl=chainInfo.rpcUrl
-        this.entryPointAddress=chainInfo.entryPointAddress
-        this.factoryAddress=chainInfo.factoryAddress
-        this.AaveActionAddress=chainInfo.actionAddress
+        let chainInfo = await this.getChainInfo(chain)
+        this.bundlerUrl = chainInfo.bundlerUrl
+        this.rpcurl = chainInfo.rpcUrl
+        this.entryPointAddress = chainInfo.entryPointAddress
+        this.factoryAddress = chainInfo.factoryAddress
+        this.AaveActionAddress = chainInfo.actionAddress
 
 
 
@@ -117,7 +117,7 @@ class FunWallet {
             console.log("Wallet has been Funded:\n", fundReceipt)
         }
 
-        
+
 
     }
 
@@ -245,7 +245,7 @@ class FunWallet {
             })
         }).then((r) => r.json()).then((r) => { return r.data })
     }
-    async _storeUserOpInternal(userOp, userOpHash,user) {
+    async _storeUserOpInternal(userOp, userOpHash, user) {
         await fetch('http://34.222.30.234:3000/userops/storeUserOpAWS', {
             method: 'POST',
             headers: {
@@ -289,7 +289,7 @@ class FunWallet {
         return await submittedTx.wait()
     }
 
-    getChainInfo=async (chain)=>{
+    static async getChainInfo(chain) {
         return await fetch('http://34.222.30.234:3000/chaininfo/getChainInfo', {
             method: 'POST',
             headers: {

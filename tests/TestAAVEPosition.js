@@ -25,7 +25,7 @@ const main = async () => {
     const wallet = new FunWallet()
 
     const chain = 'avax-fuji'
-    const chainInfo=await wallet.getChainInfo(chain)
+    const chainInfo=await FunWallet.getChainInfo(chain)
     console.log(chainInfo)
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     await wallet.init(eoa, "0.3", chain)
