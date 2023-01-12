@@ -4,7 +4,7 @@ const ethers = require('ethers')
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 const main = async () => {
 
-  
+
 
     // Create an EOA instance with ethers
 
@@ -24,31 +24,33 @@ const main = async () => {
 
     const schema = new AccessControlSchema()
 
-    const withdrawEntirePosition = AAVEWithdrawal(aTokenAddress)
+    const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
     // Add the withdraw from aave action to the FunWallet
-    schema.addAction(withdrawEntirePosition)
+
 
 
     // Create a new FunWallet instance, 
-    const prefundAmt = .3 // eth
+    const prefundAmt = 0 // eth
 
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     const wallet = await schema.createFunWallet(eoa, prefundAmt)
 
     const createWalletReceipt = await wallet.initializeWallet()
     console.log("Creation Succesful:\n", createWalletReceipt)
-    
+
     const executionOp = await wallet.createExecutionOp(withdrawEntirePosition)
+
 
     /* 
     Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
     Aave smart contract.
     */
-    const tx = await wallet.getTokenApprovalTx(aTokenAddress)
-    const approveReceipt = await wallet.sendTransaction(tx)
+
+    const approveReceipt = await wallet.sendTokenApprovalTx(aTokenAddress)
     console.log("Approval Succesful:\n", approveReceipt)
 
     // After some time, execute the Aave withdrawal action
+
     const executionReceipt = await FunWallet.sendOpToBundler(executionOp)
     console.log("Execution Succesful:\n", executionReceipt)
 

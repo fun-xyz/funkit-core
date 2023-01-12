@@ -5,10 +5,11 @@ class AccessControlSchema {
     actionsStore = {}
 
     addAction(action, salt = 0) {
-        actionsStore[generateSha256(action)] = { ...action, salt };
+        this.actionsStore[generateSha256(action)] = { ...action, salt };
+        return { ...action, salt }
     }
     removeAction(action, salt = 0) {
-        delete actionsStore[generateSha256({ ...action, salt })]
+        delete this.actionsStore[generateSha256({ ...action, salt })]
     }
     updateAction(prevAction, newAction, salt = 0) {
         this.removeAction(prevAction, salt)
@@ -18,7 +19,9 @@ class AccessControlSchema {
 
     async createFunWallet(eoa, prefundamt, index = 0) {
         const wallet = new FunWallet(eoa, this.actionsStore, index)
-        await wallet.init(prefundamt)
+        const prefund = await wallet.init(prefundamt)
+        console.log("Prefund Successful: ", prefund)
+        return wallet
     }
 }
 

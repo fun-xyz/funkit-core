@@ -1,8 +1,8 @@
 const CryptoJS = require("crypto-js")
 
-const generateActionHash = (action) => {
+const generateSha256 = (action) => {
     return CryptoJS.SHA256(JSON.stringify(action)).toString(CryptoJS.enc.Hex)
 }
 
 
-module.exports = { generateActionHash }
+module.exports = { generateSha256 }
