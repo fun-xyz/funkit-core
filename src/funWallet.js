@@ -66,7 +66,6 @@ class FunWallet {
         this.factoryAddress = chainInfo.aaData.factoryAddress
         this.AaveActionAddress = chainInfo.actionData.aave
        
-        // console.log(this.chainInfo)
 
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
@@ -109,7 +108,7 @@ class FunWallet {
     static async sendOpToBundler(op) {
         const provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         const chainId = (await provider.getNetwork()).chainId
-        const rpcClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
+        const rpcClient = new HttpRpcClient(bundlerUrl, this.entryPointAddress, chainId)
         const accountApi = new TreasuryAPI({
             provider: provider,
             entryPointAddress: this.entryPointAddress,  //check this
