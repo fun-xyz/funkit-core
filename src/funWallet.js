@@ -193,7 +193,7 @@ class FunWallet {
             actionCreateData.data.push(data)
         }))
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await this._createAction(createWalleteData, 560000, true)
+        const op = await this._createAction(createWalleteData, 560000)
         return await this.sendOpToBundler(op)
     }
 
@@ -331,26 +331,12 @@ class FunWallet {
             return r.data
         })
     }
-    async getTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
-        this._initTokenContract(aTokenAddress)
-        return await this.contracts[aTokenAddress].createSignedTransaction("approve", [this.address, amount])
-    }
-
-
-
-    async getTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
-        this._initTokenContract(aTokenAddress)
-        return await this.contracts[aTokenAddress].createSignedTransaction("approve", [this.address, amount])
-    }
-
-    async sendTransaction(tx) {
-        const submittedTx = await this.provider.sendTransaction(tx);
-        return await submittedTx.wait()
-    }
 
     async sendTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
-        const tx = await this.getTokenApprovalTx(aTokenAddress, amount)
-        return await this.sendTransaction(tx)
+        this._initTokenContract(aTokenAddress)
+        const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
+        const submittedTx = await this.eoa.sendTransaction(ethTx);
+        return await submittedTx.wait()
     }
 }
 

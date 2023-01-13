@@ -17,7 +17,7 @@ const main = async () => {
 
     // With privateKey
 
-    const privKey = "c5ff68eee74d447b88d5d0dd1d438b37f30a4c0b1e41e9c485c6e2ea282d1489"
+    const privKey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
@@ -31,7 +31,7 @@ const main = async () => {
 
 
     // Create a new FunWallet instance, 
-    const prefundAmt = 0 // eth
+    const prefundAmt = 0.3 // eth
     const chain = '43113'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     const wallet = await schema.createFunWallet(eoa, prefundAmt, chain)

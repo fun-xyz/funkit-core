@@ -15,6 +15,9 @@ class WrappedEthersContract {
     async createSignedTransaction(method, params = [], nonceAdd = 0) {
         return await createRawTransaction(this.wallet, this.provider, this.chainId, this.contract, method, params, nonceAdd)
     }
+    async createUnsignedTransaction(method, params = [], nonceAdd = 0) {
+        return await createUnsignedTransaction(this.wallet, this.provider, this.chainId, this.contract, method, params, nonceAdd)
+    }
 
     async getMethodEncoding(method, params = []) {
         return await this.contract.populateTransaction[method](...params)
@@ -56,6 +59,16 @@ const createRawTransaction = async (wallet, provider, chainId, contract, method,
     // const submittedTx = await provider.sendTransaction(approveTxSigned);
     // await submittedTx.wait()
     return approveTxSigned
+}
+const createUnsignedTransaction = async (wallet, provider, chainId, contract, method, params, nonceAdd = 0) => {
+    const estimatedGasLimit = await contract.estimateGas[method](...params)
+    const approveTxUnsigned = await contract.populateTransaction[method](...params)
+    approveTxUnsigned.gasLimit = estimatedGasLimit;
+    approveTxUnsigned.gasPrice = await provider.getGasPrice();
+    const addr = await wallet.getAddress()
+    approveTxUnsigned.nonce = (await provider.getTransactionCount(addr)) + nonceAdd;
+    approveTxUnsigned.chainId = chainId;
+    return approveTxUnsigned
 }
 
 const wrapMultipleContracts = (wallet, provider, chainId, contracts) => {
