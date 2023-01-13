@@ -38,7 +38,7 @@ class FunWallet {
         this.eoa = eoa
         this.actionsStore = actions
         this.index = index
-        this.chain=chain
+        this.chain = chain
     }
     contracts = {}
 
@@ -58,14 +58,14 @@ class FunWallet {
 
     async init(prefundAmt) {
 
-        let chainInfo = await this.getChainInfo(this.chain)
+        let chainInfo = await FunWallet.getChainInfo(this.chain)
 
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
         this.rpcurl = chainInfo.rpcdata.rpcurl
         this.entryPointAddress = chainInfo.aaData.entryPointAddress
         this.factoryAddress = chainInfo.aaData.factoryAddress
         this.AaveActionAddress = chainInfo.actionData.aave
-       
+
 
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
@@ -105,14 +105,22 @@ class FunWallet {
         return { userOpHash, txid }
     }
 
-    static async sendOpToBundler(op) {
-        const provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
+    static async sendOpToBundler(op, chain) {
+        let chainInfo = await FunWallet.getChainInfo(chain)
+
+        const bundlerUrl = chainInfo.rpcdata.bundlerUrl
+        const rpcurl = chainInfo.rpcdata.rpcurl
+        const entryPointAddress = chainInfo.aaData.entryPointAddress
+        const factoryAddress = chainInfo.aaData.factoryAddress
+        const AaveActionAddress = chainInfo.actionData.aave
+
+        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const chainId = (await provider.getNetwork()).chainId
-        const rpcClient = new HttpRpcClient(bundlerUrl, this.entryPointAddress, chainId)
+        const rpcClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const accountApi = new TreasuryAPI({
             provider: provider,
-            entryPointAddress: this.entryPointAddress,  //check this
-            factoryAddress: this.factoryAddress
+            entryPointAddress: entryPointAddress,  //check this
+            factoryAddress: factoryAddress
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
@@ -308,7 +316,7 @@ class FunWallet {
         this.contracts[address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, action)
     }
 
-    async getChainInfo(chain) {
+    static async getChainInfo(chain) {
         return await fetch('http://34.222.30.234:3000/chaininfo/getChainInfoAWS', {
             method: 'POST',
             headers: {

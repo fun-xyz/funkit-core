@@ -32,9 +32,9 @@ const main = async () => {
 
     // Create a new FunWallet instance, 
     const prefundAmt = 0 // eth
-    const chain='43113'
+    const chain = '43113'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    const wallet = await schema.createFunWallet(eoa, prefundAmt,chain)
+    const wallet = await schema.createFunWallet(eoa, prefundAmt, chain)
 
     const createWalletReceipt = await wallet.initializeWallet()
     console.log("Creation Succesful:\n", createWalletReceipt)
@@ -52,10 +52,10 @@ const main = async () => {
 
     // After some time, execute the Aave withdrawal action
 
-    const executionReceipt = await FunWallet.sendOpToBundler(executionOp)
+    const executionReceipt = await FunWallet.sendOpToBundler(executionOp, chain)
     console.log("Execution Succesful:\n", executionReceipt)
-    
-    
+
+
 }
 
 main()
