@@ -11,7 +11,8 @@
     "@account-abstraction/contracts": "^0.4.0",
     "@account-abstraction/sdk": "^0.4.0",
     "crypto-js": "^4.1.1",
-    "ethers": "^5.7.2"
+    "ethers": "^5.7.2",
+    "node-fetch": "^2.0.0"
   },
   "directories": {
     "test": "tests"
