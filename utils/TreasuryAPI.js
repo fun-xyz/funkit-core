@@ -3,8 +3,6 @@ const ethers_1 = require("ethers");
 
 const utils_1 = require("ethers/lib/utils");
 const BaseAccountAPI_1 = require("./BaseAccountAPI");
-const Web3 = require('web3')
-const web3 = new Web3();
 
 const TreasurySRC = require("./abis/Treasury.json")
 const srcfile = require("./abis/TreasuryFactory.json")
@@ -24,6 +22,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
         super(params);
         this.factoryAddress = params.factoryAddress;
         this.owner = params.owner;
+
 
         this.index = (_a = params.index) !== null && _a !== void 0 ? _a : 0;
     }
@@ -48,7 +47,7 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
         }
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
-            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress,await this.owner.getAddress(), this.index])
+            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
         ]);
     }
     async getNonce() {
@@ -61,29 +60,8 @@ class SimpleAccountAPI extends BaseAccountAPI_1.BaseAccountAPI {
      * @param data
      */
     async encodeExecute(target, value, data) {
-        return web3.eth.abi.encodeFunctionCall({
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "dest",
-                    "type": "address"
-                },
-                {
-                    "internalType": "uint256",
-                    "name": "value",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "bytes",
-                    "name": "func",
-                    "type": "bytes"
-                }
-            ],
-            "name": "execFromEntryPoint",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        }, [target, value, data])
+        await this._getAccountContract()
+        return this.accountContract.interface.encodeFunctionData("execFromEntryPoint", [target, value, data])
     }
 
     async signUserOpHash(userOpHash) {

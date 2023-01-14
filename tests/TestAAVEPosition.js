@@ -31,7 +31,7 @@ const main = async () => {
 
 
     // Create a new FunWallet instance, 
-    const prefundAmt = 0.3 // eth
+    const prefundAmt = 0 // eth
     const chain = '43113'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     const wallet = await schema.createFunWallet(eoa, prefundAmt, chain)
