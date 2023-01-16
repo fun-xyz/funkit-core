@@ -23,6 +23,7 @@ const abi = ethers.utils.defaultAbiCoder;
 // const factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
 // const AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+const APIURL='https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 
 class FunWallet {
     /**
@@ -34,13 +35,14 @@ class FunWallet {
     */
 
 
-    constructor(eoa, schema, prefundAmt, chain, index = 0) {
+    constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0) {
         this.eoa = eoa
         this.prefundAmt = prefundAmt
         this.schema = schema
         this.actionsStore = this.schema.actionsStore
         this.index = index
         this.chain = chain
+        this.apiKey= apiKey
     }
     contracts = {}
 
@@ -251,10 +253,11 @@ class FunWallet {
         return op
     }
     static async _getUserOpInternal(userOpHash) {
-        return await fetch('http://34.222.30.234:3000/userops/getUserOpByHashAWS', {
+        return await fetch(`${APIURL}/get-user-op`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Api-Key':this.apiKey
             },
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
@@ -264,10 +267,11 @@ class FunWallet {
         }).then((r) => r.json()).then((r) => { return r.data })
     }
     async _storeUserOpInternal(userOp, userOpHash, user) {
-        await fetch('http://34.222.30.234:3000/userops/storeUserOpAWS', {
+        await fetch(`${APIURL}/save-user-op`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Api-Key':this.apiKey
             },
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
@@ -319,7 +323,7 @@ class FunWallet {
     }
 
     static async getChainInfo(chain) {
-        return await fetch('http://34.222.30.234:3000/chaininfo/getChainInfoAWS', {
+        return await fetch(`${APIURL}/get-chain-info`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
