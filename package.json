@@ -1,6 +1,8 @@
 {
   "name": "@fun-wallet/sdk",
   "version": "1.0.2",
+  "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
+
   "main": "index.js",
   "scripts": {
     "test": "node tests/TestAAVEPosition.js"
