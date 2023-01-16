@@ -1,12 +1,16 @@
 const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
+const chain = '43113' //avax fuji 
 
-const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-// const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
 
 const main = async () => {
 
+    const chainInfo=await FunWallet.getChainInfo(chain)
+    const rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
+    const AaveActionAddress = chainInfo.actionData.aave
+    const aTokenAddress=chainInfo.tokenAddr.dai // Avalanche Fuji AAVE Dai 0x210a3f864812eAF7f89eE7337EAA1FeA1830C57e
 
+   
     // Create an EOA instance with ethers
 
     // With metamask
@@ -21,8 +25,6 @@ const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
-    const aTokenAddress = "0x210a3f864812eAF7f89eE7337EAA1FeA1830C57e" // Avalanche Fuji AAVE Dai
-
     const schema = new AccessControlSchema()
 
     const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
@@ -32,7 +34,6 @@ const main = async () => {
 
     // Create a new FunWallet instance, 
     const prefundAmt = 0 // eth
-    const chain = '43113'
     const APIKEY='YOUR_API_KEY'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
     const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
