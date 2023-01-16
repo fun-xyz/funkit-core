@@ -107,9 +107,8 @@ class FunWallet {
         return { userOpHash, txid }
     }
 
-    static async deployActionTx(op, chain) {
+    static async deployActionTx(op, chain = "43113") {
         let chainInfo = await FunWallet.getChainInfo(chain)
-
         const bundlerUrl = chainInfo.rpcdata.bundlerUrl
         const rpcurl = chainInfo.rpcdata.rpcurl
         const entryPointAddress = chainInfo.aaData.entryPointAddress
