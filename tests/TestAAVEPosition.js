@@ -21,7 +21,7 @@ const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
-    const aTokenAddress = "0xC42f40B7E22bcca66B3EE22F3ACb86d24C997CC2" // Avalanche Fuji AAVE Dai
+    const aTokenAddress = "0x210a3f864812eAF7f89eE7337EAA1FeA1830C57e" // Avalanche Fuji AAVE Dai
 
     const schema = new AccessControlSchema()
 
@@ -34,25 +34,25 @@ const main = async () => {
     const prefundAmt = 0 // eth
     const chain = '43113'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    const wallet = await schema.createFunWallet(eoa, prefundAmt, chain)
+    const wallet = new FunWallet(eoa, schema, prefundAmt, chain)
 
-    const createWalletReceipt = await wallet.initializeWallet()
+    const createWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", createWalletReceipt)
 
-    const executionOp = await wallet.createExecutionOp(withdrawEntirePosition)
 
+    const aaveActionTx = await wallet.createActionTx(withdrawEntirePosition)
 
     /* 
     Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
     Aave smart contract.
     */
 
-    const approveReceipt = await wallet.sendTokenApprovalTx(aTokenAddress)
+    const approveReceipt = await wallet.deployTokenApproval(aTokenAddress)
     console.log("Approval Succesful:\n", approveReceipt)
 
     // After some time, execute the Aave withdrawal action
 
-    const executionReceipt = await FunWallet.sendOpToBundler(executionOp, chain)
+    const executionReceipt = await FunWallet.deployActionTx(aaveActionTx, chain)
     console.log("Execution Succesful:\n", executionReceipt)
 
 

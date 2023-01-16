@@ -34,9 +34,11 @@ class FunWallet {
     */
 
 
-    constructor(eoa, actions, chain, index = 0) {
+    constructor(eoa, schema, prefundAmt, chain, index = 0) {
         this.eoa = eoa
-        this.actionsStore = actions
+        this.prefundAmt = prefundAmt
+        this.schema = schema
+        this.actionsStore = this.schema.actionsStore
         this.index = index
         this.chain = chain
     }
@@ -56,8 +58,8 @@ class FunWallet {
     * index - index of account (default 0)
     */
 
-    async init(prefundAmt) {
-
+    async init() {
+        const prefundAmt = this.prefundAmt
         let chainInfo = await FunWallet.getChainInfo(this.chain)
 
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
@@ -99,13 +101,13 @@ class FunWallet {
         return await tx.wait()
     }
 
-    async sendOpToBundler(op) {
+    async deployActionTx(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
         return { userOpHash, txid }
     }
 
-    static async sendOpToBundler(op, chain) {
+    static async deployActionTx(op, chain) {
         let chainInfo = await FunWallet.getChainInfo(chain)
 
         const bundlerUrl = chainInfo.rpcdata.bundlerUrl
@@ -184,7 +186,8 @@ class FunWallet {
         return actionExecutionOp
     }
 
-    async initializeWallet() {
+    async deploy() {
+        await this.init()
         const actionCreateData = { to: [], data: [] }
         await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
             const actionInitData = await this._createWalletInitData(actionData)
@@ -194,20 +197,20 @@ class FunWallet {
         }))
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await this._createAction(createWalleteData, 560000)
-        return await this.sendOpToBundler(op)
+        return await this.deployActionTx(op)
     }
 
-    async createExecutionOp(action) {
+    async createActionTx(action) {
         return this._createAAVEWithdrawalExec(action)
     }
 
-    async createExecutionOps(actions) {
+    async createActionTxs(actions) {
         return await Promise.all(actions.map((action) => {
             return this._createAAVEWithdrawalExec(action)
         }))
     }
 
-    async createAllExecutionOps() {
+    async createAllActionTx() {
         return await Promise.all(Object.values(this.actionStore).map((action) => {
             return this._createAAVEWithdrawalExec(action)
         }))
@@ -224,7 +227,7 @@ class FunWallet {
         if (!userOp && opHash) {
             userOp = await this._getStoredUserOp(opHash)
         }
-        return await this.sendOpToBundler(userOp)
+        return await this.deployActionTx(userOp)
     }
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
@@ -332,7 +335,7 @@ class FunWallet {
         })
     }
 
-    async sendTokenApprovalTx(aTokenAddress, amount = MAX_INT) {
+    async deployTokenApproval(aTokenAddress, amount = MAX_INT) {
         this._initTokenContract(aTokenAddress)
         const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
         const submittedTx = await this.eoa.sendTransaction(ethTx);
