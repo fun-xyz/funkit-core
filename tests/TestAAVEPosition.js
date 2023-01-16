@@ -33,8 +33,9 @@ const main = async () => {
     // Create a new FunWallet instance, 
     const prefundAmt = 0 // eth
     const chain = '43113'
+    const APIKEY='YOUR_API_KEY'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    const wallet = new FunWallet(eoa, schema, prefundAmt, chain, 'hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf')
+    const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
 
     const createWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", createWalletReceipt)
