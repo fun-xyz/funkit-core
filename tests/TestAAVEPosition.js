@@ -27,8 +27,8 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
 
     // Deploy the FunWallet
-    const createWalletReceipt = await wallet.deploy()
-    console.log("Creation Succesful:\n", createWalletReceipt)
+    const deployWalletReceipt = await wallet.deploy()
+    console.log("Creation Succesful:\n", deployWalletReceipt)
 
     // Create a tx that exits an EOA's Aave poisition to be called at a later point
     const aaveActionTx = await wallet.createActionTx(withdrawEntirePosition)
