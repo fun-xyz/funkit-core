@@ -1,22 +1,20 @@
 const fetch = require("node-fetch")
 const { wrapProvider } = require("../utils/Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
-const CryptoJS = require("crypto-js")
-
-
-const { WrappedEthersContract, wrapMultipleContracts } = require("../utils/WrappedEthersContract")
-
+const { generateSha256 } = require("../utils/tools")
+const { WrappedEthersContract } = require("../utils/WrappedEthersContract")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
-const AaveLiquadation = require("../utils/abis/AaveLiquadation.json")
+const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
-
+const Treasury = require("../utils/abis/Treasury.json")
 const ethers = require('ethers')
 
 const abi = ethers.utils.defaultAbiCoder;
-
+const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 class FunWallet {
+
     /**
     * Standard constructor
     * @params eoa, preFundAmt, index
@@ -24,37 +22,16 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-    constructor() {
-
+    constructor(eoa, schema, prefundAmt, chain, index = 0) {
+        this.eoa = eoa
+        this.prefundAmt = prefundAmt
+        this.schema = schema
+        this.actionsStore = this.schema.actionsStore
+        this.index = index
+        this.chain = chain
     }
+    contracts = {}
 
-
-    static AAVEWalletParams(tokenAddress) {
-        return { tokenAddress }
-    }
-
-    static bundlerUrl = "http://54.184.167.23:3000/rpc"
-
-    // static bundlerUrl = "http://localhost:3000/rpc"
-    // bundlerUrl = "http://localhost:3000/rpc"
-
-
-    static rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-    static entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
-    static factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
-    static AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
-    static MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-
-    bundlerUrl = "http://54.184.167.23:3000/rpc"
-    rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-    entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
-    factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
-    AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
-    MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-
-    _sha256(content) {
-        return CryptoJS.SHA256(content).toString(CryptoJS.enc.Hex)
-    }
     /**     
     * Runs initialization for a given wallet.
     * The function acts as a constructor for many parameters in the class, creating
@@ -68,17 +45,23 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-    async init(eoa, preFundAmt, index = 0) {
-        this.eoa = eoa
-        this.preFundAmt = preFundAmt
-        this.index = index
+    async init() {
+        const prefundAmt = this.prefundAmt
+        let chainInfo = await FunWallet.getChainInfo(this.chain)
+
+        this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
+        this.rpcurl = chainInfo.rpcdata.rpcurl
+        this.entryPointAddress = chainInfo.aaData.entryPointAddress
+        this.factoryAddress = chainInfo.aaData.factoryAddress
+        this.AaveActionAddress = chainInfo.actionData.aave
+
+
         this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
         this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
 
-        const AaveAction = new ethers.Contract(this.AaveActionAddress, AaveLiquadation.abi, this.eoa)
-        this.AaveActionContract = new WrappedEthersContract(this.eoa, this.provider, this.chainId, AaveAction)
         const net = await this.provider.getNetwork()
         this.chainId = net.chainId
+
         this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, this.chainId)
         this.erc4337Provider = await wrapProvider(this.provider, this.config, this.eoa, this.factoryAddress)
 
@@ -89,89 +72,135 @@ class FunWallet {
             factoryAddress: this.factoryAddress,
             index: this.index
         })
-
         this.address = await this.accountApi.getAccountAddress()
-        if (parseFloat(this.preFundAmt) > 0) {
-            //
-            const tx = await this.eoa.sendTransaction({ to: this.address, from: await this.eoa.getAddress(), value: ethers.utils.parseEther(this.preFundAmt) })
-            const fundReceipt = await tx.wait()
-            console.log("Wallet has been Funded:\n", fundReceipt)
+
+        const treasury = new ethers.Contract(this.address, Treasury.abi, this.eoa)
+        this.contracts[this.address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, treasury)
+        if (prefundAmt) {
+            const amt = ethers.utils.parseEther(prefundAmt.toString())
+            const prefundReceipt = await this.preFund(amt)
+            return prefundReceipt
         }
     }
 
-    async _sendOpToBundler(op) {
+    async preFund(amt) {
+        const tx = await this.eoa.sendTransaction({ to: this.address, from: await this.eoa.getAddress(), value: amt })
+        return await tx.wait()
+    }
+
+    async deployActionTx(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
         return { userOpHash, txid }
     }
 
-    static async _sendOpToBundlerStatic(op) {
-        const provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
+    static async deployActionTx(op, chain = "43113") {
+        let chainInfo = await FunWallet.getChainInfo(chain)
+        const bundlerUrl = chainInfo.rpcdata.bundlerUrl
+        const rpcurl = chainInfo.rpcdata.rpcurl
+        const entryPointAddress = chainInfo.aaData.entryPointAddress
+        const factoryAddress = chainInfo.aaData.factoryAddress
+        const AaveActionAddress = chainInfo.actionData.aave
+
+        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const chainId = (await provider.getNetwork()).chainId
-        const rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, chainId)
+        const rpcClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const accountApi = new TreasuryAPI({
             provider: provider,
-            entryPointAddress: this.entryPointAddress,  //check this
-            factoryAddress: this.factoryAddress
+            entryPointAddress: entryPointAddress,  //check this
+            factoryAddress: factoryAddress
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         return { userOpHash, txid }
     }
 
-    async _createTokenApprovalTx(amount = this.MAX_INT) {
-        return await this.tokenContract.createSignedTransaction("approve", [this.address, amount])
-    }
+
     /**
     * adds type of action for FunWallet
     * @params type, params
     * type - string of "AAVE" (uniswap and more will be supported later)
     * params - parameters to insert, (token address)
     */
-    async addAction(type, ...params) {
-        this.walletType = type
-        const aaveWalletOps = await this._createWallet(type, params)
-        this.createWalletOP = aaveWalletOps.walletCreationOp
-        this.actionExecutionOpHash = aaveWalletOps.actionExecutionOpHash
+    addAction(info) {
+        this.actionStore.push(info)
     }
 
-    async _createAction({ to, data }, gasLimit, noInit = false) {
-        return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit })
+    async _createAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
-    async _createWallet(type, params) {
+    async _createUnsignedAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        return await this.accountApi.createUnsignedUserOp({ target: to, data, noInit, gasLimit, calldata })
+    }
+
+    async _createWalletInitData({ type, params }) {
         switch (type) {
             case "AAVE": {
-                return await this._createAAVEWallet(params)
+                return await this._createAAVEWithdrawal(params)
             }
         }
     }
 
-    async _createAAVEWallet(params) {
+    async _createAAVEWithdrawal(params) {
         this.params = params
-        const token = new ethers.Contract(this.params[0], ERCToken.abi, this.eoa)
-        this.tokenContract = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)
+        const tokenAddr = this.params[0]
+
+        this._initActionContract(this.AaveActionAddress)
 
         const eoaAddr = await this.eoa.getAddress()
-        const input = [eoaAddr, this.tokenContract.address].toString()
+        const input = [eoaAddr, tokenAddr]
+        const key = generateSha256(input)
+        const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
+        const actionInitData = await this.contracts[this.AaveActionAddress].getMethodEncoding("init", [aaveData])
+        return actionInitData
 
-        const key = this._sha256(input)
-        const aaveData = abi.encode(["address", "address", "string"], [eoaAddr, this.tokenContract.address, key]);
-        const actionInitData = await this.AaveActionContract.getMethodEncoding("init", [aaveData])
-
-        const walletCreationOp = await this._createAction(actionInitData, 560000)
-
-        const aaveexec = abi.encode(["string"], [key])
-        const actionExecuteCallData = await this.AaveActionContract.getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await this._createAction(actionExecuteCallData, 500000, true)
-
-        const actionExecutionOpHash = await this._storeUserOp(actionExecutionOp)
-
-        return {
-            walletCreationOp,
-            actionExecutionOpHash
-        }
     }
+
+    async _createAAVEWithdrawalExec({ params }) {
+        this.params = params
+        const tokenAddr = this.params[0]
+        this._initActionContract(this.AaveActionAddress)
+
+        const eoaAddr = await this.eoa.getAddress()
+        const input = [eoaAddr, tokenAddr]
+        const key = generateSha256(input)
+        const aaveexec = abi.encode(["string"], [key])
+        const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
+        const actionExecutionOp = await this._createAction(actionExec, 500000, true)
+        return actionExecutionOp
+    }
+
+    async deploy() {
+        await this.init()
+        const actionCreateData = { to: [], data: [] }
+        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
+            const actionInitData = await this._createWalletInitData(actionData)
+            const { to, data } = actionInitData
+            actionCreateData.to.push(to)
+            actionCreateData.data.push(data)
+        }))
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+        const op = await this._createAction(createWalleteData, 560000)
+        return await this.deployActionTx(op)
+    }
+
+    async createActionTx(action) {
+        return this._createAAVEWithdrawalExec(action)
+    }
+
+    async createActionTxs(actions) {
+        return await Promise.all(actions.map((action) => {
+            return this._createAAVEWithdrawalExec(action)
+        }))
+    }
+
+    async createAllActionTx() {
+        return await Promise.all(Object.values(this.actionStore).map((action) => {
+            return this._createAAVEWithdrawalExec(action)
+        }))
+    }
+
     /**
     * Liquidates one's aave position
     * @params opHash - execution hash from deploying the wallet
@@ -183,12 +212,11 @@ class FunWallet {
         if (!userOp && opHash) {
             userOp = await this._getStoredUserOp(opHash)
         }
-        return await this._sendOpToBundlerStatic(userOp)
+        return await this.deployActionTx(userOp)
     }
-
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
-        const sig = this._sha256(outOp.signature.toString())
+        const sig = generateSha256(outOp.signature.toString())
         await this._storeUserOpInternal(outOp, sig)
         return sig
     }
@@ -199,7 +227,6 @@ class FunWallet {
         }))
         return out
     }
-
     static async _getStoredUserOp(opHash) {
         const op = await this._getUserOpInternal(opHash)
         Object.keys(op).map(key => {
@@ -209,9 +236,8 @@ class FunWallet {
         })
         return op
     }
-
     static async _getUserOpInternal(userOpHash) {
-        return await fetch('https://fun-mvp-api.herokuapp.com/getUserOp', {
+        return await fetch('http://34.222.30.234:3000/userops/getUserOpByHashAWS', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -221,10 +247,10 @@ class FunWallet {
             body: JSON.stringify({
                 userOpHash: userOpHash,
             })
-        }).then((r) => r.json()).then((r) => { return r })
+        }).then((r) => r.json()).then((r) => { return r.data })
     }
-    async _storeUserOpInternal(userOp, userOpHash) {
-        await fetch('https://fun-mvp-api.herokuapp.com/storeUserOp', {
+    async _storeUserOpInternal(userOp, userOpHash, user) {
+        await fetch('http://34.222.30.234:3000/userops/storeUserOpAWS', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -233,7 +259,8 @@ class FunWallet {
             referrerPolicy: 'no-referrer',
             body: JSON.stringify({
                 userOpHash: userOpHash,
-                userOp: userOp
+                userOp: userOp,
+                user
             })
         })
     }
@@ -244,29 +271,66 @@ class FunWallet {
     * receipt - receipt of transaction committed to chain.
     * executionHash - string hash of the UserOperation 
     */
-    async deployWallet() {
-        try {
-            const receipt = await this._sendOpToBundler(this.createWalletOP)
-            return { receipt, executionHash: this.actionExecutionOpHash }
-        } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this._createWallet(this.walletType, this.params)
-            const receipt = await this._sendOpToBundler(walletCreationOp)
-            return { receipt, executionHash: actionExecutionOpHash }
-
-        }
+    async deploy() {
+        await this.init()
+        const actionCreateData = { to: [], data: [] }
+        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
+            const actionInitData = await this._createWalletInitData(actionData)
+            const { to, data } = actionInitData
+            actionCreateData.to.push(to)
+            actionCreateData.data.push(data)
+        }))
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+        const op = await this._createAction(createWalleteData, 560000)
+        return await this.deployActionTx(op)
     }
+
+
     /**
     * Grants approval to controller wallet to liquidate funds
     * @return {receipt} 
     * receipt - TransactionReceipt of the approval confirmed on chain
     */
-    async deployTokenApprovalTx() {
-        const ethTx = await this._createTokenApprovalTx()
+
+
+    _initTokenContract(address) {
+        if (this.contracts[address]) {
+            return
+        }
+        const token = new ethers.Contract(address, ERCToken.abi, this.eoa)
+        this.contracts[address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, token)
+    }
+    _initActionContract(address) {
+        if (this.contracts[address]) {
+            return
+        }
+        const action = new ethers.Contract(address, Action.abi, this.eoa)
+        this.contracts[address] = new WrappedEthersContract(this.eoa, this.provider, this.chainId, action)
+    }
+
+    static async getChainInfo(chain) {
+        return await fetch('http://34.222.30.234:3000/chaininfo/getChainInfoAWS', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                chain,
+            })
+        }).then((r) => r.json()).then((r) => {
+            return r.data
+        })
+    }
+
+    async deployTokenApproval(aTokenAddress, amount = MAX_INT) {
+        this._initTokenContract(aTokenAddress)
+        const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
         const submittedTx = await this.eoa.sendTransaction(ethTx);
         return await submittedTx.wait()
     }
-
-
 }
 
 module.exports = { FunWallet }
+

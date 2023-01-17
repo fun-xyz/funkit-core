@@ -165,7 +165,13 @@ class BaseAccountAPI {
      */
     async createUnsignedUserOp(info) {
         var _a, _b;
-        const { callData, callGasLimit } = await this.encodeUserOpCallDataAndGasLimit(info);
+        let callData, callGasLimit;
+        if (info.calldata) {
+            callData = info.data
+        } else {
+            let out = await this.encodeUserOpCallDataAndGasLimit(info);
+            callData = out.callData
+        }
         let initCode = info.noInit ? "0x" : await this.getInitCode();
         const initGas = await this.estimateCreationGas(initCode);
         const verificationGasLimit = ethers_1.BigNumber.from(await this.getVerificationGasLimit())
