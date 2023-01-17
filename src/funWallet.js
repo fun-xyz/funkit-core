@@ -12,6 +12,7 @@ const ethers = require('ethers')
 
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 
 class FunWallet {
 
@@ -22,13 +23,16 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-    constructor(eoa, schema, prefundAmt, chain, index = 0) {
+
+
+    constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0) {
         this.eoa = eoa
         this.prefundAmt = prefundAmt
         this.schema = schema
         this.actionsStore = this.schema.actionsStore
         this.index = index
         this.chain = chain
+        this.apiKey = apiKey
     }
     contracts = {}
 
@@ -168,6 +172,8 @@ class FunWallet {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
+        await this._storeUserOp(actionExecutionOp)
+
         return actionExecutionOp
     }
 
@@ -217,9 +223,27 @@ class FunWallet {
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig)
+        await this._storeUserOpInternal(outOp, sig, 'immuna') //storing the customer name, should this be done somehow differently? 
         return sig
     }
+    async _storeUserOpInternal(userOp, userOpHash, user) {
+        await fetch(`${APIURL}/save-user-op`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': this.apiKey
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                userOpHash: userOpHash,
+                userOp: userOp,
+                user
+            })
+        }).then((r) => r.json()).then((r) => { console.log(r.message) })
+    }
+
+
     async _getPromiseFromOp(op) {
         const out = {}
         await Promise.all(Object.keys(op).map(async (key) => {
@@ -236,11 +260,12 @@ class FunWallet {
         })
         return op
     }
-    static async _getUserOpInternal(userOpHash) {
-        return await fetch('http://34.222.30.234:3000/userops/getUserOpByHashAWS', {
+    async _getUserOpInternal(userOpHash) {
+        return await fetch(`${APIURL}/get-user-op`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Api-Key': this.apiKey
             },
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
@@ -248,21 +273,6 @@ class FunWallet {
                 userOpHash: userOpHash,
             })
         }).then((r) => r.json()).then((r) => { return r.data })
-    }
-    async _storeUserOpInternal(userOp, userOpHash, user) {
-        await fetch('http://34.222.30.234:3000/userops/storeUserOpAWS', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-                userOp: userOp,
-                user
-            })
-        })
     }
 
     /**
@@ -309,7 +319,7 @@ class FunWallet {
     }
 
     static async getChainInfo(chain) {
-        return await fetch('http://34.222.30.234:3000/chaininfo/getChainInfoAWS', {
+        return await fetch(`${APIURL}/get-chain-info`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
