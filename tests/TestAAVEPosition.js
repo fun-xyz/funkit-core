@@ -2,11 +2,6 @@ const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 const chain = '43113' //avax fuji 
 
-// Keeping these here for dev purposes, can delete during cleanup
-// Avalanche Fuji AAVE Dai 0x210a3f864812eAF7f89eE7337EAA1FeA1830C57e
-// const privKey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
-// const prefundAmt = 0 // eth or avax
-// const APIKEY = 'YOUR_API_KEY'
 
 const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     const chainInfo = await FunWallet.getChainInfo(chain)
@@ -19,27 +14,23 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     // await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
     // const eoa = provider.getSigner();
 
-    // With privateKey
-
+    // 2. With a known private key
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
     // Create an access control schema with one action: withdraw a user's funds from Aave
     const schema = new AccessControlSchema()
-
-    // Add the withdraw from aave action to the FunWallet
     const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
-    
 
-    // Create a new FunWallet instance, 
 
-    // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
+    // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAX
     const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
 
+    // Deploy the FunWallet
     const createWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", createWalletReceipt)
 
-
+    // Create a tx that exits an EOA's Aave poisition to be called at a later point
     const aaveActionTx = await wallet.createActionTx(withdrawEntirePosition)
 
     // Create & deploy a tx that gives the FunWallet authorization to close the EOA's Aave position
@@ -51,8 +42,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }
-//yarn test [aTokenAddress] [privKey] [preFundAmt] [apiKey]
-//yarn test 0x210a3f864812eAF7f89eE7337EAA1FeA1830C57e 66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206 0.3 hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf
+
 const processConsole = () => {
     main(process.argv[2], process.argv[3], process.argv[4], process.argv[5])
 }
