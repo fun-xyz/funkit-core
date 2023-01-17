@@ -1,5 +1,5 @@
 const { generateSha256 } = require("../utils/tools");
-const { FunWallet } = require("./funWallet");
+const { FunWallet } = require("./FunWallet");
 
 class AccessControlSchema {
     actionsStore = {}

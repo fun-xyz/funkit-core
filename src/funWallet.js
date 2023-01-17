@@ -2,29 +2,19 @@ const fetch = require("node-fetch")
 const { wrapProvider } = require("../utils/Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
 const { generateSha256 } = require("../utils/tools")
-
-
-const { WrappedEthersContract, wrapMultipleContracts } = require("../utils/WrappedEthersContract")
-
+const { WrappedEthersContract } = require("../utils/WrappedEthersContract")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
 const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
 const Treasury = require("../utils/abis/Treasury.json")
-
 const ethers = require('ethers')
 
 const abi = ethers.utils.defaultAbiCoder;
-
-// bundlerUrl = "http://localhost:3000/rpc"
-// const bundlerUrl = "http://54.184.167.23:3000/rpc"
-// const rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-// const entryPointAddress = "0xCf64E11cd6A6499FD6d729986056F5cA7348349D"
-// const factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
-// const AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 class FunWallet {
+
     /**
     * Standard constructor
     * @params eoa, preFundAmt, index
@@ -32,8 +22,6 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-
-
     constructor(eoa, schema, prefundAmt, chain, index = 0) {
         this.eoa = eoa
         this.prefundAmt = prefundAmt
@@ -57,7 +45,6 @@ class FunWallet {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-
     async init() {
         const prefundAmt = this.prefundAmt
         let chainInfo = await FunWallet.getChainInfo(this.chain)
@@ -135,7 +122,6 @@ class FunWallet {
     * type - string of "AAVE" (uniswap and more will be supported later)
     * params - parameters to insert, (token address)
     */
-
     addAction(info) {
         this.actionStore.push(info)
     }
@@ -285,17 +271,21 @@ class FunWallet {
     * receipt - receipt of transaction committed to chain.
     * executionHash - string hash of the UserOperation 
     */
-    async deployWallet() {
-        try {
-            const receipt = await this._sendOpToBundler(this.createWalletOP)
-            return { receipt, executionHash: this.actionExecutionOpHash }
-        } catch {
-            const { walletCreationOp, actionExecutionOpHash } = await this._createWalletInitData(this.walletType, this.params)
-            const receipt = await this._sendOpToBundler(walletCreationOp)
-            return { receipt, executionHash: actionExecutionOpHash }
-
-        }
+    async deploy() {
+        await this.init()
+        const actionCreateData = { to: [], data: [] }
+        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
+            const actionInitData = await this._createWalletInitData(actionData)
+            const { to, data } = actionInitData
+            actionCreateData.to.push(to)
+            actionCreateData.data.push(data)
+        }))
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+        const op = await this._createAction(createWalleteData, 560000)
+        return await this.deployActionTx(op)
     }
+
+
     /**
     * Grants approval to controller wallet to liquidate funds
     * @return {receipt} 
