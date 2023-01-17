@@ -14,10 +14,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
 
     prefundAmt = parseInt(prefundAmt)
 
-    // Create an EOA instance with ethers
-
-    // With metamask
-
+    // 1. With metamask
     // const provider = new ethers.providers.Web3Provider(window.ethereum)
     // await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
     // const eoa = provider.getSigner();
@@ -27,12 +24,12 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     const provider = new ethers.providers.JsonRpcProvider(rpc)
     const eoa = new ethers.Wallet(privKey, provider)
 
+    // Create an access control schema with one action: withdraw a user's funds from Aave
     const schema = new AccessControlSchema()
 
     // Add the withdraw from aave action to the FunWallet
     const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
-
-
+    
 
     // Create a new FunWallet instance, 
 
@@ -45,19 +42,13 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
 
     const aaveActionTx = await wallet.createActionTx(withdrawEntirePosition)
 
-    /* 
-    Deploy a transaction approving the FunWallet to move the aave tokens from the EOA to the
-    Aave smart contract.
-    */
+    // Create & deploy a tx that gives the FunWallet authorization to close the EOA's Aave position
+    const tokenApprovalReceipt = await wallet.deployTokenApproval(aTokenAddress)
+    console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
-    const approveReceipt = await wallet.deployTokenApproval(aTokenAddress)
-    console.log("Approval Succesful:\n", approveReceipt)
-
-    // After some time, execute the Aave withdrawal action
-
-    const executionReceipt = await FunWallet.deployActionTx(aaveActionTx)
-    console.log("Execution Succesful:\n", executionReceipt)
-
+    // After some time, deploy the Aave withdrawal action
+    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx)
+    console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }
 //yarn test [aTokenAddress] [privKey] [preFundAmt] [apiKey]
