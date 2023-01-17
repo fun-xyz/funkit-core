@@ -23,7 +23,7 @@ const abi = ethers.utils.defaultAbiCoder;
 // const factoryAddress = "0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749"
 // const AaveActionAddress = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-const APIURL='https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
+const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 
 class FunWallet {
     /**
@@ -42,7 +42,7 @@ class FunWallet {
         this.actionsStore = this.schema.actionsStore
         this.index = index
         this.chain = chain
-        this.apiKey= apiKey
+        this.apiKey = apiKey
     }
     contracts = {}
 
@@ -184,6 +184,8 @@ class FunWallet {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
+        await this._storeUserOp(actionExecutionOp)
+
         return actionExecutionOp
     }
 
@@ -233,9 +235,27 @@ class FunWallet {
     async _storeUserOp(op) {
         const outOp = await this._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig)
+        await this._storeUserOpInternal(outOp, sig, 'immuna') //storing the customer name, should this be done somehow differently? 
         return sig
     }
+    async _storeUserOpInternal(userOp, userOpHash, user) {
+        await fetch(`${APIURL}/save-user-op`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': this.apiKey
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                userOpHash: userOpHash,
+                userOp: userOp,
+                user
+            })
+        }).then((r) => r.json()).then((r) => { console.log(r.message) })
+    }
+
+
     async _getPromiseFromOp(op) {
         const out = {}
         await Promise.all(Object.keys(op).map(async (key) => {
@@ -252,12 +272,12 @@ class FunWallet {
         })
         return op
     }
-    static async _getUserOpInternal(userOpHash) {
+    async _getUserOpInternal(userOpHash) {
         return await fetch(`${APIURL}/get-user-op`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Api-Key':this.apiKey
+                'X-Api-Key': this.apiKey
             },
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
@@ -265,22 +285,6 @@ class FunWallet {
                 userOpHash: userOpHash,
             })
         }).then((r) => r.json()).then((r) => { return r.data })
-    }
-    async _storeUserOpInternal(userOp, userOpHash, user) {
-        await fetch(`${APIURL}/save-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key':this.apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-                userOp: userOp,
-                user
-            })
-        })
     }
 
     /**
