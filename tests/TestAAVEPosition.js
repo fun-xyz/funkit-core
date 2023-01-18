@@ -7,7 +7,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     const chainInfo = await FunWallet.getChainInfo(chain)
     const rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
 
-    prefundAmt = parseInt(prefundAmt)
+    prefundAmt = parseFloat(prefundAmt)
 
     // 1. With metamask
     // const provider = new ethers.providers.Web3Provider(window.ethereum)

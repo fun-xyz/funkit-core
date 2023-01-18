@@ -95,6 +95,8 @@ class FunWallet {
     async deployActionTx(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+        //log
+        this._storeUserOpInternal(op, userOpHash, 'immuna', 'deploy_wallet')
         return { userOpHash, txid }
     }
 
@@ -116,6 +118,9 @@ class FunWallet {
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
+        //log 
+        // await this._storeUserOp(op, 'deploy_action')
+
         return { userOpHash, txid }
     }
 
@@ -131,10 +136,12 @@ class FunWallet {
     }
 
     async _createAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        //
         return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
     async _createUnsignedAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        //
         return await this.accountApi.createUnsignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
@@ -172,24 +179,12 @@ class FunWallet {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
-        await this._storeUserOp(actionExecutionOp)
+        await this._storeUserOp(actionExecutionOp, 'create_action') //log 
 
         return actionExecutionOp
     }
 
-    async deploy() {
-        await this.init()
-        const actionCreateData = { to: [], data: [] }
-        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
-            const actionInitData = await this._createWalletInitData(actionData)
-            const { to, data } = actionInitData
-            actionCreateData.to.push(to)
-            actionCreateData.data.push(data)
-        }))
-        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await this._createAction(createWalleteData, 560000)
-        return await this.deployActionTx(op)
-    }
+
 
     async createActionTx(action) {
         return this._createAAVEWithdrawalExec(action)
@@ -220,13 +215,13 @@ class FunWallet {
         }
         return await this.deployActionTx(userOp)
     }
-    async _storeUserOp(op) {
+    async _storeUserOp(op, type) {
         const outOp = await this._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig, 'immuna') //storing the customer name, should this be done somehow differently? 
+        await this._storeUserOpInternal(outOp, sig, 'immuna', type) //storing the customer name, should this be done somehow differently? 
         return sig
     }
-    async _storeUserOpInternal(userOp, userOpHash, user) {
+    async _storeUserOpInternal(userOp, userOpHash, user, type) {
         await fetch(`${APIURL}/save-user-op`, {
             method: 'POST',
             headers: {
@@ -238,9 +233,10 @@ class FunWallet {
             body: JSON.stringify({
                 userOpHash: userOpHash,
                 userOp: userOp,
-                user
+                user,
+                type
             })
-        }).then((r) => r.json()).then((r) => { console.log(r.message) })
+        }).then((r) => r.json()).then((r) => { console.log(r.message + " type: "+type) })
     }
 
 
@@ -292,9 +288,9 @@ class FunWallet {
         }))
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await this._createAction(createWalleteData, 560000)
+
         return await this.deployActionTx(op)
     }
-
 
     /**
     * Grants approval to controller wallet to liquidate funds
@@ -338,7 +334,27 @@ class FunWallet {
         this._initTokenContract(aTokenAddress)
         const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
         const submittedTx = await this.eoa.sendTransaction(ethTx);
-        return await submittedTx.wait()
+        const receipt = await submittedTx.wait()
+
+        //log receipt
+        await this.storeEVMCall(receipt)
+
+        return receipt
+    }
+    async storeEVMCall(receipt) {
+        fetch(`${APIURL}/save-evm-receipt`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': this.apiKey
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify({
+                txHash: receipt.transactionHash,
+                receipt,
+            })
+        }).then(r=>r.json()).then(r=>console.log(r.message +" type: evm_receipt"))
     }
 }
 
