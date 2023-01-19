@@ -22,7 +22,6 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     const schema = new AccessControlSchema()
     const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
 
-
     // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAX
     const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
 
@@ -38,7 +37,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
     // After some time, deploy the Aave withdrawal action
-    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx)
+    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx,APIKEY)
     console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }

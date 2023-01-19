@@ -96,11 +96,12 @@ class FunWallet {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
         //log
-        this._storeUserOpInternal(op, userOpHash, 'immuna', 'deploy_wallet')
+        const outOp = await FunWallet._getPromiseFromOp(op)
+        FunWallet._storeUserOpInternal(outOp, userOpHash, this.apiKey, 'fun', 'deploy_wallet')
         return { userOpHash, txid }
     }
 
-    static async deployActionTx(op, chain = "43113") {
+    static async deployActionTx(op, apikey, chain = "43113") {
         let chainInfo = await FunWallet.getChainInfo(chain)
         const bundlerUrl = chainInfo.rpcdata.bundlerUrl
         const rpcurl = chainInfo.rpcdata.rpcurl
@@ -119,7 +120,7 @@ class FunWallet {
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         //log 
-        // await this._storeUserOp(op, 'deploy_action')
+        await this._storeUserOp(op, apikey, 'deploy_action')
 
         return { userOpHash, txid }
     }
@@ -136,7 +137,7 @@ class FunWallet {
     }
 
     async _createAction({ to, data }, gasLimit, noInit = false, calldata = false) {
-        //
+        //info.data is calldata
         return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
@@ -164,6 +165,8 @@ class FunWallet {
         const key = generateSha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
         const actionInitData = await this.contracts[this.AaveActionAddress].getMethodEncoding("init", [aaveData])
+        const balance = await this.contracts[tokenAddr].callMethod("balanceOf", [eoaAddr])
+        console.log("balance "+ balance)
         return actionInitData
 
     }
@@ -179,7 +182,7 @@ class FunWallet {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
-        await this._storeUserOp(actionExecutionOp, 'create_action') //log 
+        await FunWallet._storeUserOp(actionExecutionOp, this.apiKey, 'create_action') //log 
 
         return actionExecutionOp
     }
@@ -215,32 +218,38 @@ class FunWallet {
         }
         return await this.deployActionTx(userOp)
     }
-    async _storeUserOp(op, type) {
+    static async _storeUserOp(op, apikey, type) {
         const outOp = await this._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig, 'immuna', type) //storing the customer name, should this be done somehow differently? 
+        await this._storeUserOpInternal(outOp, sig, apikey, 'fun', type) //storing the customer name, should this be done somehow differently? 
         return sig
     }
-    async _storeUserOpInternal(userOp, userOpHash, user, type) {
-        await fetch(`${APIURL}/save-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': this.apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-                userOp: userOp,
-                user,
-                type
-            })
-        }).then((r) => r.json()).then((r) => { console.log(r.message + " type: "+type) })
+    static async _storeUserOpInternal(userOp, userOpHash, apikey, user, type) {
+        try{
+            await fetch(`${APIURL}/save-user-op`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': apikey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify({
+                    userOpHash: userOpHash,
+                    userOp: userOp,
+                    user,
+                    type
+                })
+            }).then((r) => r.json()).then((r) => { console.log(r.message + " type: " + type) })
+        }
+        catch(e){
+            console.log(e)
+        }
+        
     }
 
 
-    async _getPromiseFromOp(op) {
+    static async _getPromiseFromOp(op) {
         const out = {}
         await Promise.all(Object.keys(op).map(async (key) => {
             out[key] = await op[key]
@@ -257,18 +266,22 @@ class FunWallet {
         return op
     }
     async _getUserOpInternal(userOpHash) {
-        return await fetch(`${APIURL}/get-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': this.apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-            })
-        }).then((r) => r.json()).then((r) => { return r.data })
+        try {
+            return await fetch(`${APIURL}/get-user-op`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': this.apiKey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify({
+                    userOpHash: userOpHash,
+                })
+            }).then((r) => r.json()).then((r) => { return r.data })
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     /**
@@ -287,6 +300,7 @@ class FunWallet {
             actionCreateData.data.push(data)
         }))
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+
         const op = await this._createAction(createWalleteData, 560000)
 
         return await this.deployActionTx(op)
@@ -337,24 +351,31 @@ class FunWallet {
         const receipt = await submittedTx.wait()
 
         //log receipt
-        await this.storeEVMCall(receipt)
+        await this.storeEVMCall(receipt, 'fun')
 
         return receipt
     }
-    async storeEVMCall(receipt) {
-        fetch(`${APIURL}/save-evm-receipt`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': this.apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                txHash: receipt.transactionHash,
-                receipt,
-            })
-        }).then(r=>r.json()).then(r=>console.log(r.message +" type: evm_receipt"))
+    async storeEVMCall(receipt, user) {
+        try {
+            return await fetch(`http://localhost:3000/evmcalls/saveReceipt`, { ///save-evm-receipt
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': this.apiKey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify({
+                    txHash: receipt.transactionHash,
+                    receipt,
+                    organization: user
+                })
+            }).then(r => r.json()).then(r => console.log(r.message + " type: evm_receipt"))
+        }
+        catch (e) {
+            console.log(e)
+        }
+
     }
 }
 
