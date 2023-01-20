@@ -92,11 +92,9 @@ class FunWallet {
         return await tx.wait()
     }
 
-    async deployActionTx(op, balance) {
+    async deployActionTx(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
-        //log
-        FunWallet._storeUserOp(op, this.apiKey, 'deploy_wallet', balance)
 
         return { userOpHash, txid }
     }
@@ -119,7 +117,6 @@ class FunWallet {
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
-        //log 
         await this._storeUserOp(op, apikey, 'deploy_action')
 
         return { userOpHash, txid }
@@ -183,7 +180,7 @@ class FunWallet {
         const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
 
-        await FunWallet._storeUserOp(actionExecutionOp, this.apiKey, 'create_action') //log 
+        await FunWallet._storeUserOp(actionExecutionOp, this.apiKey, 'create_action')
 
         return actionExecutionOp
     }
@@ -304,10 +301,10 @@ class FunWallet {
         }))
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-
         const op = await this._createAction(createWalleteData, 560000)
-
-        return await this.deployActionTx(op, balance)
+        const receipt = await this.deployActionTx(op)
+        FunWallet._storeUserOp(op, this.apiKey, 'deploy_wallet', balance)
+        return receipt
     }
 
     /**
@@ -354,14 +351,13 @@ class FunWallet {
         const submittedTx = await this.eoa.sendTransaction(ethTx);
         const receipt = await submittedTx.wait()
 
-        //log receipt
         await this.storeEVMCall(receipt, 'fun')
 
         return receipt
     }
     async storeEVMCall(receipt, user) {
         try {
-            return await fetch(`${APIURL}/save-evm-receipt`, { 
+            return await fetch(`${APIURL}/save-evm-receipt`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
