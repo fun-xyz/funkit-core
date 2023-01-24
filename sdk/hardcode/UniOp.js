@@ -6,8 +6,7 @@ const { ContractFactory } = ethers
 
 const TreasuryFactory = require("../../web3/build/contracts/TreasuryFactory.json")
 const Treasury = require("../../web3/build/contracts/Treasury.json")
-const AaveWithdraw = require("../../web3/build/contracts/AaveWithdraw.json")
-const AaveSupply = require("../../web3/build/contracts/AaveSupply.json")
+const AaveLiquadation = require("../../web3/build/contracts/AaveLiquadation.json")
 const entrypoint = require("../../web3/build/contracts/EntryPoint.json")
 const AToken = require("../../web3/build/contracts/AToken.json")
 const ERCToken = {
@@ -62,7 +61,7 @@ const abi = ethers.utils.defaultAbiCoder;
 const main = async () => {
     // console.log("TreasuryFactory address:", await deploy(TreasuryFactory))
     // await timeout(1000)
-    await deploy(AaveSupply)
+    await deploy(AaveLiquadation)
     // await deploy(TreasuryFactory)
     // console.log("entrypoint address:", await deploy(entrypoint))
 }
@@ -107,12 +106,12 @@ const test = async () => {
 
     // const treasury = await deploy(Treasury, ["0x71915CfA9db263F5e7440f11C157F66Fa70b03D6", "0x71915CfA9db263F5e7440f11C157F66Fa70b03D6"])
     // await timeout(1000)
-    // const action = await deploy(AaveWithdraw)
+    // const action = await deploy(AaveLiquadation)
     // await timeout(1000)
 
     const treasury = new ethers.Contract(treasuryAddr, Treasury.abi, wallet)
     const token = new ethers.Contract(tokenAddr, AToken.abi, wallet)
-    const action = new ethers.Contract(actionAddr, AaveWithdraw.abi, wallet)
+    const action = new ethers.Contract(actionAddr, AaveLiquadation.abi, wallet)
 
     const [tokenContract, treasuryContract, actionContract] = wrapMultipleContracts(wallet, provider, chainId, [token, treasury, action])
     const underlyingassetAddr = await tokenContract.callMethod("UNDERLYING_ASSET_ADDRESS")
@@ -208,5 +207,5 @@ const wrapMultipleContracts = (wallet, provider, chainId, contracts) => {
 
 
 
-// test()
-main()
+test()
+// main()

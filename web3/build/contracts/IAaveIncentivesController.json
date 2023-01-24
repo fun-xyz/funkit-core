@@ -208,7 +208,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-12-27T10:19:56.656Z",
+  "updatedAt": "2023-01-14T08:14:22.638Z",
   "devdoc": {
     "author": "Aave",
     "details": "It only contains one single function, needed as a hook on aToken and debtToken transfers.",

@@ -115,32 +115,32 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.8.10;\n\nimport \"./UserOperation.sol\";\nimport \"./IAccount.sol\";\nimport \"./IAggregator.sol\";\n\n/**\n * Aggregated account, that support IAggregator.\n * - the validateUserOp will be called only after the aggregator validated this account (with all other accounts of this aggregator).\n * - the validateUserOp MUST valiate the aggregator parameter, and MAY ignore the userOp.signature field.\n */\ninterface IAggregatedAccount is IAccount {\n\n    /**\n     * return the address of the signature aggregator the account supports.\n     */\n    function getAggregator() external view returns (address);\n}\n",
-  "sourcePath": "/Users/calebsirak/fun/wallet-sdk-v1/web3/contracts/lib/interfaces/IAggregatedAccount.sol",
+  "sourcePath": "/Users/calebsirak/fun/web3sdk/web3/contracts/lib/interfaces/IAggregatedAccount.sol",
   "ast": {
     "absolutePath": "project:/contracts/lib/interfaces/IAggregatedAccount.sol",
     "exportedSymbols": {
       "IAccount": [
-        9238
+        9416
       ],
       "IAggregatedAccount": [
-        9277
+        9455
       ],
       "IAggregator": [
-        9311
+        9489
       ],
       "UserOperation": [
-        9694
+        9872
       ],
       "UserOperationLib": [
-        9798
+        9976
       ]
     },
-    "id": 9278,
+    "id": 9456,
     "license": "GPL-3.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9264,
+        "id": 9442,
         "literals": [
           "solidity",
           "^",
@@ -148,41 +148,41 @@
           ".10"
         ],
         "nodeType": "PragmaDirective",
-        "src": "36:24:34"
+        "src": "36:24:36"
       },
       {
         "absolutePath": "project:/contracts/lib/interfaces/UserOperation.sol",
         "file": "./UserOperation.sol",
-        "id": 9265,
+        "id": 9443,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 9278,
-        "sourceUnit": 9799,
-        "src": "62:29:34",
+        "scope": 9456,
+        "sourceUnit": 9977,
+        "src": "62:29:36",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "project:/contracts/lib/interfaces/IAccount.sol",
         "file": "./IAccount.sol",
-        "id": 9266,
+        "id": 9444,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 9278,
-        "sourceUnit": 9239,
-        "src": "92:24:34",
+        "scope": 9456,
+        "sourceUnit": 9417,
+        "src": "92:24:36",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "project:/contracts/lib/interfaces/IAggregator.sol",
         "file": "./IAggregator.sol",
-        "id": 9267,
+        "id": 9445,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 9278,
-        "sourceUnit": 9312,
-        "src": "117:27:34",
+        "scope": 9456,
+        "sourceUnit": 9490,
+        "src": "117:27:36",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -191,70 +191,70 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 9269,
+              "id": 9447,
               "name": "IAccount",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 9238,
-              "src": "475:8:34"
+              "referencedDeclaration": 9416,
+              "src": "475:8:36"
             },
-            "id": 9270,
+            "id": 9448,
             "nodeType": "InheritanceSpecifier",
-            "src": "475:8:34"
+            "src": "475:8:36"
           }
         ],
         "canonicalName": "IAggregatedAccount",
         "contractDependencies": [],
         "contractKind": "interface",
         "documentation": {
-          "id": 9268,
+          "id": 9446,
           "nodeType": "StructuredDocumentation",
-          "src": "146:296:34",
+          "src": "146:296:36",
           "text": " Aggregated account, that support IAggregator.\n - the validateUserOp will be called only after the aggregator validated this account (with all other accounts of this aggregator).\n - the validateUserOp MUST valiate the aggregator parameter, and MAY ignore the userOp.signature field."
         },
         "fullyImplemented": false,
-        "id": 9277,
+        "id": 9455,
         "linearizedBaseContracts": [
-          9277,
-          9238
+          9455,
+          9416
         ],
         "name": "IAggregatedAccount",
-        "nameLocation": "453:18:34",
+        "nameLocation": "453:18:36",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "documentation": {
-              "id": 9271,
+              "id": 9449,
               "nodeType": "StructuredDocumentation",
-              "src": "491:87:34",
+              "src": "491:87:36",
               "text": " return the address of the signature aggregator the account supports."
             },
             "functionSelector": "3ad59dbc",
-            "id": 9276,
+            "id": 9454,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getAggregator",
-            "nameLocation": "592:13:34",
+            "nameLocation": "592:13:36",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9272,
+              "id": 9450,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "605:2:34"
+              "src": "605:2:36"
             },
             "returnParameters": {
-              "id": 9275,
+              "id": 9453,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9274,
+                  "id": 9452,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9276,
-                  "src": "631:7:34",
+                  "scope": 9454,
+                  "src": "631:7:36",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -262,10 +262,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 9273,
+                    "id": 9451,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "631:7:34",
+                    "src": "631:7:36",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -275,21 +275,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "630:9:34"
+              "src": "630:9:36"
             },
-            "scope": 9277,
-            "src": "583:57:34",
+            "scope": 9455,
+            "src": "583:57:36",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 9278,
-        "src": "443:199:34",
+        "scope": 9456,
+        "src": "443:199:36",
         "usedErrors": []
       }
     ],
-    "src": "36:607:34"
+    "src": "36:607:36"
   },
   "compiler": {
     "name": "solc",
@@ -297,7 +297,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-12-27T10:19:56.702Z",
+  "updatedAt": "2023-01-14T08:14:22.719Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

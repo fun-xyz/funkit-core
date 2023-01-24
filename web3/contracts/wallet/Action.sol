@@ -17,14 +17,6 @@ abstract contract Action {
             abi.encodePacked(abi.encode(address(this), key))
         );
         Treasury(payable(treasury)).updateStateVal(subkey, data);
-
-        // bytes memory sdata = abi.encodeWithSignature(
-        //     "updateStateVal(string,bytes)",
-        //     subkey,
-        //     data
-        // );
-        // (bool success, ) = treasury.call(sdata);
-        // require(success);
     }
 
     function getData(address treasury, string memory key)
@@ -36,13 +28,6 @@ abstract contract Action {
             abi.encodePacked(abi.encode(address(this), key))
         );
         return Treasury(payable(treasury)).getStateVal(subkey);
-        // bytes memory sdata = abi.encodeWithSignature(
-        //     "getStateVal(string)",
-        //     subkey
-        // );
-        // (bool success, bytes memory res) = treasury.staticcall(sdata);
-        // require(success);
-        // return res;
     }
 
     function sendCallOp(

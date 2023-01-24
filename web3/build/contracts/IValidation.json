@@ -24,20 +24,20 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.0;\n\ninterface IValidation {\n    function validate(bytes calldata data) external view;\n}\n",
-  "sourcePath": "/Users/calebsirak/fun/wallet-sdk-v1/web3/contracts/lib/interfaces/IValidation.sol",
+  "sourcePath": "/Users/calebsirak/fun/web3sdk/web3/contracts/lib/interfaces/IValidation.sol",
   "ast": {
     "absolutePath": "project:/contracts/lib/interfaces/IValidation.sol",
     "exportedSymbols": {
       "IValidation": [
-        9669
+        9847
       ]
     },
-    "id": 9670,
+    "id": 9848,
     "license": "UNLICENSED",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 9663,
+        "id": 9841,
         "literals": [
           "solidity",
           "^",
@@ -45,7 +45,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "39:23:41"
+        "src": "39:23:43"
       },
       {
         "abstract": false,
@@ -54,36 +54,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 9669,
+        "id": 9847,
         "linearizedBaseContracts": [
-          9669
+          9847
         ],
         "name": "IValidation",
-        "nameLocation": "74:11:41",
+        "nameLocation": "74:11:43",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "c16e50ef",
-            "id": 9668,
+            "id": 9846,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "validate",
-            "nameLocation": "101:8:41",
+            "nameLocation": "101:8:43",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 9666,
+              "id": 9844,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 9665,
+                  "id": 9843,
                   "mutability": "mutable",
                   "name": "data",
-                  "nameLocation": "125:4:41",
+                  "nameLocation": "125:4:43",
                   "nodeType": "VariableDeclaration",
-                  "scope": 9668,
-                  "src": "110:19:41",
+                  "scope": 9846,
+                  "src": "110:19:43",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -91,10 +91,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 9664,
+                    "id": 9842,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "110:5:41",
+                    "src": "110:5:43",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -103,27 +103,27 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "109:21:41"
+              "src": "109:21:43"
             },
             "returnParameters": {
-              "id": 9667,
+              "id": 9845,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "144:0:41"
+              "src": "144:0:43"
             },
-            "scope": 9669,
-            "src": "92:53:41",
+            "scope": 9847,
+            "src": "92:53:43",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 9670,
-        "src": "64:83:41",
+        "scope": 9848,
+        "src": "64:83:43",
         "usedErrors": []
       }
     ],
-    "src": "39:109:41"
+    "src": "39:109:43"
   },
   "compiler": {
     "name": "solc",
@@ -131,7 +131,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-12-27T10:19:56.705Z",
+  "updatedAt": "2023-01-14T08:14:22.723Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
