@@ -89,7 +89,6 @@ contract Treasury is BaseAccount {
 
     function removeAccessFromUser(address user) public {
         _onlyOwner();
-
         allowedEOAsMap[user] = false;
     }
 
@@ -113,6 +112,7 @@ contract Treasury is BaseAccount {
     /**
      * execute a transaction (called directly from owner, not by entryPoint)
      */
+     
     function exec(
         address dest,
         uint256 value,
