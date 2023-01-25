@@ -10,7 +10,7 @@ class ContractsHolder {
         if (this.contracts[address]) {
             return
         }
-        this.contracts[address] = createWrappedContract(address, abi, this.wallet.eoa, this.wallet.provider, this.wallet.chainId)
+        this.contracts[address] = createWrappedContract(address, abi, this.eoa, this.provider, this.chainId)
     }
     addContracts(addrs, abi) {
         addrs.forEach(addr => {

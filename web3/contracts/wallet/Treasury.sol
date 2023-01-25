@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Treasury is BaseAccount {
     mapping(string => bytes) private state;
-    mapping(address => mapping(string => bool)) internalActions;
+    mapping(bytes => address[]) verificationStore;
 
     function callOp(
         address addr,
@@ -37,7 +37,6 @@ contract Treasury is BaseAccount {
 
     //explicit sizes of nonce, to fit a single storage cell with "owner"
     uint96 private _nonce;
-
 
     function nonce() public view override returns (uint256) {
         return 0;
@@ -88,6 +87,14 @@ contract Treasury is BaseAccount {
     function removeAccessFromUser(address user) public {
         _onlyOwner();
         owners[user] = false;
+    }
+
+    function addActionToUser(
+        address user,
+        address action,
+        address[] memory verificationAddresses
+    ) {
+        bytes memory actionKey = abi.encodePacked(abi.encode(user, action));
     }
 
     /**
@@ -182,6 +189,20 @@ contract Treasury is BaseAccount {
         // _externalValidation(userOp.callData);
 
         return 0;
+    }
+
+    function validateUserOp(
+        UserOperation calldata userOp,
+        bytes32 userOpHash,
+        address aggregator,
+        uint256 missingAccountFunds
+    ) external override returns (uint256 deadline) {
+        _requireFromEntryPoint();
+        deadline = _validateSignature(userOp, userOpHash, aggregator);
+        if (userOp.initCode.length == 0) {
+            _validateAndUpdateNonce(userOp);
+        }
+        _payPrefund(missingAccountFunds);
     }
 
     function _externalValidation(bytes memory op) internal view {
