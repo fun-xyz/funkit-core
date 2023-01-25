@@ -112,7 +112,6 @@ contract Treasury is BaseAccount {
     /**
      * execute a transaction (called directly from owner, not by entryPoint)
      */
-     
     function exec(
         address dest,
         uint256 value,
@@ -140,6 +139,7 @@ contract Treasury is BaseAccount {
      * an account must have a method for replacing the entryPoint, in case the the entryPoint is
      * upgraded to a newer version.
      */
+    
     function _updateEntryPoint(address newEntryPoint) internal override {
         emit EntryPointChanged(address(_entryPoint), newEntryPoint);
         _entryPoint = IEntryPoint(payable(newEntryPoint));
