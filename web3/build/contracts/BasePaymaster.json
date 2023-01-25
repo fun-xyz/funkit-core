@@ -1,0 +1,2678 @@
+{
+  "contractName": "BasePaymaster",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "entryPoint",
+      "outputs": [
+        {
+          "internalType": "contract IEntryPoint",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IEntryPoint",
+          "name": "_entryPoint",
+          "type": "address"
+        }
+      ],
+      "name": "setEntryPoint",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "initCode",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "callGasLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "verificationGasLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "preVerificationGas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxFeePerGas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxPriorityFeePerGas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "paymasterAndData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct UserOperation",
+          "name": "userOp",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "userOpHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxCost",
+          "type": "uint256"
+        }
+      ],
+      "name": "validatePaymasterUserOp",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "context",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum IPaymaster.PostOpMode",
+          "name": "mode",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes",
+          "name": "context",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "actualGasCost",
+          "type": "uint256"
+        }
+      ],
+      "name": "postOp",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "deposit",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "withdrawAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdrawTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "unstakeDelaySec",
+          "type": "uint32"
+        }
+      ],
+      "name": "addStake",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDeposit",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unlockStake",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "withdrawAddress",
+          "type": "address"
+        }
+      ],
+      "name": "withdrawStake",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"unstakeDelaySec\",\"type\":\"uint32\"}],\"name\":\"addStake\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"entryPoint\",\"outputs\":[{\"internalType\":\"contract IEntryPoint\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDeposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"enum IPaymaster.PostOpMode\",\"name\":\"mode\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"context\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"actualGasCost\",\"type\":\"uint256\"}],\"name\":\"postOp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IEntryPoint\",\"name\":\"_entryPoint\",\"type\":\"address\"}],\"name\":\"setEntryPoint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unlockStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"initCode\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"callData\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"callGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"verificationGasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"preVerificationGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxPriorityFeePerGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"paymasterAndData\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"struct UserOperation\",\"name\":\"userOp\",\"type\":\"tuple\"},{\"internalType\":\"bytes32\",\"name\":\"userOpHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"maxCost\",\"type\":\"uint256\"}],\"name\":\"validatePaymasterUserOp\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"context\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"withdrawAddress\",\"type\":\"address\"}],\"name\":\"withdrawStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"withdrawAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"addStake(uint32)\":{\"params\":{\"unstakeDelaySec\":\"- the unstake delay for this paymaster. Can only be increased.\"}},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"postOp(uint8,bytes,uint256)\":{\"params\":{\"actualGasCost\":\"- actual gas used so far (without this postOp call).\",\"context\":\"- the context value returned by validatePaymasterUserOp\",\"mode\":\"enum with the following options:      opSucceeded - user operation succeeded.      opReverted  - user op reverted. still has to pay for gas.      postOpReverted - user op succeeded, but caused postOp (in mode=opSucceeded) to revert.                       Now this is the 2nd call, after user's op was deliberately reverted.\"}},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"},\"validatePaymasterUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,uint256)\":{\"params\":{\"maxCost\":\"the maximum cost of this transaction (based on maximum gas and gas price from userOp)\",\"userOp\":\"the user operation\",\"userOpHash\":\"hash of the user's request data.\"},\"returns\":{\"context\":\"value to send to a postOp  zero length to signify postOp is not required.\",\"deadline\":\"the last block timestamp this operation is valid, or zero if it is valid indefinitely.      Note that the validation code cannot use block.timestamp (or block.number) directly.\"}},\"withdrawStake(address)\":{\"params\":{\"withdrawAddress\":\"the address to send withdrawn value.\"}},\"withdrawTo(address,uint256)\":{\"params\":{\"amount\":\"to withdraw\",\"withdrawAddress\":\"target to send to\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"addStake(uint32)\":{\"notice\":\"add stake for this paymaster. This method can also carry eth value to add to the current stake.\"},\"deposit()\":{\"notice\":\"add a deposit for this paymaster, used for paying for transaction fees\"},\"getDeposit()\":{\"notice\":\"return current paymaster's deposit on the entryPoint.\"},\"postOp(uint8,bytes,uint256)\":{\"notice\":\"post-operation handler. Must verify sender is the entryPoint\"},\"unlockStake()\":{\"notice\":\"unlock the stake, in order to withdraw it. The paymaster can't serve requests once unlocked, until it calls addStake again\"},\"validatePaymasterUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,uint256)\":{\"notice\":\"payment validation: check if paymaster agree to pay. Must verify sender is the entryPoint. Revert to reject this request. Note that bundlers will reject this method if it changes the state, unless the paymaster is trusted (whitelisted) The paymaster pre-pays using its deposit, and receive back a refund after the postOp method returns.\"},\"withdrawStake(address)\":{\"notice\":\"withdraw the entire paymaster's stake. stake must be unlocked first (and then wait for the unstakeDelay to be over)\"},\"withdrawTo(address,uint256)\":{\"notice\":\"withdraw value from the deposit\"}},\"notice\":\"Helper class for creating a paymaster. provides helper methods for staking. validates that the postOp is called only by the entryPoint\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/lib/AA/BasePaymaster.sol\":\"BasePaymaster\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"keccak256\":\"0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://40fb1b5102468f783961d0af743f91b9980cf66b50d1d12009f6bb1869cea4d2\",\"dweb:/ipfs/QmYqEbJML4jB1GHbzD4cUZDtJg5wVwNm3vDJq1GbyDus8y\"]},\"@openzeppelin/contracts/utils/Context.sol\":{\"keccak256\":\"0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6df0ddf21ce9f58271bdfaa85cde98b200ef242a05a3f85c2bc10a8294800a92\",\"dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3\"]},\"project:/contracts/lib/AA/BasePaymaster.sol\":{\"keccak256\":\"0x20f082cf8c4da66e821e805c56020ec070553dc1c13b7269ec9659db94c78d9e\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://7189bd40117193262fc53095ce901772118fe8b912ab8ac34e298a8e8a684005\",\"dweb:/ipfs/QmaH91Dn37XPD2XJjeX869KjZMgnya65wxuFN65UyLeN85\"]},\"project:/contracts/lib/interfaces/IAggregator.sol\":{\"keccak256\":\"0x79641935e8d014077e5d5cd63c208203b27a8cbd158bed6b4440244362a63704\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://1263b0f19585b57fbc2bdfc77079e30e1374620815af4194226e355da3c6066f\",\"dweb:/ipfs/Qmc3Q4imwwzJFfDgqdW7W8CjqPieXfToGjQhXrtKMKWRT9\"]},\"project:/contracts/lib/interfaces/IEntryPoint.sol\":{\"keccak256\":\"0xf0e396065e652c75f065ba8a3849bd5dad275511d3c4c0383bfcd752b155d91f\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://4a7392ffdae3e8a5fb3acac97130f1ed1909333e33ea5e25791e0a1177e1ea26\",\"dweb:/ipfs/QmZdPg86urB6qETPnGQAoKEiVZHVJJMismV1fKL1Yzn5gZ\"]},\"project:/contracts/lib/interfaces/IPaymaster.sol\":{\"keccak256\":\"0x46e5b22c0a5c3e8d04977e3a340571e52aa92130912a3c1617ba94871a1b4f54\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://5438b9f918236ce8bb6014b0a254a06f22d7f23757014f4aae1bac9a0b8db2d5\",\"dweb:/ipfs/QmRSibo6ewqgJGX9caAeqMc9cKjbtinaL8CXKj1y6LuwN6\"]},\"project:/contracts/lib/interfaces/IStakeManager.sol\":{\"keccak256\":\"0x53c48273e58640d884309321a0690a2505ed2ea488cb802d9308c3711e7b34a4\",\"license\":\"GPL-3.0-only\",\"urls\":[\"bzz-raw://39392efdf88bc4bf199a12387b7817927f1c29aa26474b4258985a1527e05be5\",\"dweb:/ipfs/QmRvbJ2P9wgqFJggXufiVyJhYoXQ9wYiivNvvSJmS511Ws\"]},\"project:/contracts/lib/interfaces/UserOperation.sol\":{\"keccak256\":\"0xcf96efa5c7977c2ce3ff11542951a8d74e15dd99f02bcb1d57c5f9684632d9eb\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://bf59c90ab4d49c50b32035363f431061adb7e1b2558d641523c7cc6bb8701e5b\",\"dweb:/ipfs/QmQAvCR5fh16fHG1yp9uu9puUuAuqEngXSFErhFohwDF2B\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.8.10;\n\n\n/* solhint-disable reason-string */\n\nimport \"@openzeppelin/contracts/access/Ownable.sol\";\nimport \"../interfaces/IPaymaster.sol\";\nimport \"../interfaces/IEntryPoint.sol\";\n\n/**\n * Helper class for creating a paymaster.\n * provides helper methods for staking.\n * validates that the postOp is called only by the entryPoint\n */\nabstract contract BasePaymaster is IPaymaster, Ownable {\n\n    IEntryPoint public entryPoint;\n\n    constructor(IEntryPoint _entryPoint) {\n        setEntryPoint(_entryPoint);\n    }\n\n    function setEntryPoint(IEntryPoint _entryPoint) public onlyOwner {\n        entryPoint = _entryPoint;\n    }\n\n    function validatePaymasterUserOp(UserOperation calldata userOp, bytes32 userOpHash, uint256 maxCost)\n    external virtual override returns (bytes memory context, uint256 deadline);\n\n    function postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) external override {\n        _requireFromEntryPoint();\n        _postOp(mode, context, actualGasCost);\n    }\n\n    /**\n     * post-operation handler.\n     * (verified to be called only through the entryPoint)\n     * @dev if subclass returns a non-empty context from validatePaymasterUserOp, it must also implement this method.\n     * @param mode enum with the following options:\n     *      opSucceeded - user operation succeeded.\n     *      opReverted  - user op reverted. still has to pay for gas.\n     *      postOpReverted - user op succeeded, but caused postOp (in mode=opSucceeded) to revert.\n     *                       Now this is the 2nd call, after user's op was deliberately reverted.\n     * @param context - the context value returned by validatePaymasterUserOp\n     * @param actualGasCost - actual gas used so far (without this postOp call).\n     */\n    function _postOp(PostOpMode mode, bytes calldata context, uint256 actualGasCost) internal virtual {\n\n        (mode,context,actualGasCost); // unused params\n        // subclass must override this method if validatePaymasterUserOp returns a context\n        revert(\"must override\");\n    }\n\n    /**\n     * add a deposit for this paymaster, used for paying for transaction fees\n     */\n    function deposit() public payable {\n        entryPoint.depositTo{value : msg.value}(address(this));\n    }\n\n    /**\n     * withdraw value from the deposit\n     * @param withdrawAddress target to send to\n     * @param amount to withdraw\n     */\n    function withdrawTo(address payable withdrawAddress, uint256 amount) public onlyOwner {\n        entryPoint.withdrawTo(withdrawAddress, amount);\n    }\n    /**\n     * add stake for this paymaster.\n     * This method can also carry eth value to add to the current stake.\n     * @param unstakeDelaySec - the unstake delay for this paymaster. Can only be increased.\n     */\n    function addStake(uint32 unstakeDelaySec) external payable onlyOwner {\n        entryPoint.addStake{value : msg.value}(unstakeDelaySec);\n    }\n\n    /**\n     * return current paymaster's deposit on the entryPoint.\n     */\n    function getDeposit() public view returns (uint256) {\n        return entryPoint.balanceOf(address(this));\n    }\n\n    /**\n     * unlock the stake, in order to withdraw it.\n     * The paymaster can't serve requests once unlocked, until it calls addStake again\n     */\n    function unlockStake() external onlyOwner {\n        entryPoint.unlockStake();\n    }\n\n    /**\n     * withdraw the entire paymaster's stake.\n     * stake must be unlocked first (and then wait for the unstakeDelay to be over)\n     * @param withdrawAddress the address to send withdrawn value.\n     */\n    function withdrawStake(address payable withdrawAddress) external onlyOwner {\n        entryPoint.withdrawStake(withdrawAddress);\n    }\n\n    /// validate the call is made from a valid entrypoint\n    function _requireFromEntryPoint() internal virtual {\n        require(msg.sender == address(entryPoint));\n    }\n}\n",
+  "sourcePath": "/Users/calebsirak/fun/web3sdk/web3/contracts/lib/AA/BasePaymaster.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/lib/AA/BasePaymaster.sol",
+    "exportedSymbols": {
+      "BasePaymaster": [
+        6672
+      ],
+      "Context": [
+        4705
+      ],
+      "IAggregator": [
+        9489
+      ],
+      "IEntryPoint": [
+        9669
+      ],
+      "IPaymaster": [
+        9704
+      ],
+      "IStakeManager": [
+        9808
+      ],
+      "Ownable": [
+        4683
+      ],
+      "UserOperation": [
+        9872
+      ],
+      "UserOperationLib": [
+        9976
+      ]
+    },
+    "id": 6673,
+    "license": "GPL-3.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 6469,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".10"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "36:24:29"
+      },
+      {
+        "absolutePath": "@openzeppelin/contracts/access/Ownable.sol",
+        "file": "@openzeppelin/contracts/access/Ownable.sol",
+        "id": 6470,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 6673,
+        "sourceUnit": 4684,
+        "src": "100:52:29",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/lib/interfaces/IPaymaster.sol",
+        "file": "../interfaces/IPaymaster.sol",
+        "id": 6471,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 6673,
+        "sourceUnit": 9705,
+        "src": "153:38:29",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/lib/interfaces/IEntryPoint.sol",
+        "file": "../interfaces/IEntryPoint.sol",
+        "id": 6472,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 6673,
+        "sourceUnit": 9670,
+        "src": "192:39:29",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": true,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 6474,
+              "name": "IPaymaster",
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 9704,
+              "src": "420:10:29"
+            },
+            "id": 6475,
+            "nodeType": "InheritanceSpecifier",
+            "src": "420:10:29"
+          },
+          {
+            "baseName": {
+              "id": 6476,
+              "name": "Ownable",
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 4683,
+              "src": "432:7:29"
+            },
+            "id": 6477,
+            "nodeType": "InheritanceSpecifier",
+            "src": "432:7:29"
+          }
+        ],
+        "canonicalName": "BasePaymaster",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 6473,
+          "nodeType": "StructuredDocumentation",
+          "src": "233:151:29",
+          "text": " Helper class for creating a paymaster.\n provides helper methods for staking.\n validates that the postOp is called only by the entryPoint"
+        },
+        "fullyImplemented": false,
+        "id": 6672,
+        "linearizedBaseContracts": [
+          6672,
+          4683,
+          4705,
+          9704
+        ],
+        "name": "BasePaymaster",
+        "nameLocation": "403:13:29",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "functionSelector": "b0d691fe",
+            "id": 6480,
+            "mutability": "mutable",
+            "name": "entryPoint",
+            "nameLocation": "466:10:29",
+            "nodeType": "VariableDeclaration",
+            "scope": 6672,
+            "src": "447:29:29",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+              "typeString": "contract IEntryPoint"
+            },
+            "typeName": {
+              "id": 6479,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 6478,
+                "name": "IEntryPoint",
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 9669,
+                "src": "447:11:29"
+              },
+              "referencedDeclaration": 9669,
+              "src": "447:11:29",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                "typeString": "contract IEntryPoint"
+              }
+            },
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 6490,
+              "nodeType": "Block",
+              "src": "520:43:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 6487,
+                        "name": "_entryPoint",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6483,
+                        "src": "544:11:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                          "typeString": "contract IEntryPoint"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                          "typeString": "contract IEntryPoint"
+                        }
+                      ],
+                      "id": 6486,
+                      "name": "setEntryPoint",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6504,
+                      "src": "530:13:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IEntryPoint_$9669_$returns$__$",
+                        "typeString": "function (contract IEntryPoint)"
+                      }
+                    },
+                    "id": 6488,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "530:26:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6489,
+                  "nodeType": "ExpressionStatement",
+                  "src": "530:26:29"
+                }
+              ]
+            },
+            "id": 6491,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6484,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6483,
+                  "mutability": "mutable",
+                  "name": "_entryPoint",
+                  "nameLocation": "507:11:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6491,
+                  "src": "495:23:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                    "typeString": "contract IEntryPoint"
+                  },
+                  "typeName": {
+                    "id": 6482,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 6481,
+                      "name": "IEntryPoint",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 9669,
+                      "src": "495:11:29"
+                    },
+                    "referencedDeclaration": 9669,
+                    "src": "495:11:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                      "typeString": "contract IEntryPoint"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "494:25:29"
+            },
+            "returnParameters": {
+              "id": 6485,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "520:0:29"
+            },
+            "scope": 6672,
+            "src": "483:80:29",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 6503,
+              "nodeType": "Block",
+              "src": "634:41:29",
+              "statements": [
+                {
+                  "expression": {
+                    "id": 6501,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 6499,
+                      "name": "entryPoint",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6480,
+                      "src": "644:10:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                        "typeString": "contract IEntryPoint"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 6500,
+                      "name": "_entryPoint",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6494,
+                      "src": "657:11:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                        "typeString": "contract IEntryPoint"
+                      }
+                    },
+                    "src": "644:24:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                      "typeString": "contract IEntryPoint"
+                    }
+                  },
+                  "id": 6502,
+                  "nodeType": "ExpressionStatement",
+                  "src": "644:24:29"
+                }
+              ]
+            },
+            "functionSelector": "584465f2",
+            "id": 6504,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 6497,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 6496,
+                  "name": "onlyOwner",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 4602,
+                  "src": "624:9:29"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "624:9:29"
+              }
+            ],
+            "name": "setEntryPoint",
+            "nameLocation": "578:13:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6495,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6494,
+                  "mutability": "mutable",
+                  "name": "_entryPoint",
+                  "nameLocation": "604:11:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6504,
+                  "src": "592:23:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                    "typeString": "contract IEntryPoint"
+                  },
+                  "typeName": {
+                    "id": 6493,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 6492,
+                      "name": "IEntryPoint",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 9669,
+                      "src": "592:11:29"
+                    },
+                    "referencedDeclaration": 9669,
+                    "src": "592:11:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                      "typeString": "contract IEntryPoint"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "591:25:29"
+            },
+            "returnParameters": {
+              "id": 6498,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "634:0:29"
+            },
+            "scope": 6672,
+            "src": "569:106:29",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              9688
+            ],
+            "functionSelector": "f465c77e",
+            "id": 6519,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "validatePaymasterUserOp",
+            "nameLocation": "690:23:29",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 6513,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "803:8:29"
+            },
+            "parameters": {
+              "id": 6512,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6507,
+                  "mutability": "mutable",
+                  "name": "userOp",
+                  "nameLocation": "737:6:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6519,
+                  "src": "714:29:29",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_UserOperation_$9872_calldata_ptr",
+                    "typeString": "struct UserOperation"
+                  },
+                  "typeName": {
+                    "id": 6506,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 6505,
+                      "name": "UserOperation",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 9872,
+                      "src": "714:13:29"
+                    },
+                    "referencedDeclaration": 9872,
+                    "src": "714:13:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_UserOperation_$9872_storage_ptr",
+                      "typeString": "struct UserOperation"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6509,
+                  "mutability": "mutable",
+                  "name": "userOpHash",
+                  "nameLocation": "753:10:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6519,
+                  "src": "745:18:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 6508,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "745:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6511,
+                  "mutability": "mutable",
+                  "name": "maxCost",
+                  "nameLocation": "773:7:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6519,
+                  "src": "765:15:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6510,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "765:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "713:68:29"
+            },
+            "returnParameters": {
+              "id": 6518,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6515,
+                  "mutability": "mutable",
+                  "name": "context",
+                  "nameLocation": "834:7:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6519,
+                  "src": "821:20:29",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 6514,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "821:5:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6517,
+                  "mutability": "mutable",
+                  "name": "deadline",
+                  "nameLocation": "851:8:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6519,
+                  "src": "843:16:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6516,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "843:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "820:40:29"
+            },
+            "scope": 6672,
+            "src": "681:180:29",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              9699
+            ],
+            "body": {
+              "id": 6539,
+              "nodeType": "Block",
+              "src": "965:88:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 6530,
+                      "name": "_requireFromEntryPoint",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6671,
+                      "src": "975:22:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 6531,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "975:24:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6532,
+                  "nodeType": "ExpressionStatement",
+                  "src": "975:24:29"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 6534,
+                        "name": "mode",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6522,
+                        "src": "1017:4:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                          "typeString": "enum IPaymaster.PostOpMode"
+                        }
+                      },
+                      {
+                        "id": 6535,
+                        "name": "context",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6524,
+                        "src": "1023:7:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        }
+                      },
+                      {
+                        "id": 6536,
+                        "name": "actualGasCost",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6526,
+                        "src": "1032:13:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                          "typeString": "enum IPaymaster.PostOpMode"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 6533,
+                      "name": "_postOp",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6561,
+                      "src": "1009:7:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_enum$_PostOpMode_$9703_$_t_bytes_calldata_ptr_$_t_uint256_$returns$__$",
+                        "typeString": "function (enum IPaymaster.PostOpMode,bytes calldata,uint256)"
+                      }
+                    },
+                    "id": 6537,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1009:37:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6538,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1009:37:29"
+                }
+              ]
+            },
+            "functionSelector": "a9a23409",
+            "id": 6540,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "postOp",
+            "nameLocation": "876:6:29",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 6528,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "956:8:29"
+            },
+            "parameters": {
+              "id": 6527,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6522,
+                  "mutability": "mutable",
+                  "name": "mode",
+                  "nameLocation": "894:4:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6540,
+                  "src": "883:15:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                    "typeString": "enum IPaymaster.PostOpMode"
+                  },
+                  "typeName": {
+                    "id": 6521,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 6520,
+                      "name": "PostOpMode",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 9703,
+                      "src": "883:10:29"
+                    },
+                    "referencedDeclaration": 9703,
+                    "src": "883:10:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                      "typeString": "enum IPaymaster.PostOpMode"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6524,
+                  "mutability": "mutable",
+                  "name": "context",
+                  "nameLocation": "915:7:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6540,
+                  "src": "900:22:29",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 6523,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "900:5:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6526,
+                  "mutability": "mutable",
+                  "name": "actualGasCost",
+                  "nameLocation": "932:13:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6540,
+                  "src": "924:21:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6525,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "924:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "882:64:29"
+            },
+            "returnParameters": {
+              "id": 6529,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "965:0:29"
+            },
+            "scope": 6672,
+            "src": "867:186:29",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 6560,
+              "nodeType": "Block",
+              "src": "1911:187:29",
+              "statements": [
+                {
+                  "expression": {
+                    "components": [
+                      {
+                        "id": 6551,
+                        "name": "mode",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6544,
+                        "src": "1923:4:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                          "typeString": "enum IPaymaster.PostOpMode"
+                        }
+                      },
+                      {
+                        "id": 6552,
+                        "name": "context",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6546,
+                        "src": "1928:7:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        }
+                      },
+                      {
+                        "id": 6553,
+                        "name": "actualGasCost",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6548,
+                        "src": "1936:13:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "id": 6554,
+                    "isConstant": false,
+                    "isInlineArray": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "TupleExpression",
+                    "src": "1922:28:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$_t_enum$_PostOpMode_$9703_$_t_bytes_calldata_ptr_$_t_uint256_$",
+                      "typeString": "tuple(enum IPaymaster.PostOpMode,bytes calldata,uint256)"
+                    }
+                  },
+                  "id": 6555,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1922:28:29"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "hexValue": "6d757374206f76657272696465",
+                        "id": 6557,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2075:15:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_cfebc7a599a78eb43bf12fd80d02a05464d681b0cdda54c5b6b39e95676c7f1d",
+                          "typeString": "literal_string \"must override\""
+                        },
+                        "value": "must override"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_stringliteral_cfebc7a599a78eb43bf12fd80d02a05464d681b0cdda54c5b6b39e95676c7f1d",
+                          "typeString": "literal_string \"must override\""
+                        }
+                      ],
+                      "id": 6556,
+                      "name": "revert",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967277,
+                        4294967277
+                      ],
+                      "referencedDeclaration": 4294967277,
+                      "src": "2068:6:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_revert_pure$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (string memory) pure"
+                      }
+                    },
+                    "id": 6558,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2068:23:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6559,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2068:23:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6541,
+              "nodeType": "StructuredDocumentation",
+              "src": "1059:749:29",
+              "text": " post-operation handler.\n (verified to be called only through the entryPoint)\n @dev if subclass returns a non-empty context from validatePaymasterUserOp, it must also implement this method.\n @param mode enum with the following options:\n      opSucceeded - user operation succeeded.\n      opReverted  - user op reverted. still has to pay for gas.\n      postOpReverted - user op succeeded, but caused postOp (in mode=opSucceeded) to revert.\n                       Now this is the 2nd call, after user's op was deliberately reverted.\n @param context - the context value returned by validatePaymasterUserOp\n @param actualGasCost - actual gas used so far (without this postOp call)."
+            },
+            "id": 6561,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_postOp",
+            "nameLocation": "1822:7:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6549,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6544,
+                  "mutability": "mutable",
+                  "name": "mode",
+                  "nameLocation": "1841:4:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6561,
+                  "src": "1830:15:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                    "typeString": "enum IPaymaster.PostOpMode"
+                  },
+                  "typeName": {
+                    "id": 6543,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 6542,
+                      "name": "PostOpMode",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 9703,
+                      "src": "1830:10:29"
+                    },
+                    "referencedDeclaration": 9703,
+                    "src": "1830:10:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_enum$_PostOpMode_$9703",
+                      "typeString": "enum IPaymaster.PostOpMode"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6546,
+                  "mutability": "mutable",
+                  "name": "context",
+                  "nameLocation": "1862:7:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6561,
+                  "src": "1847:22:29",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 6545,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1847:5:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6548,
+                  "mutability": "mutable",
+                  "name": "actualGasCost",
+                  "nameLocation": "1879:13:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6561,
+                  "src": "1871:21:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6547,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1871:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1829:64:29"
+            },
+            "returnParameters": {
+              "id": 6550,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1911:0:29"
+            },
+            "scope": 6672,
+            "src": "1813:285:29",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 6577,
+              "nodeType": "Block",
+              "src": "2232:71:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "arguments": [
+                          {
+                            "id": 6573,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967268,
+                            "src": "2290:4:29",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_BasePaymaster_$6672",
+                              "typeString": "contract BasePaymaster"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_BasePaymaster_$6672",
+                              "typeString": "contract BasePaymaster"
+                            }
+                          ],
+                          "id": 6572,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "2282:7:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 6571,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "2282:7:29",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 6574,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "2282:13:29",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        ],
+                        "expression": {
+                          "id": 6565,
+                          "name": "entryPoint",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 6480,
+                          "src": "2242:10:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                            "typeString": "contract IEntryPoint"
+                          }
+                        },
+                        "id": 6567,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "depositTo",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 9783,
+                        "src": "2242:20:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_external_payable$_t_address_$returns$__$",
+                          "typeString": "function (address) payable external"
+                        }
+                      },
+                      "id": 6570,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "names": [
+                        "value"
+                      ],
+                      "nodeType": "FunctionCallOptions",
+                      "options": [
+                        {
+                          "expression": {
+                            "id": 6568,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967281,
+                            "src": "2271:3:29",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 6569,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "value",
+                          "nodeType": "MemberAccess",
+                          "src": "2271:9:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        }
+                      ],
+                      "src": "2242:39:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_payable$_t_address_$returns$__$value",
+                        "typeString": "function (address) payable external"
+                      }
+                    },
+                    "id": 6575,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2242:54:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6576,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2242:54:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6562,
+              "nodeType": "StructuredDocumentation",
+              "src": "2104:89:29",
+              "text": " add a deposit for this paymaster, used for paying for transaction fees"
+            },
+            "functionSelector": "d0e30db0",
+            "id": 6578,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "deposit",
+            "nameLocation": "2207:7:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6563,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2214:2:29"
+            },
+            "returnParameters": {
+              "id": 6564,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2232:0:29"
+            },
+            "scope": 6672,
+            "src": "2198:105:29",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 6595,
+              "nodeType": "Block",
+              "src": "2531:63:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 6591,
+                        "name": "withdrawAddress",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6581,
+                        "src": "2563:15:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      },
+                      {
+                        "id": 6592,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6583,
+                        "src": "2580:6:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "id": 6588,
+                        "name": "entryPoint",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6480,
+                        "src": "2541:10:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                          "typeString": "contract IEntryPoint"
+                        }
+                      },
+                      "id": 6590,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "withdrawTo",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 9807,
+                      "src": "2541:21:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_payable_$_t_uint256_$returns$__$",
+                        "typeString": "function (address payable,uint256) external"
+                      }
+                    },
+                    "id": 6593,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2541:46:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6594,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2541:46:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6579,
+              "nodeType": "StructuredDocumentation",
+              "src": "2309:131:29",
+              "text": " withdraw value from the deposit\n @param withdrawAddress target to send to\n @param amount to withdraw"
+            },
+            "functionSelector": "205c2878",
+            "id": 6596,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 6586,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 6585,
+                  "name": "onlyOwner",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 4602,
+                  "src": "2521:9:29"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2521:9:29"
+              }
+            ],
+            "name": "withdrawTo",
+            "nameLocation": "2454:10:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6584,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6581,
+                  "mutability": "mutable",
+                  "name": "withdrawAddress",
+                  "nameLocation": "2481:15:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6596,
+                  "src": "2465:31:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  },
+                  "typeName": {
+                    "id": 6580,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2465:15:29",
+                    "stateMutability": "payable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6583,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "2506:6:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6596,
+                  "src": "2498:14:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6582,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2498:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2464:49:29"
+            },
+            "returnParameters": {
+              "id": 6587,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2531:0:29"
+            },
+            "scope": 6672,
+            "src": "2445:149:29",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 6613,
+              "nodeType": "Block",
+              "src": "2887:72:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 6610,
+                        "name": "unstakeDelaySec",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6599,
+                        "src": "2936:15:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint32",
+                          "typeString": "uint32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint32",
+                          "typeString": "uint32"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_uint32",
+                            "typeString": "uint32"
+                          }
+                        ],
+                        "expression": {
+                          "id": 6604,
+                          "name": "entryPoint",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 6480,
+                          "src": "2897:10:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                            "typeString": "contract IEntryPoint"
+                          }
+                        },
+                        "id": 6606,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "addStake",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 9789,
+                        "src": "2897:19:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_external_payable$_t_uint32_$returns$__$",
+                          "typeString": "function (uint32) payable external"
+                        }
+                      },
+                      "id": 6609,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "names": [
+                        "value"
+                      ],
+                      "nodeType": "FunctionCallOptions",
+                      "options": [
+                        {
+                          "expression": {
+                            "id": 6607,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967281,
+                            "src": "2925:3:29",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 6608,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "value",
+                          "nodeType": "MemberAccess",
+                          "src": "2925:9:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        }
+                      ],
+                      "src": "2897:38:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_payable$_t_uint32_$returns$__$value",
+                        "typeString": "function (uint32) payable external"
+                      }
+                    },
+                    "id": 6611,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2897:55:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6612,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2897:55:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6597,
+              "nodeType": "StructuredDocumentation",
+              "src": "2599:214:29",
+              "text": " add stake for this paymaster.\n This method can also carry eth value to add to the current stake.\n @param unstakeDelaySec - the unstake delay for this paymaster. Can only be increased."
+            },
+            "functionSelector": "0396cb60",
+            "id": 6614,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 6602,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 6601,
+                  "name": "onlyOwner",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 4602,
+                  "src": "2877:9:29"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2877:9:29"
+              }
+            ],
+            "name": "addStake",
+            "nameLocation": "2827:8:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6600,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6599,
+                  "mutability": "mutable",
+                  "name": "unstakeDelaySec",
+                  "nameLocation": "2843:15:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6614,
+                  "src": "2836:22:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 6598,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2836:6:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2835:24:29"
+            },
+            "returnParameters": {
+              "id": 6603,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2887:0:29"
+            },
+            "scope": 6672,
+            "src": "2818:141:29",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 6628,
+              "nodeType": "Block",
+              "src": "3094:59:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "arguments": [
+                          {
+                            "id": 6624,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967268,
+                            "src": "3140:4:29",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_BasePaymaster_$6672",
+                              "typeString": "contract BasePaymaster"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_BasePaymaster_$6672",
+                              "typeString": "contract BasePaymaster"
+                            }
+                          ],
+                          "id": 6623,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "3132:7:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 6622,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "3132:7:29",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 6625,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "3132:13:29",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "expression": {
+                        "id": 6620,
+                        "name": "entryPoint",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6480,
+                        "src": "3111:10:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                          "typeString": "contract IEntryPoint"
+                        }
+                      },
+                      "id": 6621,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "balanceOf",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 9777,
+                      "src": "3111:20:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
+                        "typeString": "function (address) view external returns (uint256)"
+                      }
+                    },
+                    "id": 6626,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3111:35:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 6619,
+                  "id": 6627,
+                  "nodeType": "Return",
+                  "src": "3104:42:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6615,
+              "nodeType": "StructuredDocumentation",
+              "src": "2965:72:29",
+              "text": " return current paymaster's deposit on the entryPoint."
+            },
+            "functionSelector": "c399ec88",
+            "id": 6629,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getDeposit",
+            "nameLocation": "3051:10:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6616,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3061:2:29"
+            },
+            "returnParameters": {
+              "id": 6619,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6618,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6629,
+                  "src": "3085:7:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6617,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3085:7:29",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3084:9:29"
+            },
+            "scope": 6672,
+            "src": "3042:111:29",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 6640,
+              "nodeType": "Block",
+              "src": "3354:41:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "id": 6635,
+                        "name": "entryPoint",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6480,
+                        "src": "3364:10:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                          "typeString": "contract IEntryPoint"
+                        }
+                      },
+                      "id": 6637,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "unlockStake",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 9793,
+                      "src": "3364:22:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$__$returns$__$",
+                        "typeString": "function () external"
+                      }
+                    },
+                    "id": 6638,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3364:24:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6639,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3364:24:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6630,
+              "nodeType": "StructuredDocumentation",
+              "src": "3159:148:29",
+              "text": " unlock the stake, in order to withdraw it.\n The paymaster can't serve requests once unlocked, until it calls addStake again"
+            },
+            "functionSelector": "bb9fe6bf",
+            "id": 6641,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 6633,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 6632,
+                  "name": "onlyOwner",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 4602,
+                  "src": "3344:9:29"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "3344:9:29"
+              }
+            ],
+            "name": "unlockStake",
+            "nameLocation": "3321:11:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6631,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3332:2:29"
+            },
+            "returnParameters": {
+              "id": 6634,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3354:0:29"
+            },
+            "scope": 6672,
+            "src": "3312:83:29",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 6655,
+              "nodeType": "Block",
+              "src": "3689:58:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 6652,
+                        "name": "withdrawAddress",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6644,
+                        "src": "3724:15:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      ],
+                      "expression": {
+                        "id": 6649,
+                        "name": "entryPoint",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6480,
+                        "src": "3699:10:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                          "typeString": "contract IEntryPoint"
+                        }
+                      },
+                      "id": 6651,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "withdrawStake",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 9799,
+                      "src": "3699:24:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_payable_$returns$__$",
+                        "typeString": "function (address payable) external"
+                      }
+                    },
+                    "id": 6653,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3699:41:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6654,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3699:41:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6642,
+              "nodeType": "StructuredDocumentation",
+              "src": "3401:208:29",
+              "text": " withdraw the entire paymaster's stake.\n stake must be unlocked first (and then wait for the unstakeDelay to be over)\n @param withdrawAddress the address to send withdrawn value."
+            },
+            "functionSelector": "c23a5cea",
+            "id": 6656,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 6647,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 6646,
+                  "name": "onlyOwner",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 4602,
+                  "src": "3679:9:29"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "3679:9:29"
+              }
+            ],
+            "name": "withdrawStake",
+            "nameLocation": "3623:13:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6645,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6644,
+                  "mutability": "mutable",
+                  "name": "withdrawAddress",
+                  "nameLocation": "3653:15:29",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6656,
+                  "src": "3637:31:29",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  },
+                  "typeName": {
+                    "id": 6643,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3637:15:29",
+                    "stateMutability": "payable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3636:33:29"
+            },
+            "returnParameters": {
+              "id": 6648,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3689:0:29"
+            },
+            "scope": 6672,
+            "src": "3614:133:29",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 6670,
+              "nodeType": "Block",
+              "src": "3862:59:29",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 6667,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "expression": {
+                            "id": 6661,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967281,
+                            "src": "3880:3:29",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 6662,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "src": "3880:10:29",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "arguments": [
+                            {
+                              "id": 6665,
+                              "name": "entryPoint",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 6480,
+                              "src": "3902:10:29",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                                "typeString": "contract IEntryPoint"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_contract$_IEntryPoint_$9669",
+                                "typeString": "contract IEntryPoint"
+                              }
+                            ],
+                            "id": 6664,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "nodeType": "ElementaryTypeNameExpression",
+                            "src": "3894:7:29",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_address_$",
+                              "typeString": "type(address)"
+                            },
+                            "typeName": {
+                              "id": 6663,
+                              "name": "address",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "3894:7:29",
+                              "typeDescriptions": {}
+                            }
+                          },
+                          "id": 6666,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "typeConversion",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "3894:19:29",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "src": "3880:33:29",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 6660,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "3872:7:29",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 6668,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3872:42:29",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 6669,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3872:42:29"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 6657,
+              "nodeType": "StructuredDocumentation",
+              "src": "3753:53:29",
+              "text": "validate the call is made from a valid entrypoint"
+            },
+            "id": 6671,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_requireFromEntryPoint",
+            "nameLocation": "3820:22:29",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6658,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3842:2:29"
+            },
+            "returnParameters": {
+              "id": 6659,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3862:0:29"
+            },
+            "scope": 6672,
+            "src": "3811:110:29",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 6673,
+        "src": "385:3538:29",
+        "usedErrors": []
+      }
+    ],
+    "src": "36:3888:29"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.10+commit.fc410830.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.10",
+  "updatedAt": "2023-01-14T08:14:22.686Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "addStake(uint32)": {
+        "params": {
+          "unstakeDelaySec": "- the unstake delay for this paymaster. Can only be increased."
+        }
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "postOp(uint8,bytes,uint256)": {
+        "params": {
+          "actualGasCost": "- actual gas used so far (without this postOp call).",
+          "context": "- the context value returned by validatePaymasterUserOp",
+          "mode": "enum with the following options:      opSucceeded - user operation succeeded.      opReverted  - user op reverted. still has to pay for gas.      postOpReverted - user op succeeded, but caused postOp (in mode=opSucceeded) to revert.                       Now this is the 2nd call, after user's op was deliberately reverted."
+        }
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      },
+      "validatePaymasterUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,uint256)": {
+        "params": {
+          "maxCost": "the maximum cost of this transaction (based on maximum gas and gas price from userOp)",
+          "userOp": "the user operation",
+          "userOpHash": "hash of the user's request data."
+        },
+        "returns": {
+          "context": "value to send to a postOp  zero length to signify postOp is not required.",
+          "deadline": "the last block timestamp this operation is valid, or zero if it is valid indefinitely.      Note that the validation code cannot use block.timestamp (or block.number) directly."
+        }
+      },
+      "withdrawStake(address)": {
+        "params": {
+          "withdrawAddress": "the address to send withdrawn value."
+        }
+      },
+      "withdrawTo(address,uint256)": {
+        "params": {
+          "amount": "to withdraw",
+          "withdrawAddress": "target to send to"
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "addStake(uint32)": {
+        "notice": "add stake for this paymaster. This method can also carry eth value to add to the current stake."
+      },
+      "deposit()": {
+        "notice": "add a deposit for this paymaster, used for paying for transaction fees"
+      },
+      "getDeposit()": {
+        "notice": "return current paymaster's deposit on the entryPoint."
+      },
+      "postOp(uint8,bytes,uint256)": {
+        "notice": "post-operation handler. Must verify sender is the entryPoint"
+      },
+      "unlockStake()": {
+        "notice": "unlock the stake, in order to withdraw it. The paymaster can't serve requests once unlocked, until it calls addStake again"
+      },
+      "validatePaymasterUserOp((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes),bytes32,uint256)": {
+        "notice": "payment validation: check if paymaster agree to pay. Must verify sender is the entryPoint. Revert to reject this request. Note that bundlers will reject this method if it changes the state, unless the paymaster is trusted (whitelisted) The paymaster pre-pays using its deposit, and receive back a refund after the postOp method returns."
+      },
+      "withdrawStake(address)": {
+        "notice": "withdraw the entire paymaster's stake. stake must be unlocked first (and then wait for the unstakeDelay to be over)"
+      },
+      "withdrawTo(address,uint256)": {
+        "notice": "withdraw value from the deposit"
+      }
+    },
+    "notice": "Helper class for creating a paymaster. provides helper methods for staking. validates that the postOp is called only by the entryPoint",
+    "version": 1
+  }
+}

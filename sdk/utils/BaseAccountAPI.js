@@ -171,10 +171,7 @@ class BaseAccountAPI {
         } else {
             let out = await this.encodeUserOpCallDataAndGasLimit(info);
             callData = out.callData
-<<<<<<<< HEAD:sdk/utils/BaseAccountAPI.js
             callGasLimit = out.callGasLimit
-========
->>>>>>>> main:utils/BaseAccountAPI.js
         }
         let initCode = info.noInit ? "0x" : await this.getInitCode();
         const initGas = await this.estimateCreationGas(initCode);
