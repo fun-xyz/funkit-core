@@ -95,6 +95,7 @@ contract Treasury is BaseAccount {
         address[] memory verificationAddresses
     ) {
         bytes memory actionKey = abi.encodePacked(abi.encode(user, action));
+        verificationStore[actionKey] = verificationAddresses;
     }
 
     /**
@@ -160,6 +161,10 @@ contract Treasury is BaseAccount {
     ) external {
         _requireFromEntryPoint();
         _call(dest, value, func);
+    }
+
+    function execAction(address actionAddr, bytes memory data) {
+        
     }
 
     /// implement template method of BaseAccount
