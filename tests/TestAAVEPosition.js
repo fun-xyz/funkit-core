@@ -1,17 +1,15 @@
 const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
+const { TestAaveConfig, FunWalletConfig } = require("../src/walletConfigs")
 const chain = '43113' //avax fuji 
 
 
-const main = async (aTokenAddress, privKey, prefundAmt, APIKEY, rpcurl) => {
-    console.log(rpcurl)
+const main = async (config,rpcurl) => {
     if (!rpcurl) {
         const chainInfo = await FunWallet.getChainInfo(chain)
         rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
     }
-
-
-    prefundAmt = parseFloat(prefundAmt)
+ 
 
     // 1. With metamask
     // const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -20,14 +18,15 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY, rpcurl) => {
 
     // 2. With a known private key
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
-    const eoa = new ethers.Wallet(privKey, provider)
+    const eoa = new ethers.Wallet(config.privKey, provider)
 
     // Create an access control schema with one action: withdraw a user's funds from Aave
     const schema = new AccessControlSchema()
-    const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
+    const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(config.aTokenAddress))
 
     // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAX
-    const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
+    const walletConfig=new FunWalletConfig(eoa, schema, config.prefundAmt, chain, config.APIKEY)
+    const wallet = new FunWallet(walletConfig)
 
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()
@@ -37,18 +36,20 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY, rpcurl) => {
     const aaveActionTx = await wallet.createActionTx(withdrawEntirePosition)
 
     // Create & deploy a tx that gives the FunWallet authorization to close the EOA's Aave position
-    const tokenApprovalReceipt = await wallet.deployTokenApproval(aTokenAddress)
+    const tokenApprovalReceipt = await wallet.deployTokenApproval(config.aTokenAddress)
     console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
     // After some time, deploy the Aave withdrawal action
-    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx, APIKEY)
+    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx, config.APIKEY)
     console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }
 
 const processConsole = () => {
-    const aTokenAddress=process.argv[2], privKey=process.argv[3], prefundAmt=process.argv[4], APIKEY=process.argv[5], rpcurl=process.argv[6]
-    main(aTokenAddress, privKey, prefundAmt, APIKEY, rpcurl)
+    let aTokenAddress=process.argv[2], privKey=process.argv[3], prefundAmt=process.argv[4], APIKEY=process.argv[5], rpcurl=process.argv[6]
+    prefundAmt=parseFloat(prefundAmt)
+    const config=new TestAaveConfig(aTokenAddress,privKey,prefundAmt,APIKEY)
+    main(config, rpcurl)
 }
 
 

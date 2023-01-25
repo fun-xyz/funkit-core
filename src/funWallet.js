@@ -25,14 +25,15 @@ class FunWallet {
     */
 
 
-    constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0) {
-        this.eoa = eoa
-        this.prefundAmt = prefundAmt
-        this.schema = schema
+    constructor(config, index = 0) {
+        
+        this.eoa = config.eoa
+        this.prefundAmt = config.prefundAmt
+        this.schema = config.schema
         this.actionsStore = this.schema.actionsStore
-        this.index = index
-        this.chain = chain
-        this.apiKey = apiKey
+        this.index = config.index
+        this.chain = config.chain
+        this.apiKey = config.apiKey
     }
     contracts = {}
 
