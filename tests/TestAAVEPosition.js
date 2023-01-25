@@ -7,7 +7,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     const chainInfo = await FunWallet.getChainInfo(chain)
     const rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
 
-    prefundAmt = parseInt(prefundAmt)
+    prefundAmt = parseFloat(prefundAmt)
 
     // 1. With metamask
     // const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -21,7 +21,6 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     // Create an access control schema with one action: withdraw a user's funds from Aave
     const schema = new AccessControlSchema()
     const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
-
 
     // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAX
     const wallet = new FunWallet(eoa, schema, prefundAmt, chain, APIKEY)
@@ -38,7 +37,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
     // After some time, deploy the Aave withdrawal action
-    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx)
+    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx,APIKEY)
     console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }

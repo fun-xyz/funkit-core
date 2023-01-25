@@ -95,10 +95,11 @@ class FunWallet {
     async deployActionTx(op) {
         const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+
         return { userOpHash, txid }
     }
 
-    static async deployActionTx(op, chain = "43113") {
+    static async deployActionTx(op, apikey, chain = "43113") {
         let chainInfo = await FunWallet.getChainInfo(chain)
         const bundlerUrl = chainInfo.rpcdata.bundlerUrl
         const rpcurl = chainInfo.rpcdata.rpcurl
@@ -116,6 +117,8 @@ class FunWallet {
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
+        await this._storeUserOp(op, apikey, 'deploy_action')
+
         return { userOpHash, txid }
     }
 
@@ -131,10 +134,12 @@ class FunWallet {
     }
 
     async _createAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        //info.data is calldata
         return await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
     async _createUnsignedAction({ to, data }, gasLimit, noInit = false, calldata = false) {
+        //
         return await this.accountApi.createUnsignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     }
 
@@ -151,13 +156,15 @@ class FunWallet {
         const tokenAddr = this.params[0]
 
         this._initActionContract(this.AaveActionAddress)
+        this._initTokenContract(tokenAddr)
 
         const eoaAddr = await this.eoa.getAddress()
         const input = [eoaAddr, tokenAddr]
         const key = generateSha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
         const actionInitData = await this.contracts[this.AaveActionAddress].getMethodEncoding("init", [aaveData])
-        return actionInitData
+        const balance = await this.contracts[tokenAddr].callMethod("balanceOf", [eoaAddr])
+        return { actionInitData, balance }
 
     }
 
@@ -172,24 +179,13 @@ class FunWallet {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveActionAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
-        await this._storeUserOp(actionExecutionOp)
+
+        await FunWallet._storeUserOp(actionExecutionOp, this.apiKey, 'create_action')
 
         return actionExecutionOp
     }
 
-    async deploy() {
-        await this.init()
-        const actionCreateData = { to: [], data: [] }
-        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
-            const actionInitData = await this._createWalletInitData(actionData)
-            const { to, data } = actionInitData
-            actionCreateData.to.push(to)
-            actionCreateData.data.push(data)
-        }))
-        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await this._createAction(createWalleteData, 560000)
-        return await this.deployActionTx(op)
-    }
+
 
     async createActionTx(action) {
         return this._createAAVEWithdrawalExec(action)
@@ -220,31 +216,39 @@ class FunWallet {
         }
         return await this.deployActionTx(userOp)
     }
-    async _storeUserOp(op) {
+    static async _storeUserOp(op, apikey, type, balance) {
         const outOp = await this._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig, 'immuna') //storing the customer name, should this be done somehow differently? 
+        await this._storeUserOpInternal(outOp, sig, apikey, 'fun', type, balance) //storing the customer name, should this be done somehow differently? 
         return sig
     }
-    async _storeUserOpInternal(userOp, userOpHash, user) {
-        await fetch(`${APIURL}/save-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': this.apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-                userOp: userOp,
-                user
-            })
-        }).then((r) => r.json()).then((r) => { console.log(r.message) })
+    static async _storeUserOpInternal(userOp, userOpHash, apikey, user, type, balance) {
+        try {
+            await fetch(`${APIURL}/save-user-op`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': apikey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify({
+                    userOpHash: userOpHash,
+                    userOp: userOp,
+                    user,
+                    type,
+                    balance,
+                })
+            }).then((r) => r.json()).then((r) => { console.log(r.message + " type: " + type) })
+        }
+        catch (e) {
+            console.log(e)
+        }
+
     }
 
 
-    async _getPromiseFromOp(op) {
+    static async _getPromiseFromOp(op) {
         const out = {}
         await Promise.all(Object.keys(op).map(async (key) => {
             out[key] = await op[key]
@@ -261,18 +265,22 @@ class FunWallet {
         return op
     }
     async _getUserOpInternal(userOpHash) {
-        return await fetch(`${APIURL}/get-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': this.apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-            })
-        }).then((r) => r.json()).then((r) => { return r.data })
+        try {
+            return await fetch(`${APIURL}/get-user-op`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': this.apiKey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify({
+                    userOpHash: userOpHash,
+                })
+            }).then((r) => r.json()).then((r) => { return r.data })
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     /**
@@ -284,17 +292,20 @@ class FunWallet {
     async deploy() {
         await this.init()
         const actionCreateData = { to: [], data: [] }
-        await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
-            const actionInitData = await this._createWalletInitData(actionData)
+        let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
+            const { actionInitData, balance } = await this._createWalletInitData(actionData)
             const { to, data } = actionInitData
             actionCreateData.to.push(to)
             actionCreateData.data.push(data)
+            return balance
         }))
+
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await this._createAction(createWalleteData, 560000)
-        return await this.deployActionTx(op)
+        const receipt = await this.deployActionTx(op)
+        FunWallet._storeUserOp(op, this.apiKey, 'deploy_wallet', balance)
+        return receipt
     }
-
 
     /**
     * Grants approval to controller wallet to liquidate funds
@@ -338,7 +349,33 @@ class FunWallet {
         this._initTokenContract(aTokenAddress)
         const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
         const submittedTx = await this.eoa.sendTransaction(ethTx);
-        return await submittedTx.wait()
+        const receipt = await submittedTx.wait()
+
+        await this.storeEVMCall(receipt, 'fun')
+
+        return receipt
+    }
+    async storeEVMCall(receipt, user) {
+        try {
+            return await fetch(`${APIURL}/save-evm-receipt`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': this.apiKey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify({
+                    txHash: receipt.transactionHash,
+                    receipt,
+                    organization: user
+                })
+            }).then(r => r.json()).then(r => console.log(r.message + " type: evm_receipt"))
+        }
+        catch (e) {
+            console.log(e)
+        }
+
     }
 }
 
