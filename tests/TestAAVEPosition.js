@@ -3,9 +3,13 @@ const ethers = require('ethers')
 const chain = '43113' //avax fuji 
 
 
-const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
-    const chainInfo = await FunWallet.getChainInfo(chain)
-    const rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
+const main = async (aTokenAddress, privKey, prefundAmt, APIKEY, rpcurl) => {
+    console.log(rpcurl)
+    if (!rpcurl) {
+        const chainInfo = await FunWallet.getChainInfo(chain)
+        rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
+    }
+
 
     prefundAmt = parseFloat(prefundAmt)
 
@@ -15,7 +19,7 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     // const eoa = provider.getSigner();
 
     // 2. With a known private key
-    const provider = new ethers.providers.JsonRpcProvider(rpc)
+    const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const eoa = new ethers.Wallet(privKey, provider)
 
     // Create an access control schema with one action: withdraw a user's funds from Aave
@@ -37,13 +41,14 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
     console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
     // After some time, deploy the Aave withdrawal action
-    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx,APIKEY)
+    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx, APIKEY)
     console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }
 
 const processConsole = () => {
-    main(process.argv[2], process.argv[3], process.argv[4], process.argv[5])
+    const aTokenAddress=process.argv[2], privKey=process.argv[3], prefundAmt=process.argv[4], APIKEY=process.argv[5], rpcurl=process.argv[6]
+    main(aTokenAddress, privKey, prefundAmt, APIKEY, rpcurl)
 }
 
 
