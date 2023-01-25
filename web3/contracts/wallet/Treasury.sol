@@ -8,7 +8,6 @@ import "../lib/interfaces/IAction.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Treasury is BaseAccount {
-    mapping(address => bool) private whitelist;
     mapping(string => bytes) private state;
     mapping(address => mapping(string => bool)) internalActions;
 
@@ -32,14 +31,13 @@ contract Treasury is BaseAccount {
     // Account Abstraction specific
 
     mapping(uint256 => bool) nonceMap;
-    mapping(address => bool) allowedEOAsMap;
-    mapping(address => mapping(address => bool)) actionToUserMap;
+    mapping(address => bool) private owners;
 
     using ECDSA for bytes32;
 
     //explicit sizes of nonce, to fit a single storage cell with "owner"
     uint96 private _nonce;
-    address public owner;
+
 
     function nonce() public view override returns (uint256) {
         return 0;
@@ -66,7 +64,7 @@ contract Treasury is BaseAccount {
 
     constructor(IEntryPoint anEntryPoint, address anOwner) {
         _entryPoint = anEntryPoint;
-        owner = anOwner;
+        owners[anOwner] = true;
     }
 
     modifier onlyOwner() {
@@ -77,36 +75,19 @@ contract Treasury is BaseAccount {
     function _onlyOwner() internal view {
         //directly from EOA owner, or through the entryPoint (which gets redirected through execFromEntryPoint)
         require(
-            msg.sender == owner || msg.sender == address(this),
+            owners[msg.sender] || msg.sender == address(this),
             "only owner"
         );
     }
 
     function addAccessToUser(address user) public {
         _onlyOwner();
-        allowedEOAsMap[user] = true;
+        owners[user] = true;
     }
 
     function removeAccessFromUser(address user) public {
         _onlyOwner();
-        allowedEOAsMap[user] = false;
-    }
-
-    function addActionToUser(address user, address actionAddress) public {
-        _onlyOwner();
-        actionToUserMap[user][actionAddress] = true;
-    }
-
-    function addAction(address actionAddress) public {
-        whitelist[actionAddress] = true;
-    }
-
-    /**
-     * transfer eth value to a destination address
-     */
-
-    function transfer(address dest, uint256 amount) external {
-        payable(dest).transfer(amount);
+        owners[user] = false;
     }
 
     /**
@@ -139,7 +120,7 @@ contract Treasury is BaseAccount {
      * an account must have a method for replacing the entryPoint, in case the the entryPoint is
      * upgraded to a newer version.
      */
-    
+
     function _updateEntryPoint(address newEntryPoint) internal override {
         emit EntryPointChanged(address(_entryPoint), newEntryPoint);
         _entryPoint = IEntryPoint(payable(newEntryPoint));
@@ -194,7 +175,7 @@ contract Treasury is BaseAccount {
         // solhint-disable-next-line avoid-tx-origin
         // address(0) == hash.recover(userOp.signature)
         require(
-            owner == hash.recover(userOp.signature) || tx.origin == address(0),
+            owners[hash.recover(userOp.signature)] || tx.origin == address(0),
             "account: wrong signature"
         );
 
