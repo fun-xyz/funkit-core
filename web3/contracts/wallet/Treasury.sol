@@ -22,11 +22,17 @@ contract Treasury is BaseAccount {
 
     // state view and update function
     function getStateVal(string memory key) public view returns (bytes memory) {
-        return state[key];
+        string memory subkey = string(
+            abi.encodePacked(abi.encode(msg.sender, key))
+        );
+        return state[subkey];
     }
 
     function updateStateVal(string memory key, bytes memory data) public {
-        state[key] = data;
+        string memory subkey = string(
+            abi.encodePacked(abi.encode(msg.sender, key))
+        );
+        state[subkey] = data;
     }
 
     // Account Abstraction specific
@@ -139,7 +145,7 @@ contract Treasury is BaseAccount {
      * an account must have a method for replacing the entryPoint, in case the the entryPoint is
      * upgraded to a newer version.
      */
-    
+
     function _updateEntryPoint(address newEntryPoint) internal override {
         emit EntryPointChanged(address(_entryPoint), newEntryPoint);
         _entryPoint = IEntryPoint(payable(newEntryPoint));
