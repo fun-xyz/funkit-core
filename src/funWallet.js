@@ -26,7 +26,7 @@ class FunWallet {
 
 
     constructor(config, index = 0) {
-        
+
         this.eoa = config.eoa
         this.prefundAmt = config.prefundAmt
         this.schema = config.schema

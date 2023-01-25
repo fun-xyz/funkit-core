@@ -8,17 +8,17 @@ class TestAaveConfig {
     }
 }
 
-class FunWalletConfig{
-    constructor(eoa, schema, prefundAmt, chain, apiKey){
-        this.eoa=eoa
-        this.schema=schema
-        this.prefundAmt=prefundAmt
-        this.chain=chain
-        this.apiKey=apiKey
+class FunWalletConfig {
+    constructor(eoa, schema, prefundAmt, chain, apiKey) {
+        this.eoa = eoa
+        this.schema = schema
+        this.prefundAmt = prefundAmt
+        this.chain = chain
+        this.apiKey = apiKey
     }
 
 }
 
 
 
-module.exports = { TestAaveConfig , FunWalletConfig}
+module.exports = { TestAaveConfig, FunWalletConfig }
