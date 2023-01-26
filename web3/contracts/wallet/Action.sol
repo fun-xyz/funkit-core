@@ -13,10 +13,7 @@ abstract contract Action {
         string memory key,
         bytes memory data
     ) internal {
-        string memory subkey = string(
-            abi.encodePacked(abi.encode(address(this), key))
-        );
-        Treasury(payable(treasury)).updateStateVal(subkey, data);
+        Treasury(payable(treasury)).updateStateVal(key, data);
     }
 
     function getData(address treasury, string memory key)
@@ -24,9 +21,6 @@ abstract contract Action {
         view
         returns (bytes memory)
     {
-        string memory subkey = string(
-            abi.encodePacked(abi.encode(address(this), key))
-        );
         return Treasury(payable(treasury)).getStateVal(subkey);
     }
 
