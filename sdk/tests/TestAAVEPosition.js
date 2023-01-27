@@ -1,6 +1,6 @@
 const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
-const { TestAaveConfig, FunWalletConfig } = require("../utils/walletConfigs")
+const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const chain = '43113' //avax fuji 
 
 

@@ -37,6 +37,7 @@ const generateSha256 = (action) => {
 }
 
 
+
 module.exports = { 
     generateSha256,
     calcPreVerificationGas

@@ -1,5 +1,5 @@
 const { FunWallet, AAVEWithdrawal, AccessControlSchema, wallets } = require("../index")
-const { TestAaveConfig, FunWalletConfig } = require("../utils/walletConfigs")
+const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const { AAVEWallet } = wallets
 const ethers = require('ethers')
 
