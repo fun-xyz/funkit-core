@@ -6,11 +6,12 @@ const { ContractsHolder } = require("../utils/ContractsHolder")
 
 
 const { HttpRpcClient } = require('@account-abstraction/sdk')
+const ethers = require('ethers')
 
 const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
 const Treasury = require("../utils/abis/Treasury.json")
-const ethers = require('ethers')
+
 
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -53,12 +54,13 @@ class FunWallet extends ContractsHolder {
     async init() {
         const prefundAmt = this.prefundAmt
         let chainInfo = await FunWallet.getChainInfo(this.chain)
-        console.log(chainInfo)
+
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
         this.rpcurl = chainInfo.rpcdata.rpcurl
         this.entryPointAddress = chainInfo.aaData.entryPointAddress
         this.factoryAddress = chainInfo.aaData.factoryAddress
         this.AaveWithdrawalAddress = chainInfo.actionData.aave
+        
         this.AaveSupplyAddress = chainInfo.actionData.aaveSupply
 
 
@@ -158,12 +160,13 @@ class FunWallet extends ContractsHolder {
         this.params = params
         const tokenAddr = this.params[0]
         this.addContract(this.AaveWithdrawalAddress, Action.abi)
+        this.addContract(tokenAddr, ERCToken.abi)
         const input = [this.eoaAddr, tokenAddr]
         const key = generateSha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
         const actionInitData = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("init", [aaveData])
-        console.log(aaveData, actionInitData.data)
-        return actionInitData
+        const balance = await this.contracts[tokenAddr].callMethod("balanceOf", [this.eoaAddr])
+        return { actionInitData, balance }
     }
 
     async _createAAVEWithdrawalExec({ params }) {
@@ -176,7 +179,7 @@ class FunWallet extends ContractsHolder {
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
 
-        await FunWallet._storeUserOp(actionExecutionOp, this.apiKey, 'create_action')
+        await this._storeUserOp(actionExecutionOp, this.apiKey, 'create_action')
 
         return actionExecutionOp
     }
@@ -208,7 +211,7 @@ class FunWallet extends ContractsHolder {
     */
 
     async _storeUserOp(op) {
-        const outOp = await this._getPromiseFromOp(op)
+        const outOp = await FunWallet._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
         await this._storeUserOpInternal(outOp, sig, apikey, 'fun', type, balance) //storing the customer name, should this be done somehow differently? 
         return sig
@@ -294,7 +297,7 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await this._createAction(createWalleteData, 560000)
         const receipt = await this.deployActionTx(op)
-        FunWallet._storeUserOp(op, this.apiKey, 'deploy_wallet', balance)
+        await this._storeUserOp(op, this.apiKey, 'deploy_wallet', balance)
         return receipt
     }
 
