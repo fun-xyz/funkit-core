@@ -213,7 +213,7 @@ class FunWallet extends ContractsHolder {
     async _storeUserOp(op) {
         const outOp = await FunWallet._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig, apikey, 'fun', type, balance) //storing the customer name, should this be done somehow differently? 
+        await this._storeUserOpInternal(outOp, sig, this.apiKey, 'fun', type, balance) //storing the customer name, should this be done somehow differently? 
         return sig
     }
     static async _storeUserOpInternal(userOp, userOpHash, apikey, user, type, balance) {
