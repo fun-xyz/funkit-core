@@ -146,6 +146,11 @@ class FunWallet extends ContractsHolder {
         return { actionInitData, balance }
     }
 
+
+
+    async createActionTx(action) {
+        return this._createAAVEWithdrawalExec(action)
+    }
     async _createAAVEWithdrawalExec({ params }) {
         this.params = params
         const tokenAddr = this.params[0]
@@ -164,14 +169,6 @@ class FunWallet extends ContractsHolder {
 
 
 
-    async createActionTx(action) {
-        return this._createAAVEWithdrawalExec(action)
-    }
-
-    async sendEOATransaction(tx) {
-        const submittedTx = await this.eoa.sendTransaction(tx);
-        return await submittedTx.wait()
-    }
 
     /**
     * Grants approval to controller wallet to liquidate funds

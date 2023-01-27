@@ -4,6 +4,11 @@ async function fundAccount(eoa, address, amt) {
     return await tx.wait()
 }
 
+async function sendEOATransaction(tx) {
+    const submittedTx = await this.eoa.sendTransaction(tx);
+    return await submittedTx.wait()
+}
+
 module.exports={
     fundAccount
 }
