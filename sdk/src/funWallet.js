@@ -6,7 +6,6 @@ const { ContractsHolder } = require("../utils/ContractsHolder")
 
 
 const { HttpRpcClient } = require('@account-abstraction/sdk')
-const ethers = require('ethers')
 
 const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
@@ -28,6 +27,7 @@ class FunWallet extends ContractsHolder {
 
 
     constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0) {
+        super()
         this.eoa = eoa
         this.prefundAmt = prefundAmt
         this.schema = schema
@@ -53,12 +53,12 @@ class FunWallet extends ContractsHolder {
     async init() {
         const prefundAmt = this.prefundAmt
         let chainInfo = await FunWallet.getChainInfo(this.chain)
-
+        console.log(chainInfo)
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
         this.rpcurl = chainInfo.rpcdata.rpcurl
         this.entryPointAddress = chainInfo.aaData.entryPointAddress
         this.factoryAddress = chainInfo.aaData.factoryAddress
-        this.AaveWithdrawalAddress = chainInfo.actionData.aaveWithdraw
+        this.AaveWithdrawalAddress = chainInfo.actionData.aave
         this.AaveSupplyAddress = chainInfo.actionData.aaveSupply
 
 
@@ -162,6 +162,7 @@ class FunWallet extends ContractsHolder {
         const key = generateSha256(input)
         const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
         const actionInitData = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("init", [aaveData])
+        console.log(aaveData, actionInitData.data)
         return actionInitData
     }
 
