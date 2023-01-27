@@ -27,15 +27,15 @@ class FunWallet extends ContractsHolder {
     */
 
 
-    constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0) {
+    constructor(config, index = 0) {
         super()
-        this.eoa = eoa
-        this.prefundAmt = prefundAmt
-        this.schema = schema
-        this.actionsStore = this.schema.actionsStore
+        this.eoa = config.eoa
+        this.prefundAmt = config.prefundAmt
+        this.schema = config.schema
+        this.actionsStore = config.schema.actionsStore
         this.index = index
-        this.chain = chain
-        this.apiKey = apiKey
+        this.chain = config.chain
+        this.apiKey = config.apiKey
     }
 
     /**     
