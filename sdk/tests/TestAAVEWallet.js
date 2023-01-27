@@ -17,7 +17,11 @@ const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
 
     // Create a new FunWallet instance, 
     const chain = '43113'
-    // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fee
+    // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
+    const wallet = new FunWallet(eoa, schema, prefundAmt, chain, "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf")
+
+    // Deploy the FunWallet
+    const deployWalletReceipt = await wallet.deploy()
 
     const aaveWallet = new AAVEWallet(eoa, schema, prefundAmt, chain, APIKEY)
 
