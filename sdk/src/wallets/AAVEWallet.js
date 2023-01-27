@@ -16,8 +16,8 @@ const supplyAddr = "0x096058932cAA96B1deDf2F6bd56F693aD7cd4456"
 const withdrawAddr = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
 
 class AAVEWallet extends FunWallet {
-    constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0, poolAddr = pool) {
-        super(eoa, schema, prefundAmt, chain, apiKey, index)
+    constructor(config, index = 0, poolAddr = pool) {
+        super(config.eoa, config.schema, config.prefundAmt, config.chain, config.apiKey, index)
         this.poolAddr = poolAddr
         this.contracts = {}
         this.addContract(this.poolAddr, pooldata.abi)
