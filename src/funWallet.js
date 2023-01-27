@@ -1,5 +1,5 @@
 const fetch = require("node-fetch")
-const { wrapProvider } = require("../utils/Provider")
+const {  erc4337Provider } = require("../utils/erc4337Provider")
 const { TreasuryAPI } = require("../utils/TreasuryAPI")
 const { generateSha256 } = require("../utils/tools")
 const { WrappedEthersContract } = require("../utils/WrappedEthersContract")
@@ -68,7 +68,7 @@ class FunWallet {
         this.chainId = net.chainId
 
         this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, this.chainId)
-        this.erc4337Provider = await wrapProvider(this.provider, this.config, this.eoa, this.factoryAddress)
+        this.erc4337Provider = await erc4337Provider(this.provider, this.config, this.eoa, this.factoryAddress)
 
         this.accountApi = new TreasuryAPI({
             provider: this.erc4337Provider,
