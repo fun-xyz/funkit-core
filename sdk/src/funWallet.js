@@ -14,6 +14,7 @@ const Treasury = require("../utils/abis/Treasury.json")
 const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
 const TranslationServer = require('../utils/TranslationServer')
+const { BundlerInstance } = require("../utils/BundlerInstance")
 
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -52,35 +53,35 @@ class FunWallet extends ContractsHolder {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
+
+    addVarsToAttributes(vars) {
+        Object.keys(vars).forEach(varKey => {
+            this[varKey] = vars[varKey]
+        })
+    }
     async init() {
         const prefundAmt = this.prefundAmt
+
         let chainInfo = await TranslationServer.getChainInfo(this.chain)
+        const {
+            rpcdata: { bundlerUrl, rpcurl },
+            aaData: { entryPointAddress, factoryAddress },
+            actionData: {
+                aave: AaveWithdrawalAddress,
+                aaveSupply: AaveSupplyAddress,
+            }
+        } = chainInfo
 
-        this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
-        this.rpcurl = chainInfo.rpcdata.rpcurl
-        this.entryPointAddress = chainInfo.aaData.entryPointAddress
-        this.factoryAddress = chainInfo.aaData.factoryAddress
-        this.AaveWithdrawalAddress = chainInfo.actionData.aave
+        const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
 
-        this.AaveSupplyAddress = chainInfo.actionData.aaveSupply
-
-
-        this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
-        this.config = { bundlerUrl: this.bundlerUrl, entryPointAddress: this.entryPointAddress }
-
-        const net = await this.provider.getNetwork()
-        this.chainId = net.chainId
-
-        this.rpcClient = new HttpRpcClient(this.bundlerUrl, this.entryPointAddress, this.chainId)
-        this.erc4337Provider = await wrapProvider(this.provider, this.config, this.eoa, this.factoryAddress)
-
-        this.accountApi = new TreasuryAPI({
-            provider: this.erc4337Provider,
-            entryPointAddress: this.entryPointAddress,  //check this
-            owner: this.eoa,
-            factoryAddress: this.factoryAddress,
-            index: this.index
+        this.addVarsToAttributes({
+            AaveWithdrawalAddress,
+            AaveSupplyAddress,
+            bundlerClient,
+            provider,
+            accountApi,
         })
+
         this.address = await this.accountApi.getAccountAddress()
         this.eoaAddr = await this.eoa.getAddress()
 
@@ -91,7 +92,7 @@ class FunWallet extends ContractsHolder {
         }
     }
 
-   
+
 
 
     /**
@@ -119,7 +120,7 @@ class FunWallet extends ContractsHolder {
     }
 
     async deployActionTx(op) {
-        const userOpHash = await this.rpcClient.sendUserOpToBundler(op)
+        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
 
         return { userOpHash, txid }
@@ -160,8 +161,6 @@ class FunWallet extends ContractsHolder {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await BundlerTools._createAction(this.accountApi, actionExec, 500000, true)
-
-
         await TranslationServer._storeUserOp(actionExecutionOp, 'create_action', 0, this.apiKey)
 
         return actionExecutionOp
@@ -197,29 +196,20 @@ class FunWallet extends ContractsHolder {
     */
     static async deployActionTx(op, apikey, chain = "43113") {
         let chainInfo = await TranslationServer.getChainInfo(chain)
-        const bundlerUrl = chainInfo.rpcdata.bundlerUrl
-        const rpcurl = chainInfo.rpcdata.rpcurl
-        const entryPointAddress = chainInfo.aaData.entryPointAddress
-        const factoryAddress = chainInfo.aaData.factoryAddress
-        const AaveWithdrawalAddress = chainInfo.actionData.aave
+        const {
+            rpcdata: { bundlerUrl, rpcurl },
+            aaData: { entryPointAddress, factoryAddress }
+        } = chainInfo
 
-        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
-        const chainId = (await provider.getNetwork()).chainId
-
-        const rpcClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-        const accountApi = new TreasuryAPI({
-            provider: provider,
-            entryPointAddress: entryPointAddress,  //check this
-            factoryAddress: factoryAddress
-        })
-        const userOpHash = await rpcClient.sendUserOpToBundler(op)
+        const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
+        const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         await TranslationServer._storeUserOp(op, 'deploy_action', 0, apikey)
 
         return { userOpHash, txid }
     }
 
-    
+
 }
 
 module.exports = { FunWallet }

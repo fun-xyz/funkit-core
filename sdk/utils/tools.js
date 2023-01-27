@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.calcPreVerificationGas = exports.DefaultGasOverheads = void 0;
 const utils_1 = require("@account-abstraction/utils");
 const utils_2 = require("ethers/lib/utils");
+
 exports.DefaultGasOverheads = {
     fixed: 21000,
     perUserOp: 18300,
