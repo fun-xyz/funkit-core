@@ -20,10 +20,7 @@ const main = async () => {
     const prefundAmt = 0 // eth
     const chain = '43113'
     // Initialize the FunWallet instance, initially funded with 0.3 AVAX to cover gas fees
-    const wallet = new FunWallet(eoa, schema, prefundAmt, chain, "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf")
-
-    // Deploy the FunWallet
-    const deployWalletReceipt = await wallet.deploy()
+    const wallet = await schema.createFunWallet(eoa, prefundAmt, chain)
 
     const aaveWallet = new AAVEWallet(wallet)
 
