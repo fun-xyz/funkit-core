@@ -8,9 +8,8 @@ import "../lib/interfaces/IAction.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Treasury is BaseAccount {
-    mapping(address => bool) private whitelist;
     mapping(string => bytes) private state;
-    mapping(address => mapping(string => bool)) internalActions;
+    mapping(bytes => address[]) verificationStore;
 
     function callOp(
         address addr,
@@ -38,14 +37,12 @@ contract Treasury is BaseAccount {
     // Account Abstraction specific
 
     mapping(uint256 => bool) nonceMap;
-    mapping(address => bool) allowedEOAsMap;
-    mapping(address => mapping(address => bool)) actionToUserMap;
+    mapping(address => bool) private owners;
 
     using ECDSA for bytes32;
 
     //explicit sizes of nonce, to fit a single storage cell with "owner"
     uint96 private _nonce;
-    address public owner;
 
     function nonce() public view override returns (uint256) {
         return 0;
@@ -72,7 +69,7 @@ contract Treasury is BaseAccount {
 
     constructor(IEntryPoint anEntryPoint, address anOwner) {
         _entryPoint = anEntryPoint;
-        owner = anOwner;
+        owners[anOwner] = true;
     }
 
     modifier onlyOwner() {
@@ -83,36 +80,28 @@ contract Treasury is BaseAccount {
     function _onlyOwner() internal view {
         //directly from EOA owner, or through the entryPoint (which gets redirected through execFromEntryPoint)
         require(
-            msg.sender == owner || msg.sender == address(this),
+            owners[msg.sender] || msg.sender == address(this),
             "only owner"
         );
     }
 
     function addAccessToUser(address user) public {
         _onlyOwner();
-        allowedEOAsMap[user] = true;
+        owners[user] = true;
     }
 
     function removeAccessFromUser(address user) public {
         _onlyOwner();
-        allowedEOAsMap[user] = false;
+        owners[user] = false;
     }
 
-    function addActionToUser(address user, address actionAddress) public {
-        _onlyOwner();
-        actionToUserMap[user][actionAddress] = true;
-    }
-
-    function addAction(address actionAddress) public {
-        whitelist[actionAddress] = true;
-    }
-
-    /**
-     * transfer eth value to a destination address
-     */
-
-    function transfer(address dest, uint256 amount) external {
-        payable(dest).transfer(amount);
+    function addActionToUser(
+        address user,
+        address action,
+        address[] memory verificationAddresses
+    ) {
+        bytes memory actionKey = abi.encodePacked(abi.encode(user, action));
+        verificationStore[actionKey] = verificationAddresses;
     }
 
     /**
@@ -180,6 +169,10 @@ contract Treasury is BaseAccount {
         _call(dest, value, func);
     }
 
+    function execAction(address actionAddr, bytes memory data) {
+        
+    }
+
     /// implement template method of BaseAccount
     function _validateAndUpdateNonce(UserOperation calldata userOp)
         internal
@@ -200,13 +193,27 @@ contract Treasury is BaseAccount {
         // solhint-disable-next-line avoid-tx-origin
         // address(0) == hash.recover(userOp.signature)
         require(
-            owner == hash.recover(userOp.signature) || tx.origin == address(0),
+            owners[hash.recover(userOp.signature)] || tx.origin == address(0),
             "account: wrong signature"
         );
 
         // _externalValidation(userOp.callData);
 
         return 0;
+    }
+
+    function validateUserOp(
+        UserOperation calldata userOp,
+        bytes32 userOpHash,
+        address aggregator,
+        uint256 missingAccountFunds
+    ) external override returns (uint256 deadline) {
+        _requireFromEntryPoint();
+        deadline = _validateSignature(userOp, userOpHash, aggregator);
+        if (userOp.initCode.length == 0) {
+            _validateAndUpdateNonce(userOp);
+        }
+        _payPrefund(missingAccountFunds);
     }
 
     function _externalValidation(bytes memory op) internal view {
