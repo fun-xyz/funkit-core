@@ -111,6 +111,7 @@ class FunWallet extends ContractsHolder {
         }))
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+        console.log(createWalleteData)
         const op = await BundlerTools._createAction(this.accountApi, createWalleteData, 560000)
         const receipt = await this.deployActionTx(op)
         await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
