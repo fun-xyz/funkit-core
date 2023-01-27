@@ -192,7 +192,11 @@ class BaseAccountAPI {
             nonce: this.getNonce(),
             initCode,
             callData,
-            callGasLimit: info.gasLimit ? info.gasLimit : callGasLimit,
+<<<<<<<< HEAD:sdk/utils/BaseAccountAPI.js
+            callGasLimit: info.gasLimit ? info.gasLimit : info.gasLimit,
+========
+            callGasLimit: info.gasLimit,
+>>>>>>>> main:utils/BaseAccountAPI.js
             verificationGasLimit,
             maxFeePerGas,
             maxPriorityFeePerGas
