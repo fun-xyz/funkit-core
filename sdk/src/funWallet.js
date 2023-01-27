@@ -11,13 +11,12 @@ const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
 const Treasury = require("../utils/abis/Treasury.json")
 
-const BundlerTools = require('../utils/actions/utils')
+const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
-
+const TranslationServer = require('../utils/TranslationServer')
 
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 
 class FunWallet extends ContractsHolder {
     /**
@@ -55,7 +54,7 @@ class FunWallet extends ContractsHolder {
     */
     async init() {
         const prefundAmt = this.prefundAmt
-        let chainInfo = await FunWallet.getChainInfo(this.chain)
+        let chainInfo = await TranslationServer.getChainInfo(this.chain)
 
         this.bundlerUrl = chainInfo.rpcdata.bundlerUrl
         this.rpcurl = chainInfo.rpcdata.rpcurl
@@ -115,7 +114,7 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await BundlerTools._createAction(this.accountApi, createWalleteData, 560000)
         const receipt = await this.deployActionTx(op)
-        await FunWallet._storeUserOp(op, 'deploy_wallet', balance, this.apiKey)
+        await TranslationServer._storeUserOp(op, 'deploy_wallet', balance, this.apiKey)
         return receipt
     }
 
@@ -125,19 +124,6 @@ class FunWallet extends ContractsHolder {
 
         return { userOpHash, txid }
     }
-
-
-
-    /**
-    * adds type of action for FunWallet
-    * @params type, params
-    * type - string of "AAVE" (uniswap and more will be supported later)
-    * params - parameters to insert, (token address)
-    */
-    addAction(info) {
-        this.actionStore.push(info)
-    }
-    
 
     async _createWalletInitData({ type, params }) {
         switch (type) {
@@ -171,7 +157,7 @@ class FunWallet extends ContractsHolder {
         const actionExecutionOp = await BundlerTools._createAction(this.accountApi, actionExec, 500000, true)
 
 
-        await FunWallet._storeUserOp(actionExecutionOp, 'create_action', 0, this.apiKey)
+        await TranslationServer._storeUserOp(actionExecutionOp, 'create_action', 0, this.apiKey)
 
         return actionExecutionOp
     }
@@ -182,17 +168,28 @@ class FunWallet extends ContractsHolder {
         return this._createAAVEWithdrawalExec(action)
     }
 
-    async createActionTxs(actions) {
-        return await Promise.all(actions.map((action) => {
-            return this._createAAVEWithdrawalExec(action)
-        }))
+    async sendEOATransaction(tx) {
+        const submittedTx = await this.eoa.sendTransaction(tx);
+        return await submittedTx.wait()
     }
 
-    async createAllActionTx() {
-        return await Promise.all(Object.values(this.actionStore).map((action) => {
-            return this._createAAVEWithdrawalExec(action)
-        }))
+    /**
+    * Grants approval to controller wallet to liquidate funds
+    * @return {receipt} 
+    * receipt - TransactionReceipt of the approval confirmed on chain
+    */
+
+    async deployTokenApproval(aTokenAddress, amount = MAX_INT) {
+        this.addContract(aTokenAddress, ERCToken.abi)
+        const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
+        const submittedTx = await this.eoa.sendTransaction(ethTx);
+        const receipt = await submittedTx.wait()
+
+        await TranslationServer.storeEVMCall(receipt, 'fun', this.apiKey)
+
+        return receipt
     }
+
 
     /**
     * Liquidates one's aave position
@@ -201,116 +198,8 @@ class FunWallet extends ContractsHolder {
     * userOpHash - string hash of the UserOperation 
     * txid - transaction id of transfer of assets
     */
-
-    static async _storeUserOp(op, type, balance, apikey) {
-        const outOp = await FunWallet._getPromiseFromOp(op)
-        const sig = generateSha256(outOp.signature.toString())
-
-        await this._storeUserOpInternal(outOp, sig, apikey, 'fun', type, balance) //storing the customer name, should this be done somehow differently?
-        return sig
-    }
-
-    static async _storeUserOpInternal(userOp, userOpHash, apikey, user, type, balance) {
-        try {
-            await fetch(`${APIURL}/save-user-op`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Api-Key': apikey
-                },
-                redirect: 'follow',
-                referrerPolicy: 'no-referrer',
-                body: JSON.stringify({
-                    userOpHash: userOpHash,
-                    userOp: userOp,
-                    user,
-                    type,
-                    balance,
-                })
-            }).then((r) => r.json()).then((r) => { console.log(r.message + " type: " + type) })
-        }
-        catch (e) {
-            console.log(e)
-        }
-
-    }
-
-
-    static async _getPromiseFromOp(op) {
-        const out = {}
-        await Promise.all(Object.keys(op).map(async (key) => {
-            out[key] = await op[key]
-        }))
-        return out
-    }
-    static async _getStoredUserOp(opHash) {
-        const op = await this._getUserOpInternal(opHash)
-        Object.keys(op).map(key => {
-            if (op[key].type == "BigNumber") {
-                op[key] = ethers.BigNumber.from(op[key].hex)
-            }
-        })
-        return op
-    }
-    async _getUserOpInternal(userOpHash) {
-        try {
-            return await fetch(`${APIURL}/get-user-op`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Api-Key': this.apiKey
-                },
-                redirect: 'follow',
-                referrerPolicy: 'no-referrer',
-                body: JSON.stringify({
-                    userOpHash: userOpHash,
-                })
-            }).then((r) => r.json()).then((r) => { return r.data })
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
-
-    /**
-    * Grants approval to controller wallet to liquidate funds
-    * @return {receipt} 
-    * receipt - TransactionReceipt of the approval confirmed on chain
-    */
-
-    static async getChainInfo(chain) {
-        return await fetch(`${APIURL}/get-chain-info`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                chain,
-            })
-        }).then((r) => r.json()).then((r) => {
-            return r.data
-        })
-    }
-
-    async sendEOATransaction(tx) {
-        const submittedTx = await this.eoa.sendTransaction(tx);
-        return await submittedTx.wait()
-    }
-
-    async deployTokenApproval(aTokenAddress, amount = MAX_INT) {
-        this.addContract(aTokenAddress, ERCToken.abi)
-        const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
-        const submittedTx = await this.eoa.sendTransaction(ethTx);
-        const receipt = await submittedTx.wait()
-
-        await this.storeEVMCall(receipt, 'fun')
-
-        return receipt
-    }
     static async deployActionTx(op, apikey, chain = "43113") {
-        let chainInfo = await FunWallet.getChainInfo(chain)
+        let chainInfo = await TranslationServer.getChainInfo(chain)
         const bundlerUrl = chainInfo.rpcdata.bundlerUrl
         const rpcurl = chainInfo.rpcdata.rpcurl
         const entryPointAddress = chainInfo.aaData.entryPointAddress
@@ -328,33 +217,12 @@ class FunWallet extends ContractsHolder {
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
-        await FunWallet._storeUserOp(op, 'deploy_action', 0, apikey)
+        await TranslationServer._storeUserOp(op, 'deploy_action', 0, apikey)
 
         return { userOpHash, txid }
     }
 
-    async storeEVMCall(receipt, user) {
-        try {
-            return await fetch(`${APIURL}/save-evm-receipt`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Api-Key': this.apiKey
-                },
-                redirect: 'follow',
-                referrerPolicy: 'no-referrer',
-                body: JSON.stringify({
-                    txHash: receipt.transactionHash,
-                    receipt,
-                    organization: user
-                })
-            }).then(r => r.json()).then(r => console.log(r.message + " type: evm_receipt"))
-        }
-        catch (e) {
-            console.log(e)
-        }
-
-    }
+    
 }
 
 module.exports = { FunWallet }

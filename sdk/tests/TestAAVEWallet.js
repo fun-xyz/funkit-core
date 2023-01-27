@@ -1,6 +1,7 @@
 const { FunWallet, AAVEWithdrawal, AccessControlSchema, wallets } = require("../index")
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const { AAVEWallet } = wallets
+const {getChainInfo} = require('../utils/TranslationServer')
 const ethers = require('ethers')
 
 // const assetAddr = "0xFc7215C9498Fc12b22Bc0ed335871Db4315f03d3" // Avax aave dai not adai
@@ -8,7 +9,7 @@ const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab
 
 const main = async (config,rpc) => {
     if (!rpc) {
-        const chainInfo = await FunWallet.getChainInfo(chain)
+        const chainInfo = await getChainInfo(chain)
         rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
     }
 
