@@ -173,7 +173,7 @@ class FunWallet extends ContractsHolder {
         this.params = params
         const tokenAddr = this.params[0]
         this.addContract(this.AaveWithdrawalAddress, Action.abi)
-        const input = [eoaAddr, tokenAddr]
+        const input = [this.eoaAddr, tokenAddr]
         const key = generateSha256(input)
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
@@ -216,6 +216,7 @@ class FunWallet extends ContractsHolder {
         await this._storeUserOpInternal(outOp, sig, this.apiKey, 'fun', type, balance) //storing the customer name, should this be done somehow differently? 
         return sig
     }
+
     static async _storeUserOpInternal(userOp, userOpHash, apikey, user, type, balance) {
         try {
             await fetch(`${APIURL}/save-user-op`, {

@@ -18,7 +18,6 @@ const withdrawAddr = "0x672d9623EE5Ec5D864539b326710Ec468Cfe0aBE"
 class AAVEWallet extends FunWallet {
     constructor(eoa, schema, prefundAmt, chain, apiKey, index = 0, poolAddr = pool) {
         super(eoa, schema, prefundAmt, chain, apiKey, index)
-        this.wallet = wallet
         this.poolAddr = poolAddr
         this.contracts = {}
         this.addContract(this.poolAddr, pooldata.abi)
@@ -29,12 +28,12 @@ class AAVEWallet extends FunWallet {
     }
 
     async approvePool(tokenAddress, amt) {
-        const approvalReceipt = await this.wallet.sendTokenApprovalTx(tokenAddress, amt, this.poolAddr)
+        const approvalReceipt = await this.sendTokenApprovalTx(tokenAddress, amt, this.poolAddr)
         console.log("approved: ", approvalReceipt)
     }
 
     async approveWallet(tokenAddress, amt) {
-        const approvalReceipt = await this.wallet.sendTokenApprovalTx(tokenAddress, amt, this.address)
+        const approvalReceipt = await this.sendTokenApprovalTx(tokenAddress, amt, this.address)
         console.log("approved: ", approvalReceipt)
     }
 
@@ -43,7 +42,7 @@ class AAVEWallet extends FunWallet {
 
         await this.approveWallet(tokenAddress, amt)
 
-        const input = [this.wallet.eoaAddr, tokenAddr]
+        const input = [this.eoaAddr, tokenAddr]
         const key = generateSha256(input)
 
         const aaveWithdrawData = abi.encode(["address", "address", "string"], [...input, key]);
@@ -53,31 +52,31 @@ class AAVEWallet extends FunWallet {
 
     async createSupply(tokenAddress, amt = 0) {
         this.addContract(tokenAddress, ercdata.abi)
-        const useraddr = this.wallet.eoaAddr
+        const useraddr = this.eoaAddr
         if (amt == 0) {
             amt = await this.contracts[tokenAddress].callMethod("balanceOf", [useraddr])
         }
 
         await this.approveWallet(tokenAddress, amt)
 
-        const input = [this.wallet.eoaAddr, this.poolAddr, tokenAddress]
+        const input = [this.eoaAddr, this.poolAddr, tokenAddress]
         const key = generateSha256(input)
 
         // const tx = await this.contracts[this.poolAddr].getMethodEncoding("supply", [tokenAddress, amt, useraddr, 0])
         const aaveWithdrawData = abi.encode(["address", "address", "address", "uint256", "string"], [...input, amount, key]);
         const actionInitData = await this.contracts[supplyAddr].getMethodEncoding("init", [aaveWithdrawData])
 
-        return await this.wallet._createAction(actionInitData)
+        return await this._createAction(actionInitData)
     }
 
     async execSupply(tokenAddress, amt = 0) {
         this.addContract(tokenAddress, ercdata.abi)
-        const useraddr = this.wallet.eoaAddr
+        const useraddr = this.eoaAddr
         if (amt == 0) {
             amt = await this.contracts[tokenAddress].callMethod("balanceOf", [useraddr])
         }
 
-        const input = [this.wallet.eoaAddr, this.poolAddr, tokenAddress]
+        const input = [this.eoaAddr, this.poolAddr, tokenAddress]
         const key = generateSha256(input)
         const aaveWithdrawData = abi.encode(["string"], [key]);
 
@@ -88,13 +87,13 @@ class AAVEWallet extends FunWallet {
     async repay(tokenAddress, type, amount) {
         this.addContract(tokenAddress, ercdata.abi)
         await this.approvePool(tokenAddress, amount)
-        const balance = await this.contracts[tokenAddress].callMethod("balanceOf", [this.wallet.eoaAddr])
+        const balance = await this.contracts[tokenAddress].callMethod("balanceOf", [this.eoaAddr])
         if (balance.lte(amount)) {
             amount = balance
             console.log("Repay amount higher than account balance")
         }
-        const tx = await this.contracts[this.poolAddr].getMethodEncoding("repay", [tokenAddress, amount, type, this.wallet.eoaAddr])
-        return this.wallet._createAction(tx, 560000, true)
+        const tx = await this.contracts[this.poolAddr].getMethodEncoding("repay", [tokenAddress, amount, type, this.eoaAddr])
+        return this._createAction(tx, 560000, true)
 
 
     }
@@ -104,8 +103,8 @@ class AAVEWallet extends FunWallet {
         const { stableDebtTokenAddress, variableDebtTokenAddress } = await this._getPoolAssetData(tokenAddress)
         this.addContracts([stableDebtTokenAddress, variableDebtTokenAddress], ercdata.abi)
 
-        const stableDebtBalance = await this.contracts[stableDebtTokenAddress].callMethod("balanceOf", [this.wallet.eoaAddr])
-        const variableDebtBalance = await this.contracts[variableDebtTokenAddress].callMethod("balanceOf", [this.wallet.eoaAddr])
+        const stableDebtBalance = await this.contracts[stableDebtTokenAddress].callMethod("balanceOf", [this.eoaAddr])
+        const variableDebtBalance = await this.contracts[variableDebtTokenAddress].callMethod("balanceOf", [this.eoaAddr])
 
         if (!stableDebtBalance.isZero()) {
             return await this.repay(tokenAddress, 1, stableDebtBalance)
