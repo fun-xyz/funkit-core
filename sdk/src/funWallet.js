@@ -123,7 +123,7 @@ class FunWallet extends ContractsHolder {
         })
         const userOpHash = await rpcClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
-        await this._storeUserOp(op, apikey, 'deploy_action')
+        await FunWallet._storeUserOp(op, 'deploy_action',0, apikey)
 
         return { userOpHash, txid }
     }
@@ -179,7 +179,7 @@ class FunWallet extends ContractsHolder {
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await this._createAction(actionExec, 500000, true)
 
-        await this._storeUserOp(actionExecutionOp, this.apiKey, 'create_action')
+        await FunWallet._storeUserOp(actionExecutionOp, 'create_action',0, this.apiKey)
 
         return actionExecutionOp
     }
@@ -210,10 +210,11 @@ class FunWallet extends ContractsHolder {
     * txid - transaction id of transfer of assets
     */
 
-    async _storeUserOp(op) {
+    static async _storeUserOp(op, type, balance, apikey) {
         const outOp = await FunWallet._getPromiseFromOp(op)
         const sig = generateSha256(outOp.signature.toString())
-        await this._storeUserOpInternal(outOp, sig, this.apiKey, 'fun', type, balance) //storing the customer name, should this be done somehow differently? 
+
+        await this._storeUserOpInternal(outOp, sig, apikey, 'fun', type, balance) //storing the customer name, should this be done somehow differently?
         return sig
     }
 
@@ -298,7 +299,7 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await this._createAction(createWalleteData, 560000)
         const receipt = await this.deployActionTx(op)
-        await this._storeUserOp(op, this.apiKey, 'deploy_wallet', balance)
+        await FunWallet._storeUserOp(op,  'deploy_wallet', balance, this.apiKey)
         return receipt
     }
 
