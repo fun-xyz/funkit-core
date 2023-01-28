@@ -61,6 +61,7 @@ class SimpleAccountAPI  {
                 throw new Error('no factory to get initCode');
             }
         }
+        console.log(this.owner)
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
             this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
