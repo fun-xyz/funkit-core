@@ -2,11 +2,11 @@ const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const chain = '43113' //avax fuji 
-const {getChainInfo}= require('../utils/TranslationServer')
+const { TranslationServer } = require('../utils/TranslationServer')
 
 const main = async (config, rpcurl) => {
     if (!rpcurl) {
-        const chainInfo = await getChainInfo(chain)
+        const chainInfo = await TranslationServer.getChainInfo(chain)
         rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
     }
 
@@ -64,7 +64,7 @@ processConsole()
 
 
 // const main = async (aTokenAddress, privKey, prefundAmt, APIKEY) => {
-//     const chainInfo = await FunWallet.getChainInfo(chain)
+//     const chainInfo = await TranslationServer.getChainInfo(chain)
 //     const rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
 
 //     prefundAmt = parseFloat(prefundAmt)
