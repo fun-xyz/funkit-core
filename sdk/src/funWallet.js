@@ -15,7 +15,7 @@ const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
 const { TranslationServer } = require('../utils/TranslationServer')
 const { BundlerInstance } = require("../utils/BundlerInstance")
-
+const Tools = require ('../utils/tools')
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -49,13 +49,12 @@ class FunWallet extends ContractsHolder {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-
-    addVarsToAttributes(vars) {
+     addVarsToAttributes(vars) {
         Object.keys(vars).forEach(varKey => {
             this[varKey] = vars[varKey]
         })
     }
-
+    
     async init() {
         if (this.address) {
             return
@@ -112,7 +111,6 @@ class FunWallet extends ContractsHolder {
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
         const op = await BundlerTools._createAction(this.accountApi, createWalleteData, 560000)
-        console.log(op)
         const receipt = await this.deployActionTx(op)
         await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
         return receipt
