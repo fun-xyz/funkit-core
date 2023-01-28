@@ -20,6 +20,7 @@ class BundlerInstance {
             factoryAddress,
             index
         })
+        
         return { bundlerClient, provider, accountApi }
     }
 
