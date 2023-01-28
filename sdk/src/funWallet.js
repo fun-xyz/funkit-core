@@ -159,7 +159,7 @@ class FunWallet extends ContractsHolder {
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await BundlerTools._createAction(this.accountApi, actionExec, 500000, true)
-        await this.translationServer.storeUserOp(actionExecutionOp, 'create_action', 0)
+        await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
 
         return actionExecutionOp
     }
@@ -203,7 +203,7 @@ class FunWallet extends ContractsHolder {
         const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
-        await translationServer.storeUserOp(op, 'deploy_action', 0)
+        await translationServer.storeUserOp(op, 'deploy_action')
 
         return { userOpHash, txid }
     }

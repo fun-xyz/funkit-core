@@ -23,7 +23,7 @@ class TranslationServer {
         return op
     }
 
-    async storeUserOp(op, type, balance) {
+    async storeUserOp(op, type, balance = 0) {
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
