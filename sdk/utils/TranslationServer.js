@@ -1,6 +1,7 @@
-const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
 const ethers = require("ethers")
+
+const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 
 class TranslationServer {
     constructor(apiKey = "", user = "") {
@@ -22,17 +23,9 @@ class TranslationServer {
         return op
     }
 
-    static async getChainInfo(chain) {
-        const body = { chain }
-        return await this.sendPostRequest("get-chain-info", body).then((r) => {
-            return r.data
-        })
-    }
-
     async storeUserOp(op, type, balance) {
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
-
         const body = {
             userOpHash, userOp, type, balance,
             user: this.user, //storing the customer name, should this be done somehow differently?
@@ -55,8 +48,16 @@ class TranslationServer {
     async sendPostRequest(endpoint, body) {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", this.apiKey, body)
     }
+
     static async sendPostRequest(endpoint, body) {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
+    }
+
+    static async getChainInfo(chain) {
+        const body = { chain }
+        return await this.sendPostRequest("get-chain-info", body).then((r) => {
+            return r.data
+        })
     }
 }
 
