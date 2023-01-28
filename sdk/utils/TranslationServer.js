@@ -1,120 +1,65 @@
+const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
+const ethers = require("ethers")
+
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
-const fetch = require("node-fetch")
-const {generateSha256}=require('./tools')
 
-
-async function storeEVMCall(receipt, user, apiKey) {
-    try {
-        return await fetch(`${APIURL}/save-evm-receipt`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                txHash: receipt.transactionHash,
-                receipt,
-                organization: user
-            })
-        }).then(r => r.json()).then(r => console.log(r.message + " type: evm_receipt"))
-    }
-    catch (e) {
-        console.log(e)
+class TranslationServer {
+    constructor(apiKey = "", user = "") {
+        this.apiKey = apiKey
+        this.user = user
     }
 
-}
-
-async function _getStoredUserOp(opHash) {
-    const op = await this._getUserOpInternal(opHash)
-    Object.keys(op).map(key => {
-        if (op[key].type == "BigNumber") {
-            op[key] = ethers.BigNumber.from(op[key].hex)
-        }
-    })
-    return op
-}
-async function _getUserOpInternal(userOpHash, apiKey) {
-    try {
-        return await fetch(`${APIURL}/get-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-            })
-        }).then((r) => r.json()).then((r) => { return r.data })
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-async function getChainInfo(chain) {
-    return await fetch(`${APIURL}/get-chain-info`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
-            chain,
+    async getStoredUserOp(userOpHash) {
+        const body = { userOpHash }
+        const op = await this.sendPostRequest("get-user-op", body).then((r) => {
+            return r.data
         })
-    }).then((r) => r.json()).then((r) => {
-        return r.data
-    })
-}
 
-
-async function _storeUserOp(op, type, balance, apikey) {
-    const outOp = await _getPromiseFromOp(op)
-    const sig = generateSha256(outOp.signature.toString())
-
-    await _storeUserOpInternal(outOp, sig, apikey, 'fun', type, balance) //storing the customer name, should this be done somehow differently?
-    return sig
-}
-
-async function _getPromiseFromOp(op) {
-    const out = {}
-    await Promise.all(Object.keys(op).map(async (key) => {
-        out[key] = await op[key]
-    }))
-    return out
-}
-async function _storeUserOpInternal(userOp, userOpHash, apikey, user, type, balance) {
-    try {
-        await fetch(`${APIURL}/save-user-op`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': apikey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify({
-                userOpHash: userOpHash,
-                userOp: userOp,
-                user,
-                type,
-                balance,
-            })
-        }).then((r) => r.json()).then((r) => { console.log(r.message + " type: " + type) })
-    }
-    catch (e) {
-        console.log(e)
+        Object.keys(op).map(key => {
+            if (op[key].type == "BigNumber") {
+                op[key] = ethers.BigNumber.from(op[key].hex)
+            }
+        })
+        return op
     }
 
+    async storeUserOp(op, type, balance = 0) {
+        const userOp = await getPromiseFromOp(op)
+        const userOpHash = generateSha256(userOp.signature.toString())
+        const body = {
+            userOpHash, userOp, type, balance,
+            user: this.user, //storing the customer name, should this be done somehow differently?
+        }
+        await this.sendPostRequest("save-user-op", body).then((r) => {
+            console.log(r.message + " type: " + type)
+        })
+        return userOpHash
+    }
+
+    async storeEVMCall(receipt) {
+        const body = {
+            receipt,
+            txHash: receipt.transactionHash,
+            organization: this.user
+        }
+        return await this.sendPostRequest("save-evm-receipt", body).then(r => console.log(r.message + " type: evm_receipt"))
+    }
+
+    async sendPostRequest(endpoint, body) {
+        return await sendRequest(`${APIURL}/${endpoint}`, "POST", this.apiKey, body)
+    }
+
+    static async sendPostRequest(endpoint, body) {
+        return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
+    }
+
+    static async getChainInfo(chain) {
+        const body = { chain }
+        return await this.sendPostRequest("get-chain-info", body).then((r) => {
+            return r.data
+        })
+    }
 }
 
 
-
-module.exports={
-    storeEVMCall,
-    getChainInfo,
-    _storeUserOp
-}
+module.exports = { TranslationServer }

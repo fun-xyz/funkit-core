@@ -1,8 +1,11 @@
 const CryptoJS = require("crypto-js")
+const fetch = require("node-fetch")
+
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calcPreVerificationGas = exports.DefaultGasOverheads = void 0;
 const utils_1 = require("@account-abstraction/utils");
 const utils_2 = require("ethers/lib/utils");
+
 exports.DefaultGasOverheads = {
     fixed: 21000,
     perUserOp: 18300,
@@ -21,9 +24,10 @@ exports.DefaultGasOverheads = {
  */
 function calcPreVerificationGas(userOp, overheads) {
     const ov = Object.assign(Object.assign({}, exports.DefaultGasOverheads), (overheads !== null && overheads !== void 0 ? overheads : {}));
-    const p = Object.assign({ 
+    const p = Object.assign({
         // dummy values, in case the UserOp is incomplete.
-        preVerificationGas: 21000, signature: (0, utils_2.hexlify)(Buffer.alloc(ov.sigSize, 1)) }, userOp);
+        preVerificationGas: 21000, signature: (0, utils_2.hexlify)(Buffer.alloc(ov.sigSize, 1))
+    }, userOp);
     const packed = (0, utils_2.arrayify)((0, utils_1.packUserOp)(p, false));
     const callDataCost = packed.map(x => x === 0 ? ov.zeroByte : ov.nonZeroByte).reduce((sum, x) => sum + x);
     const ret = Math.round(callDataCost +
@@ -36,9 +40,37 @@ const generateSha256 = (action) => {
     return CryptoJS.SHA256(JSON.stringify(action)).toString(CryptoJS.enc.Hex)
 }
 
+async function getPromiseFromOp(op) {
+    const out = {}
+    await Promise.all(Object.keys(op).map(async (key) => {
+        out[key] = await op[key]
+    }))
+    return out
+}
+
+const sendRequest = async (uri, method, apiKey, body) => {
+    try {
+        return await fetch(uri, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': apiKey
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify(body)
+        }).then(r => r.json())
+    } catch (e) {
+        console.log(e)
+    }
+}
 
 
-module.exports = { 
+
+
+module.exports = {
     generateSha256,
-    calcPreVerificationGas
+    calcPreVerificationGas,
+    getPromiseFromOp,
+    sendRequest
 }
