@@ -32,6 +32,7 @@ class TranslationServer {
     async storeUserOp(op, type, balance) {
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
+
         const body = {
             userOpHash, userOp, type, balance,
             user: this.user, //storing the customer name, should this be done somehow differently?
@@ -43,17 +44,12 @@ class TranslationServer {
     }
 
     async storeEVMCall(receipt) {
-        try {
-            const body = {
-                receipt,
-                txHash: receipt.transactionHash,
-                organization: this.user
-            }
-            return await this.sendPostRequest("save-evm-receipt", body).then(r => console.log(r.message + " type: evm_receipt"))
+        const body = {
+            receipt,
+            txHash: receipt.transactionHash,
+            organization: this.user
         }
-        catch (e) {
-            console.log(e)
-        }
+        return await this.sendPostRequest("save-evm-receipt", body).then(r => console.log(r.message + " type: evm_receipt"))
     }
 
     async sendPostRequest(endpoint, body) {
