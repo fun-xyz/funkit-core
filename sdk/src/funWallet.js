@@ -177,7 +177,7 @@ class FunWallet extends ContractsHolder {
         const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
         const submittedTx = await this.eoa.sendTransaction(ethTx);
         const receipt = await submittedTx.wait()
-
+        // console.log(receipt)
         await this.translationServer.storeEVMCall(receipt)
 
         return receipt
