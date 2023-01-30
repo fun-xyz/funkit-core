@@ -12,7 +12,6 @@
     "@account-abstraction/contracts": "^0.4.0",
     "@account-abstraction/sdk": "^0.4.0",
     "crypto-js": "^4.1.1",
-    "eslint": "^8.33.0",
     "ethers": "^5.7.2",
     "node-fetch": "^2.0.0",
     "prettier": "^2.8.3"
@@ -21,6 +20,7 @@
     "test": "tests"
   },
   "devDependencies": {
+    "eslint": "^8.33.0",
     "mocha": "^10.2.0"
   },
   "repository": {
