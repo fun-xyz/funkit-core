@@ -31,6 +31,7 @@ jobs:
         
 
       - name: Run linters
+        run: cd sdk
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
