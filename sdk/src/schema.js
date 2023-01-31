@@ -4,7 +4,7 @@ const { FunWallet } = require("./FunWallet");
 class AccessControlSchema {
     actionsStore = {}
 
-    addAction(action, salt = 0) {
+    "addAction(action, salt = 0) {
         this.actionsStore[generateSha256(action)] = { ...action, salt };
         return { ...action, salt }
     }
