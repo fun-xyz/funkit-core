@@ -19,7 +19,7 @@ describe('funWallet integration tests', function () {
     const eoa = new ethers.Wallet(privKey, provider)
     const schema = new AccessControlSchema()
 
-    withdrawEntirePosition = schema.addAction(AAVEWithdrawal(aTokenAddress))
+    withdrawEntirePosition = schema.addModule(AAVEWithdrawal(aTokenAddress))
     const walletConfig = new FunWalletConfig(eoa, schema, prefundAmt, chain, APIKEY)
     wallet = new FunWallet(walletConfig)
 
