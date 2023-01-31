@@ -18,7 +18,7 @@ class AccessControlSchema {
     getActions() { return Object.keys(this.actionsStore) }
 
     async createFunWallet(eoa, prefundamt, chain, index = 0) {
-        const wallet = new FunWallet(eoa, this.actionsStore,chain, index,)
+        const wallet = new FunWallet(eoa, this.actionsStore, chain, index,)
         const prefund = await wallet.init(prefundamt)
         console.log("Prefund Successful: ", prefund)
         return wallet
