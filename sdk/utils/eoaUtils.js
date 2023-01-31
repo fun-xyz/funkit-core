@@ -1,5 +1,6 @@
+const ethers = require('ethers')
 async function fundAccount(eoa, address, amt) {
-    amt = ethers.utils.parseEther(prefundAmt.toString())
+    amt = ethers.utils.parseEther(amt.toString())
     const tx = await eoa.sendTransaction({ to: address, from: await eoa.getAddress(), value: amt })
     return await tx.wait()
 }
@@ -9,6 +10,6 @@ async function sendEOATransaction(tx) {
     return await submittedTx.wait()
 }
 
-module.exports={
+module.exports = {
     fundAccount
 }
