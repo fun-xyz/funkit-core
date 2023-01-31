@@ -4,16 +4,16 @@ const { FunWallet } = require("./FunWallet");
 class AccessControlSchema {
     actionsStore = {}
 
-    addAction(action, salt = 0) {
+    addModule(action, salt = 0) {
         this.actionsStore[generateSha256(action)] = { ...action, salt };
         return { ...action, salt }
     }
-    removeAction(action, salt = 0) {
+    removeModule(action, salt = 0) {
         delete this.actionsStore[generateSha256({ ...action, salt })]
     }
-    updateAction(prevAction, newAction, salt = 0) {
-        this.removeAction(prevAction, salt)
-        this.addAction(newAction, salt)
+    updateModule(prevAction, newAction, salt = 0) {
+        this.removeModule(prevAction, salt)
+        this.addModule(newAction, salt)
     }
     getActions() { return Object.keys(this.actionsStore) }
 
