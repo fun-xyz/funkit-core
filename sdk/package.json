@@ -1,6 +1,6 @@
 {
   "name": "@fun-wallet-dev/sdk",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
   "scripts": {
@@ -13,8 +13,10 @@
     "@account-abstraction/contracts": "^0.4.0",
     "@account-abstraction/sdk": "^0.4.0",
     "crypto-js": "^4.1.1",
+    "eslint": "^8.33.0",
     "ethers": "^5.7.2",
-    "node-fetch": "^2.0.0"
+    "node-fetch": "^2.0.0",
+    "prettier": "^2.8.3"
   },
   "directories": {
     "test": "tests"
