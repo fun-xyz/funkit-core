@@ -146,7 +146,7 @@ class FunWallet extends ContractsHolder {
 
 
 
-    async createActionTx(action) {
+    async createModuleExecutionTx(action) {
         return this._createAAVEWithdrawalExec(action)
     }
     async _createAAVEWithdrawalExec({ params }) {

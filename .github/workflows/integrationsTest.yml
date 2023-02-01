@@ -1,0 +1,19 @@
+# name: "GitHub Actions Test"
+# on:
+#     pull_request:
+#         branches:
+#             - master
+#             - staging
+
+
+# jobs:
+#     test:
+#         runs-on: ubuntu-latest
+#         steps:
+#             - uses: actions/checkout@v1
+#             - name: 'Install Node'
+#               uses: actions/setup-node@v1
+#             - name: Install dependencies
+#               run: cd sdk && npm ci
+#             - name: "Run Test"
+#               run: cd sdk && npm run unit-tests
