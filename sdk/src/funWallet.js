@@ -240,7 +240,6 @@ class FunWallet extends ContractsHolder {
         }
     }
 
-
     async deployTxs(txs) {
         for (let transaction of txs) {
             await this.deployTx(transaction)
