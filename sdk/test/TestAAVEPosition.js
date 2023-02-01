@@ -20,13 +20,12 @@ const main = async (config, rpcurl) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const eoa = new ethers.Wallet(config.privKey, provider)
 
-    // Create an access control schema with one action: withdraw a user's funds from Aave
-    const schema = new AccessControlSchema()
-    const withdrawEntirePosition = schema.addModule(AAVEWithdrawal(config.aTokenAddress))
-
     // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAXa
-    const walletConfig = new FunWalletConfig(eoa, schema, config.prefundAmt, chain, config.APIKEY)
+    const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
     const wallet = new FunWallet(walletConfig)
+
+
+    const withdrawEntirePosition = wallet.addModule(AAVEWithdrawal(config.aTokenAddress))
 
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()

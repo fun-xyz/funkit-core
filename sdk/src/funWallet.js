@@ -28,12 +28,19 @@ class FunWallet extends ContractsHolder {
     * index - index of account (default 0)
     */
 
+    actionsStore = {}
 
     constructor(config, index = 0, userId = "fun") {
         super()
         this.addVarsToAttributes({ ...config, index })
         this.translationServer = new TranslationServer(config.apiKey, userId)
-        this.actionsStore = config.schema.actionsStore
+        
+        // this.actionsStore = config.schema.actionsStore
+    }
+
+    addModule(action, salt = 0) {
+        this.actionsStore[generateSha256(action)] = { ...action, salt };
+        return { ...action, salt }
     }
 
     /**     
