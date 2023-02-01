@@ -42,7 +42,10 @@ class TranslationServer {
             txHash: receipt.transactionHash,
             organization: this.user
         }
-        return await this.sendPostRequest("save-evm-receipt", body).then(r => console.log(r.message + " type: evm_receipt"))
+        return await this.sendPostRequest("save-evm-receipt", body).then(r => {
+            console.log(r.message + " type: evm_receipt")
+            return r
+        })
     }
 
     async sendPostRequest(endpoint, body) {
