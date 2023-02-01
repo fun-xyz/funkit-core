@@ -15,7 +15,7 @@ const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
 const { TranslationServer } = require('../utils/TranslationServer')
 const { BundlerInstance } = require("../utils/BundlerInstance")
-const Tools = require ('../utils/tools')
+const Tools = require('../utils/tools')
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -34,7 +34,7 @@ class FunWallet extends ContractsHolder {
         super()
         this.addVarsToAttributes({ ...config, index })
         this.translationServer = new TranslationServer(config.apiKey, userId)
-        
+
         // this.actionsStore = config.schema.actionsStore
     }
 
@@ -56,12 +56,12 @@ class FunWallet extends ContractsHolder {
     * preFundAmt - amount to prefund the wallet with, in eth/avax
     * index - index of account (default 0)
     */
-     addVarsToAttributes(vars) {
+    addVarsToAttributes(vars) {
         Object.keys(vars).forEach(varKey => {
             this[varKey] = vars[varKey]
         })
     }
-    
+
     async init() {
         if (this.address) {
             return
@@ -117,13 +117,14 @@ class FunWallet extends ContractsHolder {
         }))
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await BundlerTools._createAction(this.accountApi, createWalleteData, 560000)
+        const op = await BundlerTools.createTransactionAction(this.accountApi, createWalleteData, 560000)
         const receipt = await this.deployActionTx(op)
         await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
         return receipt
     }
 
-    async deployActionTx(op) {
+    async deployActionTx(transaction) {
+        const { op } = transaction.data
         const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
 
@@ -151,11 +152,10 @@ class FunWallet extends ContractsHolder {
         return { actionInitData, balance }
     }
 
-
-
     async createModuleExecutionTx(action) {
         return this._createAAVEWithdrawalExec(action)
     }
+
     async _createAAVEWithdrawalExec({ params }) {
         this.params = params
         const tokenAddr = this.params[0]
@@ -164,14 +164,15 @@ class FunWallet extends ContractsHolder {
         const key = generateSha256(input)
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await BundlerTools._createAction(this.accountApi, actionExec, 500000, true)
+        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
         await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
-
+        const data = {
+            op: actionExecutionOp,
+            user: this.user,
+            chain: this.chain
+        }
         return actionExecutionOp
     }
-
-
-
 
     /**
     * Grants approval to controller wallet to liquidate funds
@@ -189,8 +190,7 @@ class FunWallet extends ContractsHolder {
 
         return receipt
     }
-
-
+    
     /**
     * Liquidates one's aave position
     * @params opHash - execution hash from deploying the wallet
@@ -198,9 +198,11 @@ class FunWallet extends ContractsHolder {
     * userOpHash - string hash of the UserOperation 
     * txid - transaction id of transfer of assets
     */
-    static async deployActionTx(op, apikey, user = "fun", chain = "43113") {
+    static async deployActionTx(transaction, apikey) {
+        const { op, user, chain } = transaction.data
         const translationServer = new TranslationServer(apikey, user)
         let chainInfo = await TranslationServer.getChainInfo(chain)
+
         const {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
@@ -212,6 +214,18 @@ class FunWallet extends ContractsHolder {
         await translationServer.storeUserOp(op, 'deploy_action')
 
         return { userOpHash, txid }
+    }
+
+    async deployTx(transaction) {
+        if (transaction.isUserOp) {
+            await this.deployActionTx(transaction)
+        }
+    }
+
+    static async deployTx(transaction, apikey) {
+        if (transaction.isUserOp) {
+            await FunWallet.deployActionTx(transaction, apikey)
+        }
     }
 
 
