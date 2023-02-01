@@ -190,7 +190,7 @@ class FunWallet extends ContractsHolder {
 
         return receipt
     }
-    
+
     /**
     * Liquidates one's aave position
     * @params opHash - execution hash from deploying the wallet
@@ -199,6 +199,10 @@ class FunWallet extends ContractsHolder {
     * txid - transaction id of transfer of assets
     */
     static async deployActionTx(transaction, apikey) {
+        if (!apikey) {
+            throw {};
+            return
+        }
         const { op, user, chain } = transaction.data
         const translationServer = new TranslationServer(apikey, user)
         let chainInfo = await TranslationServer.getChainInfo(chain)
@@ -220,14 +224,34 @@ class FunWallet extends ContractsHolder {
         if (transaction.isUserOp) {
             await this.deployActionTx(transaction)
         }
-    }
-
-    static async deployTx(transaction, apikey) {
-        if (transaction.isUserOp) {
-            await FunWallet.deployActionTx(transaction, apikey)
+        else {
+            this.eoa.sendTransaction(transaction.data)
         }
     }
 
+    static async deployTx(transaction, apikey = "", eoa = false) {
+        if (transaction.isUserOp) {
+            await FunWallet.deployActionTx(transaction, apikey)
+        }
+        else {
+            if (!eoa) {
+            }
+            await eoa.sendTransaction(transaction.data)
+        }
+    }
+
+
+    async deployTxs(txs) {
+        for (let transaction of txs) {
+            await this.deployTx(transaction)
+        }
+    }
+
+    static async deployTxs(txs) {
+        for (let transaction of txs) {
+            await this.deployTx(transaction)
+        }
+    }
 
 }
 
