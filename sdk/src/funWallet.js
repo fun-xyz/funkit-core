@@ -52,8 +52,6 @@ class FunWallet extends ContractsHolder {
         })
     }
 
-
-
     /**     
      * Runs initialization for a given wallet.
      * The function acts as a constructor for many parameters in the class, creating
@@ -101,8 +99,6 @@ class FunWallet extends ContractsHolder {
             return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
         }
     }
-
-
 
     async _createWalletInitData({ type, params }) {
         switch (type) {
@@ -198,6 +194,23 @@ class FunWallet extends ContractsHolder {
         return { userOpHash, txid }
     }
 
+    async deployTx(transaction) {
+        if (transaction.isUserOp) {
+            await FunWallet.deployActionTx(transaction, this.apiKey)
+        }
+        else {
+            this.eoa.sendTransaction(transaction.data)
+        }
+    }
+
+    async deployTxs(txs) {
+        for (let transaction of txs) {
+            await this.deployTx(transaction)
+        }
+    }
+
+    // STATIC METHODS
+
     static async deployActionTx(transaction, apikey) {
         if (!apikey) {
             throw {};
@@ -220,15 +233,6 @@ class FunWallet extends ContractsHolder {
         return { userOpHash, txid }
     }
 
-    async deployTx(transaction) {
-        if (transaction.isUserOp) {
-            await FunWallet.deployActionTx(transaction, this.apiKey)
-        }
-        else {
-            this.eoa.sendTransaction(transaction.data)
-        }
-    }
-
     static async deployTx(transaction, apikey = "", eoa = false) {
         if (transaction.isUserOp) {
             return await FunWallet.deployActionTx(transaction, apikey)
@@ -240,11 +244,6 @@ class FunWallet extends ContractsHolder {
 
     }
 
-    async deployTxs(txs) {
-        for (let transaction of txs) {
-            await this.deployTx(transaction)
-        }
-    }
 
     static async deployTxs(txs) {
         for (let transaction of txs) {
