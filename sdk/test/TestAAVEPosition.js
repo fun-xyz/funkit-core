@@ -1,4 +1,4 @@
-const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require("../index")
+const { FunWallet, EOAAAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const chain = '43113' //avax fuji 
@@ -25,7 +25,7 @@ const main = async (config, rpcurl) => {
     const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
     const wallet = new FunWallet(walletConfig)
 
-    const module = new AAVEWithdrawal(config.aTokenAddress, chain, 10)
+    const module = new EOAAAVEWithdrawal(config.aTokenAddress, chain, 10)
     const withdrawEntirePosition = wallet.addModule(module)
 
 
