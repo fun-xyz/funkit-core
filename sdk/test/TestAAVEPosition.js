@@ -42,7 +42,7 @@ const main = async (config, rpcurl) => {
     // console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
     // After some time, deploy the Aave withdrawal action
-    const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx, config.APIKEY)
+    const aaveWithdrawalReceipt = await FunWallet.deployTx(aaveActionTx, config.APIKEY)
     console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
 
 }
