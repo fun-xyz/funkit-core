@@ -1,17 +1,23 @@
+const { Transaction } = require("./Transaction")
 
 
 
-async function _createAction(accountApi, { to, data }, gasLimit = 0, noInit = false, calldata = false) {
+async function createAction(accountApi, { to, data }, gasLimit = 0, noInit = false, calldata = false) {
     return await accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
+}
+
+async function createTransactionAction(accountApi, { to, data }, gasLimit = 0, noInit = false, calldata = false) {
+    const op = await accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
+    return new Transaction({ op }, true)
 }
 // async function createAllActionTx() {
 //     return await Promise.all(Object.values(this.actionStore).map((action) => {
-//         return this._createAAVEWithdrawalExec(action)
+//         return this.createAAVEWithdrawalExec(action)
 //     }))
 // }
 // async function createActionTxs(actions) {
 //     return await Promise.all(actions.map((action) => {
-//         return this._createAAVEWithdrawalExec(action)
+//         return this.createAAVEWithdrawalExec(action)
 //     }))
 // }
 
@@ -27,6 +33,7 @@ function addAction(info) {
     this.actionStore.push(info)
 }
 
-module.exports={
-    _createAction,
+module.exports = {
+    createAction,
+    createTransactionAction
 }

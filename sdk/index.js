@@ -1,5 +1,5 @@
 const { FunWallet } = require("./src/FunWallet")
-const { AAVEWithdrawal } = require("./src/walletTypes")
+const { AAVEWithdrawal } = require("./src/modules/AAVEWithdrawal")
 const { AccessControlSchema } = require("./src/schema")
 const wallets = require("./src/wallets/index.js")
 

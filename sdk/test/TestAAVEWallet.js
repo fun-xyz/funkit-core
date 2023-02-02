@@ -26,7 +26,7 @@ const main = async (config,rpc) => {
 
     const walletConfig = new FunWalletConfig(eoa, schema, config.prefundAmt, chain, config.APIKEY)
     const aaveWallet = new AAVEWallet(walletConfig)
-
+    
     const create = await aaveWallet.createSupply(assetAddr)
     const receipt1 = await FunWallet.deployActionTx(create)
     console.log(receipt1)
