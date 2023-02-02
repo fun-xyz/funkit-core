@@ -1,13 +1,20 @@
+const ethers = require("ethers")
+
 const { createWrappedContract } = require("../../utils/WrappedEthersContract")
+const { Transaction } = require("../../utils/Transaction")
+
 const ERC20 = require('../../utils/abis/ERC20.json')
+
+
+
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 class AAVEWithdrawal {
-    constructor(eoa, aTokenAddress, chainId, amount = MAX_INT,) {
+    constructor(aTokenAddress, chainId, amount = MAX_INT,) {
         this.aTokenAddress = aTokenAddress
         this.amount = amount
+        const eoa = ethers.Wallet.createRandom()
         this.contract = createWrappedContract(aTokenAddress, ERC20.abi, eoa, {}, chainId)
-        this.eoa=eoa
     }
     create(...params) {
         params.push(this.aTokenAddress)
@@ -16,18 +23,25 @@ class AAVEWithdrawal {
             params
         }
     }
-    async getPreExecTxs(address) {
-        return await this.deployTokenApproval(address)
+
+    async getPreExecTxs(address = this.aTokenAddress) {
+        return await [this.deployTokenApproval(address)]
     }
+
     verifyRequirements() {
 
     }
-    async deployTokenApproval(address) {
-        const ethTx = await this.contract.getMethodEncoding("approve", [address, this.amount])
-        const submittedTx = await this.eoa.sendTransaction(ethTx);
-        const receipt = await submittedTx.wait()
 
-        return receipt
+
+    /**
+    * Grants approval to controller wallet to liquidate funds
+    * @return {Transaction} 
+    * Transaction - Transaction data
+    */
+
+    async deployTokenApproval(address) {
+        const { to, data } = await this.contract.getMethodEncoding("approve", [address, this.amount])
+        return new Transaction({ to, data })
     }
 }
 

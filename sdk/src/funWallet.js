@@ -16,6 +16,7 @@ const EOATools = require('../utils/eoaUtils')
 const { TranslationServer } = require('../utils/TranslationServer')
 const { BundlerInstance } = require("../utils/BundlerInstance")
 const Tools = require('../utils/tools')
+const { Transaction } = require("../utils/Transaction")
 const abi = ethers.utils.defaultAbiCoder;
 const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -41,28 +42,31 @@ class FunWallet extends ContractsHolder {
     addModule(module, salt = 0) {
         let action = module.create()
         this.actionsStore[generateSha256(action)] = { ...action, salt };
-        
+
         return { ...action, salt }
     }
 
-    /**     
-    * Runs initialization for a given wallet.
-    * The function acts as a constructor for many parameters in the class, creating
-    * an abstracted wallet account, with the correct providers and rpc client. 
-    * It also prefunds the account with the amount of eth/avax desired.
-    * 
-    * USER SIGNATURE REQUIRED to fund wallet
-    * 
-    * @params eoa, preFundAmt, index
-    * eoa - ethers.Wallet object (user's eoa account)
-    * preFundAmt - amount to prefund the wallet with, in eth/avax
-    * index - index of account (default 0)
-    */
     addVarsToAttributes(vars) {
         Object.keys(vars).forEach(varKey => {
             this[varKey] = vars[varKey]
         })
     }
+
+
+
+    /**     
+     * Runs initialization for a given wallet.
+     * The function acts as a constructor for many parameters in the class, creating
+     * an abstracted wallet account, with the correct providers and rpc client. 
+     * It also prefunds the account with the amount of eth/avax desired.
+     * 
+     * USER SIGNATURE REQUIRED to fund wallet
+     * 
+     * @params eoa, preFundAmt, index
+     * eoa - ethers.Wallet object (user's eoa account)
+     * preFundAmt - amount to prefund the wallet with, in eth/avax
+     * index - index of account (default 0)
+     */
 
     async init() {
         if (this.address) {
@@ -100,39 +104,6 @@ class FunWallet extends ContractsHolder {
 
 
 
-
-    /**
-    * Deploys a wallet to chain that can initiate aave liquidation
-    * @return {receipt, executionHash} 
-    * receipt - receipt of transaction committed to chain.
-    * executionHash - string hash of the UserOperation 
-    */
-    async deploy() {
-        await this.init()
-        const actionCreateData = { to: [], data: [] }
-        let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
-            const { actionInitData, balance } = await this._createWalletInitData(actionData)
-            const { to, data } = actionInitData
-            actionCreateData.to.push(to)
-            actionCreateData.data.push(data)
-            return balance
-        }))
-
-        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await BundlerTools.createTransactionAction(this.accountApi, createWalleteData, 560000)
-        const receipt = await this.deployActionTx(op)
-        await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
-        return {receipt, address:this.address}
-    }
-
-    async deployActionTx(transaction) {
-        const { op } = transaction.data
-        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
-        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
-
-        return { userOpHash, txid }
-    }
-
     async _createWalletInitData({ type, params }) {
         switch (type) {
             case "AAVE": {
@@ -158,48 +129,75 @@ class FunWallet extends ContractsHolder {
         return this._createAAVEWithdrawalExec(action)
     }
 
+    /**
+      * Liquidates one's aave position
+      * @params opHash - execution hash from deploying the wallet
+      * @return {receipt, executionHash} 
+      * userOpHash - string hash of the UserOperation 
+      * txid - transaction id of transfer of assets
+      */
+
     async _createAAVEWithdrawalExec({ params }) {
+        this.addContract(this.AaveWithdrawalAddress, Action.abi)
+
         this.params = params
         const tokenAddr = this.params[0]
-        this.addContract(this.AaveWithdrawalAddress, Action.abi)
         const input = [this.eoaAddr, tokenAddr]
         const key = generateSha256(input)
+
         const aaveexec = abi.encode(["string"], [key])
         const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
+
         await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
+
         const data = {
             op: actionExecutionOp,
             user: this.user,
             chain: this.chain
         }
-        return actionExecutionOp
+        return new Transaction(data, true)
     }
 
-    /**
-    * Grants approval to controller wallet to liquidate funds
-    * @return {receipt} 
-    * receipt - TransactionReceipt of the approval confirmed on chain
-    */
-
-    async deployTokenApproval(aTokenAddress, amount = MAX_INT) {
-        this.addContract(aTokenAddress, ERCToken.abi)
-        const ethTx = await this.contracts[aTokenAddress].createUnsignedTransaction("approve", [this.address, amount])
-        const submittedTx = await this.eoa.sendTransaction(ethTx);
-        const receipt = await submittedTx.wait()
-        // console.log(receipt)
-        await this.translationServer.storeEVMCall(receipt)
-
-        return receipt
-    }
+    // Deprecated for Module.getRequiredPreTxs()
+    // async deployTokenApproval(aTokenAddress, amount) {
+    // }
 
     /**
-    * Liquidates one's aave position
-    * @params opHash - execution hash from deploying the wallet
+    * Deploys a wallet to chain that can initiate aave liquidation
     * @return {receipt, executionHash} 
-    * userOpHash - string hash of the UserOperation 
-    * txid - transaction id of transfer of assets
+    * receipt - receipt of transaction committed to chain.
+    * executionHash - string hash of the UserOperation 
     */
+
+    async deploy() {
+        await this.init()
+
+        const actionCreateData = { to: [], data: [] }
+
+        let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
+            const { actionInitData, balance } = await this._createWalletInitData(actionData)
+            const { to, data } = actionInitData
+            actionCreateData.to.push(to)
+            actionCreateData.data.push(data)
+            return balance
+        }))
+
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
+        const op = await BundlerTools.createTransactionAction(this.accountApi, createWalleteData, 560000)
+        const receipt = await this.deployTx(op)
+        await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
+        return { receipt, address: this.address }
+    }
+
+    async deployActionTx(transaction) {
+        const { op } = transaction.data
+        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
+        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+
+        return { userOpHash, txid }
+    }
+
     static async deployActionTx(transaction, apikey) {
         if (!apikey) {
             throw {};
@@ -224,7 +222,7 @@ class FunWallet extends ContractsHolder {
 
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            await this.deployActionTx(transaction)
+            await FunWallet.deployActionTx(transaction, this.apiKey)
         }
         else {
             this.eoa.sendTransaction(transaction.data)
@@ -233,13 +231,13 @@ class FunWallet extends ContractsHolder {
 
     static async deployTx(transaction, apikey = "", eoa = false) {
         if (transaction.isUserOp) {
-            await FunWallet.deployActionTx(transaction, apikey)
+            return await FunWallet.deployActionTx(transaction, apikey)
         }
-        else {
-            if (!eoa) {
-            }
-            await eoa.sendTransaction(transaction.data)
+
+        if (!eoa) {
         }
+        return await eoa.sendTransaction(transaction.data)
+
     }
 
     async deployTxs(txs) {

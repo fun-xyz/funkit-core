@@ -1,5 +1,5 @@
 class Transaction {
-    constructor(data, isUserOp) {
+    constructor(data, isUserOp = false) {
         this.data = data
         this.isUserOp = isUserOp
     }
