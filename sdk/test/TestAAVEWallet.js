@@ -1,13 +1,13 @@
-const { FunWallet, AAVEWithdrawal, AccessControlSchema, wallets } = require("../index")
+const { FunWallet, EOAAAVEWithdrawal, AccessControlSchema, wallets } = require("../index")
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const { AAVEWallet } = wallets
-const {TranslationServer} = require('../utils/TranslationServer')
+const { TranslationServer } = require('../utils/TranslationServer')
 const ethers = require('ethers')
 
 // const assetAddr = "0xFc7215C9498Fc12b22Bc0ed335871Db4315f03d3" // Avax aave dai not adai
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 
-const main = async (config,rpc) => {
+const main = async (config, rpc) => {
     if (!rpc) {
         const chainInfo = await TranslationServer.getChainInfo(chain)
         rpc = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
@@ -17,7 +17,7 @@ const main = async (config,rpc) => {
     const eoa = new ethers.Wallet(config.privKey, provider)
 
     const schema = new AccessControlSchema()
-    const withdrawEntirePosition = schema.addAction(AAVEWithdrawal(config.aTokenAddress))
+    const withdrawEntirePosition = schema.addAction(new EOAAAVEWithdrawal(config.aTokenAddress))
     // Add the withdraw from aave action to the FunWallet
 
     // Create a new FunWallet instance, 
@@ -26,7 +26,7 @@ const main = async (config,rpc) => {
 
     const walletConfig = new FunWalletConfig(eoa, schema, config.prefundAmt, chain, config.APIKEY)
     const aaveWallet = new AAVEWallet(walletConfig)
-    
+
     const create = await aaveWallet.createSupply(assetAddr)
     const receipt1 = await FunWallet.deployActionTx(create)
     console.log(receipt1)
