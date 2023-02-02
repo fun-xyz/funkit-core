@@ -4,6 +4,7 @@ const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConf
 const chain = '43113' //avax fuji 
 const { TranslationServer } = require('../utils/TranslationServer')
 
+
 const main = async (config, rpcurl) => {
     if (!rpcurl) {
         const chainInfo = await TranslationServer.getChainInfo(chain)
@@ -24,15 +25,19 @@ const main = async (config, rpcurl) => {
     const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
     const wallet = new FunWallet(walletConfig)
 
-    const module = new AAVEWithdrawal(config.aTokenAddress, chain)
+    const module = new AAVEWithdrawal(config.aTokenAddress, chain, 10)
     const withdrawEntirePosition = wallet.addModule(module)
+
+
 
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
 
-    const modulePreExecTxs = await module.getPreExecTxs(deployWalletReceipt.address);
+    const modulePreExecTxs = await module.getPreExecTxs(wallet);
     await wallet.deployTxs(modulePreExecTxs)
+
+    console.assert(await module.verifyRequirements(wallet), "PreExecTxs Failed")
 
     // Create a tx that exits an EOA's Aave poisition to be called at a later point
     const aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)
