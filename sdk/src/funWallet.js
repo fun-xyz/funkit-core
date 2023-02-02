@@ -38,8 +38,10 @@ class FunWallet extends ContractsHolder {
         // this.actionsStore = config.schema.actionsStore
     }
 
-    addModule(action, salt = 0) {
+    addModule(module, salt = 0) {
+        let action = module.create()
         this.actionsStore[generateSha256(action)] = { ...action, salt };
+        
         return { ...action, salt }
     }
 
@@ -120,7 +122,7 @@ class FunWallet extends ContractsHolder {
         const op = await BundlerTools._createAction(this.accountApi, createWalleteData, 560000)
         const receipt = await this.deployActionTx(op)
         await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
-        return receipt
+        return {receipt, address:this.address}
     }
 
     async deployActionTx(op) {

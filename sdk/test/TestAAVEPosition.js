@@ -24,19 +24,22 @@ const main = async (config, rpcurl) => {
     const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
     const wallet = new FunWallet(walletConfig)
 
-
-    const withdrawEntirePosition = wallet.addModule(AAVEWithdrawal(config.aTokenAddress))
+    const module = new AAVEWithdrawal(eoa, config.aTokenAddress, chain)
+    const withdrawEntirePosition = wallet.addModule(module)
 
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()
-    console.log("Creation Succesful:\n", deployWalletReceipt)
+    console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
+
+    const modulePreExecTxs = await module.getPreExecTxs(deployWalletReceipt.address);
+    console.log(modulePreExecTxs)
 
     // Create a tx that exits an EOA's Aave poisition to be called at a later point
     const aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)
 
     // Create & deploy a tx that gives the FunWallet authorization to close the EOA's Aave position
-    const tokenApprovalReceipt = await wallet.deployTokenApproval(config.aTokenAddress)
-    console.log("Approval Succesful:\n", tokenApprovalReceipt)
+    // const tokenApprovalReceipt = await wallet.deployTokenApproval(config.aTokenAddress)
+    // console.log("Approval Succesful:\n", tokenApprovalReceipt)
 
     // After some time, deploy the Aave withdrawal action
     const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx, config.APIKEY)
