@@ -24,7 +24,7 @@ const main = async (config, rpcurl) => {
     const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
     const wallet = new FunWallet(walletConfig)
 
-    const module = new AAVEWithdrawal(eoa, config.aTokenAddress, chain)
+    const module = new AAVEWithdrawal(config.aTokenAddress, chain)
     const withdrawEntirePosition = wallet.addModule(module)
 
     // Deploy the FunWallet

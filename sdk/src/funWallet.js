@@ -219,7 +219,7 @@ class FunWallet extends ContractsHolder {
         const { op, user, chain } = transaction.data
         const translationServer = new TranslationServer(apikey, user)
         let chainInfo = await TranslationServer.getChainInfo(chain)
-
+        console.log(chainInfo)
         const {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
