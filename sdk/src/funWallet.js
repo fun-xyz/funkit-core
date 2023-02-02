@@ -149,7 +149,7 @@ class FunWallet extends ContractsHolder {
 
         const data = {
             op: actionExecutionOp,
-            user: this.user,
+            user: this.translationServer.user,
             chain: this.chain
         }
         return new Transaction(data, true)
@@ -196,16 +196,17 @@ class FunWallet extends ContractsHolder {
 
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            await FunWallet.deployActionTx(transaction, this.apiKey)
+            return await FunWallet.deployActionTx(transaction, this.apiKey)
         }
         else {
-            this.eoa.sendTransaction(transaction.data)
+            const tx = await this.eoa.sendTransaction(transaction.data)
+            return await tx.wait()
         }
     }
 
     async deployTxs(txs) {
         for (let transaction of txs) {
-            await this.deployTx(transaction)
+            console.log("receipt", await this.deployTx(transaction))
         }
     }
 
@@ -228,7 +229,6 @@ class FunWallet extends ContractsHolder {
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         await translationServer.storeUserOp(op, 'deploy_action')
-
         return { userOpHash, txid }
     }
 
@@ -243,10 +243,9 @@ class FunWallet extends ContractsHolder {
 
     }
 
-
     static async deployTxs(txs) {
         for (let transaction of txs) {
-            await this.deployTx(transaction)
+            console.log("receipt", await this.deployTx(transaction))
         }
     }
 

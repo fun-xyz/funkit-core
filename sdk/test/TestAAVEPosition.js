@@ -32,7 +32,7 @@ const main = async (config, rpcurl) => {
     console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
 
     const modulePreExecTxs = await module.getPreExecTxs(deployWalletReceipt.address);
-    console.log(modulePreExecTxs)
+    await wallet.deployTxs(modulePreExecTxs)
 
     // Create a tx that exits an EOA's Aave poisition to be called at a later point
     const aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)
