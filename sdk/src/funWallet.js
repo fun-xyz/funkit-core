@@ -180,8 +180,8 @@ class FunWallet extends ContractsHolder {
         }))
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await BundlerTools.createTransactionAction(this.accountApi, createWalleteData, 560000)
-        const receipt = await this.deployTx(op)
+        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000)
+        const receipt = await this.deployActionTx({ data: { op } })
         await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
         return { receipt, address: this.address }
     }
@@ -219,7 +219,6 @@ class FunWallet extends ContractsHolder {
         const { op, user, chain } = transaction.data
         const translationServer = new TranslationServer(apikey, user)
         let chainInfo = await TranslationServer.getChainInfo(chain)
-        console.log(chainInfo)
         const {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
