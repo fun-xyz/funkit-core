@@ -1,5 +1,5 @@
 var assert = require('assert');
-const { FunWallet, AAVEWithdrawal, AccessControlSchema } = require('../index')
+const { FunWallet, EOAAAVEWithdrawal, AccessControlSchema } = require('../index')
 const { TranslationServer } = require('../utils/TranslationServer.js')
 const { FunWalletConfig } = require('../utils/configs/walletConfigs.js')
 const ethers = require('ethers');
@@ -19,7 +19,7 @@ describe('funWallet integration tests', function () {
     const eoa = new ethers.Wallet(privKey, provider)
     const schema = new AccessControlSchema()
 
-    withdrawEntirePosition = schema.addModule(AAVEWithdrawal(aTokenAddress))
+    withdrawEntirePosition = schema.addModule(EOAAAVEWithdrawal(aTokenAddress))
     const walletConfig = new FunWalletConfig(eoa, schema, prefundAmt, chain, APIKEY)
     wallet = new FunWallet(walletConfig)
   })

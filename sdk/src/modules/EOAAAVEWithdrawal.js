@@ -7,12 +7,13 @@ const ERC20 = require('../../utils/abis/ERC20.json')
 
 
 
-const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+
 
 class AAVEWithdrawal {
-    constructor(aTokenAddress, chainId, amount = MAX_INT,) {
+    constructor(aTokenAddress, chainId, amount = ethers.constants.MaxInt256,) {
         this.aTokenAddress = aTokenAddress
         this.amount = amount
+        this.chainId = chainId
         const eoa = ethers.Wallet.createRandom()
         this.contract = createWrappedContract(aTokenAddress, ERC20.abi, eoa, {}, chainId)
     }
@@ -24,12 +25,14 @@ class AAVEWithdrawal {
         }
     }
 
-    async getPreExecTxs(address = this.aTokenAddress) {
-        return [await this.deployTokenApproval(address)]
+    async getPreExecTxs(wallet) {
+        return [await this.deployTokenApproval(wallet.address, this.amount)]
     }
 
-    verifyRequirements() {
-
+    async verifyRequirements(wallet) {
+        const contract = new ethers.Contract(this.aTokenAddress, ERC20.abi, wallet.provider)
+        const value = await contract.allowance(wallet.eoaAddr, wallet.address)
+        return value.gte(ethers.BigNumber.from(this.amount))
     }
 
 
@@ -39,8 +42,8 @@ class AAVEWithdrawal {
     * Transaction - Transaction data
     */
 
-    async deployTokenApproval(address) {
-        const { to, data } = await this.contract.getMethodEncoding("approve", [address, this.amount])
+    async deployTokenApproval(address, amt) {
+        const { to, data } = await this.contract.getMethodEncoding("approve", [address, amt])
         return new Transaction({ to, data })
     }
 }
