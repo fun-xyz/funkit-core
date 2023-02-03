@@ -17,8 +17,8 @@ class TransferToken extends Module {
         this.to = to
         this.ERC20addr = ERC20addr
         this.amount = amount
-        const eoa = ethers.Wallet.createRandom()
-        this.contract = createWrappedContract(ERC20addr, ERC20.abi, eoa, {}, chainId)
+        // const eoa = ethers.Wallet.createRandom()
+        // this.contract = createWrappedContract(ERC20addr, ERC20.abi, eoa, {}, chainId)
     }
     create(...params) {
         params.push(this.to, this.amount, this.ERC20addr)
@@ -32,12 +32,12 @@ class TransferToken extends Module {
     }
 
 
-    async transferFrom() {
-        const { to, data } = await this.contract.getMethodEncoding("transfer", [address, funWalletAddress, this.amount])
-        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-
-        return new Transaction({ to, data })
-    }
+    // async transferFrom() {
+    //     const { to, data } = await this.contract.getMethodEncoding("transfer", [address, funWalletAddress, this.amount])
+    //     const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
+    //
+    //     return new Transaction({ to, data })
+    // }
 
 
 }
