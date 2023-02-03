@@ -39,10 +39,9 @@ class FunWallet extends ContractsHolder {
         // this.actionsStore = config.schema.actionsStore
     }
 
-    addModule(module, salt = 0) {
+    addModule(module,  salt = 0) {
         let action = module.create()
         this.actionsStore[generateSha256(action)] = { ...action, salt };
-
         return { ...action, salt }
     }
 
@@ -105,12 +104,15 @@ class FunWallet extends ContractsHolder {
             case "AAVE": {
                 return await this._createAAVEWithdrawal(params)
             }
+          
         }
     }
 
+
+
+
     async _createAAVEWithdrawal(params) {
-        this.params = params
-        const tokenAddr = this.params[0]
+        const tokenAddr = params[0]
         this.addContract(this.AaveWithdrawalAddress, Action.abi)
         this.addContract(tokenAddr, ERCToken.abi)
         const input = [this.eoaAddr, tokenAddr]
@@ -122,8 +124,30 @@ class FunWallet extends ContractsHolder {
     }
 
     async createModuleExecutionTx(action) {
-        return this._createAAVEWithdrawalExec(action)
+        switch (action.type) {
+            case "AAVE": {
+                return await this._createAAVEWithdrawalExec(action)
+            }
+            case "TRANSFER": {
+                return await this._createTokenTransferExect(action)
+            }
+        }
     }
+    async _createTokenTransferExect({ params }) {
+
+        const tokenAddr = params[2]
+        this.addContract(tokenAddr, ERCToken.abi)
+        const actionExec = await this.contracts[tokenAddr].getMethodEncoding("transfer", [params[0], params[1]])
+        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
+        await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
+        const data = {
+            op: actionExecutionOp,
+            user: this.translationServer.user,
+            chain: this.chain
+        }
+        return new Transaction(data, true)
+    }
+
 
     /**
       * Liquidates one's aave position
@@ -155,6 +179,7 @@ class FunWallet extends ContractsHolder {
         return new Transaction(data, true)
     }
 
+
     // Deprecated for Module.getRequiredPreTxs()
     // async deployTokenApproval(aTokenAddress, amount) {
     // }
@@ -172,6 +197,10 @@ class FunWallet extends ContractsHolder {
         const actionCreateData = { to: [], data: [] }
 
         let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
+            if(actionData.noInit){
+                return
+            }
+            console.log(actionData)
             const { actionInitData, balance } = await this._createWalletInitData(actionData)
             const { to, data } = actionInitData
             actionCreateData.to.push(to)

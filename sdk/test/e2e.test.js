@@ -22,7 +22,6 @@ describe('funWallet integration tests', function () {
     withdrawEntirePosition = schema.addModule(AAVEWithdrawal(aTokenAddress))
     const walletConfig = new FunWalletConfig(eoa, schema, prefundAmt, chain, APIKEY)
     wallet = new FunWallet(walletConfig)
-
   })
 
   describe('withdraw flow', function () {

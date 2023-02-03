@@ -25,7 +25,7 @@ class AAVEWithdrawal {
     }
 
     async getPreExecTxs(address = this.aTokenAddress) {
-        return  [await this.deployTokenApproval(address)]
+        return [await this.deployTokenApproval(address)]
     }
 
     verifyRequirements() {
