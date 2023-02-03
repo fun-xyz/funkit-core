@@ -1,0 +1,62 @@
+[
+    {
+        "detail_platforms": {
+            "": {
+                "decimal_place": null,
+                "contract_address": ""
+            }
+        },
+        "id": "01coin",
+        "symbol": "zoc",
+        "name": "01coin"
+    },
+    {
+        "detail_platforms": {
+            "ethereum": {
+                "decimal_place": 10,
+                "contract_address": "0xb9ef770b6a5e12e45983c5d80545258aa38f3b78"
+            },
+            "polygon-pos": {
+                "decimal_place": 10,
+                "contract_address": "0x8bb30e0e67b11b978a5040144c410e1ccddcba30"
+            }
+        },
+        "id": "0chain",
+        "symbol": "zcn",
+        "name": "Zus"
+    },
+    {
+        "detail_platforms": {
+            "ethereum": {
+                "decimal_place": 18,
+                "contract_address": "0xe41d2489571d322189246dafa5ebde1f4699f498"
+            },
+            "avalanche": {
+                "decimal_place": 18,
+                "contract_address": "0x596fa47043f99a4e0f122243b841e55375cde0d2"
+            },
+            "harmony-shard-0": {
+                "decimal_place": 18,
+                "contract_address": "0x8143e2a1085939caa9cef6665c2ff32f7bc08435"
+            },
+            "energi": {
+                "decimal_place": 18,
+                "contract_address": "0x591c19dc0821704bedaa5bbc6a66fee277d9437e"
+            }
+        },
+        "id": "0x",
+        "symbol": "zrx",
+        "name": "0x"
+    },
+    {
+        "detail_platforms": {
+            "ethereum": {
+                "decimal_place": 9,
+                "contract_address": "0x5a3e6a77ba2f983ec0d371ea3b475f8bc0811ad5"
+            }
+        },
+        "id": "0x0-ai-ai-smart-contract",
+        "symbol": "0x0",
+        "name": "0x0.ai: AI Smart Contract"
+    }
+]
