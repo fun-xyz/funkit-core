@@ -34,6 +34,7 @@ const main = async () => {
         catch{
             i--;
         }
+    }
         
         // promises.push(
         //     setTimeout(() => {
@@ -51,7 +52,7 @@ const main = async () => {
 
 
 
-    })
+    
 
     // Promise.all(promises).then(() => {
     //     const json = JSON.stringify(res)
