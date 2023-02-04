@@ -18,7 +18,8 @@ const { BundlerInstance } = require("../utils/BundlerInstance")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
 const abi = ethers.utils.defaultAbiCoder;
-const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+// const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+const MAX_INT= ethers.constants.MaxUint256._hex
 
 class FunWallet extends ContractsHolder {
     /**

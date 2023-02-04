@@ -8,7 +8,8 @@ const ERC20 = require('../../utils/abis/ERC20.json')
 
 
 
-const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+// const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+const MAX_INT= ethers.constants.MaxUint256._hex
 
 class TransferToken extends Module {
 
