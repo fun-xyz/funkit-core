@@ -9,7 +9,7 @@ const ERC20 = require('../../utils/abis/ERC20.json')
 
 
 
-class AAVEWithdrawal {
+class EOAAAVEWithdrawal {
     constructor(aTokenAddress, chainId, amount = ethers.constants.MaxInt256,) {
         this.aTokenAddress = aTokenAddress
         this.amount = amount
@@ -49,4 +49,4 @@ class AAVEWithdrawal {
 }
 
 
-module.exports = { AAVEWithdrawal }
+module.exports = { EOAAAVEWithdrawal }

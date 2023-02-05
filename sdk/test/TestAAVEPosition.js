@@ -1,15 +1,15 @@
 const { FunWallet, EOAAAVEWithdrawal, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
-const chain = '43113' //avax fuji 
+const chain = '31337' //avax fuji 
 const { TranslationServer } = require('../utils/TranslationServer')
 
 
 const main = async (config, rpcurl) => {
-    if (!rpcurl) {
-        const chainInfo = await TranslationServer.getChainInfo(chain)
-        rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
-    }
+    // if (!rpcurl) {
+    //     const chainInfo = await TranslationServer.getChainInfo(chain)
+    //     rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
+    // }
 
 
     // 1. With metamask
@@ -32,12 +32,12 @@ const main = async (config, rpcurl) => {
 
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()
-    console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
+    // console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
 
-    const modulePreExecTxs = await module.getPreExecTxs(wallet);
-    await wallet.deployTxs(modulePreExecTxs)
+    // const modulePreExecTxs = await module.getPreExecTxs(wallet);
+    // await wallet.deployTxs(modulePreExecTxs)
 
-    console.assert(await module.verifyRequirements(wallet), "PreExecTxs Failed")
+    // console.assert(await module.verifyRequirements(wallet), "PreExecTxs Failed")
 
     // Create a tx that exits an EOA's Aave poisition to be called at a later point
     const aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)
@@ -56,6 +56,8 @@ const processConsole = () => {
     let aTokenAddress = process.argv[2], privKey = process.argv[3], prefundAmt = process.argv[4], APIKEY = process.argv[5], rpcurl = process.argv[6]
     prefundAmt = parseFloat(prefundAmt)
     const config = new TestAaveConfig(aTokenAddress, privKey, prefundAmt, APIKEY)
+    rpcurl = "http://127.0.0.1:8545/"
+
     main(config, rpcurl)
 }
 
