@@ -42,7 +42,8 @@ class FunWallet extends ContractsHolder {
     addModule(module, salt = 0) {
         let action = module.create()
         this.actionsStore[generateSha256(action)] = { ...action, salt };
-
+        module.innerAddData(this)
+        module.innerAddData({ address: this.address, eoaAddr: this.eoaAddr })
         return { ...action, salt }
     }
 
@@ -70,25 +71,27 @@ class FunWallet extends ContractsHolder {
         if (this.address) {
             return
         }
-        let chainInfo = await TranslationServer.getChainInfo(this.chain)
-        const {
-            rpcdata: { bundlerUrl, rpcurl },
-            aaData: { entryPointAddress, factoryAddress },
-            actionData: {
-                aave: AaveWithdrawalAddress,
-                aaveSupply: AaveSupplyAddress,
-            }
-        } = chainInfo
+
+
+        // let chainInfo = await TranslationServer.getChainInfo(this.chain)
+        // const {
+        //     rpcdata: { rpcurl },
+        //     aaData: { entryPointAddress, factoryAddress },
+        // } = chainInfo
+
+        const bundlerUrl = "http://localhost:3000/rpc"
+        const rpcurl = "http://127.0.0.1:8545/"
+
+
+
+        const entryPointAddress = "0xD1760AA0FCD9e64bA4ea43399Ad789CFd63C7809"
+        const factoryAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
 
         const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
 
-        this.addVarsToAttributes({
-            AaveWithdrawalAddress,
-            AaveSupplyAddress,
-            bundlerClient,
-            provider,
-            accountApi,
-        })
+        this.bundlerClient = bundlerClient
+        this.provider = provider
+        this.accountApi = accountApi
 
         this.address = await this.accountApi.getAccountAddress()
         this.eoaAddr = await this.eoa.getAddress()
@@ -104,6 +107,9 @@ class FunWallet extends ContractsHolder {
         switch (type) {
             case "AAVE": {
                 return await this._createAAVEWithdrawal(params)
+            }
+            default: {
+                return { actionInitData: {}, balance: 0 }
             }
         }
     }
@@ -173,9 +179,11 @@ class FunWallet extends ContractsHolder {
 
         let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
             const { actionInitData, balance } = await this._createWalletInitData(actionData)
-            const { to, data } = actionInitData
-            actionCreateData.to.push(to)
-            actionCreateData.data.push(data)
+            if (actionInitData.to) {
+                const { to, data } = actionInitData
+                actionCreateData.to.push(to)
+                actionCreateData.data.push(data)
+            }
             return balance
         }))
 
@@ -184,6 +192,11 @@ class FunWallet extends ContractsHolder {
         const receipt = await this.deployActionTx({ data: { op } })
         await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
         return { receipt, address: this.address }
+    }
+
+    async getBatchAction(bundle) {
+        const batchData = await this.contracts[this.address].getMethodEncoding("execBatch", [bundle.to, bundle.data])
+        return await BundlerTools.createAction(this.accountApi, batchData, 560000)
     }
 
     async deployActionTx(transaction) {

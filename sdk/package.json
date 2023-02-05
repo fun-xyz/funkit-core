@@ -12,10 +12,15 @@
   "dependencies": {
     "@account-abstraction/contracts": "^0.4.0",
     "@account-abstraction/sdk": "^0.4.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@uniswap/sdk": "^3.0.3",
     "@uniswap/smart-order-router": "^3.5.0",
     "crypto-js": "^4.1.1",
     "eslint": "^8.33.0",
     "ethers": "^5.7.2",
+    "jsbi": "^3.1.4",
     "node-fetch": "^2.0.0",
     "prettier": "^2.8.3"
   },
@@ -23,6 +28,7 @@
     "test": "tests"
   },
   "devDependencies": {
+    "hardhat": "^2.12.4",
     "mocha": "^10.2.0"
   },
   "repository": {
