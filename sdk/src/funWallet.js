@@ -70,29 +70,21 @@ class FunWallet extends ContractsHolder {
         if (this.address) {
             return
         }
-        // let chainInfo = await TranslationServer.getChainInfo(this.chain)
-        // const {
-        //     rpcdata: { bundlerUrl, rpcurl },
-        //     aaData: { entryPointAddress,  },
-        //     actionData: {
-        //         aave: AaveWithdrawalAddress,
-        //         aaveSupply: AaveSupplyAddress,
-        //     }
-        // } = chainInfo
-        const AaveWithdrawalAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
-
-        const bundlerUrl = "http://localhost:3000/rpc"
-        const rpcurl = "http://127.0.0.1:8545/"
-
-
-        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
-        const factoryAddress = "0x15Ff10fCc8A1a50bFbE07847A22664801eA79E0f"
+        let chainInfo = await TranslationServer.getChainInfo(this.chain)
+        const {
+            rpcdata: { bundlerUrl, rpcurl },
+            aaData: { entryPointAddress, factoryAddress },
+            actionData: {
+                aave: AaveWithdrawalAddress,
+                aaveSupply: AaveSupplyAddress,
+            }
+        } = chainInfo
 
         const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
 
         this.addVarsToAttributes({
             AaveWithdrawalAddress,
-            // AaveSupplyAddress,
+            AaveSupplyAddress,
             bundlerClient,
             provider,
             accountApi,
@@ -227,19 +219,11 @@ class FunWallet extends ContractsHolder {
         }
         const { op, user, chain } = transaction.data
         const translationServer = new TranslationServer(apikey, user)
-        // let chainInfo = await TranslationServer.getChainInfo(chain)
-        // const {
-        //     rpcdata: { bundlerUrl, rpcurl },
-        //     aaData: { entryPointAddress, factoryAddress }
-        // } = chainInfo
-
-        const bundlerUrl = "http://localhost:3000/rpc"
-        const rpcurl = "http://127.0.0.1:8545/"
-
-
-        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
-        const factoryAddress = "0x15Ff10fCc8A1a50bFbE07847A22664801eA79E0f"
-
+        let chainInfo = await TranslationServer.getChainInfo(chain)
+        const {
+            rpcdata: { bundlerUrl, rpcurl },
+            aaData: { entryPointAddress, factoryAddress }
+        } = chainInfo
 
         const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
