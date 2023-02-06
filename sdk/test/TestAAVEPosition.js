@@ -10,6 +10,8 @@ const USDT_MUMBAI = "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832"
 
 const chain = "31337"
 
+const ApproveAndSwap = Swap
+
 const main = async (config, rpcurl) => {
     if (!rpcurl) {
         const chainInfo = await TranslationServer.getChainInfo(chain)
@@ -31,15 +33,14 @@ const main = async (config, rpcurl) => {
     // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAXa
     const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
     const wallet = new FunWallet(walletConfig)
-
-
-    const module = new Swap()
     await wallet.init()
+
+    const module = new ApproveAndSwap()
 
     const withdrawEntirePosition = wallet.addModule(module)
 
     // Deploy the FunWallet
-    // const deployWalletReceipt = await wallet.deploy()
+    const deployWalletReceipt = await wallet.deploy()
 
 
     await module.createNew(USDC_MUMBAI, DAI_MUMBAI)

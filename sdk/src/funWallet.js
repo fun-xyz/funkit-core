@@ -173,8 +173,6 @@ class FunWallet extends ContractsHolder {
     */
 
     async deploy() {
-        await this.init()
-
         const actionCreateData = { to: [], data: [] }
 
         let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
