@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 const { FunWallet, AccessControlSchema } = require("../index")
 const { AAVEWithdrawal, Swap } = require("../modules")
+=======
+const { FunWallet, EOAAAVEWithdrawal, AccessControlSchema } = require("../index")
+>>>>>>> staging
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const { TranslationServer } = require('../utils/TranslationServer')
 
+<<<<<<< HEAD
 const USDC_MUMBAI = "0x7EA2be2df7BA6E54B1A9C70676f668455E329d29"
 const DAI_MUMBAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 const USDT_MUMBAI = "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832"
@@ -11,6 +16,8 @@ const USDT_MUMBAI = "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832"
 const chain = "31337"
 
 const ApproveAndSwap = Swap
+=======
+>>>>>>> staging
 
 const main = async (config, rpcurl) => {
     if (!rpcurl) {
@@ -39,6 +46,8 @@ const main = async (config, rpcurl) => {
 
     const withdrawEntirePosition = wallet.addModule(module)
 
+
+
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()
 
@@ -47,6 +56,8 @@ const main = async (config, rpcurl) => {
 
 
 
+
+    console.assert(await module.verifyRequirements(wallet), "PreExecTxs Failed")
 
     // Create a tx that exits an EOA's Aave poisition to be called at a later point
     // const aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)

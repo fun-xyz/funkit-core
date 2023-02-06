@@ -24,10 +24,16 @@ const deployEntryPoint = (signer) => {
 
 }
 
-const factory = require("../utils/abis/TreasuryFactory.json")
+const factory = require("./abis/FunWalletFactory.json")
 const deployFactory = (signer) => {
     return deploy(signer, factory)
 }
+
+const supply = require("./abis/AaveSupply.json")
+const deploySupply = (signer) => {
+    return deploy(signer, supply)
+}
+
 
 const timeout = async (ms) => {
     return new Promise((resolve) => {
