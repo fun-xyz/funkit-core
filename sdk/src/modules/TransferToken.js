@@ -31,14 +31,20 @@ class TransferToken extends Module {
             noInit: true
         }
     }
+    async _createTokenTransferExect({ params }) {
 
-
-    // async transferFrom() {
-    //     const { to, data } = await this.contract.getMethodEncoding("transfer", [address, funWalletAddress, this.amount])
-    //     const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-    //
-    //     return new Transaction({ to, data })
-    // }
+        const tokenAddr = params[2]
+        this.addContract(tokenAddr, ERCToken.abi)
+        const actionExec = await this.contracts[tokenAddr].getMethodEncoding("transfer", [params[0], params[1]])
+        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
+        await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
+        const data = {
+            op: actionExecutionOp,
+            user: this.translationServer.user,
+            chain: this.chain
+        }
+        return new Transaction(data, true)
+    }
 
 
 }
