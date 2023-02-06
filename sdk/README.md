@@ -18,6 +18,6 @@ With rpc:
 
 ## How to run TestTokenTransfer.js
  
-**Make sure to fund 0xF01abb54e72737194E40Db51d8E16c1238d7C914**
+**Make sure to fund Fun Wallet Address**
  
 ```yarn test-transferToken 0x5425890298aed601595a70AB815c96711a31Bc65 66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206 0 hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7```
