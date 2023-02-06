@@ -8,9 +8,9 @@ const ERC20 = require('../../utils/abis/ERC20.json')
 
 
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-const MAX_INT= ethers.constants.MaxUint256._hex
+const MAX_INT = ethers.constants.MaxUint256._hex
 
-class AAVEWithdrawal {
+class AAVEWithdrawal extends Module {
     constructor(aTokenAddress, chainId, amount = MAX_INT,) {
         this.aTokenAddress = aTokenAddress
         this.amount = amount
@@ -27,10 +27,6 @@ class AAVEWithdrawal {
 
     async getPreExecTxs(address = this.aTokenAddress) {
         return [await this.deployTokenApproval(address)]
-    }
-
-    verifyRequirements() {
-
     }
 
 

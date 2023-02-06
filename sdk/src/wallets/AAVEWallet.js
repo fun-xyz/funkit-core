@@ -8,7 +8,7 @@ const { ContractsHolder } = require("../../utils/ContractsHolder")
 const { generateSha256 } = require("../../utils/tools")
 
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-const MAX_INT= ethers.constants.MaxUint256._hex
+const MAX_INT = ethers.constants.MaxUint256._hex
 
 const healthFactorLow = ethers.utils.parseEther("1")
 

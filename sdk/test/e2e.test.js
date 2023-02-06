@@ -19,29 +19,38 @@ describe('funWallet integration tests', function () {
     const eoa = new ethers.Wallet(privKey, provider)
     const schema = new AccessControlSchema()
 
-    withdrawEntirePosition = schema.addModule(EOAAAVEWithdrawal(aTokenAddress))
-    const walletConfig = new FunWalletConfig(eoa, schema, prefundAmt, chain, APIKEY)
+    const walletConfig = new FunWalletConfig(eoa, prefundAmt, chain, APIKEY)
     wallet = new FunWallet(walletConfig)
+
+    //aave withdraw module
+    module = new EOAAAVEWithdrawal(aTokenAddress, chain, 10)
+    withdrawEntirePosition = wallet.addModule(module)
+
   })
 
   describe('withdraw flow', function () {
     it('deployment of fun wallet', async function () {
-      const deployWalletReceipt = await wallet.deploy()
-      if (!deployWalletReceipt.userOpHash || !deployWalletReceipt.txid) {
-        done(new Error('Receipt not generated'))
+      const { receipt } = await wallet.deploy()
+      if (!receipt.userOpHash || !receipt.txid) {
+        assert.equal(true, false, 'Receipt not generated')
       }
+    })
+    it('get pre execution txs', async function () {
+      const modulePreExecTxs = await module.getPreExecTxs(wallet);
+      await wallet.deployTxs(modulePreExecTxs)
+      const result = await module.verifyRequirements(wallet)
+      assert(result, "PreExecTxs Failed")
+
     })
     it('create action', async function () {
       aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)
-      assert.equal(aaveActionTx.callGasLimit, 500000)
-      assert.equal(aaveActionTx.callData, callData)
+      const opReceipt=aaveActionTx.data.op
+      assert.equal(opReceipt.callGasLimit, 500000)
+      assert.equal(opReceipt.callData, callData)
     })
-    it('token approval', async function () {
-      const tokenApprovalReceipt = await wallet.deployTokenApproval(aTokenAddress)
-      assert.equal(tokenApprovalReceipt.from, '0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e')
-    })
+   
     it('deploy userop', async function () {
-      const aaveWithdrawalReceipt = await FunWallet.deployActionTx(aaveActionTx, APIKEY)
+      const aaveWithdrawalReceipt = await FunWallet.deployTx(aaveActionTx, APIKEY)
       if (!aaveWithdrawalReceipt.userOpHash || !aaveWithdrawalReceipt.txid) {
         done(new Error('Receipt not generated'))
       }

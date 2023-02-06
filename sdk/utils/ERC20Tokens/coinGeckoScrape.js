@@ -22,14 +22,14 @@ function getInfo(data){
     })
 }
 const main = async () => {
-    for (let i = 0; i < list.length; i++) {
+    for (let i = 555; i < list.length; i++) {
         try{
             await timeout(10000)
             const obj=await getInfo(list[i])
             res.push(obj)
             const json = JSON.stringify(res)
+            console.log(obj, i)
             fs.writeFile('result.json', json, 'utf8', () => { });
-            console.log(obj, r.status, i)
         }
         catch{
             i--;

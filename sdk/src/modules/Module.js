@@ -1,11 +1,11 @@
 class Module {
-    getPreExecTxs(){
+    getPreExecTxs() {
         return []
 
     }
-    verifyRequirements(){
+    verifyRequirements() {
         return true
     }
 
 }
-module.exports ={Module}
+module.exports = { Module }

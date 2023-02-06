@@ -19,7 +19,7 @@ const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
 const abi = ethers.utils.defaultAbiCoder;
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-const MAX_INT= ethers.constants.MaxUint256._hex
+const MAX_INT = ethers.constants.MaxUint256._hex
 
 class FunWallet extends ContractsHolder {
     /**
@@ -40,7 +40,7 @@ class FunWallet extends ContractsHolder {
         // this.actionsStore = config.schema.actionsStore
     }
 
-    addModule(module,  salt = 0) {
+    addModule(module, salt = 0) {
         let action = module.create()
         this.actionsStore[generateSha256(action)] = { ...action, salt };
         return { ...action, salt }
@@ -71,6 +71,7 @@ class FunWallet extends ContractsHolder {
             return
         }
         let chainInfo = await TranslationServer.getChainInfo(this.chain)
+
         const {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress },
@@ -105,7 +106,7 @@ class FunWallet extends ContractsHolder {
             case "AAVE": {
                 return await this._createAAVEWithdrawal(params)
             }
-          
+
         }
     }
 
@@ -198,10 +199,9 @@ class FunWallet extends ContractsHolder {
         const actionCreateData = { to: [], data: [] }
 
         let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
-            if(actionData.noInit){
+            if (actionData.noInit) {
                 return
             }
-            console.log(actionData)
             const { actionInitData, balance } = await this._createWalletInitData(actionData)
             const { to, data } = actionInitData
             actionCreateData.to.push(to)

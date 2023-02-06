@@ -31,11 +31,11 @@ describe('action util functions test', function () {
         //     index:0
         // })
         let { bundlerClient, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, eoa, index)
-        accountAPI=accountApi
+        accountAPI = accountApi
 
     })
     it('createAction', async function () {
-        const res = await actionUtils._createAction(accountAPI, data, 56000)
+        const res = await actionUtils.createAction(accountAPI, data, 56000)
         // console.log(res)
         assert.equal(res.callData, expectedCallData)
     })
