@@ -3,8 +3,8 @@ const ethers_1 = require("ethers");
 
 const utils_1 = require("ethers/lib/utils");
 
-const TreasurySRC = require("./abis/Treasury.json")
-const srcfile = require("./abis/TreasuryFactory.json")
+const TreasurySRC = require("./abis/FunWallet.json")
+const srcfile = require("./abis/FunWalletFactory.json")
 var _abi = srcfile.abi
 
 
@@ -22,7 +22,7 @@ const calcPreVerificationGas_1 = require("./tools");
  * - nonce method is "nonce()"
  * - execute method is "execFromEntryPoint()"
  */
-class SimpleAccountAPI  {
+class SimpleAccountAPI {
     constructor(params) {
         var _a;
         this.factoryAddress = params.factoryAddress;
@@ -39,7 +39,7 @@ class SimpleAccountAPI  {
         this.paymasterAPI = params.paymasterAPI;
         // factory "connect" define the contract address. the contract "connect" defines the "from" address.
         this.entryPointView = contracts_1.EntryPoint__factory.connect(params.entryPointAddress, params.provider).connect(ethers_1.ethers.constants.AddressZero);
-    
+
 
     }
     async _getAccountContract() {
@@ -61,7 +61,7 @@ class SimpleAccountAPI  {
                 throw new Error('no factory to get initCode');
             }
         }
-    
+
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
             this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
@@ -78,7 +78,7 @@ class SimpleAccountAPI  {
      */
     async encodeExecute(target, value, data) {
         await this._getAccountContract()
-        return this.accountContract.interface.encodeFunctionData("execFromEntryPoint", [target, value, data])
+        return this.accountContract.interface.encodeFunctionData("execFromEntryPointOrOwner", [target, value, data])
     }
 
     async signUserOpHash(userOpHash) {
