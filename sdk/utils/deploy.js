@@ -6,7 +6,7 @@ const ERC20 = require("./abis/ERC20.json")
 
 const { ContractFactory } = ethers
 
-
+const WETH_MAINNET = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 
 const deploy = async (signer, obj, params = []) => {
@@ -23,11 +23,12 @@ const deployEntryPoint = (signer) => {
 
 const authContract = require("../utils/abis/UserAuthentication.json")
 const deployAuthContract = (signer) => {
-    return deploy(signer, authContract)
+    return deploy(signer, authContract, [WETH_MAINNET])
 }
 
 
-const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
+const approveAndSwap = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
+// const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
 const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap)
 }
