@@ -14,7 +14,7 @@ const Treasury = require("../utils/abis/Treasury.json")
 const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
 const { TranslationServer } = require('../utils/TranslationServer')
-const { BundlerInstance } = require("../utils/BundlerInstance")
+const { OnChainResources } = require("../utils/OnChainResources")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
 const abi = ethers.utils.defaultAbiCoder;
@@ -23,18 +23,16 @@ const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 class FunWallet extends ContractsHolder {
     /**
     * Standard constructor
-    * @params eoa, preFundAmt, index
-    * eoa - ethers.Wallet object
-    * preFundAmt - amount to prefund the wallet with, in eth/avax
-    * index - index of account (default 0)
+    * @params config, 
+    * config - WalletConfig object
     */
 
     actionsStore = {}
 
-    constructor(config, index = 0, userId = "fun") {
+    constructor(config) {
         super()
-        this.addVarsToAttributes({ ...config, index })
-        this.translationServer = new TranslationServer(config.apiKey, userId)
+        this.addVarsToAttributes({ ...config })
+        this.translationServer = new TranslationServer(config.apiKey, config.userId)
 
         // this.actionsStore = config.schema.actionsStore
     }
@@ -59,11 +57,6 @@ class FunWallet extends ContractsHolder {
      * It also prefunds the account with the amount of eth/avax desired.
      * 
      * USER SIGNATURE REQUIRED to fund wallet
-     * 
-     * @params eoa, preFundAmt, index
-     * eoa - ethers.Wallet object (user's eoa account)
-     * preFundAmt - amount to prefund the wallet with, in eth/avax
-     * index - index of account (default 0)
      */
 
     async init() {
@@ -74,13 +67,9 @@ class FunWallet extends ContractsHolder {
         const {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress },
-            actionData: {
-                aave: AaveWithdrawalAddress,
-                aaveSupply: AaveSupplyAddress,
-            }
         } = chainInfo
 
-        const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
+        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
 
         this.addVarsToAttributes({
             AaveWithdrawalAddress,
@@ -100,6 +89,7 @@ class FunWallet extends ContractsHolder {
         }
     }
 
+    // DEPRACATED VVVVVVVV
     async _createWalletInitData({ type, params }) {
         switch (type) {
             case "AAVE": {
@@ -125,13 +115,6 @@ class FunWallet extends ContractsHolder {
         return this._createAAVEWithdrawalExec(action)
     }
 
-    /**
-      * Liquidates one's aave position
-      * @params opHash - execution hash from deploying the wallet
-      * @return {receipt, executionHash} 
-      * userOpHash - string hash of the UserOperation 
-      * txid - transaction id of transfer of assets
-      */
 
     async _createAAVEWithdrawalExec({ params }) {
         this.addContract(this.AaveWithdrawalAddress, Action.abi)
@@ -154,18 +137,18 @@ class FunWallet extends ContractsHolder {
         }
         return new Transaction(data, true)
     }
+    // DEPRACATED ^^^^^^^
 
-    // Deprecated for Module.getRequiredPreTxs()
-    // async deployTokenApproval(aTokenAddress, amount) {
-    // }
+    
+    // INTERNAL DEPLOY
+    async deployActionTx(transaction) {
+        const { op } = transaction.data
+        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
+        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+        return { userOpHash, txid }
+    }
 
-    /**
-    * Deploys a wallet to chain that can initiate aave liquidation
-    * @return {receipt, executionHash} 
-    * receipt - receipt of transaction committed to chain.
-    * executionHash - string hash of the UserOperation 
-    */
-
+    // EXTERNAL DEPLOY
     async deploy() {
         await this.init()
 
@@ -186,14 +169,6 @@ class FunWallet extends ContractsHolder {
         return { receipt, address: this.address }
     }
 
-    async deployActionTx(transaction) {
-        const { op } = transaction.data
-        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
-        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
-
-        return { userOpHash, txid }
-    }
-
     async deployTx(transaction) {
         if (transaction.isUserOp) {
             return await FunWallet.deployActionTx(transaction, this.apiKey)
@@ -205,9 +180,11 @@ class FunWallet extends ContractsHolder {
     }
 
     async deployTxs(txs) {
+        const receipts = []
         for (let transaction of txs) {
-            console.log("receipt", await this.deployTx(transaction))
+            receipts.push(await this.deployTx(transaction))
         }
+        return receipts
     }
 
     // STATIC METHODS
@@ -225,7 +202,7 @@ class FunWallet extends ContractsHolder {
             aaData: { entryPointAddress, factoryAddress }
         } = chainInfo
 
-        const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
+        const { bundlerClient, accountApi } = await OnChainResources.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         await translationServer.storeUserOp(op, 'deploy_action')
@@ -244,10 +221,13 @@ class FunWallet extends ContractsHolder {
     }
 
     static async deployTxs(txs) {
+        const receipts = []
         for (let transaction of txs) {
-            console.log("receipt", await this.deployTx(transaction))
+            receipts.push(await this.deployTx(transaction))
         }
+        return receipts
     }
+
 
 }
 

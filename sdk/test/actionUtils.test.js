@@ -1,7 +1,7 @@
 const actionUtils = require('../utils/actionUtils.js')
 const { TreasuryAPI } = require('../utils/TreasuryAPI.js')
 const { wrapProvider } = require("../utils/Provider.js")
-const { BundlerInstance } = require('../utils/BundlerInstance.js')
+const { OnChainResources } = require('../utils/OnChainResources.js')
 let accountAPI
 const entryPointAddress = '0xCf64E11cd6A6499FD6d729986056F5cA7348349D'
 const factoryAddress = '0xCb8b356Ab30EA87d62Ed1B6C069Ef3E51FaDF749'
@@ -30,7 +30,7 @@ describe('action util functions test', function () {
         //     owner: eoa,
         //     index:0
         // })
-        let { bundlerClient, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, eoa, index)
+        let { bundlerClient, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, eoa, index)
         accountAPI=accountApi
 
     })
