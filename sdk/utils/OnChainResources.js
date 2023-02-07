@@ -3,16 +3,11 @@ const { wrapProvider } = require("./Provider")
 const { TreasuryAPI } = require("./TreasuryAPI")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
-class BundlerInstance {
+class OnChainResources {
     static async connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddress, eoa, index = 0) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const config = { bundlerUrl, entryPointAddress }
-        const net = await provider.getNetwork()
-        const chainId = net.chainId
-
-        const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const erc4337Provider = await wrapProvider(provider, config, eoa, factoryAddress, verificationAddress)
-
         const accountApi = new TreasuryAPI({
             provider: erc4337Provider,
             entryPointAddress,  //check this
@@ -28,6 +23,7 @@ class BundlerInstance {
     static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const chainId = (await provider.getNetwork()).chainId
+
         const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const accountApi = new TreasuryAPI({
             provider: provider,
@@ -38,7 +34,17 @@ class BundlerInstance {
     }
 }
 
+class Bundler {
+    constructor(bundlerUrl, entryPointAddress, chainId) {
+        this.client = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
+    }
+}
+
+
+
+
+
 
 module.exports = {
-    BundlerInstance
+    OnChainResources
 }

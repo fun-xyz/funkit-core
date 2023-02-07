@@ -1,5 +1,7 @@
-const { AAVEWithdrawal } = require("./AAVEWithdrawal")
-const { Swap } = require("./Swap")
+
+const { EOAAAVEWithdrawal } = require("./EOAAAVEWithdrawal")
+const { ApproveAndSwap } = require("./ApproveAndSwap")
 
 
-module.exports = { AAVEWithdrawal, Swap }
+
+module.exports = { EOAAAVEWithdrawal, ApproveAndSwap }

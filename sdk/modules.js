@@ -1,4 +1,4 @@
-const { AAVEWithdrawal, Swap } = require("./src/modules/index")
+const { AAVEWithdrawal, ApproveAndSwap } = require("./src/modules/index")
 
 
-module.exports = { AAVEWithdrawal, Swap }
+module.exports = { AAVEWithdrawal, ApproveAndSwap }
