@@ -2,11 +2,11 @@ const { FunWallet, TransferToken, AAVEWithdrawal, AccessControlSchema } = requir
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 const chain = '43113' //avax fuji 
-const { TranslationServer } = require('../utils/TranslationServer')
+const { DataServer } = require('../utils/DataServer')
 
 const main = async (config, rpcurl) => {
     if (!rpcurl) {
-        const chainInfo = await TranslationServer.getChainInfo(chain)
+        const chainInfo = await DataServer.getChainInfo(chain)
         rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
     }
 

@@ -1,10 +1,10 @@
 
 
 const chain = '43113' //avax fuji 
-const { TranslationServer } = require('../utils/TranslationServer.js')
+const { DataServer } = require('../utils/DataServer.js')
 var assert = require('assert');
 const apiKey = 'hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf'
-let translationServer
+let dataServer
 let hash
 
 const receipt = {
@@ -83,10 +83,10 @@ const op = {
   }
 describe('api calls', function () {
     before('', async function () {
-        translationServer = new TranslationServer(apiKey, 'fun-dev')
+        dataServer = new DataServer(apiKey, 'fun-dev')
     })
     it('chain-info call', async function () {
-        const chainInfo = await TranslationServer.getChainInfo(chain)
+        const chainInfo = await DataServer.getChainInfo(chain)
         const rpc = chainInfo.rpcdata.rpcurl
         // const bundlerUrl = chainInfo.rpcdata.bundlerUrl
         // const rpcurl = chainInfo.rpcdata.rpcurl
@@ -96,15 +96,15 @@ describe('api calls', function () {
         assert.equal(rpc, 'https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7')
     })
     it('store-user-op call', async function(){
-        hash=await translationServer.storeUserOp(op,'test-op',69)
+        hash=await dataServer.storeUserOp(op,'test-op',69)
         assert.equal(hash,'1b5d7ddae7272509e46db8975e72185cfc4f2f58372fcb96bb4de4857c783050')
     })
     it('store-evm-receipt call', async function () {
-        const response = await translationServer.storeEVMCall(receipt)
+        const response = await dataServer.storeEVMCall(receipt)
         assert.equal(response.success, true)
     })
     it('get-user-op call', async function () {
-        const retOp = await translationServer.getStoredUserOp(hash)        
+        const retOp = await dataServer.getStoredUserOp(hash)        
         assert.equal(typeof retOp, 'object')
         assert.equal(retOp[0].signature,'0x5eac7999dc1cde7a3b4e0167f589a367ac8cf5487a4b6f7d0259e74baef807b936b84442a668b5dafcc37b5e7d213db86e564d2587b763e0a7ada62cf4398ccb1c')
     })

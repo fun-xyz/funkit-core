@@ -37,10 +37,10 @@ class TransferToken extends Module {
         this.addContract(tokenAddr, ERCToken.abi)
         const actionExec = await this.contracts[tokenAddr].getMethodEncoding("transfer", [params[0], params[1]])
         const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-        await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
+        await this.dataServer.storeUserOp(actionExecutionOp, 'create_action')
         const data = {
             op: actionExecutionOp,
-            user: this.translationServer.user,
+            user: this.dataServer.user,
             chain: this.chain
         }
         return new Transaction(data, true)

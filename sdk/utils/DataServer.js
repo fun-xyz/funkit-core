@@ -3,7 +3,7 @@ const ethers = require("ethers")
 
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 
-class TranslationServer {
+class DataServer {
     constructor(apiKey = "", user = "") {
         this.apiKey = apiKey
         this.user = user
@@ -65,4 +65,4 @@ class TranslationServer {
 }
 
 
-module.exports = { TranslationServer }
+module.exports = { DataServer }
