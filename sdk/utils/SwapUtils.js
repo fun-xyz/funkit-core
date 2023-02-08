@@ -3,7 +3,7 @@ const { Currency, CurrencyAmount, Percent, Token, TradeType, } = require('@unisw
 const { Pool, Route, SwapOptions, SwapQuoter, SwapRouter, Trade, FeeAmount, computePoolAddress, } = require('@uniswap/v3-sdk')
 const { JSBI } = require('@uniswap/sdk');
 
-const ERC20 = require("../../utils/abis/ERC20.json")
+const ERC20 = require("./abis/ERC20.json")
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json')
 
 const ALCHEMY_HTTP_ENDPOINT = "http://localhost:8545"

@@ -2,7 +2,7 @@ const { FunWallet, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
 
-const { swapExec } = require('../src/modules/SwapUtils');
+const { swapExec } = require('../utils/SwapUtils');
 
 
 const USDC_MAINNET = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
