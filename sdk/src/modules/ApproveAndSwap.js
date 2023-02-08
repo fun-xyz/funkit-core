@@ -1,6 +1,7 @@
 const ethers = require('ethers')
 const { Module } = require("./Module")
 const { swapExec } = require('../../utils/SwapUtils');
+const { Token, TokenTypes } = require('../../utils/Token');
 
 // const ApproveAndSwapObj = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 
@@ -27,22 +28,24 @@ class ApproveAndSwap extends Module {
     }
 
     async createSwap(tokenIn, tokenOut, amountIn, slippage = 5, percentDec = 100) {
-        const tokenInAddress = ""
-        const tokenOutAddress = ""
-        const { data, amount } = await swapExec(this.wallet.provider, this.routerAddr, tokenInAddress, tokenOutAddress, amountIn, this.wallet.address, slippage, percentDec)
+        const tokenInAddress = await Token.createFrom(tokenIn)
+        const tokenOutAddress = await Token.createFrom(tokenOut)
+
+        const { data, to, amount } = await swapExec(this.wallet.provider, this.routerAddr, tokenInAddress, tokenOutAddress, amountIn, this.wallet.address, slippage, percentDec)
+
+        if (tokenIn.type == TokenTypes.ETH) {
+            const swapData = await this.encodeETHSwap(to, amount, data)
+            return await this.createUserOpFromCallData(swapData)
+        }
         const swapData = await this.encodeERC20Swap(tokenInAddress, this.routerAddr, amount, data)
         return await this.createUserOpFromCallData(swapData)
     }
 
-    async createSwap(tokenOut, amountIn, slippage = 5, percentDec = 100) {
-        const tokenOutAddress = ""
-        const { data, to, amount } = await swapExec(this.wallet.provider, this.routerAddr, wethAddr, tokenOutAddress, amountIn, this.wallet.address, slippage, percentDec)
-        const swapData = await this.encodeETHSwap(to, amount, data)
-        return await this.createUserOpFromCallData(swapData)
-    }
 
 
 }
+
+console.log(TokenTypes)
 
 // scrape rpc data for detailed erc20s
 
