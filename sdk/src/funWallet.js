@@ -78,15 +78,10 @@ class FunWallet extends ContractsHolder {
         const bundlerUrl = "http://localhost:3000/rpc"
         const rpcurl = "http://127.0.0.1:8545/"
 
-        const entryPointAddress = "0x15Ff10fCc8A1a50bFbE07847A22664801eA79E0f"
+        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
 
-        const verificationAddr = "0x26291175Fa0Ea3C8583fEdEB56805eA68289b105"
-        const factoryAddress = "0x840748F7Fd3EA956E5f4c88001da5CC1ABCBc038"
-
-
-
-
-
+        const verificationAddr = "0x73C68f1f41e4890D06Ba3e71b9E9DfA555f1fb46"
+        const factoryAddress = "0xD2D5e508C82EFc205cAFA4Ad969a4395Babce026"
 
 
         const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)

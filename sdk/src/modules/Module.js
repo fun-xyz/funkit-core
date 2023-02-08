@@ -2,6 +2,7 @@ const ethers = require("ethers")
 const { Transaction } = require("../../utils/Transaction")
 const ModuleObj = require("../../utils/abis/Module.json")
 class Module {
+    wallet = {}
     getRequiredPreTxs() {
         return []
     }

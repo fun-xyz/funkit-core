@@ -23,14 +23,14 @@ const deployEntryPoint = (signer) => {
 
 const authContract = require("../utils/abis/UserAuthentication.json")
 const deployAuthContract = (signer) => {
-    return deploy(signer, authContract, [WETH_MAINNET])
+    return deploy(signer, authContract)
 }
 
 
 const approveAndSwap = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 // const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
 const deployApproveAndSwap = (signer) => {
-    return deploy(signer, approveAndSwap)
+    return deploy(signer, approveAndSwap, [WETH_MAINNET])
 }
 
 const factory = require("../utils/abis/FunWalletFactory.json")
@@ -56,8 +56,9 @@ function fromReadableAmount(amount, decimals) {
 }
 
 const transferAmt = async (signer, to, value) => {
-    const tx = await signer.sendTransaction({ to, value: ethers.utils.parseEther(value) })
+    const tx = await signer.sendTransaction({ to, value: ethers.utils.parseEther(value.toString()) })
     await tx.wait()
+    console.log(`${await signer.getAddress()} == ${value} => ${to}`)
 }
 
 
@@ -125,36 +126,58 @@ const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 // await getUserBalanceErc(wallet, USDC)
 // await getUserBalanceErc(wallet, DAI)
 
-const main = async () => {
-    const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
-    const wallet = new ethers.Wallet(pkey, provider)
 
+const deployCore = async (wallet) => {
+    const entryPointAddress = await deployEntryPoint(wallet)
+    console.log(`const entryPointAddress = "${entryPointAddress}"`)
+    await timeout(1000)
 
-    await generalDeployment(wallet)
-    // await transferAmt(wallet, "0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6", "10")
-    // await transferAmt(wallet, "0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e", "100")
+    const verificationAddr = await deployAuthContract(wallet)
+    console.log(`const verificationAddr = "${verificationAddr}"`)
+    await timeout(1000)
 }
 
 const generalDeployment = async (wallet) => {
-    // const entryPointAddress = await deployEntryPoint(wallet)
-    // await timeout(1000)
-
-    const verificationAddr = await deployAuthContract(wallet)
-    await timeout(1000)
-    const factoryAddress = await deployFactory(wallet)
-    await timeout(1000)
     const approveAndSwapAddr = await deployApproveAndSwap(wallet)
-
-    console.log(`const verificationAddr = "${verificationAddr}"`)
-    console.log(`const factoryAddress = "${factoryAddress}"`)
     console.log(`\n\actionAddr = "${approveAndSwapAddr}"`)
 }
 
 
+const loadNetwork = async (wallet, addrs, amt) => {
+    for (let addr of addrs) {
+        await transferAmt(wallet, addr, amt)
+    }
+    const entryPointAddress = await deployEntryPoint(wallet)
+    console.log(`const entryPointAddress = "${entryPointAddress}"`)
+    await timeout(1000)
+
+    const verificationAddr = await deployAuthContract(wallet)
+    console.log(`const verificationAddr = "${verificationAddr}"`)
+    await timeout(1000)
+
+    const factoryAddress = await deployFactory(wallet)
+    console.log(`const factoryAddress = "${factoryAddress}"`)
+    await timeout(1000)
+
+    const approveAndSwapAddr = await deployApproveAndSwap(wallet)
+
+    console.log(`\n\actionAddr = "${approveAndSwapAddr}"`)
+}
+
+const addrs = ["0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6", "0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e"]
+const baseAmt = 10
+
+const main = async () => {
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+    const wallet = new ethers.Wallet(pkey, provider)
+    await generalDeployment(wallet)
+
+}
 
 if (typeof require !== 'undefined' && require.main === module) {
     main()
 }
+
 
 module.exports = {
     execTest,
