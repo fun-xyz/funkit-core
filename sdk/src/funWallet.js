@@ -64,19 +64,20 @@ class FunWallet extends ContractsHolder {
             return
         }
 
-        // let chainInfo = await TranslationServer.getChainInfo(this.chain)
+        // let chainInfo = await DataServer.getChainInfo(this.chain)
+        // console.log(chainInfo)
         // const {
-        //     rpcdata: { rpcurl },
+        //     rpcdata: { rpcurl, bundlerUrl},
         //     aaData: { entryPointAddress, factoryAddress },
         // } = chainInfo
 
         const bundlerUrl = "http://localhost:3000/rpc"
         const rpcurl = "http://127.0.0.1:8545/"
 
-        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
+        const entryPointAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
+        const verificationAddr = "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf"
+        const factoryAddress = "0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720"
 
-        const verificationAddr = "0x73C68f1f41e4890D06Ba3e71b9E9DfA555f1fb46"
-        const factoryAddress = "0xD2D5e508C82EFc205cAFA4Ad969a4395Babce026"
 
 
         const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)

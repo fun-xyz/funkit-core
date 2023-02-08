@@ -170,8 +170,8 @@ const baseAmt = 10
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
     const wallet = new ethers.Wallet(pkey, provider)
-    await generalDeployment(wallet)
-
+    // await generalDeployment(wallet)
+    await loadNetwork(wallet, addrs, baseAmt)
 }
 
 if (typeof require !== 'undefined' && require.main === module) {

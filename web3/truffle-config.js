@@ -85,7 +85,6 @@ module.exports = {
     goerli: {
       provider: () => new HDWalletProvider(MNEMONIC, "https://rpc.ankr.com/eth_goerli"),
 
-
       network_id: 5,       // Goerli's id
       confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
@@ -108,7 +107,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.10" // Fetch exact version from solc-bin (default: truffle's version)
+      version: "native",      // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {
@@ -119,7 +118,6 @@ module.exports = {
       // }
     }
   }
-
   // Truffle DB is currently disabled by default; to enable it, change enabled:
   // false to enabled: true. The default storage location can also be
   // overridden by specifying the adapter settings, as shown in the commented code below.

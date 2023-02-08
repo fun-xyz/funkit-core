@@ -66,9 +66,9 @@ class Token {
         if (ethers.utils.isAddress(data)) {
             return new Token({ address: data })
         }
-        let address = await this.callServerForKeyCheck(data)
-        if (address != false) {
-            return new Token({ address })
+        let serverToken = await this.callServerForKeyCheck(data)
+        if (serverToken != false) {
+            return serverToken
         }
         throw Error("token does not exist")
     }

@@ -21,15 +21,7 @@ class TransferToken extends Module {
     }
 
     async createTransfer(to, amount, ERC20Token) {
-        const token = Token.createFrom(ERC20Token)
-        // if (!ethers.utils.isAddress(ERC20address)) {
-        //     let info = await DataServer.getTokenInfo(ERC20address.toLowerCase())
-        //     if (!info[0].detail_platforms.ethereum) {
-        //         throw Error("Token does not exist.")
-        //     }
-        //     ERC20address = info[0].detail_platforms.ethereum.contract_address
-        // }
-        console.log(token.address)
+        const token = await Token.createFrom(ERC20Token)
         const ERC20Contract = new ethers.Contract(token.address, ERC20.abi)
         const transferData = await ERC20Contract.populateTransaction.transfer(to, amount)
         return await this.createUserOpFromCallData(transferData)
