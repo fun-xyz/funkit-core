@@ -19,7 +19,7 @@ const tokens = {
 
 class Token {
     constructor(config) {
-        if (!TokenEnum[config.type]) {
+        if (config.type && !TokenTypesData[config.type]) {
             throw Error("Type is not a token");
         }
 
@@ -39,17 +39,24 @@ class Token {
         }
     }
 
-    static createFrom(data) {
+    static async createFrom(data) {
         switch (typeof data) {
             case "string": {
-
+                // makeSureAddress(data)
+                // checkIfKey(data)
+                throw Error("data can not be formed into a token")
             }
             case "object": {
                 if (data.address) { }
             }
+            default: {
+                throw Error("data is not a token")
+            }
         }
     }
 }
+
+
 const eth = new Token({ type: TokenTypes.ETH })
 const usdc = new Token({ type: TokenTypes.ERC20, name: "usdc" })
 const dai = new Token({ type: TokenTypes.ERC20, name: "dai" })
@@ -67,5 +74,6 @@ const defaults = {
 
 module.exports = {
     Token,
-    TokenTypes
+    TokenTypes,
+    defaults,
 }
