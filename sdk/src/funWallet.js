@@ -120,7 +120,7 @@ class FunWallet extends ContractsHolder {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
         let balance = Object.values(this.actionsStore).map((actionData) => {
-            const { to, value, data } = actionData
+            const { to, value, data, balance } = actionData
             if (to) {
                 actionCreateData.dests.push(to)
                 actionCreateData.values.push(value ? value : 0)

@@ -2,10 +2,11 @@ const { FunWallet, AccessControlSchema } = require("../index")
 const { ApproveAndSwap } = require("../modules")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
-const { TranslationServer } = require('../utils/TranslationServer')
+
 const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, } = require("../utils/deploy")
 
 const ERC20 = require("../utils/abis/ERC20.json")
+const { Token, TokenTypes } = require("../utils/Token")
 
 
 const routerAddr = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
@@ -43,7 +44,7 @@ const testERCPair = async (wallet, swapModule, eoa) => {
     let endWalletDAI = await getUserBalanceErc(wallet, DAI)
 
     const outDiff = parseFloat(endWalletDAI) - parseFloat(startWalletDAI);
-    logPairing(amount, outDiff, "USDC", "DAI")
+    logPairing(amount, outDiff, "USDC", "DAI");
 }
 
 
@@ -51,16 +52,19 @@ const testERCPair = async (wallet, swapModule, eoa) => {
 const testEthSwap = async (wallet, swapModule, eoa) => {
     logTest("ETH SWAP: ETH=>WETH=>DAI")
     // await transferAmt(eoa, wallet.address, amount)
+    const DAI = await Token.createFrom("0x6B175474E89094C44Da98b954EedeAC495271d0F")
 
-    const startWalletDAI = await getUserBalanceErc(wallet, DAI)
+    const startWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
-    const tx = await swapModule.createSwap(DAI, amount)
+    const tx = await swapModule.createSwap("eth", DAI, amount)
     const execReceipt = await wallet.deployTx(tx)
 
-    const endWalletDAI = await getUserBalanceErc(wallet, DAI)
+    const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
     const outDiff = parseFloat(endWalletDAI) - parseFloat(startWalletDAI);
     logPairing(amount, outDiff, "ETH", "DAI")
+    console.log("Wallet Eth Balance: ", await getBalance(wallet))
+
 
 }
 
@@ -94,7 +98,7 @@ const main = async () => {
     await wallet.addModule(swapModule)
     await wallet.deploy()
 
-    await testERCPair(wallet, swapModule, eoa)
+    // await testERCPair(wallet, swapModule, eoa)
     await testEthSwap(wallet, swapModule, eoa)
 }
 

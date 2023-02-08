@@ -35,6 +35,9 @@ class Token {
     }
 
     async getAddress() {
+        if (this.address) {
+            return this.address;
+        }
         if (this.type == TokenTypes.ETH) {
             return tokens[this.chain].weth
         }
@@ -57,6 +60,9 @@ class Token {
     }
 
     static async handleStringArgs(data) {
+        if (data == "eth") {
+            return new Token({ type: TokenTypes.ETH })
+        }
         if (ethers.utils.isAddress(data)) {
             return new Token({ address: data })
         }
@@ -115,6 +121,11 @@ class Token {
                 throw Error("data is not a token")
             }
         }
+    }
+
+    static async getAddressFrom(data) {
+        const { address } = await this.createFrom(data)
+        return address
     }
 }
 
