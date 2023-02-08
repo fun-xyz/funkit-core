@@ -31,7 +31,7 @@ class FunWallet extends ContractsHolder {
         * 
     */
 
-    constructor(config) {
+    constructor(config, index = 0, userId = "fun") {
         super()
         this.addVarsToAttributes({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, userId)
