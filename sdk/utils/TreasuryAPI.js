@@ -69,6 +69,7 @@ class SimpleAccountAPI {
             this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, this.verificationAddress, await this.owner.getAddress(), this.index])
         ]);
     }
+
     async getNonce() {
         return ethers_1.BigNumber.from(parseInt(Math.random() * 2 ** 30));
     }
@@ -204,6 +205,7 @@ class SimpleAccountAPI {
         }
         return this.senderAddress;
     }
+
     async estimateCreationGas(initCode) {
         if (initCode == null || initCode === '0x')
             return 0;

@@ -12,7 +12,7 @@ const ERCToken = require('../utils/abis/ERC20.json');
 const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
 const { DataServer } = require('../utils/DataServer')
-const { BundlerInstance } = require("../utils/BundlerInstance")
+const { OnChainResources } = require("../utils/OnChainResources")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
 const abi = ethers.utils.defaultAbiCoder;
@@ -31,7 +31,7 @@ class FunWallet extends ContractsHolder {
         * 
     */
 
-    constructor(config, index = 0, userId = "fun") {
+    constructor(config) {
         super()
         this.addVarsToAttributes({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, userId)
@@ -80,7 +80,7 @@ class FunWallet extends ContractsHolder {
 
 
 
-        const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
+        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
 
         this.bundlerClient = bundlerClient
         this.provider = provider
@@ -106,17 +106,16 @@ class FunWallet extends ContractsHolder {
         return new Transaction({ op }, true)
     }
 
-    // Deprecated for Module.getRequiredPreTxs()
-    // async deployTokenApproval(aTokenAddress, amount) {
-    // }
 
-    /**
-    * Deploys a wallet to chain that can initiate aave liquidation
-    * @return {receipt, executionHash} 
-    * receipt - receipt of transaction committed to chain.
-    * executionHash - string hash of the UserOperation 
-    */
+    // INTERNAL DEPLOY
+    async deployActionTx(transaction) {
+        const { op } = transaction.data
+        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
+        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
+        return { userOpHash, txid }
+    }
 
+    // EXTERNAL DEPLOY
     async deploy() {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
@@ -157,9 +156,11 @@ class FunWallet extends ContractsHolder {
     }
 
     async deployTxs(txs) {
+        const receipts = []
         for (let transaction of txs) {
-            console.log("receipt", await this.deployTx(transaction))
+            receipts.push(await this.deployTx(transaction))
         }
+        return receipts
     }
 
     // STATIC METHODS
@@ -176,7 +177,7 @@ class FunWallet extends ContractsHolder {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
         } = chainInfo
-        const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
+        const { bundlerClient, accountApi } = await OnChainResources.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         await dataServer.storeUserOp(op, 'deploy_action')
@@ -195,10 +196,13 @@ class FunWallet extends ContractsHolder {
     }
 
     static async deployTxs(txs) {
+        const receipts = []
         for (let transaction of txs) {
-            console.log("receipt", await this.deployTx(transaction))
+            receipts.push(await this.deployTx(transaction))
         }
+        return receipts
     }
+
 
 }
 

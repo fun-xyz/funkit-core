@@ -45,8 +45,30 @@ const timeout = async (ms) => {
     })
 }
 
-const setupHardhatFork = () => {
+const fs = require("fs");
+const { generateSha256 } = require("./tools");
 
+const loadAbis = () => {
+    const entryPointPath = "../../../fun-wallet-smart-contract/artifacts/contracts/eip-4337/EntryPoint.sol/EntryPoint.json"
+    const authContractPath = "../../../fun-wallet-smart-contract/artifacts/contracts/validations/UserAuthentication.sol/UserAuthentication.json"
+    const approveAndSwapPath = "../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
+    const factoryPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWalletFactory.sol/FunWalletFactory.json"
+    const walletPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWallet.sol/FunWallet.json"
+    const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath,]
+    abis.forEach(moveFile)
+}
+
+
+
+const moveFile = (path) => {
+    const dirs = Array.from(path.split("/"))
+    const fileName = dirs.at(-1)
+    const newPath = `../utils/abis/${fileName}`
+    const data = require(newPath)
+    const fileHash = generateSha256(data.bytecode)
+    if (data.fileHash != fileHash) {
+        fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
+    }
 }
 
 
