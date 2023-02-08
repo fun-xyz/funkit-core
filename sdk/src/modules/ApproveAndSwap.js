@@ -1,11 +1,14 @@
 const ethers = require('ethers')
 const { Module } = require("./Module")
+
 const { swapExec } = require('../../utils/SwapUtils');
 const { Token, TokenTypes } = require('../../utils/Token');
 
 // const ApproveAndSwapObj = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 
-const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json")
+const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
+const { Token } = require('../../utils/Token');
+
 
 
 class ApproveAndSwap extends Module {

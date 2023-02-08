@@ -22,6 +22,9 @@ const amount = 4
 const privKey = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
+const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+
 const getBalance = async (wallet) => {
     const balance = await wallet.provider.getBalance(wallet.address);
     return ethers.utils.formatUnits(balance, 18)
