@@ -1,6 +1,4 @@
 const fetch = require("node-fetch")
-const { wrapProvider } = require("../utils/Provider")
-const { TreasuryAPI } = require("../utils/TreasuryAPI")
 const { generateSha256 } = require("../utils/tools")
 const { ContractsHolder } = require("../utils/ContractsHolder")
 
@@ -9,7 +7,7 @@ const ethers = require('ethers')
 
 const Action = require("../utils/abis/Action.json")
 const ERCToken = require('../utils/abis/ERC20.json');
-const Treasury = require("../utils/abis/Treasury.json")
+
 
 const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
@@ -39,10 +37,13 @@ class FunWallet extends ContractsHolder {
         this.dataServer = new DataServer(config.apiKey, userId)
     }
 
+
     async addModule(module, salt = 0) {
-        let action =await module.create()
-        this.actionsStore[generateSha256(action)] = { ...action, salt };
-        return { ...action, salt }
+        let action = await module.create()
+        let data = { ...action, salt }
+        this.actionsStore[generateSha256(data)] = data;
+        module.innerAddData(this)
+        return data
     }
 
     addVarsToAttributes(vars) {
@@ -62,48 +63,39 @@ class FunWallet extends ContractsHolder {
         if (this.address) {
             return
         }
-        let chainInfo = await DataServer.getChainInfo(this.chain)
 
-        const {
-            rpcdata: { bundlerUrl, rpcurl },
-            aaData: { entryPointAddress, factoryAddress },
-            actionData: {
-                aave: AaveWithdrawalAddress,
-                aaveSupply: AaveSupplyAddress,
-            }
-        } = chainInfo
+        // let chainInfo = await TranslationServer.getChainInfo(this.chain)
+        // const {
+        //     rpcdata: { rpcurl },
+        //     aaData: { entryPointAddress, factoryAddress },
+        // } = chainInfo
+
+        const bundlerUrl = "http://localhost:3000/rpc"
+        const rpcurl = "http://127.0.0.1:8545/"
+
+        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
+
+        const verificationAddr = "0x73C68f1f41e4890D06Ba3e71b9E9DfA555f1fb46"
+        const factoryAddress = "0xD2D5e508C82EFc205cAFA4Ad969a4395Babce026"
 
 
-        const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
+        const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
 
-        this.addVarsToAttributes({
-            AaveWithdrawalAddress,
-            AaveSupplyAddress,
-            bundlerClient,
-            provider,
-            accountApi,
-        })
+        this.bundlerClient = bundlerClient
+        this.provider = provider
+        this.accountApi = accountApi
 
         this.address = await this.accountApi.getAccountAddress()
         this.eoaAddr = await this.eoa.getAddress()
 
-        this.addContract(this.address, Treasury.abi)
+        const walletContract = await this.accountApi.getAccountContract()
+
+        this.addEthersContract(this.address, walletContract)
 
         if (this.prefundAmt) {
             return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
         }
     }
-
-    async _createWalletInitData({ type, params }) {
-        switch (type) {
-            case "AAVE": {
-                return await this._createAAVEWithdrawal(params)
-            }
-
-        }
-    }
-
-
 
 
     async _createAAVEWithdrawal(params) {
@@ -128,6 +120,7 @@ class FunWallet extends ContractsHolder {
             }
         }
     }
+    
     async _createTokenTransferExect({ params }) {
 
         const tokenAddr = params[2]
@@ -142,6 +135,13 @@ class FunWallet extends ContractsHolder {
         }
         return new Transaction(data, true)
     }
+
+
+    async createAction({ to, data }) {
+        const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
+        return new Transaction({ op }, true)
+    }
+
 
 
     /**
@@ -188,26 +188,24 @@ class FunWallet extends ContractsHolder {
 
     async deploy() {
         await this.init()
-
-        const actionCreateData = { to: [], data: [] }
-
-        let balance = await Promise.all(Object.values(this.actionsStore).map(async (actionData) => {
-            if (actionData.noInit) {
-                return
+        const actionCreateData = { dests: [], values: [], data: [] }
+        let balance = Object.values(this.actionsStore).map((actionData) => {
+            if (actionData.to) {
+                const { to, value, data } = actionData
+                actionCreateData.dests.push(to)
+                actionCreateData.values.push(value ? value : 0)
+                actionCreateData.data.push(data)
             }
-            const { actionInitData, balance } = await this._createWalletInitData(actionData)
-            const { to, data } = actionInitData
-            actionCreateData.to.push(to)
-            actionCreateData.data.push(data)
-            return balance
-        }))
+            if (actionData.balance) return actionData.balance;
+        })
 
-        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatch", [actionCreateData.to, actionCreateData.data])
-        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000)
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
         const receipt = await this.deployActionTx({ data: { op } })
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
         return { receipt, address: this.address }
     }
+
 
     async deployActionTx(transaction) {
         const { op } = transaction.data
@@ -219,7 +217,7 @@ class FunWallet extends ContractsHolder {
 
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            return await FunWallet.deployActionTx(transaction, this.apiKey)
+            return await this.deployActionTx(transaction, this.apiKey)
         }
         else {
             const tx = await this.eoa.sendTransaction(transaction.data)

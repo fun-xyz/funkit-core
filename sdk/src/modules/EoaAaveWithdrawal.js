@@ -5,7 +5,7 @@ const { Transaction } = require("../../utils/Transaction")
 
 const ERC20 = require('../../utils/abis/ERC20.json')
 
-class EOAaveWithdrawal {
+class EoaAaveWithdrawal {
     constructor(aTokenAddress, chainId, amount = ethers.constants.MaxInt256,) {
         this.aTokenAddress = aTokenAddress
         this.amount = amount
@@ -13,6 +13,7 @@ class EOAaveWithdrawal {
         const eoa = ethers.Wallet.createRandom()
         this.contract = createWrappedContract(aTokenAddress, ERC20.abi, eoa, {}, chainId)
     }
+    
     create(...params) {
         params.push(this.aTokenAddress)
         return {
@@ -45,4 +46,4 @@ class EOAaveWithdrawal {
 }
 
 
-module.exports = { EOAaveWithdrawal }
+module.exports = { EoaAaveWithdrawal }
