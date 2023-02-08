@@ -2,8 +2,8 @@ const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
 const ethers = require("ethers")
 
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
-
-class TranslationServer {
+// const APIURL = 'http://localhost:3000'
+class DataServer {
     constructor(apiKey = "", user = "") {
         this.apiKey = apiKey
         this.user = user
@@ -48,6 +48,15 @@ class TranslationServer {
         })
     }
 
+    static async getTokenInfo(symbol) {
+        const body = {
+            symbol
+        }
+        return await this.sendPostRequest("get-erc-token", body).then(r => {
+            return r.data
+        })
+    }
+
     async sendPostRequest(endpoint, body) {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", this.apiKey, body)
     }
@@ -65,4 +74,4 @@ class TranslationServer {
 }
 
 
-module.exports = { TranslationServer }
+module.exports = { DataServer }

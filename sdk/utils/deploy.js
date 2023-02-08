@@ -27,8 +27,8 @@ const deployAuthContract = (signer) => {
 }
 
 
-const approveAndSwap = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
-// const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
+// const approveAndSwap = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
+const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
 const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap, [WETH_MAINNET])
 }
@@ -170,8 +170,8 @@ const baseAmt = 10
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
     const wallet = new ethers.Wallet(pkey, provider)
-    await generalDeployment(wallet)
-
+    // await generalDeployment(wallet)
+    await loadNetwork(wallet, addrs, baseAmt)
 }
 
 if (typeof require !== 'undefined' && require.main === module) {

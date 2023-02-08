@@ -1,8 +1,9 @@
 const { FunWallet, AccessControlSchema } = require("../index")
-const {  ApproveAndSwap } = require("../modules")
+const { ApproveAndSwap } = require("../modules")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
-const { TranslationServer } = require('../utils/TranslationServer')
+const chain = '43113' //avax fuji 
+const { DataServer } = require('../utils/DataServer')
 
 const USDC_MUMBAI = "0x7EA2be2df7BA6E54B1A9C70676f668455E329d29"
 const DAI_MUMBAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
@@ -14,7 +15,6 @@ const USDT_MAINNET = "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832"
 
 
 
-const chain = "31337"
 
 const main = async (config, rpcurl) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)

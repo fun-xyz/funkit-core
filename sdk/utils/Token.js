@@ -1,4 +1,7 @@
+const ethers = require("ethers")
 const { Enum } = require('./Enum');
+const { DataServer } = require("./DataServer")
+
 
 const TokenTypesData = [
     "ETH",
@@ -16,8 +19,10 @@ const tokens = {
     }
 
 }
+const defaultChain = "1"
 
 class Token {
+
     constructor(config) {
         if (config.type && !TokenTypesData[config.type]) {
             throw Error("Type is not a token");
@@ -26,10 +31,13 @@ class Token {
         this.type = config.type
         this.address = config.address
         this.name = config.name
-        this.chain = config.chain
+        this.chain = config.chain ? config.chain : "1"
     }
 
     async getAddress() {
+        if (this.address) {
+            return this.address;
+        }
         if (this.type == TokenTypes.ETH) {
             return tokens[this.chain].weth
         }
@@ -39,20 +47,85 @@ class Token {
         }
     }
 
+    static async callServerForKeyCheck(data) {
+        if (!data) {
+            return false
+        }
+        let info = await DataServer.getTokenInfo(data.toLowerCase())
+        let outAddress = info[0].detail_platforms.ethereum
+        if (outAddress) {
+            return new Token({ address: outAddress.contract_address });
+        }
+        return false
+    }
+
+    static async handleStringArgs(data) {
+        if (data == "eth") {
+            return new Token({ type: TokenTypes.ETH })
+        }
+        if (ethers.utils.isAddress(data)) {
+            return new Token({ address: data })
+        }
+        let serverToken = await this.callServerForKeyCheck(data)
+        if (serverToken != false) {
+            return serverToken
+        }
+        throw Error("token does not exist")
+    }
+
+    static async handleObjectArgs(data) {
+        const { type, address, name, chain } = data
+
+        if (type == TokenTypes.ETH) {
+            if (ethers.utils.isAddress(address)) {
+                return new Token(data)
+            }
+            if (!chain) {
+                throw Error("Chain does not exist")
+            }
+
+            if (!(tokens[chain] && tokens[chain].weth)) {
+                throw Error("Weth address does not stored on chain: ", chain)
+            }
+
+            const wethAddress = tokens[chain].weth;
+            return new Token({ ...data, address: wethAddress, })
+        }
+
+        let serverData;
+
+        serverData = await this.callServerForKeyCheck(name)
+
+        if (serverData != false) {
+            return serverData
+        }
+
+        if (!address) {
+            throw Error("Token does not exist.")
+        }
+        if (!ethers.utils.isAddress(address)) {
+            throw Error("incorrect address formatting")
+        }
+        return new Token(data);
+    }
+
     static async createFrom(data) {
         switch (typeof data) {
             case "string": {
-                // makeSureAddress(data)
-                // checkIfKey(data)
-                throw Error("data can not be formed into a token")
+                return await this.handleStringArgs(data)
             }
             case "object": {
-                if (data.address) { }
+                return await this.handleObjectArgs(data)
             }
             default: {
                 throw Error("data is not a token")
             }
         }
+    }
+
+    static async getAddressFrom(data) {
+        const { address } = await this.createFrom(data)
+        return address
     }
 }
 
@@ -77,3 +150,5 @@ module.exports = {
     TokenTypes,
     defaults,
 }
+
+

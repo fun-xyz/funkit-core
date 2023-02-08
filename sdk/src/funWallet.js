@@ -11,30 +11,32 @@ const ERCToken = require('../utils/abis/ERC20.json');
 
 const BundlerTools = require('../utils/actionUtils')
 const EOATools = require('../utils/eoaUtils')
-const { TranslationServer } = require('../utils/TranslationServer')
+const { DataServer } = require('../utils/DataServer')
 const { BundlerInstance } = require("../utils/BundlerInstance")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
 const abi = ethers.utils.defaultAbiCoder;
-const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+// const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+const MAX_INT = ethers.constants.MaxUint256._hex
 
 class FunWallet extends ContractsHolder {
-    /**
-    * Standard constructor
-    * @params eoa, preFundAmt, index
-    * eoa - ethers.Wallet object
-    * preFundAmt - amount to prefund the wallet with, in eth/avax
-    * index - index of account (default 0)
-    */
 
     actionsStore = {}
+    /**
+        * Standard constructor
+        * @params config, index, userId
+        * config - FunWalletConfig (see /utils/configs/walletConfigs
+        * index - index of account (default 0)
+        * userId - id of organization operating wallet
+        * 
+    */
 
     constructor(config, index = 0, userId = "fun") {
         super()
         this.addVarsToAttributes({ ...config, index })
-        this.translationServer = new TranslationServer(config.apiKey, userId)
-
+        this.dataServer = new DataServer(config.apiKey, userId)
     }
+
 
     async addModule(module, salt = 0) {
         let action = await module.create()
@@ -55,13 +57,6 @@ class FunWallet extends ContractsHolder {
      * The function acts as a constructor for many parameters in the class, creating
      * an abstracted wallet account, with the correct providers and rpc client. 
      * It also prefunds the account with the amount of eth/avax desired.
-     * 
-     * USER SIGNATURE REQUIRED to fund wallet
-     * 
-     * @params eoa, preFundAmt, index
-     * eoa - ethers.Wallet object (user's eoa account)
-     * preFundAmt - amount to prefund the wallet with, in eth/avax
-     * index - index of account (default 0)
      */
 
     async init() {
@@ -69,19 +64,20 @@ class FunWallet extends ContractsHolder {
             return
         }
 
-        // let chainInfo = await TranslationServer.getChainInfo(this.chain)
+        // let chainInfo = await DataServer.getChainInfo(this.chain)
+        // console.log(chainInfo)
         // const {
-        //     rpcdata: { rpcurl },
+        //     rpcdata: { rpcurl, bundlerUrl},
         //     aaData: { entryPointAddress, factoryAddress },
         // } = chainInfo
 
         const bundlerUrl = "http://localhost:3000/rpc"
         const rpcurl = "http://127.0.0.1:8545/"
 
-        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
+        const entryPointAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
+        const verificationAddr = "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf"
+        const factoryAddress = "0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720"
 
-        const verificationAddr = "0x73C68f1f41e4890D06Ba3e71b9E9DfA555f1fb46"
-        const factoryAddress = "0xD2D5e508C82EFc205cAFA4Ad969a4395Babce026"
 
 
         const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
@@ -102,69 +98,12 @@ class FunWallet extends ContractsHolder {
         }
     }
 
-    async _createWalletInitData({ type, params }) {
-        switch (type) {
-            case "AAVE": {
-                return await this._createAAVEWithdrawal(params)
-            }
-            default: {
-                return { actionInitData: {}, balance: 0 }
-            }
-        }
-    }
 
-    async _createAAVEWithdrawal(params) {
-        this.params = params
-        const tokenAddr = this.params[0]
-        this.addContract(this.AaveWithdrawalAddress, Action.abi)
-        this.addContract(tokenAddr, ERCToken.abi)
-        const input = [this.eoaAddr, tokenAddr]
-        const key = generateSha256(input)
-        const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
-        const actionInitData = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("init", [aaveData])
-        const balance = await this.contracts[tokenAddr].callMethod("balanceOf", [this.eoaAddr])
-        return { actionInitData, balance }
-    }
 
-    async createModuleExecutionTx(action) {
-        return this._createAAVEWithdrawalExec(action)
-    }
 
     async createAction({ to, data }) {
         const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
         return new Transaction({ op }, true)
-    }
-
-
-
-    /**
-      * Liquidates one's aave position
-      * @params opHash - execution hash from deploying the wallet
-      * @return {receipt, executionHash} 
-      * userOpHash - string hash of the UserOperation 
-      * txid - transaction id of transfer of assets
-      */
-
-    async _createAAVEWithdrawalExec({ params }) {
-        this.addContract(this.AaveWithdrawalAddress, Action.abi)
-
-        this.params = params
-        const tokenAddr = this.params[0]
-        const input = [this.eoaAddr, tokenAddr]
-        const key = generateSha256(input)
-
-        const aaveexec = abi.encode(["string"], [key])
-        const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-
-        await this.translationServer.storeUserOp(actionExecutionOp, 'create_action')
-
-        const data = {
-            op: actionExecutionOp,
-            user: this.translationServer.user,
-            chain: this.chain
-        }
-        return new Transaction(data, true)
     }
 
     // Deprecated for Module.getRequiredPreTxs()
@@ -182,19 +121,19 @@ class FunWallet extends ContractsHolder {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
         let balance = Object.values(this.actionsStore).map((actionData) => {
-            if (actionData.to) {
-                const { to, value, data } = actionData
+            const { to, value, data, balance } = actionData
+            if (to) {
                 actionCreateData.dests.push(to)
                 actionCreateData.values.push(value ? value : 0)
                 actionCreateData.data.push(data)
             }
-            if (actionData.balance) return actionData.balance;
+            if (balance) return balance;
         })
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
         const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
         const receipt = await this.deployActionTx({ data: { op } })
-        await this.translationServer.storeUserOp(op, 'deploy_wallet', balance)
+        await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
         return { receipt, address: this.address }
     }
 
@@ -231,17 +170,16 @@ class FunWallet extends ContractsHolder {
             return
         }
         const { op, user, chain } = transaction.data
-        const translationServer = new TranslationServer(apikey, user)
-        let chainInfo = await TranslationServer.getChainInfo(chain)
+        const dataServer = new DataServer(apikey, user)
+        let chainInfo = await DataServer.getChainInfo(chain)
         const {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
         } = chainInfo
-
         const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
-        await translationServer.storeUserOp(op, 'deploy_action')
+        await dataServer.storeUserOp(op, 'deploy_action')
         return { userOpHash, txid }
     }
 

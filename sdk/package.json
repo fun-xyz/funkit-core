@@ -4,6 +4,8 @@
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
   "scripts": {
+    "test-aaveWithdrawal": "node test/TestAAVEPosition.js",
+    "test-transferToken": "node test/TestTokenTransfer.js",
     "test": "node test/TestGeneral.js",
     "unit-tests": "mocha --timeout 50000"
   },
