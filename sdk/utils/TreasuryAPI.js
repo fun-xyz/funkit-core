@@ -42,6 +42,7 @@ class SimpleAccountAPI {
 
 
     }
+
     async _getAccountContract() {
         if (this.accountContract == null) {
             this.accountContract = new ethers_1.Contract(await this.getAccountAddress(), TreasurySRC.abi, this.provider);
@@ -67,6 +68,7 @@ class SimpleAccountAPI {
             this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
         ]);
     }
+
     async getNonce() {
         return ethers_1.BigNumber.from(parseInt(Math.random() * 2 ** 30));
     }
@@ -202,6 +204,7 @@ class SimpleAccountAPI {
         }
         return this.senderAddress;
     }
+    
     async estimateCreationGas(initCode) {
         if (initCode == null || initCode === '0x')
             return 0;

@@ -9,12 +9,13 @@ class TestAaveConfig {
 }
 
 class FunWalletConfig {
-    constructor(eoa, prefundAmt, chain, apiKey) {
+    constructor(eoa, chain, apiKey, prefundAmt, userId = "fun", index = 0) {
         this.eoa = eoa
-        // this.schema = schema
         this.prefundAmt = prefundAmt
         this.chain = chain
         this.apiKey = apiKey
+        this.userId = userId
+        this.index = index
     }
 
 }

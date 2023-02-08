@@ -10,17 +10,6 @@ async function createTransactionAction(accountApi, { to, data }, gasLimit = 0, n
     const op = await accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
     return new Transaction({ op }, true)
 }
-// async function createAllActionTx() {
-//     return await Promise.all(Object.values(this.actionStore).map((action) => {
-//         return this.createAAVEWithdrawalExec(action)
-//     }))
-// }
-// async function createActionTxs(actions) {
-//     return await Promise.all(actions.map((action) => {
-//         return this.createAAVEWithdrawalExec(action)
-//     }))
-// }
-
 
 
 /**
