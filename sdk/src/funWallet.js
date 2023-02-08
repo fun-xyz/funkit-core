@@ -39,8 +39,8 @@ class FunWallet extends ContractsHolder {
         this.dataServer = new DataServer(config.apiKey, userId)
     }
 
-    addModule(module, salt = 0) {
-        let action = module.create()
+    async addModule(module, salt = 0) {
+        let action =await module.create()
         this.actionsStore[generateSha256(action)] = { ...action, salt };
         return { ...action, salt }
     }
@@ -72,6 +72,7 @@ class FunWallet extends ContractsHolder {
                 aaveSupply: AaveSupplyAddress,
             }
         } = chainInfo
+
 
         const { bundlerClient, provider, accountApi } = await BundlerInstance.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, this.eoa, this.index)
 
@@ -246,7 +247,6 @@ class FunWallet extends ContractsHolder {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
         } = chainInfo
-
         const { bundlerClient, accountApi } = await BundlerInstance.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)

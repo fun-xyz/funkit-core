@@ -2,7 +2,7 @@ const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
 const ethers = require("ethers")
 
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
-
+// const APIURL = 'http://localhost:3000'
 class DataServer {
     constructor(apiKey = "", user = "") {
         this.apiKey = apiKey
@@ -45,6 +45,15 @@ class DataServer {
         return await this.sendPostRequest("save-evm-receipt", body).then(r => {
             console.log(r.message + " type: evm_receipt")
             return r
+        })
+    }
+
+    static async getTokenInfo(symbol) {
+        const body = {
+            symbol
+        }
+        return await this.sendPostRequest("get-erc-token", body).then(r => {
+            return r.data
         })
     }
 

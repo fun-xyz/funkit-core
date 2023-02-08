@@ -25,8 +25,8 @@ const main = async (config, rpcurl) => {
     const wallet = new FunWallet(walletConfig)
 
     const to='0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e'
-    const module = new TransferToken(to, '10000', config.aTokenAddress) //0x5425890298aed601595a70AB815c96711a31Bc65 1000000=1usdc
-    const action = wallet.addModule(module)
+    const module = new TransferToken(to, '10000', 'cvt') //0x5425890298aed601595a70AB815c96711a31Bc65 1000000=1usdc
+    const action = await wallet.addModule(module)
 
     // Deploy the FunWallet
     const deployWalletReceipt = await wallet.deploy()
