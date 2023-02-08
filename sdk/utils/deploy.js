@@ -172,6 +172,7 @@ const main = async () => {
     const wallet = new ethers.Wallet(pkey, provider)
     // await generalDeployment(wallet)
     await loadNetwork(wallet, addrs, baseAmt)
+    // await loadNetwork(wallet, addrs, baseAmt
 }
 
 if (typeof require !== 'undefined' && require.main === module) {

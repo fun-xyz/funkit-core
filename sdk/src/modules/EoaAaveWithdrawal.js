@@ -13,7 +13,7 @@ class EoaAaveWithdrawal {
         const eoa = ethers.Wallet.createRandom()
         this.contract = createWrappedContract(aTokenAddress, ERC20.abi, eoa, {}, chainId)
     }
-    
+
     create(...params) {
         params.push(this.aTokenAddress)
         return {
