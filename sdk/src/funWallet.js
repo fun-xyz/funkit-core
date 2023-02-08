@@ -98,82 +98,12 @@ class FunWallet extends ContractsHolder {
     }
 
 
-    async _createAAVEWithdrawal(params) {
-        const tokenAddr = params[0]
-        this.addContract(this.AaveWithdrawalAddress, Action.abi)
-        this.addContract(tokenAddr, ERCToken.abi)
-        const input = [this.eoaAddr, tokenAddr]
-        const key = generateSha256(input)
-        const aaveData = abi.encode(["address", "address", "string"], [...input, key]);
-        const actionInitData = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("init", [aaveData])
-        const balance = await this.contracts[tokenAddr].callMethod("balanceOf", [this.eoaAddr])
-        return { actionInitData, balance }
-    }
-
-    async createModuleExecutionTx(action) {
-        switch (action.type) {
-            case "AAVE": {
-                return await this._createAAVEWithdrawalExec(action)
-            }
-            case "TRANSFER": {
-                return await this._createTokenTransferExect(action)
-            }
-        }
-    }
-    
-    async _createTokenTransferExect({ params }) {
-
-        const tokenAddr = params[2]
-        this.addContract(tokenAddr, ERCToken.abi)
-        const actionExec = await this.contracts[tokenAddr].getMethodEncoding("transfer", [params[0], params[1]])
-        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-        await this.dataServer.storeUserOp(actionExecutionOp, 'create_action')
-        const data = {
-            op: actionExecutionOp,
-            user: this.dataServer.user,
-            chain: this.chain
-        }
-        return new Transaction(data, true)
-    }
 
 
     async createAction({ to, data }) {
         const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
         return new Transaction({ op }, true)
     }
-
-
-
-    /**
-      * Liquidates one's aave position
-      * @params opHash - execution hash from deploying the wallet
-      * @return {receipt, executionHash} 
-      * userOpHash - string hash of the UserOperation 
-      * txid - transaction id of transfer of assets
-      */
-
-    async _createAAVEWithdrawalExec({ params }) {
-        this.addContract(this.AaveWithdrawalAddress, Action.abi)
-
-        this.params = params
-        const tokenAddr = this.params[0]
-        const input = [this.eoaAddr, tokenAddr]
-        const key = generateSha256(input)
-
-        const aaveexec = abi.encode(["string"], [key])
-        const actionExec = await this.contracts[this.AaveWithdrawalAddress].getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-
-        await this.dataServer.storeUserOp(actionExecutionOp, 'create_action')
-
-        const data = {
-            op: actionExecutionOp,
-            user: this.dataServer.user,
-            chain: this.chain
-        }
-        return new Transaction(data, true)
-    }
-
 
     // Deprecated for Module.getRequiredPreTxs()
     // async deployTokenApproval(aTokenAddress, amount) {
@@ -190,13 +120,13 @@ class FunWallet extends ContractsHolder {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
         let balance = Object.values(this.actionsStore).map((actionData) => {
-            if (actionData.to) {
-                const { to, value, data } = actionData
+            const { to, value, data } = actionData
+            if (to) {
                 actionCreateData.dests.push(to)
                 actionCreateData.values.push(value ? value : 0)
                 actionCreateData.data.push(data)
             }
-            if (actionData.balance) return actionData.balance;
+            if (balance) return balance;
         })
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
