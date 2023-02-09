@@ -1,18 +1,20 @@
-const ethers = require("ethers")
-const { Module } = require('./Module')
-const { createWrappedContract } = require("../../utils/WrappedEthersContract")
 const { Transaction } = require("../../utils/Transaction")
+const { Module } = require('./Module')
+
+const { createWrappedContract } = require("../../utils/WrappedEthersContract")
+const { generateSha256 } = require("../../utils/tools")
+
 const Action = require("../../utils/abis/Action.json")
 const ERC20 = require('../../utils/abis/ERC20.json')
-const { generateSha256 } = require("../../utils/tools")
-const BundlerTools = require('../../utils/actionUtils')
-const abi = ethers.utils.defaultAbiCoder;
+const ethers = require("ethers")
+
+const ABI = ethers.utils.defaultAbiCoder;
+const EOA_AAVE_WITHDRAWAL_ADDR = "0x7127707D0515D465567A22A012a6740A3aA60501"
 
 class EoaAaveWithdrawal extends Module {
-    actionAddr = "0x7127707D0515D465567A22A012a6740A3aA60501"
 
     constructor(tokenAddress, chainId, amount = ethers.constants.MaxInt256,) {
-        super()
+        super(EOA_AAVE_WITHDRAWAL_ADDR)
         this.tokenAddress = tokenAddress
         this.amount = amount
         this.chainId = chainId
@@ -20,8 +22,6 @@ class EoaAaveWithdrawal extends Module {
         this.contract = createWrappedContract(tokenAddress, ERC20.abi, eoa, {}, chainId)
         //todo get action from translation server
     }
-
-
 
     async getPreExecTxs(wallet) {
         return [await this.deployTokenApproval(wallet.address, this.amount)]
@@ -33,29 +33,26 @@ class EoaAaveWithdrawal extends Module {
         return value.gte(ethers.BigNumber.from(this.amount))
     }
 
-
     /**
     * Grants approval to controller wallet to liquidate funds
     * @return {Transaction} 
     * Transaction - Transaction data
     */
-
     async deployTokenApproval(address, amt) {
         const { to, data } = await this.contract.getMethodEncoding("approve", [address, amt])
         return new Transaction({ to, data })
     }
 
-    async createWithdraw(params, wallet) {
-        return this.createExecAction(params, wallet)
+    async createWithdraw(wallet) {
+        return this.createExecAction(wallet)
     }
 
-    async createExecAction(params , wallet) {
-        
-        wallet.addContract(this.actionAddr, Action.abi)
+    async createExecAction(wallet) {        
+        wallet.addContract(EOA_AAVE_WITHDRAWAL_ADDR, Action.abi)
         const input = [wallet.eoaAddr, this.tokenAddress]
         const key = generateSha256(input)
-        const aaveexec = abi.encode(["string"], [key])
-        const actionExec = await wallet.contracts[this.actionAddr].getMethodEncoding("execute", [aaveexec])
+        const aaveexec = ABI.encode(["string"], [key])
+        const actionExec = await wallet.contracts[EOA_AAVE_WITHDRAWAL_ADDR].getMethodEncoding("execute", [aaveexec])
         const actionExecutionOp = await wallet.createAction(actionExec)
 
         return actionExecutionOp

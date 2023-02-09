@@ -1,12 +1,12 @@
-const OnChainResources = require("../utils/OnChainResources")
-const ContractsHolder = require("../utils/ContractsHolder")
-const BundlerTools = require('../utils/actionUtils')
-const Transaction = require("../utils/Transaction")
-const DataServer = require('../utils/DataServer')
-const EOATools = require('../utils/eoaUtils')
+const { OnChainResources } = require("../utils/OnChainResources")
+const { ContractsHolder } = require("../utils/ContractsHolder")
+const { Transaction } = require("../utils/Transaction")
+const { DataServer } = require('../utils/DataServer')
 
 const { generateSha256 } = require("../utils/tools")
 
+const BundlerTools = require('../utils/actionUtils')
+const EOATools = require('../utils/eoaUtils')
 
 class FunWallet extends ContractsHolder {
 
@@ -136,15 +136,15 @@ class FunWallet extends ContractsHolder {
 
         // OLD
 
-        // const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-        // const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
-        // const receipt = await this.deployActionTx({ data: { op } })
+        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
+        const receipt = await this.deployUserOperation({ data: { op } })
 
         // NEW
-        
-        const createWalletData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-        const op = await BundlerTools.createUserOperation(this.accountApi, createWalletData, 560000, false, true)
-        const receipt = await this.deployUserOperation({ data: { op } })
+
+        // const createWalletData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+        // const op = await BundlerTools.createUserOperation(this.accountApi, createWalletData, 560000, false, true)
+        // const receipt = await this.deployUserOperation({ data: { op } })
 
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
 

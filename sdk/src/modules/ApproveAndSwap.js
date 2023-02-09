@@ -1,22 +1,18 @@
 const ethers = require('ethers')
 const { Module } = require("./Module")
-
-const { swapExec } = require('../../utils/SwapUtils');
 const { Token, TokenTypes } = require('../../utils/Token');
 
-// const ApproveAndSwapObj = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
+const { swapExec } = require('../../utils/SwapUtils');
 
 const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
-
-
+const APROVE_AND_SWAP_ADDR = "0x7127707D0515D465567A22A012a6740A3aA60501"
 
 class ApproveAndSwap extends Module {
-    addr = "0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D"
 
     constructor(routerAddr) {
         super()
         this.routerAddr = routerAddr
-        this.actionContract = new ethers.Contract(this.addr, ApproveAndSwapObj.abi)
+        this.actionContract = new ethers.Contract(APROVE_AND_SWAP_ADDR, ApproveAndSwapObj.abi)
     }
 
     async _encodeERC20Swap(tokenInAddress, routerAddr, amount, data) {

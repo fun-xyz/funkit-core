@@ -5,9 +5,11 @@ const ethers = require("ethers")
 
 class Module {
 
-    wallet = {}
-
-    contract = new ethers.Contract(this.addr, ModuleObj.abi)
+    constructor(addr) {
+        this.contract = new ethers.Contract(addr, ModuleObj.abi)
+        this.wallet = {}
+        this.addr = addr
+    }
 
      /**
      * Generates and returns an ethers UnsignedTransaction representing a transaction call to the Module's init()
@@ -16,7 +18,8 @@ class Module {
      * @returns ethers UnsignedTransaction
      */
     async encodeInitCall() {
-        return this.contract.populateTransaction.init(ethers.constants.HashZero)
+        let contract = new ethers.Contract(this.addr, ModuleObj.abi)
+        return contract.populateTransaction.init(ethers.constants.HashZero)
     }
 
     /**
