@@ -1,7 +1,7 @@
 const { FunWallet, AccessControlSchema } = require("../index")
 const { ApproveAndSwap } = require("../modules")
 const ethers = require('ethers')
-const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
+const { WalletWithPaymasterConfig } = require("../utils/configs/walletConfigs")
 
 const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, } = require("../utils/deploy")
 
@@ -60,6 +60,7 @@ const testEthSwap = async (wallet, swapModule, eoa) => {
     const startWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
     const tx = await swapModule.createSwap("eth", DAI, amount)
+    console.log(tx)
     const execReceipt = await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)
@@ -83,11 +84,12 @@ const main = async () => {
     const eoa = new ethers.Wallet(privKey, provider)
     const funder = new ethers.Wallet(pkey, provider)
 
-    const walletConfig = new FunWalletConfig(eoa, prefundAmt, chain, APIKEY)
+    const paymasterAddr = ""
+
+    const walletConfig = new WalletWithPaymasterConfig(paymasterAddr, eoa, prefundAmt, chain, APIKEY)
     const wallet = new FunWallet(walletConfig)
 
     await wallet.init()
-
 
 
     console.log("wallet balance: ", await getBalance(wallet))

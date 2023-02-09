@@ -27,7 +27,7 @@ const deployAuthContract = (signer) => {
 }
 
 
-// const approveAndSwap = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
+// const approveAndSwap = require("modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
 const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap, [WETH_MAINNET])
@@ -48,13 +48,16 @@ const timeout = async (ms) => {
 const fs = require("fs");
 const { generateSha256 } = require("./tools");
 
+const basePath = "../../../fun-wallet-smart-contract/artifacts/contracts/"
+
 const loadAbis = () => {
-    const entryPointPath = "../../../fun-wallet-smart-contract/artifacts/contracts/eip-4337/EntryPoint.sol/EntryPoint.json"
-    const authContractPath = "../../../fun-wallet-smart-contract/artifacts/contracts/validations/UserAuthentication.sol/UserAuthentication.json"
-    const approveAndSwapPath = "../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
-    const factoryPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWalletFactory.sol/FunWalletFactory.json"
-    const walletPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWallet.sol/FunWallet.json"
-    const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath,]
+    const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
+    const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"
+    const approveAndSwapPath = "modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
+    const factoryPath = "FunWalletFactory.sol/FunWalletFactory.json"
+    const walletPath = "FunWallet.sol/FunWallet.json"
+    const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
+    const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath]
     abis.forEach(moveFile)
 }
 
@@ -64,11 +67,14 @@ const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
     const newPath = `../utils/abis/${fileName}`
-    const data = require(newPath)
+    const data = require(basePath + path)
+    const olddata = require(newPath)
     const fileHash = generateSha256(data.bytecode)
-    if (data.fileHash != fileHash) {
-        fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
+    if (olddata.fileHash == fileHash) {
+        return;
     }
+
+    fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
 }
 
 
@@ -117,6 +123,7 @@ const createSigner = async (address) => {
     return impersonatedSigner = await ethers.getSigner(address);
 }
 
+const hreProvider = hre.network.provider
 const execTest = async (addrs, func) => {
     const provider = new ethers.providers.Web3Provider(hreProvider)
     const signers = await Promise.all(addrs.map((addr) => {
@@ -129,12 +136,8 @@ const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 
 
-// const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-const rpcUrl = "http://127.0.0.1:8545"
 
 
-const hreProvider = hre.network.provider
-const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 // const pkey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 // const provider = new ethers.providers.Web3Provider(hreProvider)
 // const signer = await createSigner("0x1B7BAa734C00298b9429b518D621753Bb0f6efF2")
@@ -189,16 +192,27 @@ const loadNetwork = async (wallet, addrs, amt) => {
 const addrs = ["0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6", "0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e"]
 const baseAmt = 10
 
+const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+// const rpcUrl = "http://127.0.0.1:8545"
+const pkey = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+// const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+// await loadNetwork(wallet, addrs, baseAmt)
+
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
     const wallet = new ethers.Wallet(pkey, provider)
-    // await generalDeployment(wallet)
-    await loadNetwork(wallet, addrs, baseAmt)
-    // await loadNetwork(wallet, addrs, baseAmt
+
+
+    const factoryAddress = await deployFactory(wallet)
+    console.log(`const factoryAddress = "${factoryAddress}"`)
+    await timeout(1000)
+
+
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
     main()
+    // loadAbis()
 }
 
 

@@ -3,10 +3,8 @@ const ethers_1 = require("ethers");
 
 const utils_1 = require("ethers/lib/utils");
 
-const TreasurySRC = require("../utils/abis/FunWallet.json")
-const factory = require("../utils/abis/FunWalletFactory.json")
-
-
+const TreasurySRC = require("./abis/FunWallet.json")
+const factory = require("./abis/FunWalletFactory.json")
 
 var _abi = factory.abi
 
@@ -16,7 +14,6 @@ const utils_2 = require("@account-abstraction/utils");
 const calcPreVerificationGas_1 = require("./tools");
 
 
-
 /**
  * An implementation of the BaseAccountAPI using the SimpleAccount contract.
  * - contract deployer gets "entrypoint", "owner" addresses and "index" nonce
@@ -24,7 +21,8 @@ const calcPreVerificationGas_1 = require("./tools");
  * - nonce method is "nonce()"
  * - execute method is "execFromEntryPoint()"
  */
-class SimpleAccountAPI {
+
+class FunWalletDataProvider {
     constructor(params) {
         var _a;
         this.factoryAddress = params.factoryAddress;
@@ -297,4 +295,4 @@ class SimpleAccountAPI {
         return null;
     }
 }
-exports.TreasuryAPI = SimpleAccountAPI;
+module.exports = { FunWalletDataProvider };

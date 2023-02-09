@@ -1,7 +1,6 @@
 const fetch = require("node-fetch")
 const { generateSha256 } = require("../utils/tools")
 const { ContractsHolder } = require("../utils/ContractsHolder")
-
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 const ethers = require('ethers')
 
@@ -15,6 +14,7 @@ const { DataServer } = require('../utils/DataServer')
 const { OnChainResources } = require("../utils/OnChainResources")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
+const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 const abi = ethers.utils.defaultAbiCoder;
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 const MAX_INT = ethers.constants.MaxUint256._hex
@@ -35,6 +35,10 @@ class FunWallet extends ContractsHolder {
         super()
         this.addVarsToAttributes({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, userId)
+        if (config.paymaster) {
+            this.paymaster = config.paymaster
+        }
+
     }
 
 
@@ -78,9 +82,7 @@ class FunWallet extends ContractsHolder {
         const verificationAddr = "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf"
         const factoryAddress = "0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720"
 
-
-
-        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
+        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.paymaster, this.eoa, this.index)
 
         this.bundlerClient = bundlerClient
         this.provider = provider
@@ -92,20 +94,15 @@ class FunWallet extends ContractsHolder {
         const walletContract = await this.accountApi.getAccountContract()
 
         this.addEthersContract(this.address, walletContract)
-
         if (this.prefundAmt) {
             return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
         }
     }
 
-
-
-
     async createAction({ to, data }) {
         const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
         return new Transaction({ op }, true)
     }
-
 
     // INTERNAL DEPLOY
     async deployActionTx(transaction) {

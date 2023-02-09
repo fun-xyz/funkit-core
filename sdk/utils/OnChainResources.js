@@ -1,19 +1,20 @@
 const ethers = require('ethers')
 const { wrapProvider } = require("./Provider")
-const { TreasuryAPI } = require("./TreasuryAPI")
+const { FunWalletDataProvider } = require("./FunWalletDataProvider")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
 class OnChainResources {
-    static async connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddress, eoa, index = 0) {
+    static async connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, paymasterAPI, verificationAddress, eoa, index = 0) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const config = { bundlerUrl, entryPointAddress }
         const erc4337Provider = await wrapProvider(provider, config, eoa, factoryAddress, verificationAddress)
-        const accountApi = new TreasuryAPI({
+        const accountApi = new FunWalletDataProvider({
             provider: erc4337Provider,
             entryPointAddress,  //check this
             owner: eoa,
             factoryAddress,
             verificationAddress,
+            paymasterAPI,
             index
         })
 
@@ -23,9 +24,8 @@ class OnChainResources {
     static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const chainId = (await provider.getNetwork()).chainId
-
         const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-        const accountApi = new TreasuryAPI({
+        const accountApi = new FunWalletDataProvider({
             provider: provider,
             entryPointAddress: entryPointAddress,  //check this
             factoryAddress: factoryAddress

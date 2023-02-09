@@ -1,6 +1,6 @@
 const ethers = require('ethers')
 const { wrapProvider } = require("./Provider")
-const { TreasuryAPI } = require("./TreasuryAPI")
+const { FunWalletDataProvider } = require("./FunWalletDataProvider")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
 class BundlerInstance {
@@ -13,7 +13,7 @@ class BundlerInstance {
         const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const erc4337Provider = await wrapProvider(provider, config, eoa, factoryAddress, verificationAddress)
 
-        const accountApi = new TreasuryAPI({
+        const accountApi = new FunWalletDataProvider({
             provider: erc4337Provider,
             entryPointAddress,  //check this
             owner: eoa,
@@ -29,7 +29,7 @@ class BundlerInstance {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const chainId = (await provider.getNetwork()).chainId
         const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-        const accountApi = new TreasuryAPI({
+        const accountApi = new FunWalletDataProvider({
             provider: provider,
             entryPointAddress: entryPointAddress,  //check this
             factoryAddress: factoryAddress
