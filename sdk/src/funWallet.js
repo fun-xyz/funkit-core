@@ -10,15 +10,14 @@ const EOATools = require('../utils/eoaUtils')
 
 class FunWallet extends ContractsHolder {
 
-    actionsStore = {}
+    transactions = {}
 
     /**
-        * Standard constructor
-        * @params config, index, userId
-        * config - FunWalletConfig (see /utils/configs/walletConfigs
-        * index - index of account (default 0)
-        * userId - id of organization operating wallet
-        * 
+    * Standard constructor
+    * @params config, index, userId
+    * - config: FunWalletConfig (see /utils/configs/walletConfigs)
+    * - index: index of account (default 0)
+    * - userId: id of organization operating wallet
     */
     constructor(config, index = 0, userId = "fun") {
         super()
@@ -27,14 +26,20 @@ class FunWallet extends ContractsHolder {
     }
 
     /**
-        * Generates a Module.init transaction call ready to be signed
-     */
+    * Generates a Module.init transaction call ready to be signed
+    * 
+    * @params
+    * - module: Module to add to the FunWallet
+    * - salt: salt
+    * 
+    * @returns data, to, salt
+    */
     async addModule(module, salt = 0) {
         let initTx = await module.encodeInitCall()
-        let data = { ...initTx, salt }
-        this.actionsStore[generateSha256(data)] = data;
-        module.innerAddData(this)
-        return data
+        // data = data, to, salt
+        let txData = { ...initTx, salt }
+        this.transactions[generateSha256(txData)] = txData;
+        return txData
     }
 
     addVarsToAttributes(vars) {
@@ -123,7 +128,7 @@ class FunWallet extends ContractsHolder {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
 
-        let balance = Object.values(this.actionsStore).map((actionData) => {
+        let balance = Object.values(this.transactions).map((actionData) => {
             const { to, value, data, balance } = actionData
             if (to) {
                 actionCreateData.dests.push(to)

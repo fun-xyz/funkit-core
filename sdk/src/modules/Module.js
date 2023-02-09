@@ -6,9 +6,8 @@ const ethers = require("ethers")
 class Module {
 
     constructor(addr) {
-        this.contract = new ethers.Contract(addr, ModuleObj.abi)
-        this.wallet = {}
         this.addr = addr
+        this.wallet = {}
     }
 
      /**
@@ -29,7 +28,8 @@ class Module {
      * @returns ethers UnsignedTransaction
      */
     async encodeExecuteCall(data) {
-        return this.contract.populateTransaction.execute(data)
+        let contract = new ethers.Contract(this.addr, ModuleObj.abi)
+        return contract.populateTransaction.execute(data)
     }
 
     /**
@@ -39,7 +39,8 @@ class Module {
      * @returns ethers UnsignedTransaction
      */
     async encodeValidateCall(data) {
-        return this.contract.populateTransaction.validate(data)
+        let contract = new ethers.Contract(this.addr, ModuleObj.abi)
+        return contract.populateTransaction.validate(data)
     }
 
     async createUserOpFromCallData({ to, data }, isAction = false) {
@@ -54,13 +55,7 @@ class Module {
     verifyRequirements() {
         return true
     }
-
-    innerAddData(wallet) {
-        Object.keys(wallet).forEach(varKey => {
-            this.wallet[varKey] = wallet[varKey]
-        })
-        this.wallet.prototype = wallet.prototype
-    }
+    
 }
 
 module.exports = { Module }
