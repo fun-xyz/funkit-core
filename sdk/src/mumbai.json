@@ -1,0 +1,10 @@
+{
+    "rpcdata": {
+        "bundlerUrl": "http://54.184.167.23:3000/rpc",
+        "rpcurl": "https://polygon-mumbai.g.alchemy.com/v2/2q-o2-Hy2Tn9Oalp6pTOTJtL8gFWZsLH"
+    },
+    "aaData": {
+        "entryPointAddress": "0xb3e6e4b1a53F5E303A1c5A19ab6eb99b271eaee3",
+        "factoryAddress": "0x0e31c20F2c717E1a38163aD928B7Cd3B6257aC63"
+    }
+}

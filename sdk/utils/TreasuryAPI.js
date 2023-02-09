@@ -3,8 +3,10 @@ const ethers_1 = require("ethers");
 
 const utils_1 = require("ethers/lib/utils");
 
-const TreasurySRC = require("./abis/FunWallet.json")
-const factory = require("./abis/FunWalletFactory.json")
+const TreasurySRC = require("../utils/abis/FunWallet.json")
+const factory = require("../utils/abis/FunWalletFactory.json")
+
+
 
 var _abi = factory.abi
 
@@ -14,6 +16,7 @@ const utils_2 = require("@account-abstraction/utils");
 const calcPreVerificationGas_1 = require("./tools");
 
 
+
 /**
  * An implementation of the BaseAccountAPI using the SimpleAccount contract.
  * - contract deployer gets "entrypoint", "owner" addresses and "index" nonce
@@ -21,8 +24,7 @@ const calcPreVerificationGas_1 = require("./tools");
  * - nonce method is "nonce()"
  * - execute method is "execFromEntryPoint()"
  */
-
-class FunWalletDataProvider {
+class SimpleAccountAPI {
     constructor(params) {
         var _a;
         this.factoryAddress = params.factoryAddress;
@@ -68,7 +70,7 @@ class FunWalletDataProvider {
         ]);
     }
 
-    getNonce() {
+    async getNonce() {
         return ethers_1.BigNumber.from(parseInt(Math.random() * 2 ** 30));
     }
     /**
@@ -142,14 +144,15 @@ class FunWalletDataProvider {
      * NOTE: createUnsignedUserOp will add to this value the cost of creation, if the contract is not yet created.
      */
     async getVerificationGasLimit() {
-        return 500000;
+        return 5000000;
     }
     /**
      * should cover cost of putting calldata on-chain, and some overhead.
      * actual overhead depends on the expected bundle size
      */
-    getPreVerificationGas(userOp) {
-        return (0, calcPreVerificationGas_1.calcPreVerificationGas)(userOp, this.overheads);
+    async getPreVerificationGas(userOp) {
+        const p = await (0, utils_1.resolveProperties)(userOp);
+        return (0, calcPreVerificationGas_1.calcPreVerificationGas)(p, this.overheads);
     }
     /**
      * ABI-encode a user operation. used for calldata cost estimation
@@ -183,8 +186,9 @@ class FunWalletDataProvider {
      * @param userOp userOperation, (signature field ignored)
      */
     async getUserOpHash(userOp) {
-        const { chainId } = await this.provider.getNetwork();
-        return (0, utils_2.getUserOpHash)(userOp, this.entryPointAddress, 31337);
+        const op = await (0, utils_1.resolveProperties)(userOp);
+        const chainId = await this.provider.getNetwork().then(net => net.chainId);
+        return (0, utils_2.getUserOpHash)(op, this.entryPointAddress, chainId);
     }
     /**
      * return the account's address.
@@ -240,7 +244,7 @@ class FunWalletDataProvider {
             }
         }
         const partialUserOp = {
-            sender: await this.getAccountAddress(),
+            sender: this.getAccountAddress(),
             nonce: this.getNonce(),
             initCode,
             callData,
@@ -251,17 +255,12 @@ class FunWalletDataProvider {
         };
         let paymasterAndData;
         if (this.paymasterAPI != null) {
-            // fill (partial) preVerificationGas (all except the cost of the generated paymasterAndData);
-            paymasterAndData = await this.paymasterAPI.getPaymasterAndData(partialUserOp);
+            // fill (partial) preVerificationGas (all except the cost of the generated paymasterAndData)
+            const userOpForPm = Object.assign(Object.assign({}, partialUserOp), { preVerificationGas: this.getPreVerificationGas(partialUserOp) });
+            paymasterAndData = await this.paymasterAPI.getPaymasterAndData(userOpForPm);
         }
         partialUserOp.paymasterAndData = paymasterAndData !== null && paymasterAndData !== void 0 ? paymasterAndData : '0x';
-        const preVerificationGas = this.getPreVerificationGas(partialUserOp)
-
-        // const op = Object.assign(Object.assign({}, ), { preVerificationGas: this.getPreVerificationGas(partialUserOp), signature: '' });
-        const op = {
-            ...partialUserOp, preVerificationGas, signature: ''
-        }
-        return op;
+        return Object.assign(Object.assign({}, partialUserOp), { preVerificationGas: this.getPreVerificationGas(partialUserOp), signature: '' });
     }
     /**
      * Sign the filled userOp.
@@ -269,18 +268,15 @@ class FunWalletDataProvider {
      */
     async signUserOp(userOp) {
         const userOpHash = await this.getUserOpHash(userOp);
-        const signature = await this.signUserOpHash(userOpHash);
-        const opInfo = { ...userOp, signature }
-        return opInfo
-
+        const signature = this.signUserOpHash(userOpHash);
+        return Object.assign(Object.assign({}, userOp), { signature });
     }
     /**
      * helper method: create and sign a user operation.
      * @param info transaction details for the userOp
      */
     async createSignedUserOp(info) {
-        const opInfo = await this.createUnsignedUserOp(info)
-        return await this.signUserOp(opInfo);
+        return await this.signUserOp(await this.createUnsignedUserOp(info));
     }
     /**
      * get the transaction that has this userOpHash mined, or null if not found
@@ -301,4 +297,4 @@ class FunWalletDataProvider {
         return null;
     }
 }
-module.exports = { FunWalletDataProvider };
+exports.TreasuryAPI = SimpleAccountAPI;

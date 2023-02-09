@@ -1,6 +1,5 @@
 const { OnChainResources } = require("../utils/OnChainResources")
 const { ContractsHolder } = require("../utils/ContractsHolder")
-
 const { DataServer } = require('../utils/DataServer')
 
 const { generateSha256 } = require("../utils/tools")
@@ -24,27 +23,9 @@ class FunWallet extends ContractsHolder {
     */
     constructor(config, index = 0, userId = "fun") {
         super()
-//merge conflict
         this.parseConfig({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, userId);
-//merge
-        this.addVarsToAttributes(config)
-        this.dataServer = new DataServer(config.apiKey, config.userId)
-        if (config.paymasterAddr) {
-            this.paymaster = new USDCPaymaster(config.paymasterAddr)
-        }
-
     }
-
-    async addModule(module, salt = 0) {
-        let action = await module.create()
-        let data = { ...action, salt }
-        this.actionsStore[generateSha256(data)] = data;
-        module.innerAddData(this)
-        return data
-
-    }
-    //merge
 
     /**
      * Parses the following parameters: eoa, prefundAmt, chain, apiKey, userId, index
@@ -102,11 +83,11 @@ class FunWallet extends ContractsHolder {
         this.addEthersContract(this.address, walletContract)
 
         // Pre-fund FunWallet
-
         if (this.prefundAmt) {
             return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
         }
     }
+
     /**
     * Generates a Module.init transaction call ready to be signed
     * 
@@ -143,7 +124,6 @@ class FunWallet extends ContractsHolder {
         })
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-
         const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 560000, false, true)
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 
