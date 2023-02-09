@@ -1,7 +1,6 @@
 const fetch = require("node-fetch")
 const { generateSha256 } = require("../utils/tools")
 const { ContractsHolder } = require("../utils/ContractsHolder")
-
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 const ethers = require('ethers')
 
@@ -15,7 +14,11 @@ const { DataServer } = require('../utils/DataServer')
 const { OnChainResources } = require("../utils/OnChainResources")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
+
+const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
+
 const { create } = require("domain")
+
 const abi = ethers.utils.defaultAbiCoder;
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 const MAX_INT = ethers.constants.MaxUint256._hex
@@ -34,11 +37,13 @@ class FunWallet extends ContractsHolder {
 
     constructor(config, index = 0, userId = "fun") {
         super()
-        this.addVarsToAttributes({ ...config, index })
-        this.dataServer = new DataServer(config.apiKey, userId)
-        
-    }
+        this.addVarsToAttributes(config)
+        this.dataServer = new DataServer(config.apiKey, config.userId)
+        if (config.paymasterAddr) {
+            this.paymaster = new USDCPaymaster(config.paymasterAddr)
+        }
 
+    }
 
     async addModule(module, salt = 0) {
         let action = await module.create()
@@ -75,14 +80,12 @@ class FunWallet extends ContractsHolder {
         // const bundlerUrl = "http://localhost:3000/rpc"
         // const rpcurl = "http://127.0.0.1:8545/"
 
-        // const entryPointAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
-        const verificationAddr = "0x7F4d8Db0870aBf71430656234Ca7B859757e0876"
-        const factoryAddress = "0xDfc25b0Fc4E026e69cE53F547C344D3b5f1d3A79"
+        const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
+        const verificationAddr = "0xFCa5Bb3732185AE6AaFC65aD8C9A4fBFf21DbaaD"
+        const factoryAddress = "0x32cd5ecdA7f2B8633C00A0434DE28Db111E60636"
 
 
-
-        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
-
+        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.paymaster, this.eoa, this.index)
         this.bundlerClient = bundlerClient
         this.provider = provider
         this.accountApi = accountApi
@@ -93,29 +96,18 @@ class FunWallet extends ContractsHolder {
         const walletContract = await this.accountApi.getAccountContract()
 
         this.addEthersContract(this.address, walletContract)
-
         if (this.prefundAmt) {
             return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
         }
     }
 
-    async createAction(actionExec){
-        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
 
-        await this.dataServer.storeUserOp(actionExecutionOp, 'create_action')
+    async createAction({ to, data }, gasLimit = 0, noInit = false, calldata = false) {
+        const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
+                await this.dataServer.storeUserOp(op, 'create_action')
 
-        const data = {
-            op: actionExecutionOp,
-        }
-        return new Transaction(data, true)
+        return op
     }
-
-
-    // async createAction({ to, data }) {
-    //     const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
-    //     return new Transaction({ op }, true)
-    // }
-
 
     // INTERNAL DEPLOY
     async deployActionTx(transaction) {
@@ -141,7 +133,8 @@ class FunWallet extends ContractsHolder {
         })
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
+
+        const op = await this.createAction(createWalleteData, 560000, false, true)
 
         const receipt = await this.deployActionTx({ data: { op } })
 
