@@ -5,8 +5,11 @@ const { DataServer } = require('../utils/DataServer')
 
 const { generateSha256 } = require("../utils/tools")
 
-const BundlerTools = require('../utils/actionUtils')
+const UserOpUtils = require('../utils/UserOpUtils')
 const EOATools = require('../utils/eoaUtils')
+
+const FACTORY_ADDRESS = "0xDfc25b0Fc4E026e69cE53F547C344D3b5f1d3A79"
+const VERIFICATION_ADDR = "0x7F4d8Db0870aBf71430656234Ca7B859757e0876"
 
 class FunWallet extends ContractsHolder {
 
@@ -21,11 +24,45 @@ class FunWallet extends ContractsHolder {
     */
     constructor(config, index = 0, userId = "fun") {
         super()
-
-        Object.keys({ ...config, index }).forEach(varKey => {
-            this[varKey] = vars[varKey]
-        })
+        this.parseConfig({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, userId);
+    }
+
+    /**     
+     * Runs initialization for a given wallet.
+     * The function acts as a constructor for many parameters in the class, creating
+     * an abstracted wallet account, with the correct providers and rpc client. 
+     * It also prefunds the account with the amount of eth/avax desired.
+     */
+    async init() {
+
+        // Only init once
+        if (this.address) {
+            return
+        }
+
+        let chainInfo = await DataServer.getChainInfo(this.chain)
+        const {
+            rpcdata: { rpcurl, bundlerUrl},
+            aaData: { entryPointAddress },
+        } = chainInfo
+
+        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS, VERIFICATION_ADDR, this.eoa, this.index)
+
+        this.bundlerClient = bundlerClient
+        this.provider = provider
+        this.accountApi = accountApi
+        this.address = await this.accountApi.getAccountAddress()
+        this.eoaAddr = await this.eoa.getAddress()
+
+        const walletContract = await this.accountApi.getAccountContract()
+
+        this.addEthersContract(this.address, walletContract)
+
+        // Pre-fund FunWallet
+        if (this.prefundAmt) {
+            return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
+        }
     }
 
     /**
@@ -45,73 +82,10 @@ class FunWallet extends ContractsHolder {
         return txData
     }
 
-
-    /**     
-     * Runs initialization for a given wallet.
-     * The function acts as a constructor for many parameters in the class, creating
-     * an abstracted wallet account, with the correct providers and rpc client. 
-     * It also prefunds the account with the amount of eth/avax desired.
-     */
-
-    async init() {
-        if (this.address) {
-            return
-        }
-
-        let chainInfo = await DataServer.getChainInfo(this.chain)
-        const {
-            rpcdata: { rpcurl, bundlerUrl},
-            aaData: { entryPointAddress },
-        } = chainInfo
-
-        // const bundlerUrl = "http://localhost:3000/rpc"
-        // const rpcurl = "http://127.0.0.1:8545/"
-
-        // const entryPointAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
-        const verificationAddr = "0x7F4d8Db0870aBf71430656234Ca7B859757e0876"
-        const factoryAddress = "0xDfc25b0Fc4E026e69cE53F547C344D3b5f1d3A79"
-
-
-
-        const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.eoa, this.index)
-
-        this.bundlerClient = bundlerClient
-        this.provider = provider
-        this.accountApi = accountApi
-
-        this.address = await this.accountApi.getAccountAddress()
-        this.eoaAddr = await this.eoa.getAddress()
-
-        const walletContract = await this.accountApi.getAccountContract()
-
-        this.addEthersContract(this.address, walletContract)
-
-        if (this.prefundAmt) {
-            return await EOATools.fundAccount(this.eoa, this.address, this.prefundAmt)
-        }
-    }
-
-    async createAction(actionExec){
-        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
-
-        await this.dataServer.storeUserOp(actionExecutionOp, 'create_action')
-
-        const data = {
-            op: actionExecutionOp,
-        }
-        return new Transaction(data, true)
-    }
-
     async createUserOperation({ to, data }) {
         const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
         return new Transaction({ op }, true)
     }
-
-    // async createAction({ to, data }) {
-    //     const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
-    //     return new Transaction({ op }, true)
-    // }
-
 
     // INTERNAL DEPLOY
     async deployUserOperation(transaction) {
@@ -136,18 +110,9 @@ class FunWallet extends ContractsHolder {
             if (balance) return balance;
         })
 
-
-        // OLD
-
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
+        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 560000, false, true)
         const receipt = await this.deployUserOperation({ data: { op } })
-
-        // NEW
-
-        // const createWalletData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-        // const op = await BundlerTools.createUserOperation(this.accountApi, createWalletData, 560000, false, true)
-        // const receipt = await this.deployUserOperation({ data: { op } })
 
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
 
@@ -197,7 +162,7 @@ class FunWallet extends ContractsHolder {
             rpcdata: { bundlerUrl, rpcurl },
             aaData: { entryPointAddress, factoryAddress }
         } = chainInfo
-        const { bundlerClient, accountApi } = await OnChainResources.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress)
+        const { bundlerClient, accountApi } = await OnChainResources.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
         await dataServer.storeUserOp(op, 'deploy_action')
@@ -223,6 +188,19 @@ class FunWallet extends ContractsHolder {
         return receipts
     }
 
+    parseConfig(vars) {
+        Object.keys(vars).forEach(varKey => {
+            this[varKey] = vars[varKey]
+        })
+    }
+
+    getAccountApi() {
+        return this.accountApi
+    }
+
+    getDataServer() {
+        return this.dataServer
+    }
 
 }
 

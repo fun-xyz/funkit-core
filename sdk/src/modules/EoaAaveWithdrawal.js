@@ -5,6 +5,7 @@ const { createWrappedContract } = require("../../utils/WrappedEthersContract")
 const { generateSha256 } = require("../../utils/tools")
 
 const Action = require("../../utils/abis/Action.json")
+const UserOpUtils = require('../../utils/UserOpUtils')
 const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
 
@@ -53,9 +54,11 @@ class EoaAaveWithdrawal extends Module {
         const key = generateSha256(input)
         const aaveexec = ABI.encode(["string"], [key])
         const actionExec = await wallet.contracts[EOA_AAVE_WITHDRAWAL_ADDR].getMethodEncoding("execute", [aaveexec])
-        const actionExecutionOp = await wallet.createAction(actionExec)
+        const userOpTx = await UserOpUtils.createUserOpTransaction(wallet.getDataServer(), wallet.getAccountApi(), actionExec, 500000, true)
 
-        return actionExecutionOp
+        console.log("SUCCESS :)");
+
+        return userOpTx
     }
 
 }
