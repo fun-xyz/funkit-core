@@ -1,3 +1,5 @@
+const { USDCPaymaster } = require("../../src/paymasters/USDCPaymaster")
+
 
 class TestAaveConfig {
     constructor(aTokenAddress, privKey, prefundAmt, APIKEY) {
@@ -9,16 +11,18 @@ class TestAaveConfig {
 }
 
 class FunWalletConfig {
-    constructor(eoa, chain, apiKey, prefundAmt, userId = "fun", index = 0) {
+    constructor(eoa, prefundAmt, chain, apiKey, userId = "fun", paymasterAddr = "", index = 0) {
         this.eoa = eoa
         this.prefundAmt = prefundAmt
         this.chain = chain
         this.apiKey = apiKey
         this.userId = userId
         this.index = index
+        this.paymasterAddr = paymasterAddr
     }
-
 }
+
+
 
 
 

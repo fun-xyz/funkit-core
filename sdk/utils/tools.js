@@ -15,6 +15,11 @@ exports.DefaultGasOverheads = {
     bundleSize: 1,
     sigSize: 65
 };
+function encode(typevalues, forSignature) {
+    const types = typevalues.map(typevalue => typevalue.type === 'bytes' && forSignature ? 'bytes32' : typevalue.type);
+    const values = typevalues.map((typevalue) => typevalue.type === 'bytes' && forSignature ? (0, utils_1.keccak256)(typevalue.val) : typevalue.val);
+    return utils_2.defaultAbiCoder.encode(types, values);
+}
 /**
  * calculate the preVerificationGas of the given UserOperation
  * preVerificationGas (by definition) is the cost overhead that can't be calculated on-chain.
@@ -28,7 +33,7 @@ function calcPreVerificationGas(userOp, overheads) {
         // dummy values, in case the UserOp is incomplete.
         preVerificationGas: 21000, signature: (0, utils_2.hexlify)(Buffer.alloc(ov.sigSize, 1))
     }, userOp);
-    const packed = (0, utils_2.arrayify)((0, utils_1.packUserOp)(p, false));
+    const packed = (0, utils_2.arrayify)(packUserOp(p, false));
     const callDataCost = packed.map(x => x === 0 ? ov.zeroByte : ov.nonZeroByte).reduce((sum, x) => sum + x);
     const ret = Math.round(callDataCost +
         ov.fixed / ov.bundleSize +
@@ -63,6 +68,103 @@ const sendRequest = async (uri, method, apiKey, body) => {
     } catch (e) {
         console.log(e)
     }
+}
+const UserOpType = {
+    components: [
+        { internalType: 'address', name: 'sender', type: 'address' },
+        { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        { internalType: 'bytes', name: 'initCode', type: 'bytes' },
+        { internalType: 'bytes', name: 'callData', type: 'bytes' },
+        { internalType: 'uint256', name: 'callGasLimit', type: 'uint256' },
+        {
+            internalType: 'uint256',
+            name: 'verificationGasLimit',
+            type: 'uint256'
+        },
+        {
+            internalType: 'uint256',
+            name: 'preVerificationGas',
+            type: 'uint256'
+        },
+        { internalType: 'uint256', name: 'maxFeePerGas', type: 'uint256' },
+        {
+            internalType: 'uint256',
+            name: 'maxPriorityFeePerGas',
+            type: 'uint256'
+        },
+        { internalType: 'bytes', name: 'paymasterAndData', type: 'bytes' },
+        { internalType: 'bytes', name: 'signature', type: 'bytes' }
+    ],
+    internalType: 'struct UserOperation',
+    name: 'userOp',
+    type: 'tuple'
+}
+
+function packUserOp(op, forSignature = true) {
+    if (forSignature) {
+        // lighter signature scheme (must match UserOperation#pack): do encode a zero-length signature, but strip afterwards the appended zero-length value
+        const userOpType = {
+            components: [
+                {
+                    type: 'address',
+                    name: 'sender'
+                },
+                {
+                    type: 'uint256',
+                    name: 'nonce'
+                },
+                {
+                    type: 'bytes',
+                    name: 'initCode'
+                },
+                {
+                    type: 'bytes',
+                    name: 'callData'
+                },
+                {
+                    type: 'uint256',
+                    name: 'callGasLimit'
+                },
+                {
+                    type: 'uint256',
+                    name: 'verificationGasLimit'
+                },
+                {
+                    type: 'uint256',
+                    name: 'preVerificationGas'
+                },
+                {
+                    type: 'uint256',
+                    name: 'maxFeePerGas'
+                },
+                {
+                    type: 'uint256',
+                    name: 'maxPriorityFeePerGas'
+                },
+                {
+                    type: 'bytes',
+                    name: 'paymasterAndData'
+                },
+                {
+                    type: 'bytes',
+                    name: 'signature'
+                }
+            ],
+            name: 'userOp',
+            type: 'tuple'
+        };
+        // console.log('hard-coded userOpType', userOpType)
+        // console.log('from ABI userOpType', UserOpType)
+        let encoded = utils_1.defaultAbiCoder.encode([userOpType], [Object.assign(Object.assign({}, op), { signature: '0x' })]);
+        // remove leading word (total length) and trailing word (zero-length signature)
+        encoded = '0x' + encoded.slice(66, encoded.length - 64);
+        return encoded;
+    }
+    const typevalues = UserOpType.components.map((c) => ({
+        type: c.type,
+        val: op[c.name]
+    }));
+    return encode(typevalues, forSignature);
 }
 
 

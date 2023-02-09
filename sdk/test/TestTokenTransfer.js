@@ -31,7 +31,7 @@ const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
     const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr, wallet)
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
-    console.log("Tokens Spent: ", start - end, start, end)
+    console.log("Tokens Spent: \n", start - end, "Before: \n", start,"After: \n", end)
 }
 
 const processConsole = () => {

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wrapProvider = void 0;
 const contracts_1 = require("@account-abstraction/contracts");
-const SimpleAccountAPI_1 = require("./TreasuryAPI");
+const SimpleAccountAPI_1 = require("./FunWalletDataProvider");
 const { HttpRpcClient, ERC4337EthersProvider } = require('@account-abstraction/sdk')
 /**
  * wrap an existing provider to tunnel requests through Account Abstraction.
@@ -17,7 +17,7 @@ async function wrapProvider(originalProvider, config, originalSigner = originalP
     const entryPoint = contracts_1.EntryPoint__factory.connect(config.entryPointAddress, originalProvider);
     // Initial SimpleAccount instance is not deployed and exists just for the interface
 
-    const smartAccountAPI = new SimpleAccountAPI_1.TreasuryAPI({
+    const smartAccountAPI = new SimpleAccountAPI_1.FunWalletDataProvider({
         provider: originalProvider,
         entryPointAddress: entryPoint.address,
         owner: originalSigner,
