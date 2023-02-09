@@ -26,6 +26,16 @@ const deployAuthContract = (signer) => {
     return deploy(signer, authContract)
 }
 
+const priceOracle = require("../utils/abis/TokenPriceOracle.json")
+const deployPriceOracle = (signer) => {
+    return deploy(signer, priceOracle)
+}
+
+
+const paymaster = require("../utils/abis/TokenPaymaster.json")
+const deployPaymaster = (signer, params) => {
+    return deploy(signer, paymaster, params)
+}
 
 // const approveAndSwap = require("modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
@@ -75,6 +85,7 @@ const moveFile = (path) => {
     }
 
     fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
+    console.log(fileName)
 }
 
 
@@ -192,27 +203,45 @@ const loadNetwork = async (wallet, addrs, amt) => {
 const addrs = ["0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6", "0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e"]
 const baseAmt = 10
 
-const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-// const rpcUrl = "http://127.0.0.1:8545"
-const pkey = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-// const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+// const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+const rpcUrl = "http://127.0.0.1:8545"
+// const pkey = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 // await loadNetwork(wallet, addrs, baseAmt)
 
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
     const wallet = new ethers.Wallet(pkey, provider)
 
+    // const verificationAddr = await deployAuthContract(wallet)
+    // console.log(`const verificationAddr = "${verificationAddr}"`)
+    // await timeout(1000)
 
-    const factoryAddress = await deployFactory(wallet)
-    console.log(`const factoryAddress = "${factoryAddress}"`)
-    await timeout(1000)
+    // const factoryAddress = await deployFactory(wallet)
+    // console.log(`const factoryAddress = "${factoryAddress}"`)
+    // await timeout(1000)
 
+    // const approveAndSwapAddr = await deployApproveAndSwap(wallet)
+
+    // console.log(`\n\actionAddr = "${approveAndSwapAddr}"`)
+    const entryPoint = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c";
+    const tokenPriceOracle = "0x3AeEBbEe7CE00B11cB202d6D0F38D696A3f4Ff8e";
+    const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
+    const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
+    const params = [entryPoint, tokenPriceOracle, token, aggregator]
+
+    const paymaster = await deployPaymaster(wallet, params)
+    console.log(`const paymaster = "${paymaster}"`)
+    // console.log(await deployPriceOracle(wallet))
 
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
-    main()
-    // loadAbis()
+    if (process.argv[2] == "-l") {
+        loadAbis()
+    } else {
+        main()
+    }
 }
 
 
@@ -221,5 +250,6 @@ module.exports = {
     transferAmt,
     transferErc,
     getUserBalanceErc,
-    getAddrBalanceErc
+    getAddrBalanceErc,
+    createErc
 }

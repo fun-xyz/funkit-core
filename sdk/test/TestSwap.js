@@ -1,9 +1,9 @@
 const { FunWallet, AccessControlSchema } = require("../index")
 const { ApproveAndSwap } = require("../modules")
 const ethers = require('ethers')
-const { WalletWithPaymasterConfig } = require("../utils/configs/walletConfigs")
+const { FunWalletConfig } = require("../utils/configs/walletConfigs")
 
-const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, } = require("../utils/deploy")
+const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, createErc, } = require("../utils/deploy")
 
 const ERC20 = require("../utils/abis/ERC20.json")
 const { Token, TokenTypes } = require("../utils/Token")
@@ -15,7 +15,7 @@ const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const chain = "31337"
 const rpcurl = "http://127.0.0.1:8545"
 
-const prefundAmt = 0
+const prefundAmt = 0.3
 
 const amount = 4
 
@@ -36,79 +36,128 @@ const logTest = (test) => {
 
 
 const testERCPair = async (wallet, swapModule, eoa) => {
-    logTest("ERC SWAP: USDC=>DAI")
+    logTest("ERC SWAP: DAI=>USDC")
     await transferErc(eoa, USDC, wallet.address, amount)
+    let startWallet = await getUserBalanceErc(wallet, USDC)
+    console.log("Wallet Start Balance: ", startWallet)
 
-    let startWalletDAI = await getUserBalanceErc(wallet, DAI)
-
-    const tx = await swapModule.createSwap(USDC, DAI, amount)
+    const tx = await swapModule.createSwap(DAI, USDC, amount)
     const execReceipt = await wallet.deployTx(tx)
 
-    let endWalletDAI = await getUserBalanceErc(wallet, DAI)
+    let endWallet = await getUserBalanceErc(wallet, USDC)
+    console.log("Wallet End Balance: ", endWallet)
 
-    const outDiff = parseFloat(endWalletDAI) - parseFloat(startWalletDAI);
-    logPairing(amount, outDiff, "USDC", "DAI");
+    const outDiff = parseFloat(endWallet) - parseFloat(startWallet);
+    logPairing(amount, outDiff, "DAI", "USDC");
 }
 
 
 
 const testEthSwap = async (wallet, swapModule, eoa) => {
     logTest("ETH SWAP: ETH=>WETH=>DAI")
-    // await transferAmt(eoa, wallet.address, amount)
+    await transferAmt(eoa, wallet.address, amount)
+    console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
+
     const DAI = await Token.createFrom("0x6B175474E89094C44Da98b954EedeAC495271d0F")
 
     const startWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
     const tx = await swapModule.createSwap("eth", DAI, amount)
-    console.log(tx)
     const execReceipt = await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
     const outDiff = parseFloat(endWalletDAI) - parseFloat(startWalletDAI);
+    console.log("Wallet Eth End Balance: ", await getBalance(wallet))
     logPairing(amount, outDiff, "ETH", "DAI")
-    console.log("Wallet Eth Balance: ", await getBalance(wallet))
 
 
 }
 
 const logPairing = (amount, outDiff, tok1, tok2) => {
     console.log(`${tok1}/${tok2} = ${outDiff / amount}`)
+}
+
+const paymasterdata = require("../utils/abis/TokenPaymaster.json")
+const loadPaymaster = (address, provider) => {
+    return new ethers.Contract(address, paymasterdata.abi, provider)
+}
+
+const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
+    const paymasterContract = loadPaymaster(paymasterAddr, eoa)
+
+    const depositData = await paymasterContract.populateTransaction.deposit()
+    const tx = { ...depositData, value: ethers.utils.parseEther(value.toString()) }
+    await execContractFunc(eoa, tx)
+
+    const postBalance = await paymasterContract.getDeposit()
+    console.log("paymasterBalance: ", postBalance.toString())
+
+}
+const fundUserUSDCPaymaster = async (eoa, paymasterAddr, walletaddr) => {
+    const amount = 100000000
+
+    const usdcContract = createErc(USDC, eoa)
+    const paymasterContract = loadPaymaster(paymasterAddr, eoa)
+
+    const approvedata = await usdcContract.populateTransaction.approve(paymasterAddr, amount)
+    const depositData = await paymasterContract.populateTransaction.addDepositFor(walletaddr, amount)
+
+    await execContractFunc(eoa, approvedata)
+    await execContractFunc(eoa, depositData)
+    await logUserPaymasterBalance(paymasterContract, walletaddr)
 
 }
 
+const execContractFunc = async (eoa, data) => {
+    const tx = await eoa.sendTransaction(data)
+    return await tx.wait()
+}
 
+
+const logUserPaymasterBalance = async (paymaster, wallet) => {
+    const data = await paymaster.depositInfo(wallet)
+
+    console.log("user paymaster balance: ", data.amount.toString())
+
+}
 
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const eoa = new ethers.Wallet(privKey, provider)
     const funder = new ethers.Wallet(pkey, provider)
 
-    const paymasterAddr = ""
+    // const paymasterAddr = ""
+    const paymasterAddr = "0x1c1521cf734CD13B02e8150951c3bF2B438be780"
+    const paymaster = loadPaymaster(paymasterAddr, eoa)
 
-    const walletConfig = new WalletWithPaymasterConfig(paymasterAddr, eoa, prefundAmt, chain, APIKEY)
+    const walletConfig = new FunWalletConfig(eoa, prefundAmt, chain, APIKEY, "caleb", paymasterAddr)
     const wallet = new FunWallet(walletConfig)
-
     await wallet.init()
+
+    await logUserPaymasterBalance(paymaster, wallet.address)
 
 
     console.log("wallet balance: ", await getBalance(wallet))
     console.log("funder balance: ", await getBalance(funder))
     console.log("eoa balance: ", await getBalance(eoa))
 
-    console.log()
-
+    // await fundUserUSDCPaymaster(eoa, paymasterAddr, wallet.address)
+    // await fundPaymasterEth(eoa, paymasterAddr, 1)
 
     const swapModule = new ApproveAndSwap(routerAddr)
     await wallet.addModule(swapModule)
     await wallet.deploy()
 
-    // await testERCPair(wallet, swapModule, eoa)
     await testEthSwap(wallet, swapModule, eoa)
+    // await testERCPair(wallet, swapModule, eoa)
 }
 
 
+
+
 if (typeof require !== 'undefined' && require.main === module) {
+
     main()
 }
 

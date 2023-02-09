@@ -68,7 +68,7 @@ class FunWalletDataProvider {
         ]);
     }
 
-    async getNonce() {
+    getNonce() {
         return ethers_1.BigNumber.from(parseInt(Math.random() * 2 ** 30));
     }
     /**
@@ -142,15 +142,14 @@ class FunWalletDataProvider {
      * NOTE: createUnsignedUserOp will add to this value the cost of creation, if the contract is not yet created.
      */
     async getVerificationGasLimit() {
-        return 5000000;
+        return 500000;
     }
     /**
      * should cover cost of putting calldata on-chain, and some overhead.
      * actual overhead depends on the expected bundle size
      */
-    async getPreVerificationGas(userOp) {
-        const p = await (0, utils_1.resolveProperties)(userOp);
-        return (0, calcPreVerificationGas_1.calcPreVerificationGas)(p, this.overheads);
+    getPreVerificationGas(userOp) {
+        return (0, calcPreVerificationGas_1.calcPreVerificationGas)(userOp, this.overheads);
     }
     /**
      * ABI-encode a user operation. used for calldata cost estimation
@@ -184,9 +183,8 @@ class FunWalletDataProvider {
      * @param userOp userOperation, (signature field ignored)
      */
     async getUserOpHash(userOp) {
-        const op = await (0, utils_1.resolveProperties)(userOp);
-        const chainId = await this.provider.getNetwork().then(net => net.chainId);
-        return (0, utils_2.getUserOpHash)(op, this.entryPointAddress, chainId);
+        const { chainId } = await this.provider.getNetwork();
+        return (0, utils_2.getUserOpHash)(userOp, this.entryPointAddress, 31337);
     }
     /**
      * return the account's address.
@@ -242,7 +240,7 @@ class FunWalletDataProvider {
             }
         }
         const partialUserOp = {
-            sender: this.getAccountAddress(),
+            sender: await this.getAccountAddress(),
             nonce: this.getNonce(),
             initCode,
             callData,
@@ -253,12 +251,17 @@ class FunWalletDataProvider {
         };
         let paymasterAndData;
         if (this.paymasterAPI != null) {
-            // fill (partial) preVerificationGas (all except the cost of the generated paymasterAndData)
-            const userOpForPm = Object.assign(Object.assign({}, partialUserOp), { preVerificationGas: this.getPreVerificationGas(partialUserOp) });
-            paymasterAndData = await this.paymasterAPI.getPaymasterAndData(userOpForPm);
+            // fill (partial) preVerificationGas (all except the cost of the generated paymasterAndData);
+            paymasterAndData = await this.paymasterAPI.getPaymasterAndData(partialUserOp);
         }
         partialUserOp.paymasterAndData = paymasterAndData !== null && paymasterAndData !== void 0 ? paymasterAndData : '0x';
-        return Object.assign(Object.assign({}, partialUserOp), { preVerificationGas: this.getPreVerificationGas(partialUserOp), signature: '' });
+        const preVerificationGas = this.getPreVerificationGas(partialUserOp)
+
+        // const op = Object.assign(Object.assign({}, ), { preVerificationGas: this.getPreVerificationGas(partialUserOp), signature: '' });
+        const op = {
+            ...partialUserOp, preVerificationGas, signature: ''
+        }
+        return op;
     }
     /**
      * Sign the filled userOp.
@@ -266,15 +269,18 @@ class FunWalletDataProvider {
      */
     async signUserOp(userOp) {
         const userOpHash = await this.getUserOpHash(userOp);
-        const signature = this.signUserOpHash(userOpHash);
-        return Object.assign(Object.assign({}, userOp), { signature });
+        const signature = await this.signUserOpHash(userOpHash);
+        const opInfo = { ...userOp, signature }
+        return opInfo
+
     }
     /**
      * helper method: create and sign a user operation.
      * @param info transaction details for the userOp
      */
     async createSignedUserOp(info) {
-        return await this.signUserOp(await this.createUnsignedUserOp(info));
+        const opInfo = await this.createUnsignedUserOp(info)
+        return await this.signUserOp(opInfo);
     }
     /**
      * get the transaction that has this userOpHash mined, or null if not found
