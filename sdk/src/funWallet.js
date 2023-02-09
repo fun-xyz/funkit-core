@@ -21,7 +21,10 @@ class FunWallet extends ContractsHolder {
     */
     constructor(config, index = 0, userId = "fun") {
         super()
-        this.addVarsToAttributes({ ...config, index })
+
+        Object.keys({ ...config, index }).forEach(varKey => {
+            this[varKey] = vars[varKey]
+        })
         this.dataServer = new DataServer(config.apiKey, userId);
     }
 
@@ -42,11 +45,6 @@ class FunWallet extends ContractsHolder {
         return txData
     }
 
-    addVarsToAttributes(vars) {
-        Object.keys(vars).forEach(varKey => {
-            this[varKey] = vars[varKey]
-        })
-    }
 
     /**     
      * Runs initialization for a given wallet.
