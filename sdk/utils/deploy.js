@@ -9,6 +9,7 @@ const { ContractFactory } = ethers
 const WETH_MAINNET = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 
+
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
     const contract = await factory.deploy(...params);
@@ -61,6 +62,7 @@ const { generateSha256 } = require("./tools");
 const basePath = "../../../fun-wallet-smart-contract/artifacts/contracts/"
 
 const loadAbis = () => {
+
     const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
     const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"
     const approveAndSwapPath = "modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
@@ -68,6 +70,7 @@ const loadAbis = () => {
     const walletPath = "FunWallet.sol/FunWallet.json"
     const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
     const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath]
+
     abis.forEach(moveFile)
 }
 
@@ -149,6 +152,12 @@ const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 
 
 
+// const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+// const rpcUrl = "https://api.avax-test.network/ext/bc/C/rpc"
+// const rpcUrl = "https://rpc.buildbear.io/Favourite_Yoda_da3bc0bd"
+
+
+
 // const pkey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 // const provider = new ethers.providers.Web3Provider(hreProvider)
 // const signer = await createSigner("0x1B7BAa734C00298b9429b518D621753Bb0f6efF2")
@@ -201,7 +210,7 @@ const loadNetwork = async (wallet, addrs, amt) => {
 }
 
 const addrs = ["0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6", "0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e"]
-const baseAmt = 10
+const baseAmt = 1
 
 // const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 const rpcUrl = "http://127.0.0.1:8545"
@@ -212,7 +221,6 @@ const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
     const wallet = new ethers.Wallet(pkey, provider)
-
     // const verificationAddr = await deployAuthContract(wallet)
     // console.log(`const verificationAddr = "${verificationAddr}"`)
     // await timeout(1000)
@@ -233,6 +241,7 @@ const main = async () => {
     const paymaster = await deployPaymaster(wallet, params)
     console.log(`const paymaster = "${paymaster}"`)
     // console.log(await deployPriceOracle(wallet))
+
 
 }
 

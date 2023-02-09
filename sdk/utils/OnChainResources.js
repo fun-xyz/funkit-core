@@ -20,8 +20,11 @@ class OnChainResources {
             paymasterAPI,
             index
         })
+        const net = await provider.getNetwork()
+        const chainId = net.chainId
+        this.client = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
 
-        return { bundlerClient, provider, accountApi }
+        return { bundlerClient:this.client, provider, accountApi }
     }
 
     static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {

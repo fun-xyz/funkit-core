@@ -3,7 +3,7 @@ const { Transaction } = require("./Transaction")
 
 
 async function createAction(accountApi, { to, data }, gasLimit = 0, noInit = false, calldata = false) {
-    return await accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
+    return await accountApi.createSignedUserOp({ target: to, data, noInit, calldata, gasLimit})
 }
 
 async function createTransactionAction(accountApi, { to, data }, gasLimit = 0, noInit = false, calldata = false) {

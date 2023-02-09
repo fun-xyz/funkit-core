@@ -14,7 +14,11 @@ const { DataServer } = require('../utils/DataServer')
 const { OnChainResources } = require("../utils/OnChainResources")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
+
 const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
+
+const { create } = require("domain")
+
 const abi = ethers.utils.defaultAbiCoder;
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 const MAX_INT = ethers.constants.MaxUint256._hex
@@ -31,13 +35,14 @@ class FunWallet extends ContractsHolder {
         * 
     */
 
-    constructor(config) {
+    constructor(config, index = 0, userId = "fun") {
         super()
         this.addVarsToAttributes(config)
         this.dataServer = new DataServer(config.apiKey, config.userId)
         if (config.paymasterAddr) {
             this.paymaster = new USDCPaymaster(config.paymasterAddr)
         }
+
     }
 
     async addModule(module, salt = 0) {
@@ -66,19 +71,19 @@ class FunWallet extends ContractsHolder {
             return
         }
 
-        // let chainInfo = await DataServer.getChainInfo(this.chain)
-        // console.log(chainInfo)
-        // const {
-        //     rpcdata: { rpcurl, bundlerUrl},
-        //     aaData: { entryPointAddress, factoryAddress },
-        // } = chainInfo
+        let chainInfo = await DataServer.getChainInfo(this.chain)
+        const {
+            rpcdata: { rpcurl, bundlerUrl},
+            aaData: { entryPointAddress },
+        } = chainInfo
 
-        const bundlerUrl = "http://localhost:3000/rpc"
-        const rpcurl = "http://127.0.0.1:8545/"
+        // const bundlerUrl = "http://localhost:3000/rpc"
+        // const rpcurl = "http://127.0.0.1:8545/"
 
         const entryPointAddress = "0xAe9Ed85dE2670e3112590a2BB17b7283ddF44d9c"
         const verificationAddr = "0xFCa5Bb3732185AE6AaFC65aD8C9A4fBFf21DbaaD"
         const factoryAddress = "0x32cd5ecdA7f2B8633C00A0434DE28Db111E60636"
+
 
         const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, factoryAddress, verificationAddr, this.paymaster, this.eoa, this.index)
         this.bundlerClient = bundlerClient
@@ -96,8 +101,11 @@ class FunWallet extends ContractsHolder {
         }
     }
 
+
     async createAction({ to, data }, gasLimit = 0, noInit = false, calldata = false) {
         const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit, gasLimit, calldata })
+                await this.dataServer.storeUserOp(op, 'create_action')
+
         return op
     }
 
@@ -113,6 +121,7 @@ class FunWallet extends ContractsHolder {
     async deploy() {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
+
         let balance = Object.values(this.actionsStore).map((actionData) => {
             const { to, value, data, balance } = actionData
             if (to) {
@@ -124,9 +133,13 @@ class FunWallet extends ContractsHolder {
         })
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+
         const op = await this.createAction(createWalleteData, 560000, false, true)
+
         const receipt = await this.deployActionTx({ data: { op } })
+
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
+
         return { receipt, address: this.address }
     }
 
@@ -144,6 +157,8 @@ class FunWallet extends ContractsHolder {
             return await this.deployActionTx(transaction, this.apiKey)
         }
         else {
+            transaction.data.user=this.dataServer.user,
+            transaction.data.chain=this.chain
             const tx = await this.eoa.sendTransaction(transaction.data)
             return await tx.wait()
         }
