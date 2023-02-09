@@ -21,6 +21,10 @@ class Module {
         return contract.populateTransaction.init(ethers.constants.HashZero)
     }
 
+    create() {
+        return this.encodeInitCall()
+    }
+
     /**
      * Generates and returns an ethers UnsignedTransaction representing a transaction call to the Module's execute()
      * method with data as the input ready to be signed and submitted to a chain.
