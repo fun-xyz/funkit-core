@@ -22,4 +22,6 @@ With rpc:
  
  ```yarn test-transferToken [tokenAddr] [privKey] [preFundAmt] [apiKey] [rpcurl] ```
 
-```yarn test-transferToken 0x52173b6ac069619c206b9A0e75609fC92860AB2A 66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206 0 hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7```
+*Address of USDC on AVAX-FUJI*
+
+```yarn test-transferToken 0x5425890298aed601595a70AB815c96711a31Bc65 66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206 0 hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7```

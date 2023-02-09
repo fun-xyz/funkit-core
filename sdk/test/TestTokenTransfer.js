@@ -1,8 +1,8 @@
 const { FunWallet, TransferToken, AccessControlSchema } = require("../index")
 const ethers = require('ethers')
 const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
-// const chain = '43113' //avax fuji 
-const chain = 31337 // hardhat 
+const chain = '43113' //avax fuji 
+// const chain = 31337 // hardhat 
 const { DataServer } = require('../utils/DataServer')
 
 const { getUserBalanceErc } = require("../utils/deploy")
@@ -16,7 +16,7 @@ const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
 
 
     const to = '0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e'
-    const amount = oneE18
+    const amount = '1000000'
 
     const config = new FunWalletConfig(eoa,chain, APIKEY, prefundAmt)
     const wallet = new FunWallet(config)
@@ -25,13 +25,16 @@ const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
     const transfer = new TransferToken() 
     await wallet.addModule(transfer)
     const {address} = await wallet.deploy()
-    console.log("Fun Wallet Address: ", address)
+
+    console.log("Fun Wallet Address: ", address) // make sure this has enough ERC Tokens 
     const start = await getUserBalanceErc(wallet, tokenAddr)
 
     const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr)
-    await wallet.deployTx(transferActionTx)
+    const receipt = await wallet.deployTx(transferActionTx)
+    console.log("Transaction Receipt: \n", receipt)
+
     const end = await getUserBalanceErc(wallet, tokenAddr)
-    console.log("Tokens Spent: ", start - end, start, end)
+    console.log("Tokens Spent: \n", start - end, "Before: \n", start,"After: \n", end)
 }
 
 const processConsole = () => {
