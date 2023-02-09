@@ -11,12 +11,12 @@ const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
 
 
 class ApproveAndSwap extends Module {
-    actionAddr = "0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D"
+    addr = "0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D"
 
     constructor(routerAddr) {
         super()
         this.routerAddr = routerAddr
-        this.actionContract = new ethers.Contract(this.actionAddr, ApproveAndSwapObj.abi)
+        this.actionContract = new ethers.Contract(this.addr, ApproveAndSwapObj.abi)
     }
 
     async _encodeERC20Swap(tokenInAddress, routerAddr, amount, data) {

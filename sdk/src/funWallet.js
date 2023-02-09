@@ -1,28 +1,17 @@
-const fetch = require("node-fetch")
-const { generateSha256 } = require("../utils/tools")
-const { ContractsHolder } = require("../utils/ContractsHolder")
-
-const { HttpRpcClient } = require('@account-abstraction/sdk')
-const ethers = require('ethers')
-
-const Action = require("../utils/abis/Action.json")
-const ERCToken = require('../utils/abis/ERC20.json');
-
-
+const OnChainResources = require("../utils/OnChainResources")
+const ContractsHolder = require("../utils/ContractsHolder")
 const BundlerTools = require('../utils/actionUtils')
+const Transaction = require("../utils/Transaction")
+const DataServer = require('../utils/DataServer')
 const EOATools = require('../utils/eoaUtils')
-const { DataServer } = require('../utils/DataServer')
-const { OnChainResources } = require("../utils/OnChainResources")
-const Tools = require('../utils/tools')
-const { Transaction } = require("../utils/Transaction")
-const { create } = require("domain")
-const abi = ethers.utils.defaultAbiCoder;
-// const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-const MAX_INT = ethers.constants.MaxUint256._hex
+
+const { generateSha256 } = require("../utils/tools")
+
 
 class FunWallet extends ContractsHolder {
 
     actionsStore = {}
+
     /**
         * Standard constructor
         * @params config, index, userId
@@ -31,18 +20,18 @@ class FunWallet extends ContractsHolder {
         * userId - id of organization operating wallet
         * 
     */
-
     constructor(config, index = 0, userId = "fun") {
         super()
         this.addVarsToAttributes({ ...config, index })
-        this.dataServer = new DataServer(config.apiKey, userId)
-        
+        this.dataServer = new DataServer(config.apiKey, userId);
     }
 
-
+    /**
+        * Generates a Module.init transaction call ready to be signed
+     */
     async addModule(module, salt = 0) {
-        let action = await module.create()
-        let data = { ...action, salt }
+        let initTx = await module.encodeInitCall()
+        let data = { ...initTx, salt }
         this.actionsStore[generateSha256(data)] = data;
         module.innerAddData(this)
         return data
@@ -110,6 +99,10 @@ class FunWallet extends ContractsHolder {
         return new Transaction(data, true)
     }
 
+    async createUserOperation({ to, data }) {
+        const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
+        return new Transaction({ op }, true)
+    }
 
     // async createAction({ to, data }) {
     //     const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
@@ -118,7 +111,7 @@ class FunWallet extends ContractsHolder {
 
 
     // INTERNAL DEPLOY
-    async deployActionTx(transaction) {
+    async deployUserOperation(transaction) {
         const { op } = transaction.data
         const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
@@ -140,10 +133,18 @@ class FunWallet extends ContractsHolder {
             if (balance) return balance;
         })
 
-        const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
-        const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
 
-        const receipt = await this.deployActionTx({ data: { op } })
+        // OLD
+
+        // const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+        // const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
+        // const receipt = await this.deployActionTx({ data: { op } })
+
+        // NEW
+        
+        const createWalletData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+        const op = await BundlerTools.createUserOperation(this.accountApi, createWalletData, 560000, false, true)
+        const receipt = await this.deployUserOperation({ data: { op } })
 
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
 
@@ -151,7 +152,7 @@ class FunWallet extends ContractsHolder {
     }
 
 
-    async deployActionTx(transaction) {
+    async deployUserOperation(transaction) {
         const { op } = transaction.data
         const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
         const txid = await this.accountApi.getUserOpReceipt(userOpHash)
@@ -161,7 +162,7 @@ class FunWallet extends ContractsHolder {
 
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            return await this.deployActionTx(transaction, this.apiKey)
+            return await this.deployUserOperation(transaction, this.apiKey)
         }
         else {
             transaction.data.user=this.dataServer.user,
@@ -181,7 +182,7 @@ class FunWallet extends ContractsHolder {
 
     // STATIC METHODS
 
-    static async deployActionTx(transaction, apikey) {
+    static async deployUserOperation(transaction, apikey) {
         if (!apikey) {
             throw {};
             return
@@ -202,7 +203,7 @@ class FunWallet extends ContractsHolder {
 
     static async deployTx(transaction, apikey = "", eoa = false) {
         if (transaction.isUserOp) {
-            return await FunWallet.deployActionTx(transaction, apikey)
+            return await FunWallet.deployUserOperation(transaction, apikey)
         }
 
         if (!eoa) {
