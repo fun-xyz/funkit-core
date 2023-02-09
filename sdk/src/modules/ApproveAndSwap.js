@@ -8,6 +8,7 @@ const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
 const APROVE_AND_SWAP_ADDR = "0x7127707D0515D465567A22A012a6740A3aA60501"
 
 class ApproveAndSwap extends Module {
+    actionAddr = "0x92b0d1Cc77b84973B7041CB9275d41F09840eaDd"
 
     constructor(routerAddr) {
         super()

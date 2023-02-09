@@ -28,7 +28,13 @@ const deployAuthContract = (signer) => {
 }
 
 
-// const approveAndSwap = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
+
+const paymaster = require("../utils/abis/TokenPaymaster.json")
+const deployPaymaster = (signer, params) => {
+    return deploy(signer, paymaster, params)
+}
+
+// const approveAndSwap = require("modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
 const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap, [WETH_MAINNET])
@@ -66,11 +72,15 @@ const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
     const newPath = `../utils/abis/${fileName}`
-    const data = require(newPath)
+    const data = require(basePath + path)
+    const olddata = require(newPath)
     const fileHash = generateSha256(data.bytecode)
-    if (data.fileHash != fileHash) {
-        fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
+    if (olddata.fileHash == fileHash) {
+        return;
     }
+
+    fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
+    console.log(fileName)
 }
 
 
