@@ -9,6 +9,7 @@ const { ContractFactory } = ethers
 const WETH_MAINNET = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 
+
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
     const contract = await factory.deploy(...params);
@@ -54,6 +55,7 @@ const loadAbis = () => {
     const approveAndSwapPath = "../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
     const factoryPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWallet.sol/FunWallet.json"
+    
     const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath,]
     abis.forEach(moveFile)
 }
@@ -130,7 +132,7 @@ const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 
 
 // const rpcUrl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
-const rpcUrl = "http://127.0.0.1:8545"
+const rpcUrl = "https://api.avax-test.network/ext/bc/C/rpc"
 
 
 const hreProvider = hre.network.provider
@@ -193,8 +195,10 @@ const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
     const wallet = new ethers.Wallet(pkey, provider)
     // await generalDeployment(wallet)
-    await loadNetwork(wallet, addrs, baseAmt)
+    // await loadNetwork(wallet, addrs, baseAmt)
     // await loadNetwork(wallet, addrs, baseAmt
+    const verificationAddr = await deployAuthContract(wallet)
+    console.log(`const verificationAddr = "${verificationAddr}"`)
 }
 
 if (typeof require !== 'undefined' && require.main === module) {

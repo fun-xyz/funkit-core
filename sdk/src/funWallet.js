@@ -15,6 +15,7 @@ const { DataServer } = require('../utils/DataServer')
 const { OnChainResources } = require("../utils/OnChainResources")
 const Tools = require('../utils/tools')
 const { Transaction } = require("../utils/Transaction")
+const { create } = require("domain")
 const abi = ethers.utils.defaultAbiCoder;
 // const MAX_INT = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 const MAX_INT = ethers.constants.MaxUint256._hex
@@ -35,6 +36,7 @@ class FunWallet extends ContractsHolder {
         super()
         this.addVarsToAttributes({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, userId)
+        
     }
 
 
@@ -64,19 +66,18 @@ class FunWallet extends ContractsHolder {
             return
         }
 
-        // let chainInfo = await DataServer.getChainInfo(this.chain)
-        // console.log(chainInfo)
-        // const {
-        //     rpcdata: { rpcurl, bundlerUrl},
-        //     aaData: { entryPointAddress, factoryAddress },
-        // } = chainInfo
+        let chainInfo = await DataServer.getChainInfo(this.chain)
+        const {
+            rpcdata: { rpcurl, bundlerUrl},
+            aaData: { entryPointAddress },
+        } = chainInfo
 
-        const bundlerUrl = "http://localhost:3000/rpc"
-        const rpcurl = "http://127.0.0.1:8545/"
+        // const bundlerUrl = "http://localhost:3000/rpc"
+        // const rpcurl = "http://127.0.0.1:8545/"
 
-        const entryPointAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
-        const verificationAddr = "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf"
-        const factoryAddress = "0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720"
+        // const entryPointAddress = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
+        const verificationAddr = "0x7F4d8Db0870aBf71430656234Ca7B859757e0876"
+        const factoryAddress = "0xDfc25b0Fc4E026e69cE53F547C344D3b5f1d3A79"
 
 
 
@@ -98,13 +99,22 @@ class FunWallet extends ContractsHolder {
         }
     }
 
+    async createAction(actionExec){
+        const actionExecutionOp = await BundlerTools.createAction(this.accountApi, actionExec, 500000, true)
 
+        await this.dataServer.storeUserOp(actionExecutionOp, 'create_action')
 
-
-    async createAction({ to, data }) {
-        const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
-        return new Transaction({ op }, true)
+        const data = {
+            op: actionExecutionOp,
+        }
+        return new Transaction(data, true)
     }
+
+
+    // async createAction({ to, data }) {
+    //     const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
+    //     return new Transaction({ op }, true)
+    // }
 
 
     // INTERNAL DEPLOY
@@ -119,6 +129,7 @@ class FunWallet extends ContractsHolder {
     async deploy() {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
+
         let balance = Object.values(this.actionsStore).map((actionData) => {
             const { to, value, data, balance } = actionData
             if (to) {
@@ -131,8 +142,11 @@ class FunWallet extends ContractsHolder {
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
         const op = await BundlerTools.createAction(this.accountApi, createWalleteData, 560000, false, true)
+
         const receipt = await this.deployActionTx({ data: { op } })
+
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
+
         return { receipt, address: this.address }
     }
 
@@ -150,6 +164,8 @@ class FunWallet extends ContractsHolder {
             return await this.deployActionTx(transaction, this.apiKey)
         }
         else {
+            transaction.data.user=this.dataServer.user,
+            transaction.data.chain=this.chain
             const tx = await this.eoa.sendTransaction(transaction.data)
             return await tx.wait()
         }
