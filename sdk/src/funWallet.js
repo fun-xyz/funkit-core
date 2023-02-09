@@ -1,6 +1,5 @@
 const { OnChainResources } = require("../utils/OnChainResources")
 const { ContractsHolder } = require("../utils/ContractsHolder")
-const { Transaction } = require("../utils/Transaction")
 const { DataServer } = require('../utils/DataServer')
 
 const { generateSha256 } = require("../utils/tools")
@@ -28,6 +27,30 @@ class FunWallet extends ContractsHolder {
         this.dataServer = new DataServer(config.apiKey, userId);
     }
 
+    /**
+     * Parses the following parameters: eoa, prefundAmt, chain, apiKey, userId, index
+     * and adds them to the classes internal variable memory
+     */
+    parseConfig(vars) {
+        Object.keys(vars).forEach(varKey => {
+            this[varKey] = vars[varKey]
+        })
+    }
+
+    /**
+     * @returns
+     */
+    getAccountApi() {
+        return this.accountApi
+    }
+
+    /**
+     * @returns DataServer object
+     */
+    getDataServer() {
+        return this.dataServer
+    }
+
     /**     
      * Runs initialization for a given wallet.
      * The function acts as a constructor for many parameters in the class, creating
@@ -43,7 +66,7 @@ class FunWallet extends ContractsHolder {
 
         let chainInfo = await DataServer.getChainInfo(this.chain)
         const {
-            rpcdata: { rpcurl, bundlerUrl},
+            rpcdata: { rpcurl, bundlerUrl },
             aaData: { entryPointAddress },
         } = chainInfo
 
@@ -82,20 +105,10 @@ class FunWallet extends ContractsHolder {
         return txData
     }
 
-    async createUserOperation({ to, data }) {
-        const op = await this.accountApi.createSignedUserOp({ target: to, data, noInit: true, calldata: false })
-        return new Transaction({ op }, true)
-    }
-
-    // INTERNAL DEPLOY
-    async deployUserOperation(transaction) {
-        const { op } = transaction.data
-        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
-        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
-        return { userOpHash, txid }
-    }
-
-    // EXTERNAL DEPLOY
+    /**
+     * 
+     * @returns 
+     */
     async deploy() {
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
@@ -112,34 +125,35 @@ class FunWallet extends ContractsHolder {
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
         const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 560000, false, true)
-        const receipt = await this.deployUserOperation({ data: { op } })
+        const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
 
         return { receipt, address: this.address }
     }
 
-
-    async deployUserOperation(transaction) {
-        const { op } = transaction.data
-        const userOpHash = await this.bundlerClient.sendUserOpToBundler(op)
-        const txid = await this.accountApi.getUserOpReceipt(userOpHash)
-
-        return { userOpHash, txid }
-    }
-
+    /**
+     * 
+     * @param {*} transaction 
+     * @returns 
+     */
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            return await this.deployUserOperation(transaction, this.apiKey)
+            return await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.accountApi)
         }
         else {
-            transaction.data.user=this.dataServer.user,
-            transaction.data.chain=this.chain
+            transaction.data.user = this.dataServer.user,
+                transaction.data.chain = this.chain
             const tx = await this.eoa.sendTransaction(transaction.data)
             return await tx.wait()
         }
     }
 
+    /**
+     * 
+     * @param {*} txs 
+     * @returns 
+     */
     async deployTxs(txs) {
         const receipts = []
         for (let transaction of txs) {
@@ -148,38 +162,29 @@ class FunWallet extends ContractsHolder {
         return receipts
     }
 
-    // STATIC METHODS
-
-    static async deployUserOperation(transaction, apikey) {
-        if (!apikey) {
-            throw {};
-            return
-        }
-        const { op, user, chain } = transaction.data
-        const dataServer = new DataServer(apikey, user)
-        let chainInfo = await DataServer.getChainInfo(chain)
-        const {
-            rpcdata: { bundlerUrl, rpcurl },
-            aaData: { entryPointAddress, factoryAddress }
-        } = chainInfo
-        const { bundlerClient, accountApi } = await OnChainResources.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS)
-        const userOpHash = await bundlerClient.sendUserOpToBundler(op)
-        const txid = await accountApi.getUserOpReceipt(userOpHash)
-        await dataServer.storeUserOp(op, 'deploy_action')
-        return { userOpHash, txid }
-    }
-
+    /**
+     * 
+     * @param {*} transaction 
+     * @param {*} apikey 
+     * @param {*} eoa 
+     * @returns 
+     */
     static async deployTx(transaction, apikey = "", eoa = false) {
         if (transaction.isUserOp) {
-            return await FunWallet.deployUserOperation(transaction, apikey)
+            return await UserOpUtils.deployUserOperation(transaction, apiKey = apikey)
         }
-
         if (!eoa) {
+            
         }
         return await eoa.sendTransaction(transaction.data)
 
     }
 
+    /**
+     * 
+     * @param {*} txs 
+     * @returns 
+     */
     static async deployTxs(txs) {
         const receipts = []
         for (let transaction of txs) {
@@ -188,21 +193,6 @@ class FunWallet extends ContractsHolder {
         return receipts
     }
 
-    parseConfig(vars) {
-        Object.keys(vars).forEach(varKey => {
-            this[varKey] = vars[varKey]
-        })
-    }
-
-    getAccountApi() {
-        return this.accountApi
-    }
-
-    getDataServer() {
-        return this.dataServer
-    }
-
 }
 
 module.exports = { FunWallet }
-

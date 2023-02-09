@@ -55,9 +55,6 @@ class EoaAaveWithdrawal extends Module {
         const aaveexec = ABI.encode(["string"], [key])
         const actionExec = await wallet.contracts[EOA_AAVE_WITHDRAWAL_ADDR].getMethodEncoding("execute", [aaveexec])
         const userOpTx = await UserOpUtils.createUserOpTransaction(wallet.getDataServer(), wallet.getAccountApi(), actionExec, 500000, true)
-
-        console.log("SUCCESS :)");
-
         return userOpTx
     }
 
