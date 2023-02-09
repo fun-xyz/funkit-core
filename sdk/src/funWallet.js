@@ -24,12 +24,10 @@ class FunWallet extends ContractsHolder {
     */
     constructor(config, index = 0, userId = "fun") {
         super()
-//merge conflict
         this.parseConfig({ ...config, index })
+
         this.dataServer = new DataServer(config.apiKey, userId);
-//merge
-        this.addVarsToAttributes(config)
-        this.dataServer = new DataServer(config.apiKey, config.userId)
+
         if (config.paymasterAddr) {
             this.paymaster = new USDCPaymaster(config.paymasterAddr)
         }
@@ -94,6 +92,7 @@ class FunWallet extends ContractsHolder {
         this.bundlerClient = bundlerClient
         this.provider = provider
         this.accountApi = accountApi
+
         this.address = await this.accountApi.getAccountAddress()
         this.eoaAddr = await this.eoa.getAddress()
 
@@ -194,7 +193,7 @@ class FunWallet extends ContractsHolder {
             return await UserOpUtils.deployUserOperation(transaction, apiKey = apikey)
         }
         if (!eoa) {
-            
+
         }
         return await eoa.sendTransaction(transaction.data)
 
