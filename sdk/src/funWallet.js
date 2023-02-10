@@ -67,7 +67,7 @@ class FunWallet extends ContractsHolder {
         let chainInfo = await DataServer.getChainInfo(this.chain)
         const {
             rpcdata: { rpcurl, bundlerUrl},
-            // aaData: { entryPointAddress },
+            aaData: { entryPointAddress },
        
         } = chainInfo
 

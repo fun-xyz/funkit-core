@@ -34,7 +34,7 @@ const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap, [WETH_MAINNET])
 }
 
-const withdraw = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
+// const withdraw = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
 const deployAaveWithdraw = (signer) => {
     return deploy(signer, withdraw)
 }
