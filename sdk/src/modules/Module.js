@@ -55,9 +55,7 @@ class Module {
     verifyRequirements() {
         return true
     }
-    create() {
-        return this.encodeInitCall()
-    }
+   
 }
 
 module.exports = { Module }
