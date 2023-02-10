@@ -98,7 +98,7 @@ class FunWallet extends ContractsHolder {
     * @returns data, to, salt
     */
     async addModule(module, salt = 0) {
-        let initTx = await module.encodeInitCall()
+        let initTx = await module.create()
         // data = data, to, salt
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
@@ -110,6 +110,7 @@ class FunWallet extends ContractsHolder {
      * @returns 
      */
     async deploy() {
+
         await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
 
@@ -124,6 +125,7 @@ class FunWallet extends ContractsHolder {
         })
 
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
+
         const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 560000, false, true)
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 

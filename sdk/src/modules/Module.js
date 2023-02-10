@@ -1,5 +1,5 @@
 const ModuleObj = require("../../utils/abis/Module.json")
-const Transaction = require("../../utils/Transaction")
+const {Transaction} = require("../../utils/Transaction")
 const ethers = require("ethers")
 
 
@@ -55,7 +55,9 @@ class Module {
     verifyRequirements() {
         return true
     }
-    
+    create() {
+        return this.encodeInitCall()
+    }
 }
 
 module.exports = { Module }
