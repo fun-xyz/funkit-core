@@ -34,6 +34,11 @@ const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap, [WETH_MAINNET])
 }
 
+const withdraw = require("../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
+const deployAaveWithdraw = (signer) => {
+    return deploy(signer, withdraw)
+}
+
 const factory = require("../utils/abis/FunWalletFactory.json")
 const deployFactory = (signer) => {
     return deploy(signer, factory)
@@ -55,7 +60,7 @@ const loadAbis = () => {
     const approveAndSwapPath = "../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
     const factoryPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "../../../fun-wallet-smart-contract/artifacts/contracts/FunWallet.sol/FunWallet.json"
-    
+
     const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath,]
     abis.forEach(moveFile)
 }
@@ -136,8 +141,8 @@ const rpcUrl = "https://api.avax-test.network/ext/bc/C/rpc"
 
 
 const hreProvider = hre.network.provider
-const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-// const pkey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
+// const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+const pkey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 // const provider = new ethers.providers.Web3Provider(hreProvider)
 // const signer = await createSigner("0x1B7BAa734C00298b9429b518D621753Bb0f6efF2")
 // await deployEntryPoint(wallet)
@@ -197,8 +202,8 @@ const main = async () => {
     // await generalDeployment(wallet)
     // await loadNetwork(wallet, addrs, baseAmt)
     // await loadNetwork(wallet, addrs, baseAmt
-    const verificationAddr = await deployAuthContract(wallet)
-    console.log(`const verificationAddr = "${verificationAddr}"`)
+    const withdraw = await deployAaveWithdraw(wallet)
+    console.log(`const withdraw = "${withdraw}"`)
 }
 
 if (typeof require !== 'undefined' && require.main === module) {

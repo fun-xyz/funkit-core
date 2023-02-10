@@ -75,6 +75,7 @@ class FunWallet extends ContractsHolder {
         this.bundlerClient = bundlerClient
         this.provider = provider
         this.accountApi = accountApi
+
         this.address = await this.accountApi.getAccountAddress()
         this.eoaAddr = await this.eoa.getAddress()
 
@@ -145,8 +146,8 @@ class FunWallet extends ContractsHolder {
             return await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.accountApi)
         }
         else {
-            transaction.data.user = this.dataServer.user,
-                transaction.data.chain = this.chain
+            // transaction.data.user = this.dataServer.user,
+            //     transaction.data.chain = this.chain
             const tx = await this.eoa.sendTransaction(transaction.data)
             return await tx.wait()
         }

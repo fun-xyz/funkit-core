@@ -6,25 +6,25 @@ const chain = '43113' //avax fuji
 const { DataServer } = require('../utils/DataServer')
 
 const { getUserBalanceErc } = require("../utils/deploy")
-const oneE18=ethers.constants.WeiPerEther
+const oneE18 = ethers.constants.WeiPerEther
 const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
 
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const eoa = new ethers.Wallet(privKey, provider)
     const bal = await provider.getBalance(eoa.address)
-    const orgName=""
+    const orgName = ""
 
     const to = '0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e'
     const amount = 1000000
 
-    const config = new FunWalletConfig(eoa,chain, APIKEY, prefundAmt)
+    const config = new FunWalletConfig(eoa, chain, APIKEY, prefundAmt)
     const wallet = new FunWallet(config)
     await wallet.init()
 
-    const transfer = new TransferToken() 
+    const transfer = new TransferToken()
     await wallet.addModule(transfer)
 
-    const {address} = await wallet.deploy()
+    const { address } = await wallet.deploy()
 
     console.log("Fun Wallet Address: ", address)
     const start = await getUserBalanceErc(wallet, tokenAddr)

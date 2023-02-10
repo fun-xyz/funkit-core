@@ -23,19 +23,22 @@ const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
     const wallet = new FunWallet(walletConfig)
 
     const module = new EoaAaveWithdrawal(tokenAddr, CHAIN)
-    const withdrawData = await wallet.addModule(module)
+
+    await wallet.init()
+    await wallet.addModule(module)
+
+    const modulePreExecTxs = await module.getPreExecTxs(tokenAddr)
+
+    await wallet.deployTxs(modulePreExecTxs)
+    await module.verifyRequirements(tokenAddr)
 
     const deployWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
 
-    const modulePreExecTxs = await module.getPreExecTxs(wallet)
-    console.log(modulePreExecTxs)
-
-    const aaveActionTx = await module.createWithdraw(wallet)
+    const aaveActionTx = await module.createWithdraw(tokenAddr)
 
     const withdrawReceipt = await wallet.deployTx(aaveActionTx)
     console.log("Execution Succesful:\n", withdrawReceipt)
-
 }
 
 const processConsole = () => {

@@ -45,6 +45,7 @@ class Module {
      * 
      * @returns ethers UnsignedTransaction
      */
+
     async encodeValidateCall(data) {
         let contract = new ethers.Contract(this.addr, ModuleObj.abi)
         return contract.populateTransaction.validate(data)
