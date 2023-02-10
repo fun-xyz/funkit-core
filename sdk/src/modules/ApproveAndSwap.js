@@ -5,12 +5,12 @@ const { Token, TokenTypes } = require('../../utils/Token');
 const { swapExec } = require('../../utils/SwapUtils');
 
 const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
-const APROVE_AND_SWAP_ADDR = "0x7127707D0515D465567A22A012a6740A3aA60501"
+const APROVE_AND_SWAP_ADDR = "0x74ef2B06A1D2035C33244A4a263FF00B84504865"
 
 class ApproveAndSwap extends Module {
 
     constructor(routerAddr) {
-        super()
+        super(APROVE_AND_SWAP_ADDR)
         this.routerAddr = routerAddr
         this.actionContract = new ethers.Contract(APROVE_AND_SWAP_ADDR, ApproveAndSwapObj.abi)
     }

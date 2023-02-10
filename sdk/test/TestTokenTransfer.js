@@ -15,7 +15,7 @@ const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
 
 
     const to = '0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e'
-    const amount = 1000000
+    const amount = 10000000
 
     const config = new FunWalletConfig(eoa, chain, APIKEY, prefundAmt)
     const wallet = new FunWallet(config)
