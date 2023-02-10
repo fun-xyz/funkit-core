@@ -50,12 +50,7 @@ const deployPaymaster = (signer, params) => {
 const deployPaymasterWithParams = async (wallet) => {
     const entryPoint = "0xD1760AA0FCD9e64bA4ea43399Ad789CFd63C7809";
     const tokenPriceOracle = "0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720";
-    const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
-    const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
-    const params = [entryPoint, tokenPriceOracle, token, aggregator]
 
-    const paymaster = await deployPaymaster(wallet, params)
-    console.log(`const paymaster = "${paymaster}"`)
 }
 
 const timeout = async (ms) => {
@@ -214,8 +209,16 @@ const loadNetwork = async (wallet) => {
     await timeout(1000)
 
     const approveAndSwapAddr = await deployApproveAndSwap(wallet)
-    console.log(`\nactionAddr = "${approveAndSwapAddr}"`)
+    console.log(`const approveAndSwapAddr = "${approveAndSwapAddr}"`)
     await timeout(1000)
+
+    const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+    const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
+
+    const params = [entryPointAddress, oracleAddress, token, aggregator]
+
+    const paymaster = await deployPaymaster(wallet, params)
+    console.log(`const paymasterAddr = "${paymaster}"`)
 }
 
 
@@ -233,17 +236,32 @@ const main = async () => {
     const approveAndSwapAddr = await deployApproveAndSwap(wallet)
     console.log(`\nactionAddr = "${approveAndSwapAddr}"`)
     await timeout(1000)
-    // await deployPaymasterWithParams(wallet)
+    await deployPaymasterWithParams(wallet)
     // await transferAmt(wallet, "0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e", 10)
+}
+
+const deployForFork = async () => {
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+    const wallet = new ethers.Wallet(pkey, provider)
+    await loadNetwork(wallet)
 }
 
 
 
 if (typeof require !== 'undefined' && require.main === module) {
-    if (process.argv[2] == "-l") {
-        loadAbis()
-    } else {
-        main()
+
+    switch (process.argv[2]) {
+        case "-l": {
+            loadAbis();
+            return;
+        }
+        case "-l": {
+            loadAbis();
+            return;
+        }
+        default: {
+            main()
+        }
     }
 }
 
