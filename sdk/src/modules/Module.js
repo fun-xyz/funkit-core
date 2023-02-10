@@ -1,5 +1,5 @@
 const ModuleObj = require("../../utils/abis/Module.json")
-const {Transaction} = require("../../utils/Transaction")
+const { Transaction } = require("../../utils/Transaction")
 const ethers = require("ethers")
 
 
@@ -10,12 +10,12 @@ class Module {
         this.wallet = {}
     }
 
-     /**
-     * Generates and returns an ethers UnsignedTransaction representing a transaction call to the Module's init()
-     * method with ethers.constants.HashZero as the input ready to be signed and submitted to a chain.
-     * 
-     * @returns ethers UnsignedTransaction
-     */
+    /**
+    * Generates and returns an ethers UnsignedTransaction representing a transaction call to the Module's init()
+    * method with ethers.constants.HashZero as the input ready to be signed and submitted to a chain.
+    * 
+    * @returns ethers UnsignedTransaction
+    */
     async encodeInitCall() {
         let contract = new ethers.Contract(this.addr, ModuleObj.abi)
         return contract.populateTransaction.init(ethers.constants.HashZero)
@@ -30,6 +30,13 @@ class Module {
     async encodeExecuteCall(data) {
         let contract = new ethers.Contract(this.addr, ModuleObj.abi)
         return contract.populateTransaction.execute(data)
+    }
+
+    innerAddData(wallet) {
+        Object.keys(wallet).forEach(varKey => {
+            this.wallet[varKey] = wallet[varKey]
+        })
+        this.wallet.prototype = wallet.prototype
     }
 
     /**
@@ -55,7 +62,7 @@ class Module {
     verifyRequirements() {
         return true
     }
-   
+
 }
 
 module.exports = { Module }

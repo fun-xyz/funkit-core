@@ -102,6 +102,7 @@ class FunWallet extends ContractsHolder {
         // data = data, to, salt
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
+        module.innerAddData(this)
         return txData
     }
 
@@ -176,7 +177,7 @@ class FunWallet extends ContractsHolder {
             return await UserOpUtils.deployUserOperation(transaction, apiKey = apikey)
         }
         if (!eoa) {
-            
+
         }
         return await eoa.sendTransaction(transaction.data)
 
