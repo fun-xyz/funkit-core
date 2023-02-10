@@ -11,8 +11,8 @@ const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
 
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const eoa = new ethers.Wallet(privKey, provider)
-    const bal = await provider.getBalance(eoa.address)
-    const orgName = ""
+    // const bal = await provider.getBalance(eoa.address)
+
 
     const to = '0xA596e25E2CbC988867B4Ee7Dc73634329E674d9e'
     const amount = 1000000
