@@ -3,10 +3,12 @@ const ethers_1 = require("ethers");
 
 const utils_1 = require("ethers/lib/utils");
 
-const TreasurySRC = require("./abis/FunWallet.json")
-const srcfile = require("./abis/FunWalletFactory.json")
-var _abi = srcfile.abi
+const TreasurySRC = require("../utils/abis/FunWallet.json")
+const factory = require("../utils/abis/FunWalletFactory.json")
 
+
+
+var _abi = factory.abi
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const contracts_1 = require("@account-abstraction/contracts");
@@ -37,13 +39,13 @@ class SimpleAccountAPI {
         this.entryPointAddress = params.entryPointAddress;
         this.accountAddress = params.accountAddress;
         this.paymasterAPI = params.paymasterAPI;
+        this.verificationAddress = params.verificationAddress
         // factory "connect" define the contract address. the contract "connect" defines the "from" address.
         this.entryPointView = contracts_1.EntryPoint__factory.connect(params.entryPointAddress, params.provider).connect(ethers_1.ethers.constants.AddressZero);
 
 
     }
-
-    async _getAccountContract() {
+    async getAccountContract() {
         if (this.accountContract == null) {
             this.accountContract = new ethers_1.Contract(await this.getAccountAddress(), TreasurySRC.abi, this.provider);
         }
@@ -62,10 +64,9 @@ class SimpleAccountAPI {
                 throw new Error('no factory to get initCode');
             }
         }
-
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
-            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, await this.owner.getAddress(), this.index])
+            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, this.verificationAddress, await this.owner.getAddress(), this.index])
         ]);
     }
 
@@ -79,7 +80,7 @@ class SimpleAccountAPI {
      * @param data
      */
     async encodeExecute(target, value, data) {
-        await this._getAccountContract()
+        await this.getAccountContract()
         return this.accountContract.interface.encodeFunctionData("execFromEntryPointOrOwner", [target, value, data])
     }
 
@@ -204,7 +205,7 @@ class SimpleAccountAPI {
         }
         return this.senderAddress;
     }
-    
+
     async estimateCreationGas(initCode) {
         if (initCode == null || initCode === '0x')
             return 0;

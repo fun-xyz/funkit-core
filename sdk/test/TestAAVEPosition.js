@@ -1,62 +1,49 @@
-const { FunWallet, EOAAAVEWithdrawal, AccessControlSchema } = require("../index")
+const { FunWalletConfig } = require("../utils/configs/walletConfigs")
+const { EoaAaveWithdrawal } = require("../src/modules/index")
+const { FunWallet } = require("../index")
+
 const ethers = require('ethers')
-const { TestAaveConfig, FunWalletConfig } = require("../utils/configs/walletConfigs")
-const chain = '43113' //avax fuji 
-const { TranslationServer } = require('../utils/TranslationServer')
+
+const CHAIN = '43113' // avax fuji 
+// const USDC_MUMBAI = "0x7EA2be2df7BA6E54B1A9C70676f668455E329d29"
+// const DAI_MUMBAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+// const USDT_MUMBAI = "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832"
+
+// const USDC_MAINNET = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+// const DAI_MAINNET = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+// const USDT_MAINNET = "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832"
 
 
-const main = async (config, rpcurl) => {
-    if (!rpcurl) {
-        const chainInfo = await TranslationServer.getChainInfo(chain)
-        rpcurl = chainInfo.rpcdata.rpcurl //https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7
-    }
-
-
-    // 1. With metamask
-    // const provider = new ethers.providers.Web3Provider(window.ethereum)
-    // await provider.send('eth_requestAccounts', []); // <- this promps user to connect metamask
-    // const eoa = provider.getSigner();
-
-    // 2. With a known private key
+const main = async (tokenAddr, privKey, prefundAmt, APIKEY, rpcurl) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
-    const eoa = new ethers.Wallet(config.privKey, provider)
+    const eoa = new ethers.Wallet(privKey, provider)
 
     // Create a FunWallet with the above access control schema, prefunded with prefundAmt AVAXa
-    const walletConfig = new FunWalletConfig(eoa, config.prefundAmt, chain, config.APIKEY)
+    const walletConfig = new FunWalletConfig(eoa, CHAIN, APIKEY, prefundAmt)
     const wallet = new FunWallet(walletConfig)
 
-    const module = new EOAAAVEWithdrawal(config.aTokenAddress, chain, 10)
-    const withdrawEntirePosition = wallet.addModule(module)
+    const module = new EoaAaveWithdrawal(tokenAddr, CHAIN)
 
+    await wallet.init()
+    await wallet.addModule(module)
 
+    const modulePreExecTxs = await module.getPreExecTxs(tokenAddr)
 
-    // Deploy the FunWallet
+    await wallet.deployTxs(modulePreExecTxs)
+    await module.verifyRequirements(tokenAddr)
+
     const deployWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
 
-    const modulePreExecTxs = await module.getPreExecTxs(wallet);
-    await wallet.deployTxs(modulePreExecTxs)
+    const aaveActionTx = await module.createWithdraw(tokenAddr)
 
-    console.assert(await module.verifyRequirements(wallet), "PreExecTxs Failed")
-
-    // Create a tx that exits an EOA's Aave poisition to be called at a later point
-    const aaveActionTx = await wallet.createModuleExecutionTx(withdrawEntirePosition)
-
-    // Create & deploy a tx that gives the FunWallet authorization to close the EOA's Aave position
-    // const tokenApprovalReceipt = await wallet.deployTokenApproval(config.aTokenAddress)
-    // console.log("Approval Succesful:\n", tokenApprovalReceipt)
-
-    // After some time, deploy the Aave withdrawal action
-    const aaveWithdrawalReceipt = await FunWallet.deployTx(aaveActionTx, config.APIKEY)
-    console.log("Execution Succesful:\n", aaveWithdrawalReceipt)
-
+    const withdrawReceipt = await wallet.deployTx(aaveActionTx)
+    console.log("Execution Succesful:\n", withdrawReceipt)
 }
 
 const processConsole = () => {
-    let aTokenAddress = process.argv[2], privKey = process.argv[3], prefundAmt = process.argv[4], APIKEY = process.argv[5], rpcurl = process.argv[6]
-    prefundAmt = parseFloat(prefundAmt)
-    const config = new TestAaveConfig(aTokenAddress, privKey, prefundAmt, APIKEY)
-    main(config, rpcurl)
+    const [tokenAddr, privKey, prefundAmt, APIKEY, rpcurl] = process.argv.slice(2)
+    main(tokenAddr, privKey, prefundAmt, APIKEY, rpcurl)
 }
 
 

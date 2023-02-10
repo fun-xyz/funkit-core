@@ -1,9 +1,0 @@
-class IModule {
-    getRequiredPreTxs(){
-
-    }
-    verifyRequirements(){
-        
-    }
-
-}

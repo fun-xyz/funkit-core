@@ -21,9 +21,11 @@ exports.SimpleAccountFactory__factory = void 0;
 /* eslint-disable */
 var ethers_1 = require("ethers");
 
-const srcfile = require("./abis/TreasuryFactory.json")
-var _abi = srcfile.abi
-var _bytecode = srcfile.bytecode
+const TreasurySRC = require("../utils/abis/FunWallet.json")
+const factory = require("../utils/abis/FunWalletFactory.json")
+
+var _abi = factory.abi
+var _bytecode = factory.bytecode
 
 var isSuperArgs = function (xs) { return xs.length > 1; };
 var SimpleAccountFactory__factory = /** @class */ (function (_super) {
