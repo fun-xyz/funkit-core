@@ -1,5 +1,5 @@
 const actionUtils = require('../utils/actionUtils.js')
-const { TreasuryAPI } = require('../utils/TreasuryAPI.js')
+const { FunWalletDataProvider } = require('../utils/FunWalletDataProvider.js')
 const { wrapProvider } = require("../utils/Provider.js")
 const { OnChainResources } = require('../utils/OnChainResources.js')
 let accountAPI
@@ -23,7 +23,7 @@ describe('action util functions test', function () {
         // erc4337Provider = await wrapProvider(provider, this.config, this.eoa, this.factoryAddress)
         const eoa = new ethers.Wallet(privKey, provider)
 
-        // accountApi = new TreasuryAPI({
+        // accountApi = new FunWalletDataProvider({
         //     provider: erc4337Provider,
         //     entryPointAddress: entryPointAddress,
         //     factoryAddress: factoryAddress,
