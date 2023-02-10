@@ -1,7 +1,7 @@
-const { FunWallet, AccessControlSchema, TransferToken } = require("../index")
-const { ApproveAndSwap } = require("../modules")
+const { FunWallet, configs } = require("../index")
+const { FunWalletConfig } = configs
+const { ApproveAndSwap, TransferToken } = require("../modules")
 const ethers = require('ethers')
-const { FunWalletConfig } = require("../utils/configs/walletConfigs")
 
 const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, createErc, } = require("../utils/deploy")
 
@@ -9,7 +9,6 @@ const ERC20 = require("../utils/abis/ERC20.json")
 const { Token, TokenTypes } = require("../utils/Token")
 
 
-const routerAddr = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 
 const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const chain = "31337"
@@ -19,6 +18,7 @@ const prefundAmt = 0
 
 const amount = 60
 
+const routerAddr = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 const privKey = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
@@ -94,8 +94,8 @@ const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
 
     const postBalance = await paymasterContract.getDeposit()
     console.log("paymasterBalance: ", postBalance.toString())
-
 }
+
 const fundUserUSDCPaymaster = async (wallet, eoa, paymasterAddr, walletaddr) => {
     const amount = 10000000
 
@@ -110,7 +110,6 @@ const fundUserUSDCPaymaster = async (wallet, eoa, paymasterAddr, walletaddr) => 
     await execContractFunc(eoa, approvedata)
     await execContractFunc(eoa, depositData)
     await logUserPaymasterBalance(paymasterContract, walletaddr)
-
 }
 
 const execContractFunc = async (eoa, data) => {
@@ -133,7 +132,6 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
-
 }
 const main = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
@@ -156,8 +154,8 @@ const main = async () => {
     console.log("funder balance: ", await getBalance(funder))
     console.log("eoa balance: ", await getBalance(eoa))
 
-    // await fundUserUSDCPaymaster(wallet, eoa, paymasterAddr, wallet.address)
-    // await fundPaymasterEth(eoa, paymasterAddr, 1)
+    await fundUserUSDCPaymaster(wallet, eoa, paymasterAddr, wallet.address)
+    await fundPaymasterEth(eoa, paymasterAddr, 1)
 
 
     const swapModule = new ApproveAndSwap(routerAddr)

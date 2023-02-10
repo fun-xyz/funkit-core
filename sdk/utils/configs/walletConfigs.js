@@ -9,7 +9,7 @@ class TestAaveConfig {
 }
 
 class FunWalletConfig {
-    constructor(eoa, chain, apiKey, prefundAmt, paymasterAddr, userId = "fun", index = 0) {
+    constructor(eoa, chain, apiKey, prefundAmt, paymasterAddr, userId, index = 0) {
         this.eoa = eoa
         this.prefundAmt = prefundAmt
         this.chain = chain

@@ -1,13 +1,11 @@
 const { FunWallet } = require("./src/FunWallet")
-const { TransferToken } = require('./src/modules/TransferToken')
-const { EoaAaveWithdrawal } = require("./src/modules/EoaAaveWithdrawal")
 const { AccessControlSchema } = require("./src/schema")
+const configs = require("./utils/configs/walletConfigs")
 const wallets = require("./src/wallets/index.js")
 
 module.exports = {
     FunWallet,
-    EoaAaveWithdrawal,
     AccessControlSchema,
-    TransferToken,
-    wallets
+    wallets,
+    configs
 }

@@ -5,4 +5,4 @@ const { Module } = require('./Module')
 
 
 
-module.exports = { EoaAaveWithdrawal, ApproveAndSwap, TransferToken }
+module.exports = { EoaAaveWithdrawal, ApproveAndSwap, TransferToken, Module }

@@ -22,9 +22,16 @@ const deployEntryPoint = (signer) => {
     return deploy(signer, entryPoint)
 }
 
+
+
 const authContract = require("../utils/abis/UserAuthentication.json")
 const deployAuthContract = (signer) => {
     return deploy(signer, authContract)
+}
+
+const aaveWithdraw = require("../utils/abis/AaveWithdraw.json")
+const deployAaveWithdraw = (signer) => {
+    return deploy(signer, aaveWithdraw)
 }
 
 const priceOracle = require("../utils/abis/TokenPriceOracle.json")
@@ -196,29 +203,46 @@ const loadNetwork = async (wallet) => {
     console.log(`const entryPointAddress = "${entryPointAddress}"`)
     await timeout(1000)
 
-    const verificationAddr = await deployAuthContract(wallet)
-    console.log(`const verificationAddr = "${verificationAddr}"`)
+    const verificationAddress = await deployAuthContract(wallet)
+    console.log(`const verificationAddr = "${verificationAddress}"`)
     await timeout(1000)
 
     const factoryAddress = await deployFactory(wallet)
     console.log(`const factoryAddress = "${factoryAddress}"`)
     await timeout(1000)
 
-    const oracleAddress = await deployPriceOracle(wallet)
-    console.log(`const oracleAddress = "${oracleAddress}"`)
+    const tokenPriceOracleAddress = await deployPriceOracle(wallet)
+    console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
     await timeout(1000)
 
-    const approveAndSwapAddr = await deployApproveAndSwap(wallet)
-    console.log(`const approveAndSwapAddr = "${approveAndSwapAddr}"`)
-    await timeout(1000)
 
     const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
     const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
 
-    const params = [entryPointAddress, oracleAddress, token, aggregator]
+    const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
 
-    const paymaster = await deployPaymaster(wallet, params)
-    console.log(`const paymasterAddr = "${paymaster}"`)
+    const approveAndSwapAddress = await deployApproveAndSwap(wallet)
+    console.log(`const approveAndSwapAddr = "${approveAndSwapAddress}"`)
+    await timeout(1000)
+
+    const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
+    console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
+    await timeout(1000)
+
+    const paymasterAddress = await deployPaymaster(wallet, params)
+    console.log(`const paymasterAddress = "${paymasterAddress}"`)
+
+    const config = {
+        entryPointAddress,
+        verificationAddress,
+        factoryAddress,
+        tokenPriceOracleAddress,
+        paymasterAddress,
+        approveAndSwapAddress,
+        aaveWithdrawAddress
+    }
+
+    fs.writeFileSync("../test/contractConfig.json", JSON.stringify(config))
 }
 
 
@@ -255,8 +279,8 @@ if (typeof require !== 'undefined' && require.main === module) {
             loadAbis();
             return;
         }
-        case "-l": {
-            loadAbis();
+        case "-d": {
+            deployForFork();
             return;
         }
         default: {

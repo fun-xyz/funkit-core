@@ -10,7 +10,7 @@ const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
 
 const ABI = ethers.utils.defaultAbiCoder;
-const EOA_AAVE_WITHDRAWAL_ADDR = "0xF0b79678982Ee8394749fce069FFD8a90361381c"
+const EOA_AAVE_WITHDRAWAL_ADDR = require("../../test/contractConfig.json").aaveWithdrawAddress
 
 class EoaAaveWithdrawal extends Module {
 

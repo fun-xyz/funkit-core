@@ -1,4 +1,1 @@
-const { AAVEWithdrawal, ApproveAndSwap } = require("./src/modules/index")
-
-
-module.exports = { AAVEWithdrawal, ApproveAndSwap }
+module.exports = require("./src/modules/index")

@@ -6,22 +6,12 @@ const { JSBI } = require('@uniswap/sdk');
 const ERC20 = require("./abis/ERC20.json")
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json')
 
-const ALCHEMY_HTTP_ENDPOINT = "http://localhost:8545"
-// const provider = new ethers.providers.JsonRpcProvider(ALCHEMY_HTTP_ENDPOINT)
 
 const POOL_FACTORY_CONTRACT_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
-const SWAP_ROUTER_ADDRESS = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 const QUOTER_CONTRACT_ADDRESS = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
 
 const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-
-
-// const tokenIn = USDC
-// const tokenOut = DAI
-
-// Trading Functions
-
 
 
 function fromReadableAmount(amount, decimals) {

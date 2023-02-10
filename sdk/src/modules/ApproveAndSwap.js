@@ -5,7 +5,7 @@ const { Token, TokenTypes } = require('../../utils/Token');
 const { swapExec } = require('../../utils/SwapUtils');
 
 const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
-const APROVE_AND_SWAP_ADDR = "0x74ef2B06A1D2035C33244A4a263FF00B84504865"
+const APROVE_AND_SWAP_ADDR = require("../../test/contractConfig.json").approveAndSwapAddress
 
 class ApproveAndSwap extends Module {
 

@@ -7,12 +7,12 @@ const { generateSha256 } = require("../utils/tools")
 const UserOpUtils = require('../utils/UserOpUtils')
 const EOATools = require('../utils/eoaUtils')
 
-// const FACTORY_ADDRESS = "0xDfc25b0Fc4E026e69cE53F547C344D3b5f1d3A79"
-// const VERIFICATION_ADDR = "0x7F4d8Db0870aBf71430656234Ca7B859757e0876"
 
 // FORK ADDRESSES
-const FACTORY_ADDRESS = "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf"
-const VERIFICATION_ADDR = "0x75b0B516B47A27b1819D21B26203Abf314d42CCE"
+const FACTORY_ADDRESS = require("../test/contractConfig.json").factoryAddress
+const VERIFICATION_ADDR = require("../test/contractConfig.json").verificationAddress
+
+const bundlerUrl = "http://localhost:3000/rpc"
 
 const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 
@@ -79,10 +79,8 @@ class FunWallet extends ContractsHolder {
         //     // aaData: { entryPointAddress },
         // } = chainInfo
 
-        const rpcurl = "http://127.0.0.1:8545"
-        const bundlerUrl = "http://localhost:3000/rpc"
-
-        const entryPointAddress = "0xD1760AA0FCD9e64bA4ea43399Ad789CFd63C7809"
+        const rpcurl = this.eoa.provider.connection.url
+        const entryPointAddress = require("../test/contractConfig.json").entryPointAddress
 
         const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS, VERIFICATION_ADDR, this.paymaster, this.eoa, this.index)
 
