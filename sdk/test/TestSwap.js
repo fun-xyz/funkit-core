@@ -14,7 +14,7 @@ const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const chain = "31337"
 const rpcurl = "http://127.0.0.1:8545"
 
-const prefundAmt = 0
+const prefundAmt = 0.3
 
 const amount = 60
 
@@ -138,34 +138,34 @@ const main = async () => {
     const eoa = new ethers.Wallet(privKey, provider)
     const funder = new ethers.Wallet(pkey, provider)
 
-    // const paymasterAddr = ""
-    const paymasterAddr = "0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312"
-    const paymaster = loadPaymaster(paymasterAddr, eoa)
-    // await transferAmt(funder, eoa.address, amount)
+    const paymasterAddr = ""
+    // const paymasterAddr = require("./contractConfig.json").paymasterAddress
+    // const paymaster = loadPaymaster(paymasterAddr, eoa)
+    await transferAmt(funder, eoa.address, amount)
 
     const walletConfig = new FunWalletConfig(eoa, chain, APIKEY, prefundAmt, paymasterAddr, "caleb")
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
 
-    await logUserPaymasterBalance(paymaster, wallet.address, "Pre Transaction")
+    // await logUserPaymasterBalance(paymaster, wallet.address, "Pre Transaction")
 
 
     console.log("wallet balance: ", await getBalance(wallet))
     console.log("funder balance: ", await getBalance(funder))
     console.log("eoa balance: ", await getBalance(eoa))
 
-    await fundUserUSDCPaymaster(wallet, eoa, paymasterAddr, wallet.address)
-    await fundPaymasterEth(eoa, paymasterAddr, 1)
+    // await fundUserUSDCPaymaster(wallet, eoa, paymasterAddr, wallet.address)
+    // await fundPaymasterEth(eoa, paymasterAddr, 1)
 
 
     const swapModule = new ApproveAndSwap(routerAddr)
     await wallet.addModule(swapModule)
     await wallet.deploy()
 
-    // await testEthSwap(wallet, swapModule, eoa)
+    await testEthSwap(wallet, swapModule, eoa)
     await testERCPair(wallet, swapModule, eoa)
 
-    await logUserPaymasterBalance(paymaster, wallet.address, "Post Transaction")
+    // await logUserPaymasterBalance(paymaster, wallet.address, "Post Transaction")
 
 }
 
