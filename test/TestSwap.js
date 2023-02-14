@@ -1,6 +1,6 @@
 const { FunWallet, configs } = require("../index")
 const { FunWalletConfig } = configs
-const { ApproveAndSwap, TransferToken } = require("../modules")
+const { ApproveAndSwap, TransferToken } = require("../src/modules")
 const ethers = require('ethers')
 
 const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, createErc, } = require("../utils/deploy")
