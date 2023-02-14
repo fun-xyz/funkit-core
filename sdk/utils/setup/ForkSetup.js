@@ -31,8 +31,9 @@ const deployAuthContract = (signer) => {
     return deploy(signer, authContract)
 }
 
-const aaveWithdraw = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
+
 // const aaveWithdraw = require("../abis/AaveWithdraw.json")
+const aaveWithdraw = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
 const deployAaveWithdraw = (signer) => {
     return deploy(signer, aaveWithdraw)
 }
@@ -191,25 +192,25 @@ const loadNetwork = async (wallet) => {
 }
 
 
-
+const contractConfigPath = "../../test/contractConfig.json"
 
 const main = async () => {
-    const rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
-    const wallet = new ethers.Wallet(privKey, provider)
+    const wallet = new ethers.Wallet(pkey, provider)
 
     // const verificationAddress = await deployAuthContract(wallet)
     // console.log(`const verificationAddr = "${verificationAddress}"`)
     // await timeout(1000)
 
-    const factoryAddress = await deployFactory(wallet)
-    console.log(`const factoryAddress = "${factoryAddress}"`)
-    await timeout(1000)
-
-    // const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
-    // console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
+    // const factoryAddress = await deployFactory(wallet)
+    // console.log(`const factoryAddress = "${factoryAddress}"`)
     // await timeout(1000)
+
+    const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
+    console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
+    const olddata = require(contractConfigPath)
+    fs.writeFileSync(contractConfigPath, JSON.stringify({ ...olddata, aaveWithdrawAddress }))
 }
 
 

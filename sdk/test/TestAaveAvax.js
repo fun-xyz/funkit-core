@@ -1,7 +1,7 @@
 const { FunWalletConfig } = require("../utils/configs/walletConfigs")
 const { EoaAaveWithdrawal, ApproveAndSwap, TransferToken } = require("../src/modules/index")
 const { FunWallet } = require("../index")
-const { execTest, transferAmt, getAddrBalanceErc, getBalance, transferErc, execContractFunc, getUserBalanceErc, createErc, } = require("../utils/deploy")
+const { execTest, transferAmt, getAddrBalanceErc, getAllowanceErc, getBalance, transferErc, execContractFunc, getUserBalanceErc, createErc, } = require("../utils/deploy")
 
 const ethers = require('ethers')
 
@@ -38,17 +38,19 @@ const main = async (privKey, prefundAmt, APIKEY, rpcurl) => {
     await mainTest(wallet, atokenAddr)
     const endEoaATokenBalance = await getAddrBalanceErc(eoa, atokenAddr, eoa.address)
     console.log("Withdrew: ", (eoaATokenBalance - endEoaATokenBalance), "tokens")
+    const endWalletATokenallowance = await getAllowanceErc(eoa, atokenAddr, eoa.address, wallet.address)
+    console.log("Wallet: ", (endWalletATokenallowance), "allowance")
 
 }
 
 // const privKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 const privKey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
-const prefundAmt = 0.3
+const prefundAmt = 0
 const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const aWETH = "0x9668f5f55f2712Dd2dfa316256609b516292D554" //fork token
 // const aWETH = "0x2B2927e26b433D92fC598EE79Fa351d6591B8F95"
 
-const atokenAddr = aWETH
+const atokenAddr = "0x2B2927e26b433D92fC598EE79Fa351d6591B8F95"
 // const CHAIN = 31337
 // const rpcurl = "http://127.0.0.1:8545/"
 const CHAIN = "43113"

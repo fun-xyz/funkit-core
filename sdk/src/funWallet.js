@@ -141,7 +141,7 @@ class FunWallet extends ContractsHolder {
         }
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
-        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 500000, false, true)
+        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 0, false, true)
 
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 
