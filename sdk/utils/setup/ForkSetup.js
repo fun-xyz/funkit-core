@@ -32,8 +32,8 @@ const deployAuthContract = (signer) => {
 }
 
 
-// const aaveWithdraw = require("../abis/AaveWithdraw.json")
-const aaveWithdraw = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
+const aaveWithdraw = require("../abis/AaveWithdraw.json")
+// const aaveWithdraw = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
 const deployAaveWithdraw = (signer) => {
     return deploy(signer, aaveWithdraw)
 }
