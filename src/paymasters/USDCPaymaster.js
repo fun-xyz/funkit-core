@@ -1,8 +1,5 @@
 const { PaymasterDataProvider } = require("../../utils/PaymasterDataProvider");
 
-const USDCPaymasterContractData = require("../../utils/abis/TokenPaymaster.json");
-const { ethers } = require("ethers");
-
 class USDCPaymaster extends PaymasterDataProvider {
 
     constructor(paymasterAddr) {

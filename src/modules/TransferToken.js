@@ -1,18 +1,8 @@
 const ethers = require("ethers")
-
-const { createWrappedContract } = require("../../utils/WrappedEthersContract")
-const { Transaction } = require("../../utils/Transaction")
-const BundlerTools = require('../../utils/actionUtils')
-const { Module } = require('./Module')
-const fetch = require('node-fetch')
-const { DataServer } = require("../../utils/DataServer")
 const ERC20 = require('../../utils/abis/ERC20.json')
-
-const { Token, TokenTypes } = require("../../utils/Token")
+const { Token } = require("../../utils/Token")
 const { PrimitiveModule } = require("./PrimitiveModule")
 
-
-const MAX_INT = ethers.constants.MaxUint256._hex
 class TransferToken extends PrimitiveModule {
     async createTransfer(to, amount, ERC20Token) {
         const token = await Token.createFrom(ERC20Token)
@@ -21,6 +11,5 @@ class TransferToken extends PrimitiveModule {
         return await this.createUserOpFromCallData(transferData)
     }
 }
-
 
 module.exports = { TransferToken }

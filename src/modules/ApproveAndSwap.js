@@ -1,9 +1,7 @@
 const ethers = require('ethers')
 const { Module } = require("./Module")
 const { Token, TokenTypes } = require('../../utils/Token');
-
 const { swapExec } = require('../../utils/SwapUtils');
-
 const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
 const APROVE_AND_SWAP_ADDR = require("../../test/contractConfig.json").approveAndSwapAddress
 
@@ -39,12 +37,6 @@ class ApproveAndSwap extends Module {
         const swapData = await this._encodeERC20Swap(tokenInAddress, this.routerAddr, amount, data)
         return await this.createUserOpFromCallData(swapData)
     }
-
-
-
 }
-
-
-// scrape rpc data for detailed erc20s
 
 module.exports = { ApproveAndSwap }

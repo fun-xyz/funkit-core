@@ -1,14 +1,9 @@
 const { Transaction } = require("../../utils/Transaction")
 const { Module } = require('./Module')
-
-const { createWrappedContract } = require("../../utils/WrappedEthersContract")
-const { generateSha256 } = require("../../utils/tools")
-
 const Action = require("../../utils/abis/AaveWithdraw.json")
 const UserOpUtils = require('../../utils/UserOpUtils')
 const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
-
 const ABI = ethers.utils.defaultAbiCoder;
 const EOA_AAVE_WITHDRAWAL_ADDR = require("../../test/contractConfig.json").aaveWithdrawAddress
 
@@ -49,6 +44,5 @@ class EoaAaveWithdrawal extends Module {
     }
 
 }
-
 
 module.exports = { EoaAaveWithdrawal }

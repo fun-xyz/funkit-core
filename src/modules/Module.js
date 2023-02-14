@@ -2,7 +2,6 @@ const ModuleObj = require("../../utils/abis/Module.json")
 const { Transaction } = require("../../utils/Transaction")
 const ethers = require("ethers")
 
-
 class Module {
 
     constructor(addr) {
@@ -63,7 +62,6 @@ class Module {
     verifyRequirements() {
         return true
     }
-
 }
 
 module.exports = { Module }

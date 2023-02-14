@@ -1,9 +1,7 @@
 const { OnChainResources } = require("../utils/OnChainResources")
 const { ContractsHolder } = require("../utils/ContractsHolder")
 const { DataServer } = require('../utils/DataServer')
-
 const { generateSha256 } = require("../utils/tools")
-
 const UserOpUtils = require('../utils/UserOpUtils')
 const EOATools = require('../utils/eoaUtils')
 
@@ -16,6 +14,18 @@ const bundlerUrl = "http://localhost:3000/rpc"
 
 const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 
+class FunWalletConfig {
+    constructor(eoa, chain, apiKey, prefundAmt, paymasterAddr, orgId, index = 0) {
+        this.eoa = eoa
+        this.chain = chain
+        this.apiKey = apiKey
+        this.prefundAmt = prefundAmt
+        this.paymasterAddr = paymasterAddr
+        this.orgId = orgId
+        this.index = index
+    }
+}
+
 class FunWallet extends ContractsHolder {
 
     transactions = {}
@@ -24,13 +34,13 @@ class FunWallet extends ContractsHolder {
     * Standard constructor
     * @params config, index, userId
     * - config: FunWalletConfig (see /utils/configs/walletConfigs)
-    * - index: index of account (default 0)
-    * - userId: id of organization operating wallet
+    * - index: index of account (default 0). update this when trying to operate on different fun wallets
+    * - orgId: id of organization operating wallet
     */
-    constructor(config, index = 0, userId = "fun") {
+    constructor(config, index = 0, orgId) {
         super()
         this.parseConfig({ ...config, index })
-        this.dataServer = new DataServer(config.apiKey, userId);
+        this.dataServer = new DataServer(config.apiKey, orgId);
         if (config.paymasterAddr) {
             this.paymaster = new USDCPaymaster(config.paymasterAddr)
         }
@@ -44,20 +54,6 @@ class FunWallet extends ContractsHolder {
         Object.keys(vars).forEach(varKey => {
             this[varKey] = vars[varKey]
         })
-    }
-
-    /**
-     * @returns
-     */
-    getAccountApi() {
-        return this.accountApi
-    }
-
-    /**
-     * @returns DataServer object
-     */
-    getDataServer() {
-        return this.dataServer
     }
 
     /**     
@@ -211,4 +207,4 @@ class FunWallet extends ContractsHolder {
 
 }
 
-module.exports = { FunWallet }
+module.exports = { FunWallet, FunWalletConfig }
