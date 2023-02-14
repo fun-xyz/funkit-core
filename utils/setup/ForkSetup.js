@@ -68,7 +68,7 @@ const timeout = async (ms) => {
 const fs = require("fs");
 const { generateSha256 } = require("../tools");
 
-const basePath = "../../../../fun-wallet-smart-contract/artifacts/contracts/"
+const basePath = "../../../fun-wallet-smart-contract/artifacts/contracts/"
 
 const loadAbis = () => {
     const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
@@ -99,7 +99,7 @@ const moveFile = (path) => {
         }
 
         fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
-        console.log(fileName)
+        console.log("SUCCESS: ", fileName)
     }
     catch {
         console.log("ERROR: ", fileName)
