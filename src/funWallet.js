@@ -77,7 +77,6 @@ class FunWallet extends ContractsHolder {
 
         const rpcurl = this.eoa.provider.connection.url
         const entryPointAddress = require("../test/contractConfig.json").entryPointAddress
-
         const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS, VERIFICATION_ADDR, this.paymaster, this.eoa, this.index)
 
         this.bundlerClient = bundlerClient
@@ -133,10 +132,13 @@ class FunWallet extends ContractsHolder {
             }
             if (balance) return balance;
         })
-
+        if (!actionCreateData.dests.length) {
+            return
+        }
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
-        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 560000, false, true)
+        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 500000, false, true)
+
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)

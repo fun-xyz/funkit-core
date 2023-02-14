@@ -16,6 +16,11 @@ const deploy = async (signer, obj, params = []) => {
     return contract.address
 }
 
+const execContractFunc = async (eoa, data) => {
+    const tx = await eoa.sendTransaction(data)
+    return await tx.wait()
+}
+
 
 const entryPoint = require("../utils/abis/EntryPoint.json")
 const deployEntryPoint = (signer) => {
@@ -133,11 +138,24 @@ const getUserBalanceErc = async (sender, addr) => {
     const balance = await contract.balanceOf(sender.address)
     return ethers.utils.formatUnits(balance, decimals)
 }
-const getAddrBalanceErc = async (provider, token, addr) => {
+const getAddrBalanceErc = async (provider, token, addr, format = true) => {
     const contract = createErc(token, provider)
     const decimals = await contract.decimals()
     const balance = await contract.balanceOf(addr)
-    return ethers.utils.formatUnits(balance, decimals)
+    if (format) {
+        return ethers.utils.formatUnits(balance, decimals)
+    }
+    return balance
+}
+
+const getAllowanceErc = async (provider, token, owner, spender, format = true) => {
+    const contract = createErc(token, provider)
+    const decimals = await contract.decimals()
+    const balance = await contract.allowance(owner, spender)
+    if (format) {
+        return ethers.utils.formatUnits(balance, decimals)
+    }
+    return balance
 }
 const createSigner = async (address) => {
     await hre.network.provider.request({
@@ -270,6 +288,10 @@ const deployForFork = async () => {
     await loadNetwork(wallet)
 }
 
+const getBalance = async (wallet) => {
+    const balance = await wallet.provider.getBalance(wallet.address);
+    return ethers.utils.formatUnits(balance, 18)
+}
 
 
 if (typeof require !== 'undefined' && require.main === module) {
@@ -296,5 +318,8 @@ module.exports = {
     transferErc,
     getUserBalanceErc,
     getAddrBalanceErc,
-    createErc
+    createErc,
+    getBalance,
+    execContractFunc,
+    getAllowanceErc
 }

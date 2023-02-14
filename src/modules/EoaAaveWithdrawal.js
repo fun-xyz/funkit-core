@@ -6,11 +6,11 @@ const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
 const ABI = ethers.utils.defaultAbiCoder;
 const EOA_AAVE_WITHDRAWAL_ADDR = require("../../test/contractConfig.json").aaveWithdrawAddress
-
 class EoaAaveWithdrawal extends Module {
 
     constructor() {
         super(EOA_AAVE_WITHDRAWAL_ADDR)
+        this.abi = Action.abi
     }
 
     async getPreExecTxs(tokenAddress, amount = ethers.constants.MaxInt256) {
@@ -36,10 +36,9 @@ class EoaAaveWithdrawal extends Module {
 
     async createWithdraw(tokenAddress, amount = ethers.constants.MaxInt256) {
         const contract = new ethers.Contract(EOA_AAVE_WITHDRAWAL_ADDR, Action.abi)
-        console.log(this.wallet.eoaAddr)
         const aaveExec = ABI.encode(["address", "address", "uint256"], [this.wallet.eoaAddr, tokenAddress, amount])
         const actionExec = await contract.populateTransaction.execute(aaveExec)
-        const userOpTx = await UserOpUtils.createUserOpTransaction(this.wallet.dataServer, this.wallet.accountApi, actionExec, 500000, true)
+        const userOpTx = await UserOpUtils.createUserOpTransaction(this.wallet.dataServer, this.wallet.accountApi, actionExec, 560000, true)
         return userOpTx
     }
 

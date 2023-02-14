@@ -1,0 +1,7 @@
+{
+    "entryPointAddress": "0xCf64E11cd6A6499FD6d729986056F5cA7348349D",
+    "verificationAddress": "0x37e8B9CDe35a75dDfe9f63504f1CA4eC6A79b164",
+    "factoryAddress": "0x0cC55661559983dfa4F98D3512e9889412e3F74c",
+    "approveAndSwapAddress": "0x38c18B915d75803f27A50DC80BC3825327F1Cc12",
+    "aaveWithdrawAddress": "0x911434d506804dbf849Ee4237ff7186a99A783b4"
+}
