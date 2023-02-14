@@ -4,6 +4,19 @@
   "sourceName": "contracts/modules/Module.sol",
   "abi": [
     {
+      "inputs": [],
+      "name": "emptyBytes32",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -70,6 +83,11 @@
         },
         {
           "components": [
+            {
+              "internalType": "bytes32",
+              "name": "action",
+              "type": "bytes32"
+            },
             {
               "internalType": "bytes",
               "name": "target",

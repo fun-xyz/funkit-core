@@ -1,0 +1,9 @@
+{
+    "entryPointAddress": "0xCf64E11cd6A6499FD6d729986056F5cA7348349D",
+    "verificationAddress": "0x4eB27D9994266E202670620a1128A687A481cA56",
+    "factoryAddress": "0x61879A80f721305EE98F76c10b02f7472329178a",
+    "tokenPriceOracleAddress": "0xDf951d2061b12922BFbF22cb17B17f3b39183570",
+    "paymasterAddress": "0xe14058B1c3def306e2cb37535647A04De03Db092",
+    "approveAndSwapAddress": "0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312",
+    "aaveWithdrawAddress": "0x6835f8A0ecAd1cAA28894C64ee6e802c341484B6"
+}

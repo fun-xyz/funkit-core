@@ -1,1 +1,7 @@
-{"entryPointAddress":"0xD1760AA0FCD9e64bA4ea43399Ad789CFd63C7809","verificationAddress":"0x75b0B516B47A27b1819D21B26203Abf314d42CCE","factoryAddress":"0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf","tokenPriceOracleAddress":"0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720","paymasterAddress":"0x8f119cd256a0FfFeed643E830ADCD9767a1d517F","approveAndSwapAddress":"0xDf951d2061b12922BFbF22cb17B17f3b39183570","aaveWithdrawAddress":"0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312"}
+{
+    "entryPointAddress": "0xCf64E11cd6A6499FD6d729986056F5cA7348349D",
+    "verificationAddress": "0x37e8B9CDe35a75dDfe9f63504f1CA4eC6A79b164",
+    "factoryAddress": "0x0cC55661559983dfa4F98D3512e9889412e3F74c",
+    "approveAndSwapAddress": "0x38c18B915d75803f27A50DC80BC3825327F1Cc12",
+    "aaveWithdrawAddress": "0x911434d506804dbf849Ee4237ff7186a99A783b4"
+}

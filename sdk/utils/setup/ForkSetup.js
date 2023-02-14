@@ -31,7 +31,8 @@ const deployAuthContract = (signer) => {
     return deploy(signer, authContract)
 }
 
-const aaveWithdraw = require("../abis/AaveWithdraw.json")
+const aaveWithdraw = require("../../../../fun-wallet-smart-contract/artifacts/contracts/modules/actions/AaveWithdraw.sol/AaveWithdraw.json")
+// const aaveWithdraw = require("../abis/AaveWithdraw.json")
 const deployAaveWithdraw = (signer) => {
     return deploy(signer, aaveWithdraw)
 }
@@ -72,10 +73,12 @@ const loadAbis = () => {
     const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
     const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"
     const approveAndSwapPath = "modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
+    const aaveWithdrawPath = "modules/actions/AaveWithdraw.sol/AaveWithdraw.json"
     const factoryPath = "FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "FunWallet.sol/FunWallet.json"
     const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
-    const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath]
+    const tokenOracle = "paymaster/TokenPriceOracle.sol/TokenPriceOracle.json"
+    const abis = [entryPointPath, authContractPath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath, tokenOracle, aaveWithdrawPath]
 
     abis.forEach(moveFile)
 }
@@ -86,15 +89,20 @@ const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
     const newPath = `../abis/${fileName}`
-    const data = require(basePath + path)
-    const olddata = require(newPath)
-    const fileHash = generateSha256(data.bytecode)
-    if (olddata.fileHash == fileHash) {
-        return;
-    }
+    try {
+        const data = require(basePath + path)
+        const olddata = require(newPath)
+        const fileHash = generateSha256(data.bytecode)
+        if (olddata.fileHash == fileHash) {
+            return;
+        }
 
-    fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
-    console.log(fileName)
+        fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
+        console.log(fileName)
+    }
+    catch {
+        console.log("ERROR: ", fileName)
+    }
 }
 
 
@@ -149,15 +157,19 @@ const loadNetwork = async (wallet) => {
     console.log(`const factoryAddress = "${factoryAddress}"`)
     await timeout(1000)
 
-    const tokenPriceOracleAddress = await deployPriceOracle(wallet)
-    console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
-    await timeout(1000)
+    // const tokenPriceOracleAddress = await deployPriceOracle(wallet)
+    // console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
+    // await timeout(1000)
 
 
-    const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-    const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
+    // // const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+    // // const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
 
-    const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
+    // // const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
+
+    // const paymasterAddress = await deployPaymaster(wallet, params)
+    // console.log(`const paymasterAddress = "${paymasterAddress}"`)
+    // await timeout(1000)
 
     const approveAndSwapAddress = await deployApproveAndSwap(wallet)
     console.log(`const approveAndSwapAddr = "${approveAndSwapAddress}"`)
@@ -165,17 +177,13 @@ const loadNetwork = async (wallet) => {
 
     const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
     console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
-    await timeout(1000)
 
-    const paymasterAddress = await deployPaymaster(wallet, params)
-    console.log(`const paymasterAddress = "${paymasterAddress}"`)
+
 
     const config = {
         entryPointAddress,
         verificationAddress,
         factoryAddress,
-        tokenPriceOracleAddress,
-        paymasterAddress,
         approveAndSwapAddress,
         aaveWithdrawAddress
     }
@@ -186,8 +194,22 @@ const loadNetwork = async (wallet) => {
 
 
 const main = async () => {
+    const rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
-    const wallet = new ethers.Wallet(pkey, provider)
+    const wallet = new ethers.Wallet(privKey, provider)
+
+    // const verificationAddress = await deployAuthContract(wallet)
+    // console.log(`const verificationAddr = "${verificationAddress}"`)
+    // await timeout(1000)
+
+    const factoryAddress = await deployFactory(wallet)
+    console.log(`const factoryAddress = "${factoryAddress}"`)
+    await timeout(1000)
+
+    // const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
+    // console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
+    // await timeout(1000)
 }
 
 
@@ -196,11 +218,13 @@ const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const chain = "31337"
 const rpcurl = "http://127.0.0.1:8545"
 
+
 const prefundAmt = 0.3
 
 const routerAddr = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
-const privKey = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
+const privKey = "66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+// const pkey = "c5ff68eee74d447b88d5d0dd1d438b37f30a4c0b1e41e9c485c6e2ea282d1489"
 
 const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
@@ -214,6 +238,13 @@ const deployForFork = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const wallet = new ethers.Wallet(pkey, provider)
     await transferAmt(wallet, "0xB1d3BD3E33ec9A3A15C364C441D023a73f1729F6", 10)
+    await loadNetwork(wallet)
+}
+
+const deployForAvax = async () => {
+    const rpcurl = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
+    const provider = new ethers.providers.JsonRpcProvider(rpcurl)
+    const wallet = new ethers.Wallet(privKey, provider)
     await loadNetwork(wallet)
 }
 
@@ -327,6 +358,10 @@ if (typeof require !== 'undefined' && require.main === module) {
         }
         case "-d": {
             deployForFork();
+            return;
+        }
+        case "-da": {
+            deployForAvax();
             return;
         }
         case "-sp": {

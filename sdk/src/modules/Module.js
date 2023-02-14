@@ -17,7 +17,7 @@ class Module {
     * @returns ethers UnsignedTransaction
     */
     async encodeInitCall() {
-        let contract = new ethers.Contract(this.addr, ModuleObj.abi)
+        let contract = new ethers.Contract(this.addr, this.abi)
         return contract.populateTransaction.init(ethers.constants.HashZero)
     }
 
