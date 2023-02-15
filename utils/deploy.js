@@ -10,6 +10,7 @@ const WETH_MAINNET = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 
 
+
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
     const contract = await factory.deploy(...params);
@@ -321,5 +322,6 @@ module.exports = {
     createErc,
     getBalance,
     execContractFunc,
-    getAllowanceErc
+    getAllowanceErc,
+    timeout
 }

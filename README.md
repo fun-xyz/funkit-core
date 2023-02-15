@@ -31,13 +31,12 @@ yarn test-transferToken 0x5425890298aed601595a70AB815c96711a31Bc65 66f37ee92a08e
 Starting point: ```/fun-wallet-sdk```
 
 ```
-cd sdk
 npx hardhat node --fork "https://eth-mainnet.g.alchemy.com/v2/lcA7Kyqv42J1Qh-wLm__DdqSCJBtZyd1"
 ```
 ## `In a seperate terminal tab`
 Starting point: ```/fun-wallet-sdk```
 ```
-cd sdk/utils/setup
+cd utils/setup
 node ForkSetup.js -d
 node ForkSetup.js -b
 ```

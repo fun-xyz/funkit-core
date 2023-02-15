@@ -1,15 +1,17 @@
-const { FunWalletConfig } = require("../utils/configs/walletConfigs")
+const { FunWalletConfig } = require("../src/funWallet")
 const { EoaAaveWithdrawal, ApproveAndSwap, TransferToken } = require("../src/modules/index")
 const { FunWallet } = require("../index")
-const { execTest, transferAmt, getAddrBalanceErc, getBalance, transferErc, execContractFunc, getUserBalanceErc, createErc, getAllowanceErc, } = require("../utils/deploy")
+const { execTest, transferAmt, getAddrBalanceErc, timeout, getBalance, transferErc, execContractFunc, getUserBalanceErc, createErc, getAllowanceErc, } = require("../utils/deploy")
 
 const ethers = require('ethers')
 const { Token } = require("../utils/Token")
 
+const ABI = ethers.utils.defaultAbiCoder;
+
 const CHAIN = 31337 // avax fuji 
 
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-const aDAI = "0x028171bCA77440897B824Ca71D1c56caC55b68A3"
+const aDAI = "0x018008bfb33d285247A21d44E50697654f754e63"
 const routerAddr = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 
 const POOL_ADDRESS = "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
@@ -85,9 +87,10 @@ const eoaSupplyAave = async (eoa, amount, tokenAddr) => {
 const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
     await walletEthToERC20Swap(wallet, eoa, amount, tokenAddr, eoa.address)
     const eoaDaiBalance = await getAddrBalanceErc(eoa.provider, tokenAddr, eoa.address, false)
+    const eoaDaiBalanceFormat = await getAddrBalanceErc(eoa.provider, tokenAddr, eoa.address)
     await eoaSupplyAave(eoa, (eoaDaiBalance), tokenAddr)
-    const endEoaDaiBalance = await getAddrBalanceErc(eoa.provider, tokenAddr, eoa.address, false)
-    console.log("Supplied: ", (eoaDaiBalance - endEoaDaiBalance), "tokens")
+    const endEoaDaiBalance = await getAddrBalanceErc(eoa.provider, tokenAddr, eoa.address)
+    console.log("Supplied: ", (eoaDaiBalanceFormat - endEoaDaiBalance), "tokens")
 
 }
 
@@ -98,19 +101,131 @@ const mainTest = async (wallet, tokenAddr) => {
     await wallet.addModule(module)
 
     const modulePreExecTxs = await module.getPreExecTxs(tokenAddr)
-    console.log(modulePreExecTxs)
     await wallet.deployTxs(modulePreExecTxs)
     console.log("pre transaction status success: ", await module.verifyRequirements(tokenAddr))
 
     const deployWalletReceipt = await wallet.deploy()
     console.log("Creation Succesful:\n", deployWalletReceipt.receipt)
 
-    const aaveActionTx = await module.createWithdraw(tokenAddr)
+    const aaveActionTx = await module.createWithdraw(tokenAddr, wallet.eoa.address)
 
     const withdrawReceipt = await wallet.deployTx(aaveActionTx)
     console.log("Execution Succesful:\n", withdrawReceipt)
 }
 
+
+const getAtokenAddress = async (eoa, tokenAddress) => {
+    const abi = [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "asset",
+                    "type": "address"
+                }
+            ],
+            "name": "getReserveData",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "data",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.ReserveConfigurationMap",
+                            "name": "configuration",
+                            "type": "tuple"
+                        },
+                        {
+                            "internalType": "uint128",
+                            "name": "liquidityIndex",
+                            "type": "uint128"
+                        },
+                        {
+                            "internalType": "uint128",
+                            "name": "variableBorrowIndex",
+                            "type": "uint128"
+                        },
+                        {
+                            "internalType": "uint128",
+                            "name": "currentLiquidityRate",
+                            "type": "uint128"
+                        },
+                        {
+                            "internalType": "uint128",
+                            "name": "currentVariableBorrowRate",
+                            "type": "uint128"
+                        },
+                        {
+                            "internalType": "uint128",
+                            "name": "currentStableBorrowRate",
+                            "type": "uint128"
+                        },
+                        {
+                            "internalType": "uint40",
+                            "name": "lastUpdateTimestamp",
+                            "type": "uint40"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "aTokenAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "stableDebtTokenAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "variableDebtTokenAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "interestRateStrategyAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "id",
+                            "type": "uint8"
+                        }
+                    ],
+                    "internalType": "struct DataTypes.ReserveData",
+                    "name": "",
+                    "type": "tuple"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+    ]
+    const poolIface = new ethers.Contract(POOL_ADDRESS, abi, eoa)
+    return await poolIface.getReserveData(tokenAddress)
+}
+
+const getUnderlyingAsset = async (eoa, atokenAddress) => {
+    const abi = [{
+        "inputs": [],
+        "name": "UNDERLYING_ASSET_ADDRESS",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },]
+    const atokenIface = new ethers.Contract(atokenAddress, abi, eoa)
+    return await atokenIface.UNDERLYING_ASSET_ADDRESS()
+}
 const amount = 10;
 const main = async (privKey, prefundAmt, APIKEY, rpcurl) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
@@ -119,17 +234,30 @@ const main = async (privKey, prefundAmt, APIKEY, rpcurl) => {
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
     await setUpWithdrawEOA(eoa, wallet, amount, tokenAddr)
-    const eoaATokenBalance = await getAddrBalanceErc(eoa, atokenAddr, eoa.address)
-    await mainTest(wallet, atokenAddr)
-    const endEoaATokenBalance = await getAddrBalanceErc(eoa, atokenAddr, eoa.address)
-    const endWalletATokenBalance = await getAddrBalanceErc(eoa, atokenAddr, wallet.address)
-    const endWalletATokenallowance = await getAllowanceErc(eoa, atokenAddr, eoa.address, wallet.address)
 
-    console.log("Withdrew: ", (eoaATokenBalance - endEoaATokenBalance), "tokens")
-    console.log("Has: ", (endEoaATokenBalance), "tokens")
-    console.log("Wallet: ", (endWalletATokenBalance), "tokens")
-    console.log("Wallet: ", (endWalletATokenallowance), "allowance")
+    console.log("Waiting for block to pass.")
+    await timeout(4000)
 
+    const { aTokenAddress } = await getAtokenAddress(eoa, tokenAddr)
+    const baseTokenAddress = await getUnderlyingAsset(eoa, aTokenAddress)
+    console.log(baseTokenAddress)
+    const eoaTokenBalance = await getAddrBalanceErc(eoa, tokenAddr, eoa.address)
+    const eoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
+    await mainTest(wallet, aTokenAddress)
+
+    const endEoaTokenBalance = await getAddrBalanceErc(eoa, tokenAddr, eoa.address)
+    const endEoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
+    const walletATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, wallet.address)
+    const walletAllowance = await getAllowanceErc(eoa, aTokenAddress, eoa.address, wallet.address)
+
+    console.log("Started with: ", (eoaTokenBalance), "Tokens")
+    console.log("Has: ", (endEoaTokenBalance), "Tokens")
+
+    console.log("Withdrew: ", (eoaATokenBalance - endEoaATokenBalance), "ATokens")
+    console.log("Has: ", (endEoaATokenBalance), "ATokens")
+
+    console.log("\nWallet has: ", walletAllowance, "allowance\n")
+    console.log("Wallet has: ", walletATokenBalance, "Tokens")
 }
 
 const processConsole = () => {
@@ -144,7 +272,6 @@ const rpcurl = "http://127.0.0.1:8545"
 
 
 const tokenAddr = DAI
-const atokenAddr = aDAI
 
 
 main(privKey, prefundAmt, APIKEY, rpcurl)

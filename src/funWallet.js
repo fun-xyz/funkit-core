@@ -37,7 +37,7 @@ class FunWallet extends ContractsHolder {
     * - index: index of account (default 0). update this when trying to operate on different fun wallets
     * - orgId: id of organization operating wallet
     */
-    constructor(config, index = 0, orgId) {
+    constructor(config, index = 0, orgId = "fun") {
         super()
         this.parseConfig({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, orgId);

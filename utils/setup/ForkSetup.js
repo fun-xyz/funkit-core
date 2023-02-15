@@ -9,7 +9,7 @@ const { ContractFactory } = ethers
 
 const { FunWallet, configs } = require("../../index")
 const { FunWalletConfig } = configs
-const { ApproveAndSwap, TransferToken } = require("../../modules")
+const { ApproveAndSwap, TransferToken } = require("../../src/modules")
 
 
 const deploy = async (signer, obj, params = []) => {

@@ -6,7 +6,6 @@ const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
 const APROVE_AND_SWAP_ADDR = require("../../test/contractConfig.json").approveAndSwapAddress
 
 class ApproveAndSwap extends Module {
-
     constructor(routerAddr) {
         super(APROVE_AND_SWAP_ADDR)
         this.routerAddr = routerAddr
