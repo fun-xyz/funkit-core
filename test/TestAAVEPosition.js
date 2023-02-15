@@ -178,7 +178,6 @@ const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddres
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
     const startWalletDAI = await getUserBalanceErc(wallet, tokenAddr)
-
     const tx = await swapModule.createSwap("eth", tokenAddr, amount, returnAddress)
     const execReceipt = await wallet.deployTx(tx)
 
@@ -251,10 +250,10 @@ const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
     const walletConfig = new FunWalletConfig(eoa, CHAIN, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
-    await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
+    // await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
 
-    console.log("Waiting for block to pass.")
-    await timeout(12000)
+    // console.log("Waiting for block to pass.")
+    // await timeout(12000)
 
     const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
     const baseTokenAddress = await getUnderlyingAsset(eoa, aTokenAddress)

@@ -15,14 +15,14 @@ class EoaAaveWithdrawal extends Module {
         this.abi = Action.abi
     }
 
-    async getPreExecTxs(tokenAddress, amount) {
+    async getPreExecTxs(tokenAddress, amount = ethers.constants.MaxInt256) {
         return [await this.deployTokenApproval(tokenAddress, amount)]
     }
 
-    async verifyRequirements(tokenAddress, amount) {
+    async verifyRequirements(tokenAddress, amount = ethers.constants.MaxInt256) {
         const contract = new ethers.Contract(tokenAddress, ERC20.abi, this.wallet.provider)
         const value = await contract.allowance(this.wallet.eoaAddr, this.wallet.address)
-        return value.get(ethers.BigNumber.from(amount))
+        return value.gte(ethers.BigNumber.from(amount))
     }
 
     /**
@@ -30,7 +30,7 @@ class EoaAaveWithdrawal extends Module {
     * @return {Transaction} 
     * Transaction - Transaction data
     */
-    async deployTokenApproval(tokenAddress, amount) {
+    async deployTokenApproval(tokenAddress, amount = ethers.constants.MaxInt256) {
         const tokenContract = new ethers.Contract(tokenAddress, ERC20.abi)
         const { to, data } = await tokenContract.populateTransaction.approve(this.wallet.address, amount)
         return new Transaction({ to, data })
@@ -40,7 +40,7 @@ class EoaAaveWithdrawal extends Module {
         const contract = new ethers.Contract(this.addr, this.abi)
         const aaveExec = ABI.encode(["address", "address", "uint256"], [withdrawToAddress, tokenAddress, amount])
         const actionExec = await contract.populateTransaction.execute(aaveExec)
-        const userOpTx = await UserOpUtils.createUserOpTransaction(this.wallet.dataServer, this.wallet.accountApi, actionExec, 560000, true)
+        const userOpTx = await UserOpUtils.createUserOpTransaction(this.wallet.dataServer, this.wallet.funWalletDataProvider, actionExec, 560000, true)
         return userOpTx
     }
 }

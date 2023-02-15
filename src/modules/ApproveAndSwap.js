@@ -24,22 +24,20 @@ class ApproveAndSwap extends Module {
         return await this.actionContract.populateTransaction.executeSwapETH(to, amount, data)
     }
 
-    async createSwap(tokenInData, tokenOutData, amountIn, slippage, percentDec) {
+    async createSwap(tokenInData, tokenOutData, amountIn, returnAddr = this.wallet.address, slippage = 5, percentDec = 100) {
         const tokenIn = await Token.createFrom(tokenInData)
         const tokenOut = await Token.createFrom(tokenOutData)
 
+        
         const tokenInAddress = await tokenIn.getAddress()
         const tokenOutAddress = await tokenOut.getAddress()
 
-        const { data, to, amount } = await swapExec(this.wallet.provider, this.uniswapV3RouterAddr, tokenInAddress, tokenOutAddress, amountIn, 
-            this.wallet.address, slippage, percentDec)
-
-        let swapData
+        const { data, to, amount } = await swapExec(this.wallet.provider, this.uniswapV3RouterAddr, tokenInAddress, tokenOutAddress, amountIn, returnAddr, slippage, percentDec)
         if (tokenIn.type == TokenTypes.ETH) {
-            swapData = await this._encodeETHSwap(to, amount, data)
-        } else {
-            swapData = await this._encodeERC20Swap(tokenInAddress, this.uniswapV3RouterAddr, amount, data)
+            const swapData = await this._encodeETHSwap(to, amount, data)
+            return await this.createUserOpFromCallData(swapData)
         }
+        const swapData = await this._encodeERC20Swap(tokenInAddress, this.uniswapV3RouterAddr, amount, data)
         return await this.createUserOpFromCallData(swapData)
     }
 }

@@ -5,7 +5,7 @@ const { ContractFactory } = ethers
 
 
 const { FunWallet, configs } = require("../../index")
-const { FunWalletConfig } = configs
+const { FunWalletConfig } = require("../../index")
 const { ApproveAndSwap, TransferToken } = require("../../src/modules")
 
 
