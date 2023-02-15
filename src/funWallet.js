@@ -37,10 +37,10 @@ class FunWallet extends ContractsHolder {
     * - index: index of account (default 0). update this when trying to operate on different fun wallets
     * - orgId: id of organization operating wallet
     */
-    constructor(config, index = 0, orgId = "fun") {
+    constructor(config, index = 0) {
         super()
         this.parseConfig({ ...config, index })
-        this.dataServer = new DataServer(config.apiKey, orgId);
+        this.dataServer = new DataServer(config.apiKey);
         if (config.paymasterAddr) {
             this.paymaster = new USDCPaymaster(config.paymasterAddr)
         }
@@ -63,18 +63,21 @@ class FunWallet extends ContractsHolder {
      * It also prefunds the account with the amount of eth/avax desired.
      */
     async init() {
-
+        
         // Only init once
         if (this.address) {
             return
         }
 
+
+        
         // let chainInfo = await DataServer.getChainInfo(this.chain)
         // const {
         //     rpcdata: { rpcurl, bundlerUrl },
         //     // aaData: { entryPointAddress },
         // } = chainInfo
 
+        this.dataServer.init()
         const rpcurl = this.eoa.provider.connection.url
         const entryPointAddress = require("../test/contractConfig.json").entryPointAddress
         const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS, VERIFICATION_ADDR, this.paymaster, this.eoa, this.index)
@@ -159,6 +162,9 @@ class FunWallet extends ContractsHolder {
             // transaction.data.user = this.dataServer.user,
             //     transaction.data.chain = this.chain
             const tx = await this.eoa.sendTransaction(transaction.data)
+            const receipt = await tx.wait()
+            this.dataServer.storeEVMCall(receipt)
+
             return await tx.wait()
         }
     }
@@ -190,7 +196,8 @@ class FunWallet extends ContractsHolder {
         if (!eoa) {
 
         }
-        return await eoa.sendTransaction(transaction.data)
+        const res = await eoa.sendTransaction(transaction.data)
+        return res
 
     }
 

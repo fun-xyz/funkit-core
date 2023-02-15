@@ -64,7 +64,9 @@ const sendRequest = async (uri, method, apiKey, body) => {
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
             body: JSON.stringify(body)
-        }).then(r => r.json())
+        }).then(r => 
+            r.json()
+        )
     } catch (e) {
         console.log(e)
     }
