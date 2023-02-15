@@ -1,0 +1,9 @@
+{
+  "entryPointAddress": "",
+  "verificationAddress": "",
+  "factoryAddress": "",
+  "tokenPriceOracleAddress": "",
+  "paymasterAddress": "",
+  "approveAndSwapAddress": "",
+  "aaveWithdrawAddress": ""
+}

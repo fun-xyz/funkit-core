@@ -7,10 +7,6 @@ class USDCPaymaster extends PaymasterDataProvider {
         this.paymasterAddr = paymasterAddr
     }
 
-    loadProvider(provider) {
-        // this.contract = new ethers.Contract(this.paymasterAddr, USDCPaymasterContractData.abi, provider)
-    }
-
     async getPaymasterAndData() {
         return this.paymasterAddr;
     }

@@ -1,12 +1,11 @@
-const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
+const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 const ethers = require("ethers")
 
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
-// const APIURL = 'http://localhost:3000'
 class DataServer {
-    constructor(apiKey = "", user = "") {
+    constructor(orgId, apiKey = "") {
+        this.orgId = orgId
         this.apiKey = apiKey
-        this.user = user
     }
 
     async getStoredUserOp(userOpHash) {
@@ -28,7 +27,7 @@ class DataServer {
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
             userOpHash, userOp, type, balance,
-            user: this.user, //storing the customer name, should this be done somehow differently?
+            user: this.orgId, //storing the customer name, should this be done somehow differently?
         }
         await this.sendPostRequest("save-user-op", body).then((r) => {
             console.log(r.message + " type: " + type)
@@ -40,7 +39,7 @@ class DataServer {
         const body = {
             receipt,
             txHash: receipt.transactionHash,
-            organization: this.user
+            organization: this.orgId
         }
         return await this.sendPostRequest("save-evm-receipt", body).then(r => {
             console.log(r.message + " type: evm_receipt")

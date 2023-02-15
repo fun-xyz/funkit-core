@@ -1,7 +1,4 @@
 const ethers = require("ethers")
-
-
-const helpers = require("@nomicfoundation/hardhat-network-helpers");
 const ERC20 = require("../abis/ERC20.json")
 
 const { ContractFactory } = ethers
@@ -188,7 +185,7 @@ const loadNetwork = async (wallet) => {
         approveAndSwapAddress,
         aaveWithdrawAddress
     }
-    fs.writeFileSync("../../test/contractConfig.json", JSON.stringify(config))
+    fs.writeFileSync("../../test/testConfig.json", JSON.stringify(config))
 }
 
 

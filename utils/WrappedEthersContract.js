@@ -32,7 +32,6 @@ class WrappedEthersContract {
     }
 }
 
-
 const ethersTransaction = async (wallet, provider, chainId, contract, method, params, nonceAdd = 0) => {
     const estimatedGasLimit = await contract.estimateGas[method](...params)
     const approveTxUnsigned = await contract.populateTransaction[method](...params)
