@@ -1,13 +1,12 @@
 const { FunWallet, configs } = require("../index")
-const { FunWalletConfig } = configs
+const { FunWalletConfig } = require("../src/funWallet")
 const { ApproveAndSwap, TransferToken } = require("../src/modules")
 const ethers = require('ethers')
 
 const { execTest, transferAmt, getAddrBalanceErc, getBalance, transferErc, execContractFunc, getUserBalanceErc, createErc, } = require("../utils/deploy")
 
 const ERC20 = require("../utils/abis/ERC20.json")
-const { Token, TokenTypes } = require("../utils/Token")
-
+const { Token } = require("../utils/Token")
 
 
 const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
