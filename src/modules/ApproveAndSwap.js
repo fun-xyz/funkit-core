@@ -6,12 +6,13 @@ const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
 
 class ApproveAndSwap extends Module {
 
-    async init() {
+    async init(uniswapV3RouterAddr, moduleAddr) {
         // TODO query data server for routerAddr and moduleAddr
-        const { uniswapV3RouterAddr, moduleAddr } = 
+        // const { uniswapV3RouterAddr, moduleAddr } = {  }
         this.uniswapV3RouterAddr = uniswapV3RouterAddr
 
-        super(moduleAddr)
+        super.init(moduleAddr)
+        this.abi = ApproveAndSwapObj.abi
         this.actionContract = new ethers.Contract(moduleAddr, ApproveAndSwapObj.abi)
     }
 

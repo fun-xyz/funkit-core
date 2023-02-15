@@ -3,6 +3,7 @@ const { DataServer } = require('../utils/DataServer')
 const { generateSha256 } = require("../utils/Tools")
 const UserOpUtils = require('../utils/UserOpUtils')
 const EOATools = require('../utils/eoaUtils')
+const { ethers } = require('ethers');
 
 const { FunWalletConfig } = require("./FunWalletConfig")
 
@@ -18,10 +19,12 @@ class FunWallet extends ContractsHolder {
     * - apiKey: api key to access Fun Wallet service
     */
     constructor(config, orgId, apiKey) {
-        this.rpcUrl = config.eoa.provider.connection.url
-        this.provider = new ethers.providers.JsonRpcProvider(this.rpcurl);
-        super(config.eoa, this.provider, config.chainId)
+        const rpcUrl = config.eoa.provider.connection.url
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        super(config.eoa, provider, config.chainId)
         
+        this.rpcUrl = rpcUrl
+        this.provider = provider
         this.config = new FunWalletConfig(config.eoa, config.chainId, config.prefundAmt, config.index)
         this.dataServer = new DataServer(orgId, apiKey);
     }
@@ -69,7 +72,7 @@ class FunWallet extends ContractsHolder {
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
         module.innerAddData(this)
-        module.init()
+        // module.init()
         return txData
     }
 

@@ -8,10 +8,11 @@ const ABI = ethers.utils.defaultAbiCoder;
 
 class EoaAaveWithdrawal extends Module {
 
-    async init() {
+    async init(moduleAddr) {
         // TODO
-        const moduleAddr = 
-        super(moduleAddr)
+        // const moduleAddr = moduleAddr
+        super.init(moduleAddr)
+        this.abi = Action.abi
     }
 
     async getPreExecTxs(tokenAddress, amount) {

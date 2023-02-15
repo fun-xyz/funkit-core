@@ -4,7 +4,7 @@ const ethers = require("ethers")
 
 class Module {
 
-    constructor(addr) {
+    init(addr) {
         this.addr = addr
         this.wallet = {}
     }
@@ -28,7 +28,7 @@ class Module {
      */
 
     async encodeValidateCall(data) {
-        let contract = new ethers.Contract(this.addr, ModuleObj.abi)
+        let contract = new ethers.Contract(this.addr, this.abi)
         return contract.populateTransaction.validate(data)
     }
 
@@ -39,7 +39,7 @@ class Module {
      * @returns ethers UnsignedTransaction
      */
     async encodeExecuteCall(data) {
-        let contract = new ethers.Contract(this.addr, ModuleObj.abi)
+        let contract = new ethers.Contract(this.addr, this.abi)
         return contract.populateTransaction.execute(data)
     }
 

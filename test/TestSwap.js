@@ -1,5 +1,4 @@
-const { FunWallet, configs } = require("../index")
-const { FunWalletConfig } = require("../src/funWallet")
+const { FunWallet, FunWalletConfig } = require("../index")
 const { ApproveAndSwap, TransferToken } = require("../src/modules")
 const ethers = require('ethers')
 
@@ -132,7 +131,7 @@ const main = async () => {
     // const paymaster = loadPaymaster(paymasterAddr, eoa)
     await transferAmt(funder, eoa.address, amount + 1)
 
-    const walletConfig = new FunWalletConfig(eoa, chain, APIKEY, prefundAmt, paymasterAddr, "caleb")
+    const walletConfig = new FunWalletConfig(eoa, chain, prefundAmt, paymasterAddr, 0)
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
 
@@ -147,7 +146,9 @@ const main = async () => {
     // await fundPaymasterEth(eoa, paymasterAddr, 1)
 
 
-    const swapModule = new ApproveAndSwap(routerAddr)
+    const swapModule = new ApproveAndSwap()
+    const moduleAddr = require("./contractConfig.json").approveAndSwapAddress
+    await swapModule.init(routerAddr, moduleAddr)
     await wallet.addModule(swapModule)
     await wallet.deploy()
 

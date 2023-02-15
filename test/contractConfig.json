@@ -1,1 +1,7 @@
-{"entryPointAddress":"0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf","verificationAddress":"0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720","factoryAddress":"0xDf951d2061b12922BFbF22cb17B17f3b39183570","approveAndSwapAddress":"0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312","aaveWithdrawAddress":"0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a"}
+{
+    "entryPointAddress": "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf",
+    "verificationAddress": "0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720",
+    "factoryAddress": "0xDf951d2061b12922BFbF22cb17B17f3b39183570",
+    "approveAndSwapAddress": "0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312",
+    "aaveWithdrawAddress": "0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a"
+}

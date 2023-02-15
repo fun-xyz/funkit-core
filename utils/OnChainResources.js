@@ -8,7 +8,7 @@ class OnChainResources {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const config = { bundlerUrl, entryPointAddress }
         const erc4337Provider = await wrapProvider(provider, config, eoa, factoryAddress, verificationAddress)
-        const funWalletAPI = new FunWalletDataProvider({
+        const funWalletDataProvider = new FunWalletDataProvider({
             provider: erc4337Provider,
             entryPointAddress,  //check this
             owner: eoa,
@@ -21,7 +21,7 @@ class OnChainResources {
         const chainId = net.chainId
         this.client = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
 
-        return { bundlerClient: this.client, funWalletAPI }
+        return { bundlerClient: this.client, funWalletDataProvider }
     }
 
     static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
@@ -29,12 +29,12 @@ class OnChainResources {
         const chainId = (await provider.getNetwork()).chainId
 
         const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-        const funWalletAPI = new FunWalletDataProvider({
+        const funWalletDataProvider = new FunWalletDataProvider({
             provider: provider,
             entryPointAddress: entryPointAddress,  //check this
             factoryAddress: factoryAddress
         })
-        return { bundlerClient, funWalletAPI }
+        return { bundlerClient, funWalletDataProvider }
     }
 }
 

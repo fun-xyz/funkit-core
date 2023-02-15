@@ -1,7 +1,7 @@
 const { FunWallet } = require("./src/FunWallet")
-const configs = require("./utils/configs/walletConfigs")
+const { FunWalletConfig } = require("./src/FunWalletConfig")
 
 module.exports = {
     FunWallet,
-    configs
+    FunWalletConfig
 }

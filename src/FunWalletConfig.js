@@ -1,10 +1,11 @@
 const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 const testConfig = require("../test/testConfig.json")
 const { OnChainResources } = require("../utils/OnChainResources")
+const { DataServer } = require("../utils/DataServer")
 
-const LOCAL_FORK_CHAIN_ID = 11111
+const LOCAL_FORK_CHAIN_ID = 31337
 
-export class FunWalletConfig {
+class FunWalletConfig {
     constructor(eoa, chainId, prefundAmt, paymasterAddr, index = 0) {
         this.eoa = eoa
         this.chainId = chainId
@@ -26,13 +27,13 @@ export class FunWalletConfig {
         if (this.chainId != LOCAL_FORK_CHAIN_ID) {
             const {
                 rpcdata: { bundlerUrl },
-                aaData: { entryPointAddress: entryPointAddr, factoryAddress: funWalletFactoryAddr, verificationAddress: verificationAddr }
+                aaData: { entryPointAddress, factoryAddress, verificationAddress }
             } = await DataServer.getChainInfo(this.chainId)
             
             this.bundlerUrl = bundlerUrl
-            this.entryPointAddr = entryPointAddr
-            this.funWalletFactoryAddr = funWalletFactoryAddr
-            this.verificationAddr = verificationAddr
+            this.entryPointAddr = entryPointAddress
+            this.funWalletFactoryAddr = factoryAddress
+            this.verificationAddr = verificationAddress
         } else {
             this.bundlerUrl = "http://localhost:3000/rpc"
             this.entryPointAddr = testConfig.entryPointAddress
@@ -41,3 +42,5 @@ export class FunWalletConfig {
         }
     }
 }
+
+module.exports = { FunWalletConfig }
