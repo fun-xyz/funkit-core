@@ -1,13 +1,12 @@
 const { FunWallet, configs } = require("../index")
-const { FunWalletConfig } = configs
+const { FunWalletConfig } = require("../src/funWallet")
 const { ApproveAndSwap, TransferToken } = require("../src/modules")
 const ethers = require('ethers')
 
-const { execTest, transferAmt, getAddrBalanceErc, transferErc, getUserBalanceErc, createErc, } = require("../utils/deploy")
+const { execTest, transferAmt, getAddrBalanceErc, getBalance, transferErc, execContractFunc, getUserBalanceErc, createErc, } = require("../utils/deploy")
 
 const ERC20 = require("../utils/abis/ERC20.json")
-const { Token, TokenTypes } = require("../utils/Token")
-
+const { Token } = require("../utils/Token")
 
 
 const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
@@ -25,10 +24,6 @@ const pkey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 
-const getBalance = async (wallet) => {
-    const balance = await wallet.provider.getBalance(wallet.address);
-    return ethers.utils.formatUnits(balance, 18)
-}
 
 const logTest = (test) => {
     console.log("\n\n" + test + "\n\n")
@@ -72,8 +67,6 @@ const testEthSwap = async (wallet, swapModule, eoa) => {
     const outDiff = parseFloat(endWalletDAI) - parseFloat(startWalletDAI);
     console.log("Wallet Eth End Balance: ", await getBalance(wallet))
     logPairing(amount, outDiff, "ETH", "DAI")
-
-
 }
 
 const logPairing = (amount, outDiff, tok1, tok2) => {
@@ -112,10 +105,6 @@ const fundUserUSDCPaymaster = async (wallet, eoa, paymasterAddr, walletaddr) => 
     await logUserPaymasterBalance(paymasterContract, walletaddr)
 }
 
-const execContractFunc = async (eoa, data) => {
-    const tx = await eoa.sendTransaction(data)
-    return await tx.wait()
-}
 
 
 const logUserPaymasterBalance = async (paymaster, wallet, note = "") => {
@@ -139,9 +128,9 @@ const main = async () => {
     const funder = new ethers.Wallet(pkey, provider)
 
     const paymasterAddr = ""
-    // const paymasterAddr = require("./contractConfig.json").paymasterAddress
+    // const paymasterAddr = "0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312"
     // const paymaster = loadPaymaster(paymasterAddr, eoa)
-    await transferAmt(funder, eoa.address, amount)
+    await transferAmt(funder, eoa.address, amount + 1)
 
     const walletConfig = new FunWalletConfig(eoa, chain, APIKEY, prefundAmt, paymasterAddr, "caleb")
     const wallet = new FunWallet(walletConfig)
@@ -163,21 +152,15 @@ const main = async () => {
     await wallet.deploy()
 
     await testEthSwap(wallet, swapModule, eoa)
-    await testERCPair(wallet, swapModule, eoa)
+    // await testERCPair(wallet, swapModule, eoa)
 
     // await logUserPaymasterBalance(paymaster, wallet.address, "Post Transaction")
-
+    console.log("\n\n\n")
 }
 
 
 
 
 if (typeof require !== 'undefined' && require.main === module) {
-
     main()
 }
-
-    // const preDeploy = await wallet.contracts[wallet.address].callMethod("getModuleStateVal", [swapModule.actionAddr])
-    // const postDeploy = await wallet.contracts[wallet.address].callMethod("getModuleStateVal", [swapModule.actionAddr])
-    // console.log(preDeploy)
-    // console.log(postDeploy)

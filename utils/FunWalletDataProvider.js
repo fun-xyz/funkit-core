@@ -3,7 +3,7 @@ const ethers_1 = require("ethers");
 
 const utils_1 = require("ethers/lib/utils");
 
-const TreasurySRC = require("./abis/FunWallet.json")
+const FunWallet = require("./abis/FunWallet.json")
 const factory = require("./abis/FunWalletFactory.json")
 
 var _abi = factory.abi
@@ -45,7 +45,7 @@ class FunWalletDataProvider {
     }
     async getAccountContract() {
         if (this.accountContract == null) {
-            this.accountContract = new ethers_1.Contract(await this.getAccountAddress(), TreasurySRC.abi, this.provider);
+            this.accountContract = new ethers_1.Contract(await this.getAccountAddress(), FunWallet.abi, this.provider);
         }
         return this.accountContract;
     }
@@ -142,7 +142,7 @@ class FunWalletDataProvider {
      * NOTE: createUnsignedUserOp will add to this value the cost of creation, if the contract is not yet created.
      */
     async getVerificationGasLimit() {
-        return 500000;
+        return 5000000;
     }
     /**
      * should cover cost of putting calldata on-chain, and some overhead.
@@ -184,7 +184,7 @@ class FunWalletDataProvider {
      */
     async getUserOpHash(userOp) {
         const { chainId } = await this.provider.getNetwork();
-        return (0, utils_2.getUserOpHash)(userOp, this.entryPointAddress, 31337);
+        return (0, utils_2.getUserOpHash)(userOp, this.entryPointAddress, chainId);
     }
     /**
      * return the account's address.
@@ -244,7 +244,7 @@ class FunWalletDataProvider {
             nonce: this.getNonce(),
             initCode,
             callData,
-            callGasLimit: info.gasLimit ? info.gasLimit : callGasLimit,
+            callGasLimit: info.gasLimit ? info.gasLimit : 400000,
             verificationGasLimit,
             maxFeePerGas,
             maxPriorityFeePerGas

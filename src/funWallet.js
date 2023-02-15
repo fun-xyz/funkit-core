@@ -37,7 +37,7 @@ class FunWallet extends ContractsHolder {
     * - index: index of account (default 0). update this when trying to operate on different fun wallets
     * - orgId: id of organization operating wallet
     */
-    constructor(config, index = 0, orgId) {
+    constructor(config, index = 0, orgId = "fun") {
         super()
         this.parseConfig({ ...config, index })
         this.dataServer = new DataServer(config.apiKey, orgId);
@@ -77,7 +77,6 @@ class FunWallet extends ContractsHolder {
 
         const rpcurl = this.eoa.provider.connection.url
         const entryPointAddress = require("../test/contractConfig.json").entryPointAddress
-
         const { bundlerClient, provider, accountApi } = await OnChainResources.connect(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS, VERIFICATION_ADDR, this.paymaster, this.eoa, this.index)
 
         this.bundlerClient = bundlerClient
@@ -133,10 +132,13 @@ class FunWallet extends ContractsHolder {
             }
             if (balance) return balance;
         })
-
+        if (!actionCreateData.dests.length) {
+            return
+        }
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
-        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 560000, false, true)
+        const op = await UserOpUtils.createUserOp(this.accountApi, createWalleteData, 0, false, true)
+
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)

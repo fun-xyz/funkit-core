@@ -6,10 +6,10 @@ const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json");
 const APROVE_AND_SWAP_ADDR = require("../../test/contractConfig.json").approveAndSwapAddress
 
 class ApproveAndSwap extends Module {
-
     constructor(routerAddr) {
         super(APROVE_AND_SWAP_ADDR)
         this.routerAddr = routerAddr
+        this.abi = ApproveAndSwapObj.abi
         this.actionContract = new ethers.Contract(APROVE_AND_SWAP_ADDR, ApproveAndSwapObj.abi)
     }
 
@@ -21,14 +21,14 @@ class ApproveAndSwap extends Module {
         return await this.actionContract.populateTransaction.executeSwapETH(to, amount, data)
     }
 
-    async createSwap(tokenInData, tokenOutData, amountIn, slippage = 5, percentDec = 100) {
+    async createSwap(tokenInData, tokenOutData, amountIn, returnAddr = this.wallet.address, slippage = 5, percentDec = 100) {
         const tokenIn = await Token.createFrom(tokenInData)
         const tokenOut = await Token.createFrom(tokenOutData)
 
         const tokenInAddress = await tokenIn.getAddress()
         const tokenOutAddress = await tokenOut.getAddress()
 
-        const { data, to, amount } = await swapExec(this.wallet.provider, this.routerAddr, tokenInAddress, tokenOutAddress, amountIn, this.wallet.address, slippage, percentDec)
+        const { data, to, amount } = await swapExec(this.wallet.provider, this.routerAddr, tokenInAddress, tokenOutAddress, amountIn, returnAddr, slippage, percentDec)
 
         if (tokenIn.type == TokenTypes.ETH) {
             const swapData = await this._encodeETHSwap(to, amount, data)

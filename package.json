@@ -16,7 +16,7 @@
     "@account-abstraction/sdk": "^0.4.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
     "@nomiclabs/hardhat-ethers": "^2.2.2",
-    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.5",
     "@uniswap/sdk": "^3.0.3",
     "@uniswap/smart-order-router": "^3.5.0",
     "config": "^3.3.9",
