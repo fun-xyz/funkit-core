@@ -1,7 +1,1 @@
-{
-    "entryPointAddress": "0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf",
-    "verificationAddress": "0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D",
-    "factoryAddress": "0xdB012DD3E3345e2f8D23c0F3cbCb2D94f430Be8C",
-    "approveAndSwapAddress": "0xd977422c9eE9B646f64A4C4389a6C98ad356d8C4",
-    "aaveWithdrawAddress": "0x1eB5C49630E08e95Ba7f139BcF4B9BA171C9a8C7"
-}
+{"entryPointAddress":"0x906B067e392e2c5f9E4f101f36C0b8CdA4885EBf","verificationAddress":"0xD94A92749C0bb33c4e4bA7980c6dAD0e3eFfb720","factoryAddress":"0xDf951d2061b12922BFbF22cb17B17f3b39183570","approveAndSwapAddress":"0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312","aaveWithdrawAddress":"0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a"}

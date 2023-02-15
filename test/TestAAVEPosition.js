@@ -243,19 +243,20 @@ const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
     const walletConfig = new FunWalletConfig(eoa, CHAIN, APIKEY, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
-    await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
+    // await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
 
-    console.log("Waiting for block to pass.")
-    await timeout(4000)
+    // console.log("Waiting for block to pass.")
+    // await timeout(12000)
 
     const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
     const baseTokenAddress = await getUnderlyingAsset(eoa, aTokenAddress)
-    console.log(baseTokenAddress)
-    const eoaTokenBalance = await getAddrBalanceErc(eoa, TOKEN_ADDRESS, eoa.address)
+
+    const eoaTokenBalance = await getAddrBalanceErc(eoa, baseTokenAddress, eoa.address)
     const eoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
+
     await mainTest(wallet, aTokenAddress)
 
-    const endEoaTokenBalance = await getAddrBalanceErc(eoa, TOKEN_ADDRESS, eoa.address)
+    const endEoaTokenBalance = await getAddrBalanceErc(eoa, baseTokenAddress, eoa.address)
     const endEoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
     const walletATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, wallet.address)
     const walletAllowance = await getAllowanceErc(eoa, aTokenAddress, eoa.address, wallet.address)
@@ -270,16 +271,10 @@ const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
     console.log("Wallet has: ", walletATokenBalance, "Tokens")
 }
 
-const processConsole = () => {
-    const [tokenAddr, PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL] = process.argv.slice(2)
-}
-
-
 
 
 
 main(PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL)
-// processConsole()
 
 
 

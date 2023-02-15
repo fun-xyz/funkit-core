@@ -130,7 +130,7 @@ const main = async () => {
     const paymasterAddr = ""
     // const paymasterAddr = "0x4f42528B7bF8Da96516bECb22c1c6f53a8Ac7312"
     // const paymaster = loadPaymaster(paymasterAddr, eoa)
-    await transferAmt(funder, eoa.address, amount)
+    await transferAmt(funder, eoa.address, amount + 1)
 
     const walletConfig = new FunWalletConfig(eoa, chain, APIKEY, prefundAmt, paymasterAddr, "caleb")
     const wallet = new FunWallet(walletConfig)
@@ -155,18 +155,11 @@ const main = async () => {
     // await testERCPair(wallet, swapModule, eoa)
 
     // await logUserPaymasterBalance(paymaster, wallet.address, "Post Transaction")
-
 }
 
 
 
 
 if (typeof require !== 'undefined' && require.main === module) {
-
     main()
 }
-
-    // const preDeploy = await wallet.contracts[wallet.address].callMethod("getModuleStateVal", [swapModule.actionAddr])
-    // const postDeploy = await wallet.contracts[wallet.address].callMethod("getModuleStateVal", [swapModule.actionAddr])
-    // console.log(preDeploy)
-    // console.log(postDeploy)
