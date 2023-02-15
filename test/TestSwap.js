@@ -155,6 +155,7 @@ const main = async () => {
     // await testERCPair(wallet, swapModule, eoa)
 
     // await logUserPaymasterBalance(paymaster, wallet.address, "Post Transaction")
+    console.log("\n\n\n")
 }
 
 

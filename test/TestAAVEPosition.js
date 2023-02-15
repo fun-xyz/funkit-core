@@ -243,10 +243,10 @@ const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
     const walletConfig = new FunWalletConfig(eoa, CHAIN, APIKEY, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
-    // await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
+    await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
 
-    // console.log("Waiting for block to pass.")
-    // await timeout(12000)
+    console.log("Waiting for block to pass.")
+    await timeout(12000)
 
     const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
     const baseTokenAddress = await getUnderlyingAsset(eoa, aTokenAddress)
@@ -266,9 +266,7 @@ const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
 
     console.log("Withdrew: ", (eoaATokenBalance - endEoaATokenBalance), "ATokens")
     console.log("Has: ", (endEoaATokenBalance), "ATokens")
-
-    console.log("\nWallet has: ", walletAllowance, "allowance\n")
-    console.log("Wallet has: ", walletATokenBalance, "Tokens")
+    console.log("\n\n\n")
 }
 
 

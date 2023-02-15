@@ -63,7 +63,7 @@ const logPairing = (amount, outDiff, tok1, tok2) => {
 const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const transfer = new TransferToken()
     const start = await getUserBalanceErc(wallet, tokenAddr)
-    console.log("\n\n")
+    console.log("\n")
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
     const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr)
@@ -71,7 +71,6 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
     console.log("Difference: ", start - end)
-    console.log("\n\n")
 }
 
 const main = async () => {
@@ -96,7 +95,6 @@ const main = async () => {
     await wallet.deploy()
     await getEthSwapToDAI(wallet, swapModule, eoa)
     const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, DAI, funder.address)
-    console.log("\n\n")
     console.log("funder starting ERC20:(DAI) balance: ", funderWalletErc20BalanceStart)
 
     await walletTransferERC(wallet, funder.address, ethers.utils.parseEther("2"), DAI)
@@ -104,6 +102,7 @@ const main = async () => {
     console.log("funder ending ERC20:(DAI) balance: ", funderWalletErc20BalanceEnd)
     console.log("funder ERC20:(DAI) Difference: ", funderWalletErc20BalanceEnd - funderWalletErc20BalanceStart)
 
+    console.log("\n\n\n")
 
 }
 
