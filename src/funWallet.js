@@ -18,7 +18,7 @@ class FunWallet extends ContractsHolder {
     * - orgId: id of organization operating wallet
     * - apiKey: api key to access Fun Wallet service
     */
-    constructor(config, apiKey, index=0) {
+    constructor(config, apiKey) {
         const rpcUrl = config.eoa.provider.connection.url
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         super(config.eoa, provider, config.chainId)

@@ -49,9 +49,8 @@ class Module {
         this.wallet.prototype = wallet.prototype
     }
 
-    async createUserOpFromCallData({ to, data }, isAction = false) {
-        const op = await this.wallet.funWalletDataProvider.createSignedUserOp({ target: to, data, calldata: isAction })
-        this.wallet.dataServer.storeUserOp({ op, type: "create_transaction"})
+    async createUserOpFromCallData({ to, data }, gasLimit = 0, noInit = false, isAction = false) {
+        const op = await this.wallet.funWalletDataProvider.createSignedUserOp({ target: to, data, noInit, calldata: isAction, gasLimit })
         return new Transaction({ op }, true)
     }
 

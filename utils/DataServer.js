@@ -7,12 +7,15 @@ class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey
     }
+
     async init() {
-        const ret = await this.getOrgInfo()
-        this.id = ret.id
-        this.name = ret.name
+        const orgInfo = await this.getOrgInfo()
+        this.id = orgInfo.id
+        this.name = orgInfo.name
     }
+
     async getOrgInfo() {
+        console.log(this.apiKey)
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
         })
