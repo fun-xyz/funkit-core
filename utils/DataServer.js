@@ -1,16 +1,27 @@
-const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
+const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
 const ethers = require("ethers")
 
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
+const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
+// const APIURL = 'http://localhost:3000'
 class DataServer {
-    constructor(orgId, apiKey = "") {
-        this.orgId = orgId
+    constructor(apiKey = "") {
         this.apiKey = apiKey
+    }
+    async init() {
+        const ret = await this.getOrgInfo()
+        this.id = ret.id
+        this.name=ret.name
+    }
+    async getOrgInfo() {
+        return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
+            return r.data
+        })
     }
 
     async getStoredUserOp(userOpHash) {
         const body = { userOpHash }
-        const op = await this.sendPostRequest("get-user-op", body).then((r) => {
+        const op = await this.sendPostRequest(APIURL, "get-user-op", body).then((r) => {
             return r.data
         })
 
@@ -27,9 +38,10 @@ class DataServer {
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
             userOpHash, userOp, type, balance,
-            user: this.orgId, //storing the customer name, should this be done somehow differently?
+            organization: this.id,
+            orgName:this.name
         }
-        await this.sendPostRequest("save-user-op", body).then((r) => {
+        await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
             console.log(r.message + " type: " + type)
         })
         return userOpHash
@@ -39,9 +51,10 @@ class DataServer {
         const body = {
             receipt,
             txHash: receipt.transactionHash,
-            organization: this.orgId
+            organization: this.id,
+            orgName:this.name
         }
-        return await this.sendPostRequest("save-evm-receipt", body).then(r => {
+        return await this.sendPostRequest(APIURL, "save-evm-receipt", body).then(r => {
             console.log(r.message + " type: evm_receipt")
             return r
         })
@@ -51,22 +64,26 @@ class DataServer {
         const body = {
             symbol
         }
-        return await this.sendPostRequest("get-erc-token", body).then(r => {
+        return await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {
             return r.data
         })
     }
 
-    async sendPostRequest(endpoint, body) {
+    async sendGetRequest(APIURL, endpoint) {
+        return await sendRequest(`${APIURL}/${endpoint}`, "GET", this.apiKey)
+    }
+
+    async sendPostRequest(APIURL, endpoint, body) {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", this.apiKey, body)
     }
 
-    static async sendPostRequest(endpoint, body) {
+    static async sendPostRequest(APIURL, endpoint, body) {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
-
+    
     static async getChainInfo(chain) {
         const body = { chain }
-        return await this.sendPostRequest("get-chain-info", body).then((r) => {
+        return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
             return r.data
         })
     }

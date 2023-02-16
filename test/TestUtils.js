@@ -57,4 +57,4 @@ const logPairing = (AMOUNT, outDiff, tok1, tok2) => {
 }
 
 module.exports = { transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, 
-    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR }
+    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR}

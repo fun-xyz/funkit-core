@@ -18,7 +18,7 @@ class FunWallet extends ContractsHolder {
     * - orgId: id of organization operating wallet
     * - apiKey: api key to access Fun Wallet service
     */
-    constructor(config, orgId, apiKey) {
+    constructor(config, apiKey, index=0) {
         const rpcUrl = config.eoa.provider.connection.url
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         super(config.eoa, provider, config.chainId)
@@ -26,7 +26,7 @@ class FunWallet extends ContractsHolder {
         this.rpcUrl = rpcUrl
         this.provider = provider
         this.config = new FunWalletConfig(config.eoa, config.chainId, config.prefundAmt, config.index)
-        this.dataServer = new DataServer(orgId, apiKey);
+        this.dataServer = new DataServer(apiKey);
     }
 
     /**     
@@ -41,6 +41,7 @@ class FunWallet extends ContractsHolder {
         if (this.address) {
             return
         }
+        this.dataServer.init()
 
         const {bundlerClient, funWalletDataProvider } = await this.config.getClients()
         this.bundlerClient = bundlerClient
@@ -98,6 +99,7 @@ class FunWallet extends ContractsHolder {
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider)
+        op.chain=this.chain
         await this.dataServer.storeUserOp(op, 'deploy_wallet', totalBalance)
 
         return { receipt, address: this.address }
@@ -117,7 +119,10 @@ class FunWallet extends ContractsHolder {
         }
         else {
             const tx = await this.eoa.sendTransaction(transaction.data)
-            return await tx.wait()
+            const receipt = await tx.wait()
+            receipt.chain=this.chain
+            this.dataServer.storeEVMCall(receipt)
+            return receipt
         }
     }
 
