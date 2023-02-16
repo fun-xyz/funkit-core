@@ -33,14 +33,15 @@ class DataServer {
         return op
     }
 
-    async storeUserOp({op, type, balance = 0, receipt = {}}) {
+    async storeUserOp({ op, type, balance = 0, receipt = {} }) {
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
             userOpHash, userOp, type, balance, receipt,
             organization: this.id,
             orgName: this.name,
-            
+            receipt: receipt
+
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
             console.log(r.message + " type: " + type)
