@@ -1,8 +1,8 @@
-const { FunWalletConfig } = require("../src/FunWalletConfig")
-const { EoaAaveWithdrawal, ApproveAndSwap } = require("../src/modules/index")
+const { FunWalletConfig } = require("../index")
+const { AaveWithdrawal, TokenSwap } = require("../src/modules/index")
 const { FunWallet } = require("../index")
 const { transferAmt, getAddrBalanceErc, getBalance, execContractFunc, getUserBalanceErc,
-    createErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR, timeout } = require("./TestUtils")
+    createErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
 const ethers = require('ethers')
 
 const POOL_ADDRESS = "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
@@ -145,9 +145,7 @@ const UNDERLYING_ASSET_ABI = [{
 },]
 
 const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddress = "") => {
-    const moduleAddr = require("./testConfig.json").approveAndSwapAddress
-    const swapModule = new ApproveAndSwap()
-    await swapModule.init(ROUTER_ADDR, moduleAddr)
+    const swapModule = new TokenSwap()
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await transferAmt(eoa, wallet.address, amount)
@@ -162,7 +160,6 @@ const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddres
 
     console.log("Wallet Eth End Balance: ", await getBalance(wallet))
     console.log("Wallet Token End Balance: ", EndWalletErcTokenBalance)
-
 }
 
 const getAtokenAddress = async (eoa, tokenAddress) => {
@@ -184,7 +181,6 @@ const eoaSupplyAave = async (eoa, amount, tokenAddr) => {
     await execContractFunc(eoa, txData)
 }
 
-
 const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
     await walletEthToERC20Swap(wallet, eoa, amount, tokenAddr, eoa.address)
     const eoaDaiBalance = await getAddrBalanceErc(eoa.provider, tokenAddr, eoa.address, false)
@@ -197,10 +193,7 @@ const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
 
 const mainTest = async (wallet, tokenAddr) => {
     // Create a FunWallet with the above access control schema, prefunded with PREFUND_AMT AVAXa
-    const module = new EoaAaveWithdrawal()
-    const moduleAddr = require("./testConfig.json").aaveWithdrawAddress
-    await module.init(moduleAddr)
-
+    const module = new AaveWithdrawal()
     await wallet.addModule(module)
 
     const modulePreExecTxs = await module.getPreExecTxs(tokenAddr)
@@ -221,7 +214,8 @@ const setup = async () => {
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const eoa = new ethers.Wallet(PRIV_KEY, provider)
     const funder = new ethers.Wallet(PKEY, provider)
-    await transferAmt(funder, eoa.address, 10)
+
+    await transferAmt(funder, eoa.address, amount)
     const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig, APIKEY)
     await wallet.init()

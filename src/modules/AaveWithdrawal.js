@@ -1,17 +1,23 @@
 const { Transaction } = require("../../utils/Transaction")
-const { Module } = require('./Module')
+const { Module, LOCAL_FORK_CHAIN_ID } = require('./Module')
 const Action = require("../../utils/abis/AaveWithdraw.json")
-const UserOpUtils = require('../../utils/UserOpUtils')
 const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
 const ABI = ethers.utils.defaultAbiCoder;
+const testConfig = require("../../test/testConfig.json")
 
-class EoaAaveWithdrawal extends Module {
+const MODULE_NAME = "aaveWithdraw"
 
-    async init(moduleAddr) {
-        // TODO
-        // const moduleAddr = moduleAddr
-        super.init(moduleAddr)
+class AaveWithdrawal extends Module {
+
+    async init(chainId) {
+        var aaveWithdrawAddress
+        if (chainId != LOCAL_FORK_CHAIN_ID) {
+            ({ aaveWithdrawAddress } = await DataServer.getModuleInfo(MODULE_NAME, chainId))
+        } else {
+            aaveWithdrawAddress = testConfig.aaveWithdrawAddress
+        }
+        this.addr = aaveWithdrawAddress
         this.abi = Action.abi
     }
 
@@ -40,8 +46,8 @@ class EoaAaveWithdrawal extends Module {
         const contract = new ethers.Contract(this.addr, this.abi)
         const aaveExec = ABI.encode(["address", "address", "uint256"], [withdrawToAddress, tokenAddress, amount])
         const actionExec = await contract.populateTransaction.execute(aaveExec)
-        return await this.createUserOpFromCallData(actionExec)
+        return await this.createUserOpFromCallData(actionExec, 560000, true, false)
     }
 }
 
-module.exports = { EoaAaveWithdrawal }
+module.exports = { AaveWithdrawal }

@@ -4,7 +4,6 @@ const ERC20 = require("../utils/abis/ERC20.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
 const RPC_URL = "http://127.0.0.1:8545"
-const ROUTER_ADDR = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 const PRIV_KEY = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const PKEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 const DAI_ADDR = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
@@ -57,4 +56,4 @@ const logPairing = (AMOUNT, outDiff, tok1, tok2) => {
 }
 
 module.exports = { transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, 
-    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR}
+    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR }

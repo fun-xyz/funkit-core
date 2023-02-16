@@ -1,8 +1,8 @@
 const { FunWallet, FunWalletConfig } = require("../index")
-const { ApproveAndSwap, TransferToken } = require("../src/modules")
+const { TokenSwap, TokenTransfer } = require("../src/modules")
 const ethers = require('ethers')
 const { transferAmt, getAddrBalanceErc, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, 
-    RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
+    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
 const { Token } = require("../utils/Token")
 
 const PREFUND_AMT = 0.3
@@ -26,7 +26,7 @@ const getEthSwapToDAI = async (wallet, swapModule, eoa) => {
 }
 
 const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
-    const transfer = new TransferToken()
+    const transfer = new TokenTransfer()
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
@@ -53,10 +53,7 @@ const main = async () => {
     console.log("funder balance: ", await getBalance(funder))
     console.log("eoa balance: ", await getBalance(eoa))
 
-    const swapModule = new ApproveAndSwap()
-    const moduleAddr = require("./testConfig.json").approveAndSwapAddress
-    await swapModule.init(ROUTER_ADDR, moduleAddr)
-
+    const swapModule = new TokenSwap()
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await getEthSwapToDAI(wallet, swapModule, eoa)

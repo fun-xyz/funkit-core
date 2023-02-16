@@ -69,11 +69,11 @@ class FunWallet extends ContractsHolder {
     * @returns data, to, salt
     */
     async addModule(module, salt = 0) {
+        module.init(this.config.chainId)
         let initTx = await module.encodeInitCall()
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
         module.innerAddData(this)
-        // module.init()
         return txData
     }
 

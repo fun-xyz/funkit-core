@@ -1,14 +1,13 @@
-const ModuleObj = require("../../utils/abis/Module.json")
 const { Transaction } = require("../../utils/Transaction")
 const ethers = require("ethers")
+
+const LOCAL_FORK_CHAIN_ID = 31337
 
 class Module {
     wallet = {}
 
-    init(addr) {
-        this.addr = addr
+    init() {
     }
-
     /**
     * Generates and returns an ethers UnsignedTransaction representing a transaction call to the Module's init()
     * method with ethers.constants.HashZero as the input ready to be signed and submitted to a chain.
@@ -61,4 +60,4 @@ class Module {
     }
 }
 
-module.exports = { Module }
+module.exports = { Module, LOCAL_FORK_CHAIN_ID }

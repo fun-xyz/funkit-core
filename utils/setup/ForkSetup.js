@@ -1,12 +1,9 @@
 const ethers = require("ethers")
 const ERC20 = require("../abis/ERC20.json")
-
 const { ContractFactory } = ethers
-
-
-const { FunWallet, configs } = require("../../index")
+const { FunWallet } = require("../../index")
 const { FunWalletConfig } = require("../../index")
-const { ApproveAndSwap, TransferToken } = require("../../src/modules")
+const { TokenSwap, TokenTransfer } = require("../../src/modules")
 
 
 const deploy = async (signer, obj, params = []) => {
@@ -40,7 +37,6 @@ const deployPriceOracle = (signer) => {
     return deploy(signer, priceOracle)
 }
 
-// const approveAndSwap = require("modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json")
 const approveAndSwap = require("../abis/ApproveAndSwap.json")
 const deployApproveAndSwap = (signer) => {
     return deploy(signer, approveAndSwap, [WETH_MAINNET])
@@ -176,13 +172,18 @@ const loadNetwork = async (wallet) => {
     const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
     console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
 
-
+    const poolFactoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+    const quoterContractAddress = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
+    const uniswapV3RouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 
     const config = {
         entryPointAddress,
         verificationAddress,
         factoryAddress,
         approveAndSwapAddress,
+        poolFactoryAddress,
+        quoterContractAddress,
+        uniswapV3RouterAddress,
         aaveWithdrawAddress
     }
     fs.writeFileSync("../../test/testConfig.json", JSON.stringify(config))
@@ -247,7 +248,7 @@ const deployForAvax = async () => {
 }
 
 const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
-    const transfer = new TransferToken()
+    const transfer = new TokenTransfer()
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
@@ -293,7 +294,7 @@ const getBalance = async (wallet) => {
 const getUsdcWallet = async (wallet, amount = 10) => {
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const funder = new ethers.Wallet(pkey, provider)
-    const swapModule = new ApproveAndSwap(routerAddr)
+    const swapModule = new TokenSwap(routerAddr)
     await wallet.addModule(swapModule)
     await wallet.deploy()
 

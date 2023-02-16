@@ -1,7 +1,7 @@
 const { FunWallet, FunWalletConfig } = require("../index")
-const { ApproveAndSwap } = require("../src/modules")
+const { TokenSwap } = require("../src/modules")
 const ethers = require('ethers')
-const { transferAmt, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
+const { transferAmt, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
 const { Token } = require("../utils/Token")
 
 const PREFUND_AMT = 0.3
@@ -39,9 +39,7 @@ const main = async () => {
     console.log("funder balance: ", await getBalance(funder))
     console.log("eoa balance: ", await getBalance(eoa))
 
-    const swapModule = new ApproveAndSwap()
-    const moduleAddr = require("./testConfig.json").approveAndSwapAddress
-    await swapModule.init(ROUTER_ADDR, moduleAddr)
+    const swapModule = new TokenSwap()
     await wallet.addModule(swapModule)
     await wallet.deploy()
 

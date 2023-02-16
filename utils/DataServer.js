@@ -3,7 +3,6 @@ const ethers = require("ethers")
 
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
-// const APIURL = 'http://localhost:3000'
 class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey
@@ -89,7 +88,16 @@ class DataServer {
             return r.data
         })
     }
-}
 
+    static async getModuleInfo(moduleName, chainId) {
+        const body = {
+            module: moduleName,
+            chain: chainId
+        }
+        return await this.sendPostRequest("get-module-info", body).then((r) => {
+            return r.data
+        })
+    }
+}
 
 module.exports = { DataServer }
