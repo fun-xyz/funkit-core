@@ -43,7 +43,6 @@ class DataServer {
             
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
-            // console.log(r)
             console.log(r.message + " type: " + type)
         })
         return userOpHash
