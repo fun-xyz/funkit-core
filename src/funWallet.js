@@ -144,6 +144,8 @@ class FunWallet extends ContractsHolder {
 
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.accountApi)
 
+        op.chain=this.chain
+
         await this.dataServer.storeUserOp(op, 'deploy_wallet', balance)
 
         return { receipt, address: this.address }
@@ -163,6 +165,7 @@ class FunWallet extends ContractsHolder {
             //     transaction.data.chain = this.chain
             const tx = await this.eoa.sendTransaction(transaction.data)
             const receipt = await tx.wait()
+            receipt.chain=this.chain
             this.dataServer.storeEVMCall(receipt)
 
             return await tx.wait()

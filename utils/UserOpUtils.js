@@ -4,8 +4,9 @@ async function createUserOp(accountApi, { to, data }, gasLimit = 0, noInit = fal
     return await accountApi.createSignedUserOp({ target: to, data, noInit, calldata, gasLimit })
 }
 
-async function createUserOpTransaction(dataServer, accountApi, actionExec, gasLimit = 0, noInit = false, calldata = false) {
+async function createUserOpTransaction(dataServer, accountApi, actionExec, chain, gasLimit = 0, noInit = false, calldata = false) {
     const userOp = await createUserOp(accountApi, actionExec, gasLimit, noInit, calldata)
+    userOp.chain=chain
     await dataServer.storeUserOp(userOp, 'create_action')
     const data = {
         op: userOp,
@@ -25,6 +26,7 @@ async function deployUserOp(transaction, bundlerClient, accountApi, apiKey = nul
         const { bundlerClient, accountApi } = await OnChainResources.connectEmpty(rpcurl, bundlerUrl, entryPointAddress, FACTORY_ADDRESS)
         const userOpHash = await bundlerClient.sendUserOpToBundler(op)
         const txid = await accountApi.getUserOpReceipt(userOpHash)
+
         await dataServer.storeUserOp(op, 'deploy_action')
         return { userOpHash, txid }
     } else {
