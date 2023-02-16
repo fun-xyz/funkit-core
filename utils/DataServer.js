@@ -11,7 +11,7 @@ class DataServer {
     async init() {
         const ret = await this.getOrgInfo()
         this.id = ret.id
-        this.name=ret.name
+        this.name = ret.name
     }
     async getOrgInfo() {
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
@@ -33,15 +33,17 @@ class DataServer {
         return op
     }
 
-    async storeUserOp(op, type, balance = 0) {
+    async storeUserOp({op, type, balance = 0, receipt = {}}) {
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
-            userOpHash, userOp, type, balance,
+            userOpHash, userOp, type, balance, receipt,
             organization: this.id,
-            orgName:this.name
+            orgName: this.name,
+            
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
+            // console.log(r)
             console.log(r.message + " type: " + type)
         })
         return userOpHash
@@ -52,7 +54,7 @@ class DataServer {
             receipt,
             txHash: receipt.transactionHash,
             organization: this.id,
-            orgName:this.name
+            orgName: this.name
         }
         return await this.sendPostRequest(APIURL, "save-evm-receipt", body).then(r => {
             console.log(r.message + " type: evm_receipt")
@@ -80,7 +82,7 @@ class DataServer {
     static async sendPostRequest(APIURL, endpoint, body) {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
-    
+
     static async getChainInfo(chain) {
         const body = { chain }
         return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {

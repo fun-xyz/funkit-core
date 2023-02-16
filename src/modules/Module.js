@@ -4,7 +4,7 @@ const ethers = require("ethers")
 
 class Module {
     wallet = {}
-    
+
     init(addr) {
         this.addr = addr
     }
@@ -52,6 +52,7 @@ class Module {
 
     async createUserOpFromCallData({ to, data }, isAction = false) {
         const op = await this.wallet.funWalletDataProvider.createSignedUserOp({ target: to, data, calldata: isAction })
+        this.wallet.dataServer.storeUserOp({ op, type: "create_action"})
         return new Transaction({ op }, true)
     }
 

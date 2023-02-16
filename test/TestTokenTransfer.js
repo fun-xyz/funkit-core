@@ -32,6 +32,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     await wallet.addModule(transfer)
     const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr)
     await wallet.deployTx(transferActionTx)
+    
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
     console.log("Difference: ", start - end)
