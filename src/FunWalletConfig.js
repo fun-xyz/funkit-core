@@ -18,8 +18,12 @@ class FunWalletConfig {
 
     async getClients() {
         await this.getChainInfo()
-        return await OnChainResources.connect(this.rpcurl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr, 
-            this.verificationAddr, this.paymaster, this.eoa, this.index)
+        if (!this.eoa) {
+            return await OnChainResources.connectEmpty(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr)
+        } else {
+            return await OnChainResources.connect(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr, 
+                this.verificationAddr, this.paymaster, this.eoa, this.index)
+        }
     }
     
     async getChainInfo() {

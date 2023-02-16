@@ -29,5 +29,5 @@ async function wrapProvider(originalProvider, config, originalSigner = originalP
     const httpRpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, chainId);
     return await new ERC4337EthersProvider(chainId, config, originalSigner, originalProvider, httpRpcClient, entryPoint, smartAccountAPI).init();
 }
+
 exports.wrapProvider = wrapProvider;
-//# sourceMappingURL=Provider.js.map

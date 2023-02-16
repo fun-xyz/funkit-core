@@ -189,7 +189,7 @@ const loadNetwork = async (wallet) => {
 }
 
 
-const contractConfigPath = "../../test/contractConfig.json"
+const contractConfigPath = "../../test/testConfig.json"
 
 const main = async () => {
 
@@ -324,12 +324,12 @@ const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
 }
 
 const generateBundlerCallScript = () => {
-    const entryPointAddress = require("../../test/contractConfig.json").entryPointAddress
+    const entryPointAddress = require("../../test/testConfig.json").entryPointAddress
     console.log(`yarn run bundler --network "http://127.0.0.1:8545" --entryPoint "${entryPointAddress}"`)
 
 }
 const setupPaymaster = async () => {
-    const paymasterAddr = require("../../test/contractConfig.json").paymasterAddress
+    const paymasterAddr = require("../../test/testConfig.json").paymasterAddress
     const provider = new ethers.providers.JsonRpcProvider(rpcurl)
     const eoa = new ethers.Wallet(privKey, provider)
     // const funder = new ethers.Wallet(pkey, provider)

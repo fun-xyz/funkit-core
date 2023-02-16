@@ -10,7 +10,7 @@ class OnChainResources {
         const erc4337Provider = await wrapProvider(provider, config, eoa, factoryAddress, verificationAddress)
         const funWalletDataProvider = new FunWalletDataProvider({
             provider: erc4337Provider,
-            entryPointAddress,  //check this
+            entryPointAddress,
             owner: eoa,
             paymasterAPI,
             factoryAddress,
@@ -19,9 +19,9 @@ class OnChainResources {
         })
         const net = await provider.getNetwork()
         const chainId = net.chainId
-        this.client = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
+        const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
 
-        return { bundlerClient: this.client, funWalletDataProvider }
+        return { bundlerClient, funWalletDataProvider }
     }
 
     static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
@@ -31,23 +31,12 @@ class OnChainResources {
         const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const funWalletDataProvider = new FunWalletDataProvider({
             provider: provider,
-            entryPointAddress: entryPointAddress,  //check this
+            entryPointAddress: entryPointAddress,
             factoryAddress: factoryAddress
         })
         return { bundlerClient, funWalletDataProvider }
     }
 }
-
-class Bundler {
-    constructor(bundlerUrl, entryPointAddress, chainId) {
-        this.client = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-    }
-}
-
-
-
-
-
 
 module.exports = {
     OnChainResources

@@ -2,7 +2,7 @@ const { ContractsHolder } = require("../utils/ContractsHolder")
 const { DataServer } = require('../utils/DataServer')
 const { generateSha256 } = require("../utils/Tools")
 const UserOpUtils = require('../utils/UserOpUtils')
-const EOATools = require('../utils/eoaUtils')
+const EOAUtils = require('../utils/EOAUtils')
 const { ethers } = require('ethers');
 
 const { FunWalletConfig } = require("./FunWalletConfig")
@@ -54,7 +54,7 @@ class FunWallet extends ContractsHolder {
 
         // Pre-fund FunWallet
         if (this.config.prefundAmt) {
-            return await EOATools.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)
+            return await EOAUtils.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)
         }
     }
 
@@ -77,11 +77,10 @@ class FunWallet extends ContractsHolder {
     }
 
     /**
-     * 
-     * @returns 
+     * deploy the fun wallet
+     * @returns receipt of the wallet deployment transaction and the fun wallet contract address
      */
     async deploy() {
-        await this.init()
         const actionCreateData = { dests: [], values: [], data: [] }
 
         let totalBalance = 0
@@ -99,7 +98,6 @@ class FunWallet extends ContractsHolder {
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider)
-
         await this.dataServer.storeUserOp(op, 'deploy_wallet', totalBalance)
 
         return { receipt, address: this.address }
@@ -107,12 +105,15 @@ class FunWallet extends ContractsHolder {
 
     /**
      * deploy a single transaction. only work after deploy fun wallet
-     * @param {*} transaction 
+     * @param {*} transaction is an instance of Transaction /utils/Transaction.js
      * @returns single receipt of a transaction
      */
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            return await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const { op } = transaction.data
+            await this.dataServer.storeUserOp(op, 'deploy_action')
+            return receipt
         }
         else {
             const tx = await this.eoa.sendTransaction(transaction.data)

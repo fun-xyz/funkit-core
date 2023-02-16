@@ -40,8 +40,7 @@ class EoaAaveWithdrawal extends Module {
         const contract = new ethers.Contract(this.addr, this.abi)
         const aaveExec = ABI.encode(["address", "address", "uint256"], [withdrawToAddress, tokenAddress, amount])
         const actionExec = await contract.populateTransaction.execute(aaveExec)
-        const userOpTx = await UserOpUtils.createUserOpTransaction(this.wallet.dataServer, this.wallet.funWalletDataProvider, actionExec, 560000, true)
-        return userOpTx
+        return await this.createUserOpFromCallData(actionExec)
     }
 }
 

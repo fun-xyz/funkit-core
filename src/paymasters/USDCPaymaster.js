@@ -1,6 +1,6 @@
-const { PaymasterDataProvider } = require("../../utils/PaymasterDataProvider");
+const { BasePaymaster } = require("./BasePaymaster");
 
-class USDCPaymaster extends PaymasterDataProvider {
+class USDCPaymaster extends BasePaymaster {
 
     constructor(paymasterAddr) {
         super()

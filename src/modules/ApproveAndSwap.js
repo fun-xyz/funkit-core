@@ -11,6 +11,9 @@ class ApproveAndSwap extends Module {
         // const { uniswapV3RouterAddr, moduleAddr } = {  }
         this.uniswapV3RouterAddr = uniswapV3RouterAddr
 
+        this.quoterContractAddr = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
+        this.poolFactoryContractAddr = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+
         super.init(moduleAddr)
         this.abi = ApproveAndSwapObj.abi
         this.actionContract = new ethers.Contract(moduleAddr, ApproveAndSwapObj.abi)
@@ -28,16 +31,16 @@ class ApproveAndSwap extends Module {
         const tokenIn = await Token.createFrom(tokenInData)
         const tokenOut = await Token.createFrom(tokenOutData)
 
-        
         const tokenInAddress = await tokenIn.getAddress()
         const tokenOutAddress = await tokenOut.getAddress()
 
-        const { data, to, amount } = await swapExec(this.wallet.provider, this.uniswapV3RouterAddr, tokenInAddress, tokenOutAddress, amountIn, returnAddr, slippage, percentDec)
+        const { data, to, amount } = await swapExec(this.wallet.provider, this.quoterContractAddr, this.poolFactoryContractAddr, this.uniswapV3RouterAddr, tokenInAddress, tokenOutAddress, amountIn, returnAddr, slippage, percentDec)
+        let swapData
         if (tokenIn.type == TokenTypes.ETH) {
-            const swapData = await this._encodeETHSwap(to, amount, data)
-            return await this.createUserOpFromCallData(swapData)
+            swapData = await this._encodeETHSwap(to, amount, data)
+        } else {
+            swapData = await this._encodeERC20Swap(tokenInAddress, this.uniswapV3RouterAddr, amount, data)
         }
-        const swapData = await this._encodeERC20Swap(tokenInAddress, this.uniswapV3RouterAddr, amount, data)
         return await this.createUserOpFromCallData(swapData)
     }
 }

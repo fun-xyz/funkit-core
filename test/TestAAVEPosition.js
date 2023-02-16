@@ -1,26 +1,13 @@
 const { FunWalletConfig } = require("../index")
-const { EoaAaveWithdrawal, ApproveAndSwap, TransferToken } = require("../src/modules/index")
+const { EoaAaveWithdrawal, ApproveAndSwap } = require("../src/modules/index")
 const { FunWallet } = require("../index")
-const { transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, getUserBalanceErc, createErc, getAllowanceErc, } = require("../utils/deploy")
-
+const { transferAmt, getAddrBalanceErc, getBalance, execContractFunc, getUserBalanceErc,
+    createErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, DAI_ADDR, timeout } = require("./TestUtils")
 const ethers = require('ethers')
 
-const PRIV_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-
-const CHAIN = 31337 // avax fuji 
-
-const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-const aDAI = "0x018008bfb33d285247A21d44E50697654f754e63"
-const routerAddr = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 const POOL_ADDRESS = "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
-
-
 const PREFUND_AMT = 0.3
-
-const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
-const RPC_URL = "http://127.0.0.1:8545"
-
-const TOKEN_ADDRESS = DAI
+const TOKEN_ADDRESS = DAI_ADDR
 
 const GET_RESERVE_DATA_ABI = [
     {
@@ -112,7 +99,8 @@ const GET_RESERVE_DATA_ABI = [
         "type": "function"
     },
 ]
-const supplyAbi = [{
+
+const SUPPLY_ABI = [{
     "inputs": [
         {
             "internalType": "address",
@@ -141,7 +129,6 @@ const supplyAbi = [{
     "type": "function"
 }]
 
-
 const UNDERLYING_ASSET_ABI = [{
     "inputs": [],
     "name": "UNDERLYING_ASSET_ADDRESS",
@@ -156,35 +143,22 @@ const UNDERLYING_ASSET_ABI = [{
     "type": "function"
 },]
 
-
-const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
-    const transfer = new TransferToken()
-    const start = await getUserBalanceErc(wallet, tokenAddr)
-    console.log("Starting Wallet ERC Amount: ", start)
-    await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr)
-    await wallet.deployTx(transferActionTx)
-    const end = await getUserBalanceErc(wallet, tokenAddr)
-    console.log("End Wallet ERC Amount: ", end)
-}
-
 const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddress = "") => {
-    const moduleAddr = require("./contractConfig.json").approveAndSwapAddress
+    const moduleAddr = require("./testConfig.json").approveAndSwapAddress
     const swapModule = new ApproveAndSwap()
-    await swapModule.init(routerAddr, moduleAddr)
+    await swapModule.init(ROUTER_ADDR, moduleAddr)
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await transferAmt(eoa, wallet.address, amount)
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
-    const startWalletDAI = await getUserBalanceErc(wallet, tokenAddr)
+    await getUserBalanceErc(wallet, tokenAddr)
     const tx = await swapModule.createSwap("eth", tokenAddr, amount, returnAddress)
-    const execReceipt = await wallet.deployTx(tx)
+    await wallet.deployTx(tx)
 
-    const endWalletDAI = await getUserBalanceErc(wallet, tokenAddr)
+    await getUserBalanceErc(wallet, tokenAddr)
     const EndWalletErcTokenBalance = await getUserBalanceErc(wallet, tokenAddr)
 
-    const outDiff = parseFloat(endWalletDAI) - parseFloat(startWalletDAI);
     console.log("Wallet Eth End Balance: ", await getBalance(wallet))
     console.log("Wallet Token End Balance: ", EndWalletErcTokenBalance)
 
@@ -203,7 +177,7 @@ const getUnderlyingAsset = async (eoa, atokenAddress) => {
 const eoaSupplyAave = async (eoa, amount, tokenAddr) => {
     const tokenContract = createErc(tokenAddr, eoa)
     const approveData = await tokenContract.populateTransaction.approve(POOL_ADDRESS, amount)
-    const contract = new ethers.Contract(POOL_ADDRESS, supplyAbi, eoa)
+    const contract = new ethers.Contract(POOL_ADDRESS, SUPPLY_ABI, eoa)
     const txData = await contract.populateTransaction.deposit(tokenAddr, amount, eoa.address, 0)
     await execContractFunc(eoa, approveData)
     await execContractFunc(eoa, txData)
@@ -223,7 +197,7 @@ const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
 const mainTest = async (wallet, tokenAddr) => {
     // Create a FunWallet with the above access control schema, prefunded with PREFUND_AMT AVAXa
     const module = new EoaAaveWithdrawal()
-    const moduleAddr = require("./contractConfig.json").aaveWithdrawAddress
+    const moduleAddr = require("./testConfig.json").aaveWithdrawAddress
     await module.init(moduleAddr)
 
     await wallet.addModule(module)
@@ -241,19 +215,22 @@ const mainTest = async (wallet, tokenAddr) => {
     console.log("Execution Succesful:\n", withdrawReceipt)
 }
 
-
-
 const amount = 10;
-const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
+const setup = async () => {
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const eoa = new ethers.Wallet(PRIV_KEY, provider)
-    const walletConfig = new FunWalletConfig(eoa, CHAIN, PREFUND_AMT)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig)
     await wallet.init()
-    // await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
+    await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
+}
 
-    // console.log("Waiting for block to pass.")
-    // await timeout(12000)
+const main = async () => {
+    const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
+    const eoa = new ethers.Wallet(PRIV_KEY, provider)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+    const wallet = new FunWallet(walletConfig)
+    await wallet.init()
 
     const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
     const baseTokenAddress = await getUnderlyingAsset(eoa, aTokenAddress)
@@ -265,22 +242,15 @@ const main = async (PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL) => {
 
     const endEoaTokenBalance = await getAddrBalanceErc(eoa, baseTokenAddress, eoa.address)
     const endEoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
-    const walletATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, wallet.address)
-    const walletAllowance = await getAllowanceErc(eoa, aTokenAddress, eoa.address, wallet.address)
 
     console.log("Started with: ", (eoaTokenBalance), "Tokens")
     console.log("Has: ", (endEoaTokenBalance), "Tokens")
 
     console.log("Withdrew: ", (eoaATokenBalance - endEoaATokenBalance), "ATokens")
     console.log("Has: ", (endEoaATokenBalance), "ATokens")
-    console.log("\n\n\n")
 }
 
 
-
-
-main(PRIV_KEY, PREFUND_AMT, APIKEY, RPC_URL)
-
-
-
-
+if (typeof require !== 'undefined' && require.main === module) {
+    setup().then(main)
+}

@@ -3,10 +3,10 @@ const { Transaction } = require("../../utils/Transaction")
 const ethers = require("ethers")
 
 class Module {
-
+    wallet = {}
+    
     init(addr) {
         this.addr = addr
-        this.wallet = {}
     }
 
     /**

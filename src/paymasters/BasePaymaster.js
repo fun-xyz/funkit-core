@@ -1,7 +1,7 @@
 /**
  * an API to external a UserOperation with paymaster info
  */
-class PaymasterDataProvider {
+class BasePaymaster {
     /**
      * @param userOp a partially-filled UserOperation (without signature and paymasterAndData
      *  note that the "preVerificationGas" is incomplete: it can't account for the
@@ -13,4 +13,4 @@ class PaymasterDataProvider {
     }
 }
 
-module.exports = { PaymasterDataProvider }
+module.exports = { BasePaymaster }
