@@ -1,5 +1,4 @@
 const { createWrappedContract, WrappedEthersContract } = require("./WrappedEthersContract")
-const { ethers } = require('ethers');
 
 class ContractsHolder {
     constructor(eoa, provider, chainId) {

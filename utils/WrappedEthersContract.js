@@ -55,8 +55,6 @@ const createRawTransaction = async (wallet, provider, chainId, contract, method,
     approveTxUnsigned.nonce = (await provider.getTransactionCount(addr)) + nonceAdd;
     approveTxUnsigned.chainId = chainId;
     const approveTxSigned = await wallet.signTransaction(approveTxUnsigned);
-    // const submittedTx = await provider.sendTransaction(approveTxSigned);
-    // await submittedTx.wait()
     return approveTxSigned
 }
 const createUnsignedTransaction = async (wallet, provider, chainId, contract, method, params, nonceAdd = 0) => {

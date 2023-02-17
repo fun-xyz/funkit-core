@@ -3,7 +3,20 @@ const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
 
 class FunWalletConfig {
+    
+    /**
+    * Standard constructor
+    * @params eoa, chainId, prefundAmt, paymasterAddr, index
+    * - eoa: an eoa wallet
+    * - chainId: chainId to specify the chains, e.g., for eth mainnet, use 1
+    * - prefundAmt: the amount of eth to prefund the fun wallet
+    * - paymasterAddr: the address of the paymaster which is used to support gasless transactions
+    * - index: the uniqueness of fun wallets. Use the different values for different users.
+    */
     constructor(eoa, chainId, prefundAmt, paymasterAddr, index = 0) {
+        if (!eoa || !chainId ) {
+            throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
+        }
         this.eoa = eoa
         this.chainId = chainId
         this.prefundAmt = prefundAmt
