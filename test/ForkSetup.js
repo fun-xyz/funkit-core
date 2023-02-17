@@ -133,14 +133,11 @@ const loadNetwork = async (wallet) => {
 const deployFullPaymaster = async () => {
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const wallet = new ethers.Wallet(PKEY, provider)
-    const tokenPriceOracleAddress = await deployPriceOracle(wallet)
-    console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
-    await timeout(1000)
-
 
     const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
     const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
     const entryPointAddress = require(testConfigPath).entryPointAddress
+    const tokenPriceOracleAddress = require(testConfigPath).tokenPriceOracleAddress
     const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
 
     const paymasterAddress = await deployPaymaster(wallet, params)

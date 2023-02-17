@@ -54,9 +54,11 @@ const timeout = async (ms) => {
     })
 }
 
-const logUserPaymasterBalance = async (paymaster, wallet, note = "") => {
-    const data = await paymaster.depositInfo(wallet)
-    console.log(note, "user paymaster balance: ", data.amount.toString())
+const logUserPaymasterBalance = async (paymasterObj, wallet, note = "") => {
+    const paymaster = paymasterObj instanceof ethers.Contract ? paymasterObj : loadPaymaster(paymasterObj.paymasterAddr, wallet.provider ? wallet.provider : wallet.eoa.provider)
+    const data = await paymaster.depositInfo(wallet.address)
+    console.log(note, "user paymaster token balance: ", data.tokenAmount.toString())
+    console.log(note, "user paymaster sponsor balance: ", data.sponsorAmount.toString())
 }
 
 

@@ -71,15 +71,15 @@ const walletTransferERC = async (wallet, to, AMOUNT, tokenAddr) => {
     console.log("End Wallet ERC Amount: ", end)
 }
 
-const fundUserUSDCPaymaster = async (eoa, paymasterAddr, walletaddr, AMOUNT) => {
+const fundUserUSDCPaymaster = async (eoa, paymasterAddr, wallet, AMOUNT) => {
     const usdcContract = createErc(USDC_ADDR, eoa)
     const paymasterContract = loadPaymaster(paymasterAddr, eoa)
     const approvedata = await usdcContract.populateTransaction.approve(paymasterAddr, USDCETHAMT)
-    const depositData = await paymasterContract.populateTransaction.addDepositFor(walletaddr, USDCETHAMT)
+    const depositData = await paymasterContract.populateTransaction.addDepositFor(wallet.address, USDCETHAMT)
 
     await execContractFunc(eoa, approvedata)
     await execContractFunc(eoa, depositData)
-    await logUserPaymasterBalance(paymasterContract, walletaddr)
+    await logUserPaymasterBalance(paymasterContract, wallet)
 }
 
 const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
@@ -95,7 +95,7 @@ const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
     await execContractFunc(eoa, whitelistData)
 
     const postBalance = await paymasterContract.getEthDepositInfoForSponsor(eoa.address)
-    const unlockBlock = await paymasterContract.getUnlockBlock(eoa.address)
+    const unlockBlock = await paymasterContract.getUnlockBlockWithSponsor(eoa.address, false)
     console.log("paymasterBalance: ", postBalance.toString())
     console.log("unlock block", unlockBlock.toString())
 }
@@ -117,8 +117,9 @@ const main = async () => {
     const swapModule = new TokenSwap()
     await wallet.addModule(swapModule)
     await wallet.deploy()
-
     await testEthSwap(wallet, swapModule, eoa)
+    await logUserPaymasterBalance(paymaster, funder)
+
 }
 
 const setup = async () => {
@@ -129,7 +130,7 @@ const setup = async () => {
     await wallet.init()
     await getUsdcWallet(wallet, AMOUNT)
     await walletTransferERC(wallet, funder.address, USDCETHAMT, USDC_ADDR)
-    await fundUserUSDCPaymaster(funder, paymasterAddr, wallet.address, AMOUNT)
+    await fundUserUSDCPaymaster(funder, paymasterAddr, wallet, AMOUNT)
     await fundPaymasterEth(funder, paymasterAddr, AMOUNT)
 }
 
