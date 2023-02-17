@@ -1,22 +1,27 @@
 const ethers = require("ethers")
-const ERC20 = require("../utils/abis/ERC20.json")
+const fs = require("fs");
+const { generateSha256 } = require("../utils/tools");
+
 const { ContractFactory } = ethers
 const { FunWallet } = require("../index")
 const { FunWalletConfig } = require("../index")
 const { TokenSwap, TokenTransfer } = require("../src/modules")
-const { HARDHAT_FORK_CHAIN_ID, API_KEY, RPC_URL, PRIV_KEY, PKEY, USDC_ADDR, timeout, transferAmt } = require("./TestUtils")
+
+const { HARDHAT_FORK_CHAIN_ID, API_KEY, RPC_URL, PRIV_KEY, PKEY, USDC_ADDR, logUserPaymasterBalance, timeout, transferAmt } = require("./TestUtils")
+
+const ERC20 = require("../utils/abis/ERC20.json")
 const entryPoint = require("../utils/abis/EntryPoint.json")
 const authContract = require("../utils/abis/UserAuthentication.json")
 const aaveWithdraw = require("../utils/abis/AaveWithdraw.json")
 const approveAndSwap = require("../utils/abis/ApproveAndSwap.json")
 const factory = require("../utils/abis/FunWalletFactory.json")
 const paymasterdata = require("../utils/abis/TokenPaymaster.json")
-const fs = require("fs");
-const { generateSha256 } = require("../utils/tools");
+const priceOracle = require("../utils/abis/TokenPriceOracle.json")
 
-const PREFUND_AMT = 0.3
 const ROUTER_ADDR = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
 const WETH_MAINNET = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+
+const PREFUND_AMT = 0.3
 const USDCETHAMT = ethers.utils.parseUnits((1600 * 10).toString(), 6)
 
 const testConfigPath = "./testConfig.json"
@@ -46,7 +51,7 @@ const loadAbis = () => {
 const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
-    const newPath = `../abis/${fileName}`
+    const newPath = `../utils/abis/${fileName}`
     const basePath = "../../fun-wallet-smart-contract/artifacts/contracts/"
     try {
         const data = require(basePath + path)
@@ -59,7 +64,7 @@ const moveFile = (path) => {
         fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
         console.log("SUCCESS: ", fileName)
     }
-    catch {
+    catch (e) {
         console.log("ERROR: ", fileName)
     }
 }
@@ -91,6 +96,19 @@ const loadNetwork = async (wallet) => {
 
     const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
     console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
+    await timeout(1000)
+
+
+    const tokenPriceOracleAddress = await deployPriceOracle(wallet)
+    console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
+    await timeout(1000)
+
+    const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
+    const paymasterAddress = await deployPaymaster(wallet, params)
+    console.log(`const paymasterAddress = "${paymasterAddress}"`)
+    await timeout(1000)
+
+
 
     const poolFactoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
     const quoterContractAddress = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
@@ -104,9 +122,33 @@ const loadNetwork = async (wallet) => {
         poolFactoryAddress,
         quoterContractAddress,
         uniswapV3RouterAddress,
-        aaveWithdrawAddress
+        aaveWithdrawAddress,
+        tokenPriceOracleAddress,
+        paymasterAddress
     }
     fs.writeFileSync(testConfigPath, JSON.stringify(config))
+}
+
+// -dp
+const deployFullPaymaster = async () => {
+    const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
+    const wallet = new ethers.Wallet(PKEY, provider)
+    const tokenPriceOracleAddress = await deployPriceOracle(wallet)
+    console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
+    await timeout(1000)
+
+
+    const token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+    const aggregator = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419";
+    const entryPointAddress = require(testConfigPath).entryPointAddress
+    const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
+
+    const paymasterAddress = await deployPaymaster(wallet, params)
+    console.log(`const paymasterAddress = "${paymasterAddress}"`)
+    await timeout(1000)
+
+    const olddata = require(testConfigPath)
+    fs.writeFileSync(testConfigPath, JSON.stringify({ ...olddata, tokenPriceOracleAddress, paymasterAddress }))
 }
 
 
@@ -136,6 +178,12 @@ const deployFactory = (signer) => {
     return deploy(signer, factory)
 }
 
+const deployPaymaster = (signer, params) => {
+    return deploy(signer, paymasterdata, params)
+}
+const deployPriceOracle = (signer) => {
+    return deploy(signer, priceOracle)
+}
 
 // -da
 const deployForAvax = async () => {
@@ -187,8 +235,8 @@ const getUsdcWallet = async (wallet, amount = 10) => {
 
     const startWalletDAI = await getUserBalanceErc(wallet, USDC_ADDR)
 
-    const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
-    const tokenOut = {type: TokenTypes.ERC20, address: USDC_ADDR}
+    const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
+    const tokenOut = { type: TokenTypes.ERC20, address: USDC_ADDR }
     const tx = await swapModule.createSwap(tokenIn, tokenOut, amount, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
@@ -202,7 +250,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransfer(to, amount, {address: tokenAddr})
+    const transferActionTx = await transfer.createTransfer(to, amount, { address: tokenAddr })
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
@@ -228,11 +276,6 @@ const fundUserUSDCPaymaster = async (eoa, paymasterAddr, walletaddr, amount) => 
     await logUserPaymasterBalance(paymasterContract, walletaddr)
 }
 
-const logUserPaymasterBalance = async (paymaster, wallet, note = "") => {
-    const data = await paymaster.depositInfo(wallet)
-    console.log(note, "user paymaster balance: ", data.amount.toString())
-}
-
 const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
     const paymasterContract = loadPaymaster(paymasterAddr, eoa)
 
@@ -246,7 +289,7 @@ const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
 
 // default
 const main = async () => {
-    
+
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const wallet = new ethers.Wallet(PKEY, provider)
     const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
@@ -276,6 +319,10 @@ if (typeof require !== 'undefined' && require.main === module) {
         }
         case "-sp": {
             setupPaymaster();
+            return;
+        }
+        case "-dp": {
+            deployFullPaymaster();
             return;
         }
         default: {

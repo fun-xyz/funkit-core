@@ -18,7 +18,6 @@ class DataServer {
     }
 
     async getOrgInfo() {
-        console.log(this.apiKey)
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
         })
@@ -69,7 +68,7 @@ class DataServer {
 
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
-        if (chain != LOCAL_FORK_CHAIN_ID) { 
+        if (chain != LOCAL_FORK_CHAIN_ID) {
             const body = {
                 symbol,
                 chain
@@ -85,7 +84,7 @@ class DataServer {
             } else if (symbol == "dai") {
                 return { contract_address: "0x6B175474E89094C44Da98b954EedeAC495271d0F" }
             } else if (symbol == "weth") {
-                return { contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}
+                return { contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" }
             }
         }
     }
@@ -110,9 +109,9 @@ class DataServer {
             })
         } else {
             return {
-                rpcdata: { bundlerUrl:"http://localhost:3000/rpc" },
-                aaData: { 
-                    entryPointAddress: testConfig.entryPointAddress, 
+                rpcdata: { bundlerUrl: "http://localhost:3000/rpc" },
+                aaData: {
+                    entryPointAddress: testConfig.entryPointAddress,
                     factoryAddress: testConfig.factoryAddress,
                     verificationAddress: testConfig.verificationAddress
                 }
@@ -133,10 +132,10 @@ class DataServer {
             if (moduleName == AAVE_WITHDRAWAL_MODULE_NAME) {
                 return { aaveWithdrawAddress: testConfig.aaveWithdrawAddress }
             } else if (moduleName == APPROVE_AND_SWAP_MODULE_NAME) {
-                return { 
-                    approveAndSwapAddress: testConfig.approveAndSwapAddress, 
-                    univ3router: testConfig.uniswapV3RouterAddress, 
-                    univ3quoter: testConfig.quoterContractAddress, 
+                return {
+                    approveAndSwapAddress: testConfig.approveAndSwapAddress,
+                    univ3router: testConfig.uniswapV3RouterAddress,
+                    univ3quoter: testConfig.quoterContractAddress,
                     univ3factory: testConfig.poolFactoryAddress
                 }
             }

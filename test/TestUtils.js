@@ -1,6 +1,7 @@
 const hre = require("hardhat");
 const { ethers } = hre
 const ERC20 = require("../utils/abis/ERC20.json")
+const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
 const RPC_URL = "http://127.0.0.1:8545"
@@ -53,9 +54,19 @@ const timeout = async (ms) => {
     })
 }
 
+const logUserPaymasterBalance = async (paymaster, wallet, note = "") => {
+    const data = await paymaster.depositInfo(wallet)
+    console.log(note, "user paymaster balance: ", data.amount.toString())
+}
+
+
 const logPairing = (AMOUNT, outDiff, tok1, tok2) => {
     console.log(`${tok1}/${tok2} = ${outDiff / AMOUNT}`)
 }
-
-module.exports = { transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, 
-    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, USDC_ADDR }
+const loadPaymaster = (address, provider) => {
+    return new ethers.Contract(address, paymasterdata.abi, provider)
+}
+module.exports = {
+    transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, logUserPaymasterBalance, loadPaymaster,
+    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, USDC_ADDR
+}
