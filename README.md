@@ -46,6 +46,11 @@ Now the local fork is setup, you can run any file inside of the test folder and 
 
 ```
 yarn run test-aaveWithdrawal
-yarn run test-tokenTransfer
+yarn run test-tokenTransfer [param]
 yarn run test-tokenSwap
 ```
+
+Specify the parameter of which it is to be ran on. Testnet is set to AVAX/FUJI
+yarn run test-tokenTransfer fork
+yarn run test-tokenTransfer testnet
+
