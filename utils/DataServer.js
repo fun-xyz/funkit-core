@@ -15,7 +15,6 @@ class DataServer {
     }
 
     async getOrgInfo() {
-        console.log(this.apiKey)
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
         })

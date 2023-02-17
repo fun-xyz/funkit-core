@@ -6,7 +6,8 @@
   "scripts": {
     "test-aaveWithdrawal": "node test/TestAaveWithdrawal.js",
     "test-tokenTransfer": "node test/TestTokenTransfer.js",
-    "test-tokenSwap": "node test/TestTokenSwap.js"
+    "test-tokenSwap": "node test/TestTokenSwap.js",
+    "test-testnetTokenTransfer": "node test/testnetTokenTransfer"
   },
   "author": "",
   "license": "ISC",
