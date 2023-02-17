@@ -17,7 +17,7 @@ const testEthSwap = async (wallet, swapModule, eoa) => {
 
     const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
     const tokenOut = {type: TokenTypes.ERC20, address: DAI.address}
-    const tx = await swapModule.createSwap(tokenIn, tokenOut, AMOUNT)
+    const tx = await swapModule.createSwap(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)

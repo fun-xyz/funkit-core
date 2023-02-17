@@ -306,7 +306,7 @@ const getUsdcWallet = async (wallet, amount = 10) => {
 
     const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
     const tokenOut = {type: TokenTypes.ERC20, address: USDC}
-    const tx = await swapModule.createSwap(tokenIn, tokenOut, amount)
+    const tx = await swapModule.createSwap(tokenIn, tokenOut, amount, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, USDC)
