@@ -4,7 +4,7 @@ const testConfig = require("../test/testConfig.json")
 const { AAVE_WITHDRAWAL_MODULE_NAME, APPROVE_AND_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const LOCAL_FORK_CHAIN_ID = 31337
-const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
+const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 class DataServer {
     constructor(apiKey = "") {
