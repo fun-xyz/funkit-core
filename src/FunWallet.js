@@ -101,8 +101,8 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
-        const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider)
-        op.chain = this.chain
+        const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
+        op.chain = this.chainId
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt: receipt })
 
         return { receipt, address: this.address }
@@ -115,8 +115,9 @@ class FunWallet extends ContractsHolder {
      */
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider, this.provider)
             const { op } = transaction.data
+            op.chain = this.chainId
             await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt: receipt })
             return receipt
         }
