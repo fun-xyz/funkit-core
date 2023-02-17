@@ -3,8 +3,7 @@ const { TokenSwap, TokenTransfer } = require("../src/modules")
 const ethers = require('ethers')
 let { transferAmt, getAddrBalanceErc, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID,
      PRIV_KEY,  DAI_ADDR, API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
-const TokenTypes = require('../utils/Token')
+const { Token, TokenTypes} = require("../utils/Token")
 const PREFUND_AMT = 0
 const RPC_URL = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 const CHAIN_ID = "43113"
@@ -15,6 +14,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const transfer = new TokenTransfer()
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log(`funWallet ${wallet.address} starting ERC20:(USDC) balance: `, start)
+    console.log(TokenTypes.ERC20)
     await wallet.addModule(transfer)
     const transferActionTx = await transfer.createTransfer(to, amount, {type:TokenTypes.ERC20, address:tokenAddr})
     await wallet.deployTx(transferActionTx)
@@ -42,7 +42,7 @@ const main = async () => {
 
     const funderWalletErc20BalanceStart = await getAddrBalanceErc(sender, USDC_AVAX_ADDR, receiver.address)
     console.log("receiver starting ERC20:(USDC) balance: ", funderWalletErc20BalanceStart)
-    await walletTransferERC(wallet, receiver.address, "1000000", USDC_AVAX_ADDR) //1000000 = 1usdc
+    await walletTransferERC(wallet, receiver.address, "100000", USDC_AVAX_ADDR) //1000000 = 1usdc
     const funderWalletErc20BalanceEnd = await getAddrBalanceErc(sender, USDC_AVAX_ADDR, receiver.address)
     console.log("receiver ending ERC20:(USDC) balance: ", funderWalletErc20BalanceEnd)
     console.log("receiver ERC20:(USDC) Difference: ", funderWalletErc20BalanceEnd - funderWalletErc20BalanceStart)

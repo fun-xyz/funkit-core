@@ -10,7 +10,7 @@ const TokenTypes = new Enum(TokenTypesData)
 class Token {
 
     constructor(config) {
-        if (config.type && !TokenTypes[config.type]) {
+        if (config.type && !TokenTypesData[config.type]) {
             throw Error("Type is not a token");
         }
 
@@ -35,7 +35,6 @@ class Token {
 
     static async createToken(data) {
         const { type, address, symbol, chainId } = data
-        console.log(type)
         if (address) {
             return new Token({type: type, address: address})
         } else {
