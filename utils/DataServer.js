@@ -1,7 +1,7 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
 const ethers = require("ethers")
 const testConfig = require("../test/testConfig.json")
-const { AAVE_WITHDRAWAL_MODULE_NAME, APPROVE_AND_SWAP_MODULE_NAME } = require("../src/modules/Module")
+const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
@@ -129,9 +129,9 @@ class DataServer {
                 return r.data
             })
         } else {
-            if (moduleName == AAVE_WITHDRAWAL_MODULE_NAME) {
+            if (moduleName == EOA_AAVE_WITHDRAWAL_MODULE_NAME) {
                 return { aaveWithdrawAddress: testConfig.aaveWithdrawAddress }
-            } else if (moduleName == APPROVE_AND_SWAP_MODULE_NAME) {
+            } else if (moduleName == TOKEN_SWAP_MODULE_NAME) {
                 return { 
                     approveAndSwapAddress: testConfig.approveAndSwapAddress, 
                     univ3router: testConfig.uniswapV3RouterAddress, 

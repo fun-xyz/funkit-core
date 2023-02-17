@@ -1,5 +1,5 @@
 const { Transaction } = require("../../utils/Transaction")
-const { Module, AAVE_WITHDRAWAL_MODULE_NAME } = require('./Module')
+const { Module, EOA_AAVE_WITHDRAWAL_MODULE_NAME } = require('./Module')
 const Action = require("../../utils/abis/AaveWithdraw.json")
 const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
@@ -9,7 +9,7 @@ const { DataServer } = require("../../utils/DataServer")
 class EoaAaveWithdrawal extends Module {
 
     async init(chainId) {
-        const { aaveWithdrawAddress } = await DataServer.getModuleInfo(AAVE_WITHDRAWAL_MODULE_NAME, chainId)
+        const { aaveWithdrawAddress } = await DataServer.getModuleInfo(EOA_AAVE_WITHDRAWAL_MODULE_NAME, chainId)
         this.addr = aaveWithdrawAddress
         this.abi = Action.abi
     }
