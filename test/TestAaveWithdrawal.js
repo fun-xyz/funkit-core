@@ -1,5 +1,5 @@
 const { FunWalletConfig } = require("../index")
-const { AaveWithdrawal, TokenSwap } = require("../src/modules/index")
+const { EoaAaveWithdrawal, TokenSwap } = require("../src/modules/index")
 const { FunWallet } = require("../index")
 const { transferAmt, getAddrBalanceErc, getBalance, execContractFunc, getUserBalanceErc,
     createErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
@@ -196,7 +196,7 @@ const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
 
 const mainTest = async (wallet, tokenAddr) => {
     // Create a FunWallet with the above access control schema, prefunded with PREFUND_AMT AVAXa
-    const module = new AaveWithdrawal()
+    const module = new EoaAaveWithdrawal()
     await wallet.addModule(module)
 
     const modulePreExecTxs = await module.getPreExecTxs(tokenAddr, WITHDRAW_AMOUNT)

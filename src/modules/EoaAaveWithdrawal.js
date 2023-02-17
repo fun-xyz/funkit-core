@@ -6,7 +6,7 @@ const ethers = require("ethers")
 const ABI = ethers.utils.defaultAbiCoder;
 const { DataServer } = require("../../utils/DataServer")
 
-class AaveWithdrawal extends Module {
+class EoaAaveWithdrawal extends Module {
 
     async init(chainId) {
         const { aaveWithdrawAddress } = await DataServer.getModuleInfo(AAVE_WITHDRAWAL_MODULE_NAME, chainId)
@@ -43,4 +43,4 @@ class AaveWithdrawal extends Module {
     }
 }
 
-module.exports = { AaveWithdrawal }
+module.exports = { EoaAaveWithdrawal }
