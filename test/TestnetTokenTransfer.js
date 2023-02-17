@@ -4,7 +4,7 @@ const ethers = require('ethers')
 let { transferAmt, getAddrBalanceErc, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID,
      PRIV_KEY,  DAI_ADDR, API_KEY } = require("./TestUtils")
 const { Token } = require("../utils/Token")
-
+const TokenTypes = require('../utils/Token')
 const PREFUND_AMT = 0
 const RPC_URL = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"
 const CHAIN_ID = "43113"
@@ -14,9 +14,9 @@ const PKEY='3ef076e7d3d2e1f65ded46b02372d7c5300aec49e780b3bb4418820bf068e732'
 const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const transfer = new TokenTransfer()
     const start = await getUserBalanceErc(wallet, tokenAddr)
-    console.log("funWallet ${wallet.address} starting ERC20:(USDC) balance: ", start)
+    console.log(`funWallet ${wallet.address} starting ERC20:(USDC) balance: `, start)
     await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr)
+    const transferActionTx = await transfer.createTransfer(to, amount, {type:TokenTypes.ERC20, address:tokenAddr})
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
