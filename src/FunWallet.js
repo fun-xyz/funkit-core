@@ -117,7 +117,7 @@ class FunWallet extends ContractsHolder {
         if (transaction.isUserOp) {
             const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider, this.provider)
             const { op } = transaction.data
-            op.chain=this.chainId
+            op.chain = this.chainId
             await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt: receipt })
             return receipt
         }
