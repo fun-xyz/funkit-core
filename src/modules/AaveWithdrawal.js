@@ -1,31 +1,24 @@
 const { Transaction } = require("../../utils/Transaction")
-const { Module, LOCAL_FORK_CHAIN_ID } = require('./Module')
+const { Module, AAVE_WITHDRAWAL_MODULE_NAME } = require('./Module')
 const Action = require("../../utils/abis/AaveWithdraw.json")
 const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
 const ABI = ethers.utils.defaultAbiCoder;
-const testConfig = require("../../test/testConfig.json")
-
-const MODULE_NAME = "aaveWithdraw"
+const { DataServer } = require("../../utils/DataServer")
 
 class AaveWithdrawal extends Module {
 
     async init(chainId) {
-        var aaveWithdrawAddress
-        if (chainId != LOCAL_FORK_CHAIN_ID) {
-            ({ aaveWithdrawAddress } = await DataServer.getModuleInfo(MODULE_NAME, chainId))
-        } else {
-            aaveWithdrawAddress = testConfig.aaveWithdrawAddress
-        }
+        const { aaveWithdrawAddress } = await DataServer.getModuleInfo(AAVE_WITHDRAWAL_MODULE_NAME, chainId)
         this.addr = aaveWithdrawAddress
         this.abi = Action.abi
     }
 
-    async getPreExecTxs(tokenAddress, amount = ethers.constants.MaxInt256) {
+    async getPreExecTxs(tokenAddress, amount) {
         return [await this.deployTokenApproval(tokenAddress, amount)]
     }
 
-    async verifyRequirements(tokenAddress, amount = ethers.constants.MaxInt256) {
+    async verifyRequirements(tokenAddress, amount) {
         const contract = new ethers.Contract(tokenAddress, ERC20.abi, this.wallet.provider)
         const value = await contract.allowance(this.wallet.eoaAddr, this.wallet.address)
         return value.gte(ethers.BigNumber.from(amount))
@@ -36,13 +29,13 @@ class AaveWithdrawal extends Module {
     * @return {Transaction} 
     * Transaction - Transaction data
     */
-    async deployTokenApproval(tokenAddress, amount = ethers.constants.MaxInt256) {
+    async deployTokenApproval(tokenAddress, amount) {
         const tokenContract = new ethers.Contract(tokenAddress, ERC20.abi)
         const { to, data } = await tokenContract.populateTransaction.approve(this.wallet.address, amount)
         return new Transaction({ to, data })
     }
 
-    async createWithdraw(tokenAddress, withdrawToAddress, amount = ethers.constants.MaxInt256) {
+    async createWithdraw(tokenAddress, withdrawToAddress, amount) {
         const contract = new ethers.Contract(this.addr, this.abi)
         const aaveExec = ABI.encode(["address", "address", "uint256"], [withdrawToAddress, tokenAddress, amount])
         const actionExec = await contract.populateTransaction.execute(aaveExec)
