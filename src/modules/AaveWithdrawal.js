@@ -1,22 +1,15 @@
 const { Transaction } = require("../../utils/Transaction")
-const { Module, LOCAL_FORK_CHAIN_ID } = require('./Module')
+const { Module, AAVE_WITHDRAWAL_MODULE_NAME } = require('./Module')
 const Action = require("../../utils/abis/AaveWithdraw.json")
 const ERC20 = require('../../utils/abis/ERC20.json')
 const ethers = require("ethers")
 const ABI = ethers.utils.defaultAbiCoder;
-const testConfig = require("../../test/testConfig.json")
-
-const MODULE_NAME = "aaveWithdraw"
+const { DataServer } = require("../../utils/DataServer")
 
 class AaveWithdrawal extends Module {
 
     async init(chainId) {
-        var aaveWithdrawAddress
-        if (chainId != LOCAL_FORK_CHAIN_ID) {
-            ({ aaveWithdrawAddress } = await DataServer.getModuleInfo(MODULE_NAME, chainId))
-        } else {
-            aaveWithdrawAddress = testConfig.aaveWithdrawAddress
-        }
+        const { aaveWithdrawAddress } = await DataServer.getModuleInfo(AAVE_WITHDRAWAL_MODULE_NAME, chainId)
         this.addr = aaveWithdrawAddress
         this.abi = Action.abi
     }

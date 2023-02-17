@@ -1,7 +1,8 @@
 const { Transaction } = require("../../utils/Transaction")
 const ethers = require("ethers")
 
-const LOCAL_FORK_CHAIN_ID = 31337
+const AAVE_WITHDRAWAL_MODULE_NAME = "aaveWithdraw"
+const APPROVE_AND_SWAP_MODULE_NAME = "approveAndSwap"
 
 class Module {
     wallet = {}
@@ -59,4 +60,4 @@ class Module {
     }
 }
 
-module.exports = { Module, LOCAL_FORK_CHAIN_ID }
+module.exports = { Module, AAVE_WITHDRAWAL_MODULE_NAME, APPROVE_AND_SWAP_MODULE_NAME }

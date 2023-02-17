@@ -1,6 +1,9 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./tools')
 const ethers = require("ethers")
+const testConfig = require("../test/testConfig.json")
+const { AAVE_WITHDRAWAL_MODULE_NAME, APPROVE_AND_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
+const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/dev'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 class DataServer {
@@ -64,13 +67,27 @@ class DataServer {
         })
     }
 
-    static async getTokenInfo(symbol) {
-        const body = {
-            symbol
+    static async getTokenInfo(symbol, chain) {
+        symbol = symbol.toLowerCase()
+        if (chain != LOCAL_FORK_CHAIN_ID) { 
+            const body = {
+                symbol,
+                chain
+            }
+            return await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {
+                return r.data
+            })
+        } else {
+            if (symbol == "usdc") {
+                return { contract_address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" }
+            } else if (symbol == "usdt") {
+                return { contract_address: "0xA02f6adc7926efeBBd59Fd43A84f4E0c0c91e832" }
+            } else if (symbol == "dai") {
+                return { contract_address: "0x6B175474E89094C44Da98b954EedeAC495271d0F" }
+            } else if (symbol == "weth") {
+                return { contract_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}
+            }
         }
-        return await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {
-            return r.data
-        })
     }
 
     async sendGetRequest(APIURL, endpoint) {
@@ -85,21 +102,45 @@ class DataServer {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
 
-    static async getChainInfo(chain) {
-        const body = { chain }
-        return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
-            return r.data
-        })
+    static async getChainInfo(chainId) {
+        if (chainId != LOCAL_FORK_CHAIN_ID) {
+            const body = { chainId }
+            return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
+                return r.data
+            })
+        } else {
+            return {
+                rpcdata: { bundlerUrl:"http://localhost:3000/rpc" },
+                aaData: { 
+                    entryPointAddress: testConfig.entryPointAddress, 
+                    factoryAddress: testConfig.factoryAddress,
+                    verificationAddress: testConfig.verificationAddress
+                }
+            }
+        }
     }
 
     static async getModuleInfo(moduleName, chainId) {
-        const body = {
-            module: moduleName,
-            chain: chainId
+        if (chainId != LOCAL_FORK_CHAIN_ID) {
+            const body = {
+                module: moduleName,
+                chain: chainId
+            }
+            return await this.sendPostRequest("get-module-info", body).then((r) => {
+                return r.data
+            })
+        } else {
+            if (moduleName == AAVE_WITHDRAWAL_MODULE_NAME) {
+                return { aaveWithdrawAddress: testConfig.aaveWithdrawAddress }
+            } else if (moduleName == APPROVE_AND_SWAP_MODULE_NAME) {
+                return { 
+                    approveAndSwapAddress: testConfig.approveAndSwapAddress, 
+                    univ3router: testConfig.uniswapV3RouterAddress, 
+                    univ3quoter: testConfig.quoterContractAddress, 
+                    univ3factory: testConfig.poolFactoryAddress
+                }
+            }
         }
-        return await this.sendPostRequest("get-module-info", body).then((r) => {
-            return r.data
-        })
     }
 }
 

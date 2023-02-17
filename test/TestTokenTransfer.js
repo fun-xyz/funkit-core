@@ -3,7 +3,7 @@ const { TokenSwap, TokenTransfer } = require("../src/modules")
 const ethers = require('ethers')
 const { transferAmt, getAddrBalanceErc, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, 
     RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
+const { Token, TokenTypes } = require("../utils/Token")
 
 const PREFUND_AMT = 0.3
 const AMOUNT = 60
@@ -13,10 +13,13 @@ const getEthSwapToDAI = async (wallet, swapModule, eoa) => {
     await transferAmt(eoa, wallet.address, AMOUNT)
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
-    const DAI = await Token.createFrom(DAI_ADDR)
+    const DAI = await Token.createToken({type: TokenTypes.ERC20, address: DAI_ADDR})
     const startWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
-    const tx = await swapModule.createSwap("eth", DAI, AMOUNT)
+
+    const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
+    const tokenOut = {type: TokenTypes.ERC20, address: DAI.address}
+    const tx = await swapModule.createSwap(tokenIn, tokenOut, AMOUNT)
     await wallet.deployTx(tx)
     const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
@@ -30,7 +33,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransfer(to, amount, tokenAddr)
+    const transferActionTx = await transfer.createTransfer(to, amount, {address: tokenAddr})
     await wallet.deployTx(transferActionTx)
     
     const end = await getUserBalanceErc(wallet, tokenAddr)
