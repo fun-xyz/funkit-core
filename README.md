@@ -45,10 +45,12 @@ yarn run bundler --network "http://127.0.0.1:8545" --entryPoint "{GIVEN_ENTRYPOI
 
 Now the local fork is setup, you can run any file inside of the test folder and see the result.
 
+Starting point: `/fun-wallet-sdk`
+
 ```
-yarn run test-aaveWithdrawal
-yarn run test-tokenTransfer [param]
-yarn run test-tokenSwap
+cd test
+chmod +x runAll.sh
+./runAll.sh
 ```
 
 Specify the parameter of which chain token `tokenTransfer` is to be ran on. Testnet is set to Avalanche FUJI
