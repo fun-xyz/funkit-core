@@ -25,7 +25,7 @@ class FunWalletConfig {
         this.chainId = chainId
         this.prefundAmt = prefundAmt
 
-        if (!paymaster || !(paymaster instanceof BasePaymaster)) {
+        if (paymaster && !(paymaster instanceof BasePaymaster)) {
             throw new Error("Paymaster must be of type BasePaymaster or children")
         }
 
