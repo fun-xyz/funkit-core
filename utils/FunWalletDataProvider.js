@@ -122,16 +122,6 @@ class FunWalletDataProvider {
     async getCounterFactualAddress() {
         await this.getFactoryContract()
         return await this.factory.getAddress(this.salt)
-        // const initCode = await this.getAccountInitCode();
-        // // use entryPoint to query account address (factory can provide a helper method to do the same, but
-        // // this method attempts to be generic
-        // try {
-        //     await this.entryPointView.callStatic.getSenderAddress(initCode);
-        // }
-        // catch (e) {
-        //     return e.errorArgs.sender;
-        // }
-        // throw new Error('must handle revert');
     }
     /**
      * return initCode value to into the UserOp.

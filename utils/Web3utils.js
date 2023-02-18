@@ -1,4 +1,5 @@
 const { ethers } = require("ethers")
+const HARDHAT_FORK_CHAIN_ID = 31337
 
 const execContractFunc = async (eoa, data) => {
     const tx = await eoa.sendTransaction(data)
@@ -10,4 +11,4 @@ const createErc = (addr, provider) => {
 }
 
 
-module.exports = { execContractFunc, createErc }
+module.exports = { execContractFunc, createErc, HARDHAT_FORK_CHAIN_ID }

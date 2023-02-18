@@ -4,7 +4,6 @@ const ethers = require('ethers')
 const { transferAmt, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
 const { Token, TokenTypes } = require("../utils/Token")
 
-const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const PREFUND_AMT = 0.3
 const AMOUNT = 60
 

@@ -40,7 +40,6 @@ const testEthSwap = async (wallet, swapModule, eoa) => {
 
 const USDCETHAMT = ethers.utils.parseUnits((1400 * AMOUNT).toString(), 6)
 
-const dataParse = {}
 
 const getUsdcWallet = async (wallet, AMOUNT = 10) => {
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
@@ -86,9 +85,9 @@ const fundUserUSDCPaymaster = async (eoa, paymasterAddr, wallet, AMOUNT) => {
     const paymasterContract = loadPaymaster(paymasterAddr, eoa)
     await paymasterInterface.addTokenDepositTo(wallet.address, USDCETHAMT)
 
-    // console.log("\n\n")
-    // await logUserPaymasterBalance(paymasterContract, wallet, "Wallet Starting: ")
-    // console.log("\n\n")
+    console.log("\n\n")
+    await logUserPaymasterBalance(paymasterContract, wallet, "Wallet Starting: ")
+    console.log("\n\n")
 }
 
 
@@ -117,7 +116,7 @@ const main = async () => {
     const sponsorAddress = funder.address
 
     const paymaster = new USDCPaymaster(paymasterAddress, sponsorAddress)
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, paymaster)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, "", paymaster)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 
@@ -188,5 +187,4 @@ if (typeof require !== 'undefined' && require.main === module) {
     setup().then(main).then(() => {
         postTest(funder, paymasterAddress)
     })
-    // setup()
 }

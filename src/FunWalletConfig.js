@@ -17,7 +17,7 @@ class FunWalletConfig {
     * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
-    constructor(eoa, chainId, prefundAmt, paymaster = undefined, implementationAddress = "", salt, index = 0) {
+    constructor(eoa, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
         if (!eoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
