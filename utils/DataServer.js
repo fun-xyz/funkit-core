@@ -38,7 +38,6 @@ class DataServer {
     }
 
     async storeUserOp({ op, type, balance = 0, receipt = {} }) {
-        console.log(receipt)
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
