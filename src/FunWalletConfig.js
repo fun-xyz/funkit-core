@@ -10,8 +10,10 @@ class FunWalletConfig {
     * - eoa: an eoa wallet
     * - chainId: chainId to specify the chains, e.g., for eth mainnet, use 1
     * - prefundAmt: the amount of eth to prefund the fun wallet
-    * - paymasterAddr: the address of the paymaster which is used to support gasless transactions
-    * - index: the uniqueness of fun wallets. Use the different values for different users.
+    * - paymaster: the paymaster instance to support gasless transactions
+    * - implementationAddress: the fun wallet implementation address. used for fun wallet upgradability
+    * - salt: the uniqueness of fun wallets. the default value is hash(eoa addr, index)
+    * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
     constructor(eoa, chainId, prefundAmt, paymaster = undefined, implementationAddress = "", salt, index = 0) {
