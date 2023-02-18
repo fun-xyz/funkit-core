@@ -96,6 +96,8 @@ const testNetTransfer = async () => {
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
+    console.log("\n\n::::::TOKEN TRANSFER TEST::::::")
+
     const type = process.argv[2]
     if (type === 'testnet') {
         testNetTransfer()
