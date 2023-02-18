@@ -17,7 +17,7 @@ class FunWallet extends ContractsHolder {
     * - config: an instance of FunWalletConfig
     * - apiKey: api key to access Fun Wallet service
     */
-    constructor(config, apiKey, index = 0) {
+    constructor(config, apiKey) {
 
         if (!(config instanceof FunWalletConfig)) {
             throw Error("Config Must be of type FunWalletConfig or child classes")
@@ -29,8 +29,6 @@ class FunWallet extends ContractsHolder {
 
         this.rpcUrl = rpcUrl
         this.provider = provider
-
-
         this.config = config
         this.dataServer = new DataServer(apiKey);
     }
@@ -45,7 +43,7 @@ class FunWallet extends ContractsHolder {
 
         // Only init once
         if (this.address) {
-            return;
+            return
         }
 
         this.dataServer.init()
