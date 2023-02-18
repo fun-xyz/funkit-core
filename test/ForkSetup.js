@@ -39,7 +39,7 @@ const loadAbis = () => {
     const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"
     const approveAndSwapPath = "modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
     const aaveWithdrawPath = "modules/actions/AaveWithdraw.sol/AaveWithdraw.json"
-    const factoryPath = "FunWalletFactory.sol/FunWalletFactory.json"
+    const factoryPath = "deployer/FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "FunWallet.sol/FunWallet.json"
     const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
     const tokenOracle = "paymaster/TokenPriceOracle.sol/TokenPriceOracle.json"
@@ -103,12 +103,6 @@ const loadNetwork = async (wallet) => {
     console.log(`const tokenPriceOracleAddress = "${tokenPriceOracleAddress}"`)
     await timeout(1000)
 
-    const params = [entryPointAddress, tokenPriceOracleAddress, token, aggregator]
-    const paymasterAddress = await deployPaymaster(wallet, params)
-    console.log(`const paymasterAddress = "${paymasterAddress}"`)
-    await timeout(1000)
-
-
 
     const poolFactoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
     const quoterContractAddress = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
@@ -124,7 +118,6 @@ const loadNetwork = async (wallet) => {
         uniswapV3RouterAddress,
         aaveWithdrawAddress,
         tokenPriceOracleAddress,
-        paymasterAddress
     }
     fs.writeFileSync(testConfigPath, JSON.stringify(config))
 }

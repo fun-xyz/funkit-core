@@ -1,7 +1,7 @@
 const { FunWallet, FunWalletConfig } = require("../index")
 const { TokenSwap, TokenTransfer } = require("../src/modules")
 const ethers = require('ethers')
-const { transferAmt, getBalance, getUserBalanceErc, createErc, loadPaymaster, logPairing, execContractFunc, logUserPaymasterBalance, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
+const { transferAmt, getBalance, getUserBalanceErc, loadPaymaster, logPairing, execContractFunc, logUserPaymasterBalance, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
 const { Token, TokenTypes } = require("../utils/Token")
 const { USDCPaymaster } = require("../src/paymasters/USDCPaymaster")
 
@@ -10,6 +10,7 @@ const ROUTER_ADDR = require("./testConfig.json").uniswapV3RouterAddress
 const entryPointAddress = require("./testConfig.json").entryPointAddress
 
 const EntryPointAbi = require("../utils/abis/EntryPoint.json")
+const { PaymasterSponsorInterface } = require("../src/paymasters/PaymasterSponsorInterface")
 const PREFUND_AMT = 0.3
 const AMOUNT = 60
 const testConfigPath = "./testConfig.json"
@@ -78,35 +79,29 @@ const walletTransferERC = async (wallet, to, AMOUNT, tokenAddr) => {
 }
 
 const fundUserUSDCPaymaster = async (eoa, paymasterAddr, wallet, AMOUNT) => {
-    const usdcContract = createErc(USDC_ADDR, eoa)
-    const paymasterContract = loadPaymaster(paymasterAddr, eoa)
-    const approvedata = await usdcContract.populateTransaction.approve(paymasterAddr, USDCETHAMT)
-    const depositData = await paymasterContract.populateTransaction.addTokenDepositTo(wallet.address, USDCETHAMT)
 
-    await execContractFunc(eoa, approvedata)
-    await execContractFunc(eoa, depositData)
-    console.log("\n\n")
-    await logUserPaymasterBalance(paymasterContract, wallet, "Wallet Starting: ")
-    console.log("\n\n")
+    const paymasterInterface = new PaymasterSponsorInterface(eoa)
+    await paymasterInterface.init()
+
+    const paymasterContract = loadPaymaster(paymasterAddr, eoa)
+    await paymasterInterface.addTokenDepositTo(wallet.address, USDCETHAMT)
+
+    // console.log("\n\n")
+    // await logUserPaymasterBalance(paymasterContract, wallet, "Wallet Starting: ")
+    // console.log("\n\n")
 }
 
 
-const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
-    const paymasterContract = loadPaymaster(paymasterAddr, eoa)
+const fundPaymasterEth = async (eoa, value) => {
+    const paymasterInterface = new PaymasterSponsorInterface(eoa)
+    await paymasterInterface.init()
 
-    const depositData = await paymasterContract.populateTransaction.addEthDepositForSponsor(eoa.address)
-    const lockData = await paymasterContract.populateTransaction.lockTokenDeposit()
-    const whitelistData = await paymasterContract.populateTransaction.setWhitelistMode(true)
+    await paymasterInterface.addEthDepositForSponsor(value)
+    await paymasterInterface.lockTokenDeposit()
+    await paymasterInterface.setWhitelistMode(true)
 
-    const tx = { ...depositData, value: ethers.utils.parseEther(value.toString()) }
-    await execContractFunc(eoa, tx)
-    await execContractFunc(eoa, lockData)
-    await execContractFunc(eoa, whitelistData)
-
-    const postBalance = await paymasterContract.getEthDepositInfoForSponsor(eoa.address)
-    const unlockBlock = await paymasterContract.getUnlockBlockWithSponsor(eoa.address, false)
+    const postBalance = await paymasterInterface.getEthDepositInfoForSponsor(eoa.address)
     console.log("paymasterBalance: ", postBalance.toString())
-    console.log("unlock block", unlockBlock.toString())
 }
 
 const getPaymasterTotalDeposit = async () => {
@@ -146,18 +141,16 @@ const postTest = async (eoa, paymasterAddr) => {
     console.log("\n")
     console.log("Starting EOA Token Balance: ", starteoaTokenBalance)
 
+    const paymasterInterface = new PaymasterSponsorInterface(eoa)
+    await paymasterInterface.init()
 
     const paymasterContract = loadPaymaster(paymasterAddr, eoa)
     const startblockNumber = await provider.getBlockNumber();
     const withdrawAmount = (await paymasterContract.depositInfo(eoa.address)).tokenAmount
 
-    const unlockData = await paymasterContract.populateTransaction.unlockTokenDeposit()
-    const withdrawData = await paymasterContract.populateTransaction.withdrawTokenDepositTo(eoa.address, withdrawAmount)
-
-
     console.log('\n')
 
-    await execContractFunc(eoa, unlockData)
+    await paymasterInterface.unlockTokenDeposit()
 
     await new Promise((resolve, reject) => {
         provider.on("block", (blockNumber) => {
@@ -168,8 +161,9 @@ const postTest = async (eoa, paymasterAddr) => {
         })
     });
 
+    await paymasterInterface.withdrawTokenDepositTo(eoa.address, withdrawAmount)
     provider.removeAllListeners("block")
-    await execContractFunc(eoa, withdrawData)
+
     await logUserPaymasterBalance(paymasterContract, eoa, "End Sponsor EOA")
     const eoaTokenBalance = await getUserBalanceErc(eoa, USDC_ADDR)
     console.log("Ending EOA Token Balance: ", eoaTokenBalance)
@@ -186,7 +180,7 @@ const setup = async () => {
     await getUsdcWallet(wallet, AMOUNT)
     await walletTransferERC(wallet, funder.address, USDCETHAMT, USDC_ADDR)
     await fundUserUSDCPaymaster(funder, paymasterAddr, wallet, AMOUNT)
-    await fundPaymasterEth(funder, paymasterAddr, AMOUNT)
+    await fundPaymasterEth(funder, AMOUNT)
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
