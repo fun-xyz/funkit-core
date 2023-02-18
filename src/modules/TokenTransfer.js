@@ -10,6 +10,9 @@ class TokenTransfer extends PrimitiveModule {
         const transferData = await ERC20Contract.populateTransaction.transfer(to, amount)
         return await this.createUserOpFromCallData(transferData)
     }
+    async getPreExecTxs() {
+        return []
+    }
 }
 
 module.exports = { TokenTransfer }
