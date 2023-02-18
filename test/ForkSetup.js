@@ -85,12 +85,12 @@ const loadNetwork = async (wallet) => {
     console.log(`const factoryAddress = "${factoryAddress}"`)
     await timeout(1000)
 
-    const approveAndSwapAddress = await deployApproveAndSwap(wallet)
-    console.log(`const approveAndSwapAddr = "${approveAndSwapAddress}"`)
+    const tokenSwapAddress = await deployApproveAndSwap(wallet)
+    console.log(`const tokenSwapAddress = "${tokenSwapAddress}"`)
     await timeout(1000)
 
-    const aaveWithdrawAddress = await deployAaveWithdraw(wallet)
-    console.log(`const aaveWithdrawAddress = "${aaveWithdrawAddress}"`)
+    const eoaAaveWithdrawAddress = await deployAaveWithdraw(wallet)
+    console.log(`const eoaAaveWithdrawAddress = "${eoaAaveWithdrawAddress}"`)
 
     const poolFactoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
     const quoterContractAddress = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
@@ -100,11 +100,11 @@ const loadNetwork = async (wallet) => {
         entryPointAddress,
         verificationAddress,
         factoryAddress,
-        approveAndSwapAddress,
+        tokenSwapAddress,
         poolFactoryAddress,
         quoterContractAddress,
         uniswapV3RouterAddress,
-        aaveWithdrawAddress
+        eoaAaveWithdrawAddress
     }
     fs.writeFileSync(testConfigPath, JSON.stringify(config))
 }

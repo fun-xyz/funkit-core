@@ -8,16 +8,16 @@ const { DataServer } = require('../../utils/DataServer')
 class TokenSwap extends Module {
 
     async init(chainId) {
-        const { approveAndSwapAddress, univ3router, univ3quoter, univ3factory } = 
+        const { tokenSwapAddress, univ3router, univ3quoter, univ3factory } = 
             await DataServer.getModuleInfo(TOKEN_SWAP_MODULE_NAME, chainId)
         
-        this.addr = approveAndSwapAddress
+        this.addr = tokenSwapAddress
         this.uniswapV3RouterAddr = univ3router
         this.quoterContractAddr = univ3quoter
         this.poolFactoryContractAddr = univ3factory
 
         this.abi = ApproveAndSwapObj.abi
-        this.actionContract = new ethers.Contract(approveAndSwapAddress, ApproveAndSwapObj.abi)
+        this.actionContract = new ethers.Contract(tokenSwapAddress, ApproveAndSwapObj.abi)
     }
 
     async _encodeERC20Swap(tokenInAddress, routerAddr, amount, data) {
