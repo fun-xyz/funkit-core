@@ -9,8 +9,8 @@ const { DataServer } = require("../../utils/DataServer")
 class EoaAaveWithdrawal extends Module {
 
     async init(chainId) {
-        const { aaveWithdrawAddress } = await DataServer.getModuleInfo(EOA_AAVE_WITHDRAWAL_MODULE_NAME, chainId)
-        this.addr = aaveWithdrawAddress
+        const { eoaAaveWithdrawAddress } = await DataServer.getModuleInfo(EOA_AAVE_WITHDRAWAL_MODULE_NAME, chainId)
+        this.addr = eoaAaveWithdrawAddress
         this.abi = Action.abi
     }
 
