@@ -25,7 +25,6 @@ class FunWallet extends ContractsHolder {
         const rpcUrl = config.eoa.provider.connection.url
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         super(config.eoa, provider, config.chainId)
-
         this.rpcUrl = rpcUrl
         this.provider = provider
         this.config = config
@@ -101,9 +100,11 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
-        const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
+        const deployReceipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
+        const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
+        const receipt = {...gas, deployReceipt}
         op.chain = this.chainId
-        await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt: receipt })
+        await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
 
         return { receipt, address: this.address }
     }
@@ -115,10 +116,12 @@ class FunWallet extends ContractsHolder {
      */
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider, this.provider)
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
+            const receipt = {...deployReceipt, ...gas}
             const { op } = transaction.data
             op.chain = this.chainId
-            await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt: receipt })
+            await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
             return receipt
         }
         else {

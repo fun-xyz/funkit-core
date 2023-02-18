@@ -40,9 +40,11 @@ class FunWalletConfig {
         this.rpcUrl = this.eoa.provider.connection.url
         const {
             rpcdata: { bundlerUrl },
-            aaData: { entryPointAddress, factoryAddress, verificationAddress }
+            aaData: { entryPointAddress, factoryAddress, verificationAddress },
+            currency
         } = await DataServer.getChainInfo(this.chainId)
-        
+
+        this.chainCurrency=currency
         this.bundlerUrl = bundlerUrl
         this.entryPointAddr = entryPointAddress
         this.funWalletFactoryAddr = factoryAddress

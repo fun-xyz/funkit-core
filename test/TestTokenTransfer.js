@@ -89,7 +89,7 @@ const testNetTransfer = async () => {
 
     const funderWalletErc20BalanceStart = await getAddrBalanceErc(sender, USDC_AVAX_ADDR, receiver.address)
     console.log("receiver starting ERC20:(USDC) balance: ", funderWalletErc20BalanceStart)
-    await walletTransferERC(wallet, receiver.address, "100000", USDC_AVAX_ADDR) //1000000 = 1usdc
+    await walletTransferERC(wallet, receiver.address, "100", USDC_AVAX_ADDR) //1000000 = 1usdc
     const funderWalletErc20BalanceEnd = await getAddrBalanceErc(sender, USDC_AVAX_ADDR, receiver.address)
     console.log("receiver ending ERC20:(USDC) balance: ", funderWalletErc20BalanceEnd)
     console.log("receiver ERC20:(USDC) Difference: ", funderWalletErc20BalanceEnd - funderWalletErc20BalanceStart)
