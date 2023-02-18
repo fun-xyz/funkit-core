@@ -14,7 +14,7 @@ class FunWalletConfig {
     * - index: the uniqueness of fun wallets. Use the different values for different users.
     */
 
-    constructor(eoa, chainId, prefundAmt, salt, implementationAddress = "", paymaster = undefined, index = 0) {
+    constructor(eoa, chainId, prefundAmt, paymaster = undefined, implementationAddress = "", salt, index = 0) {
         if (!eoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
@@ -23,7 +23,7 @@ class FunWalletConfig {
         this.prefundAmt = prefundAmt
         this.paymaster = paymaster
         this.index = index
-        this.salt = salt
+        this.salt = (salt ? salt : eoa.address) + index.toString()
         this.implementationAddress = implementationAddress
     }
 

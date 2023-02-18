@@ -76,7 +76,7 @@ const testNetTransfer = async () => {
     const sender = new ethers.Wallet(PRIV_KEY, provider)
     const receiver = new ethers.Wallet(AVAX_RECEIVE_PKEY, provider)
 
-    const walletConfig = new FunWalletConfig(sender, AVAX_CHAIN_ID, PREFUND_AMT, sender.address)
+    const walletConfig = new FunWalletConfig(sender, AVAX_CHAIN_ID, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 

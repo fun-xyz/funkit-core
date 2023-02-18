@@ -117,7 +117,7 @@ const main = async () => {
     const sponsorAddress = funder.address
 
     const paymaster = new USDCPaymaster(paymasterAddress, sponsorAddress)
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, eoa.address, "", paymaster)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, paymaster)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 
@@ -175,7 +175,7 @@ const postTest = async (eoa, paymasterAddr) => {
 const setup = async () => {
     const paymasterAddr = require(testConfigPath).paymasterAddress
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, eoa.address)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
     await getUsdcWallet(wallet, AMOUNT)
