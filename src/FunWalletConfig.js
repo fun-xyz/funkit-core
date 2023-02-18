@@ -1,6 +1,7 @@
 const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
+const { BasePaymaster } = require("./paymasters/BasePaymaster")
 
 class FunWalletConfig {
 
@@ -23,6 +24,11 @@ class FunWalletConfig {
         this.eoa = eoa
         this.chainId = chainId
         this.prefundAmt = prefundAmt
+
+        if (!(paymaster instanceof BasePaymaster || !paymaster)) {
+            throw new Error("Paymaster must be of type BasePaymaster or children")
+        }
+
         this.paymaster = paymaster
         this.index = index
         this.salt = (salt ? salt : eoa.address) + index.toString()
