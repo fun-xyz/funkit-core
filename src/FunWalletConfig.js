@@ -41,6 +41,7 @@ class FunWalletConfig {
             aaData: { entryPointAddress, factoryAddress, verificationAddress }
         } = await DataServer.getChainInfo(this.chainId)
 
+        this.chainCurrency = currency
         this.bundlerUrl = bundlerUrl
         this.entryPointAddr = entryPointAddress
         this.funWalletFactoryAddr = factoryAddress

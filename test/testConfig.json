@@ -1,5 +1,12 @@
-<<<<<<< HEAD
-{"entryPointAddress":"0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75","verificationAddress":"0x1f53E116c31F171e59f45f0752AEc5d1F5aA3714","factoryAddress":"0xa31F4c0eF2935Af25370D9AE275169CCd9793DA3","approveAndSwapAddress":"0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a","poolFactoryAddress":"0x1F98431c8aD98523631AE4a59f267346ea31F984","quoterContractAddress":"0x61fFE014bA17989E743c5F6cB21bF9697530B21e","uniswapV3RouterAddress":"0xE592427A0AEce92De3Edee1F18E0157C05861564","aaveWithdrawAddress":"0xb830887eE23d3f9Ed8c27dbF7DcFe63037765475","tokenPriceOracleAddress":"0x6f2E42BB4176e9A7352a8bF8886255Be9F3D2d13","paymasterAddress":"0xA3f7BF5b0fa93176c260BBa57ceE85525De2BaF4"}
-=======
-{"entryPointAddress":"0x40A633EeF249F21D95C8803b7144f19AAfeEF7ae","verificationAddress":"0x532802f2F9E0e3EE9d5Ba70C35E1F43C0498772D","factoryAddress":"0xdB012DD3E3345e2f8D23c0F3cbCb2D94f430Be8C","tokenSwapAddress":"0xd977422c9eE9B646f64A4C4389a6C98ad356d8C4","poolFactoryAddress":"0x1F98431c8aD98523631AE4a59f267346ea31F984","quoterContractAddress":"0x61fFE014bA17989E743c5F6cB21bF9697530B21e","uniswapV3RouterAddress":"0xE592427A0AEce92De3Edee1F18E0157C05861564","eoaAaveWithdrawAddress":"0x1eB5C49630E08e95Ba7f139BcF4B9BA171C9a8C7"}
->>>>>>> 74ab951 (rename module)
+{
+    "entryPointAddress": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75",
+    "verificationAddress": "0x1f53E116c31F171e59f45f0752AEc5d1F5aA3714",
+    "factoryAddress": "0xa31F4c0eF2935Af25370D9AE275169CCd9793DA3",
+    "approveAndSwapAddress": "0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a",
+    "poolFactoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "quoterContractAddress": "0x61fFE014bA17989E743c5F6cB21bF9697530B21e",
+    "uniswapV3RouterAddress": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+    "aaveWithdrawAddress": "0xb830887eE23d3f9Ed8c27dbF7DcFe63037765475",
+    "tokenPriceOracleAddress": "0x6f2E42BB4176e9A7352a8bF8886255Be9F3D2d13",
+    "paymasterAddress": "0xA3f7BF5b0fa93176c260BBa57ceE85525De2BaF4"
+}
