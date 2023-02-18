@@ -81,7 +81,7 @@ const fundUserUSDCPaymaster = async (eoa, paymasterAddr, wallet, AMOUNT) => {
     const usdcContract = createErc(USDC_ADDR, eoa)
     const paymasterContract = loadPaymaster(paymasterAddr, eoa)
     const approvedata = await usdcContract.populateTransaction.approve(paymasterAddr, USDCETHAMT)
-    const depositData = await paymasterContract.populateTransaction.addDepositFor(wallet.address, USDCETHAMT)
+    const depositData = await paymasterContract.populateTransaction.addTokenDepositTo(wallet.address, USDCETHAMT)
 
     await execContractFunc(eoa, approvedata)
     await execContractFunc(eoa, depositData)
@@ -93,7 +93,7 @@ const fundUserUSDCPaymaster = async (eoa, paymasterAddr, wallet, AMOUNT) => {
 
 const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
     const paymasterContract = loadPaymaster(paymasterAddr, eoa)
-    const pricedata = await paymasterContract._getTokenValueOfEth(ethers.utils.parseEther("1"))
+
     const depositData = await paymasterContract.populateTransaction.addEthDepositForSponsor(eoa.address)
     const lockData = await paymasterContract.populateTransaction.lockTokenDeposit()
     const whitelistData = await paymasterContract.populateTransaction.setWhitelistMode(true)
@@ -107,8 +107,6 @@ const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
     const unlockBlock = await paymasterContract.getUnlockBlockWithSponsor(eoa.address, false)
     console.log("paymasterBalance: ", postBalance.toString())
     console.log("unlock block", unlockBlock.toString())
-    console.log("Aggregator Price Data: ", pricedata.toString())
-    dataParse.paymasterStart = postBalance.toString()
 }
 
 const getPaymasterTotalDeposit = async () => {
@@ -154,7 +152,7 @@ const postTest = async (eoa, paymasterAddr) => {
     const withdrawAmount = (await paymasterContract.depositInfo(eoa.address)).tokenAmount
 
     const unlockData = await paymasterContract.populateTransaction.unlockTokenDeposit()
-    const withdrawData = await paymasterContract.populateTransaction.withdrawTokensTo(eoa.address, withdrawAmount)
+    const withdrawData = await paymasterContract.populateTransaction.withdrawTokenDepositTo(eoa.address, withdrawAmount)
 
 
     console.log('\n')
