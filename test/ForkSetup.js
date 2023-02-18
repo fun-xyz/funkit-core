@@ -189,7 +189,7 @@ const getUsdcWallet = async (wallet, amount = 10) => {
 
     const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
     const tokenOut = {type: TokenTypes.ERC20, address: USDC_ADDR}
-    const tx = await swapModule.createSwap(tokenIn, tokenOut, amount, wallet.address, 5, 100)
+    const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, USDC_ADDR)
@@ -202,7 +202,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransfer(to, amount, {address: tokenAddr})
+    const transferActionTx = await transfer.createTransferTx(to, amount, {address: tokenAddr})
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
