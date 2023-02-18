@@ -13,6 +13,7 @@ Starting point: `/fun-wallet-sdk`
 ```
 cd test
 node ForkSetup.js -d
+node ForkSetup.js -dp
 node ForkSetup.js -b
 ```
 
