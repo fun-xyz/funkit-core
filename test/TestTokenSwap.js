@@ -51,5 +51,7 @@ const main = async () => {
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
+    console.log("\n\n::::::TOKEN SWAP TEST::::::")
+
     main()
 }

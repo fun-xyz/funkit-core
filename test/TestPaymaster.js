@@ -44,7 +44,7 @@ const USDCETHAMT = ethers.utils.parseUnits((1400 * AMOUNT).toString(), 6)
 const getUsdcWallet = async (wallet, AMOUNT = 10) => {
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const funder = new ethers.Wallet(PKEY, provider)
-    const swapModule = new TokenSwap(ROUTER_ADDR)
+    const swapModule = new TokenSwap()
     await wallet.addModule(swapModule)
     await wallet.deploy()
 
@@ -125,7 +125,6 @@ const main = async () => {
     console.log("eoa balance: ", await getBalance(eoa))
 
     const swapModule = new TokenSwap()
-    await swapModule.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await testEthSwap(wallet, swapModule, eoa)
@@ -184,6 +183,8 @@ const setup = async () => {
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
+    console.log("\n\n::::::PAYMASTER TEST::::::")
+
     setup().then(main).then(() => {
         postTest(funder, paymasterAddress)
     })

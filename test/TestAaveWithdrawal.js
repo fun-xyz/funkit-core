@@ -147,7 +147,6 @@ const UNDERLYING_ASSET_ABI = [{
 
 const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddress = "") => {
     const swapModule = new TokenSwap()
-    await swapModule.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await transferAmt(eoa, wallet.address, amount)
@@ -198,7 +197,6 @@ const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
 const mainTest = async (wallet, tokenAddr) => {
     // Create a FunWallet with the above access control schema, prefunded with PREFUND_AMT AVAXa
     const module = new EoaAaveWithdrawal()
-    await module.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(module)
 
     const modulePreExecTxs = await module.getPreExecTxs(tokenAddr, WITHDRAW_AMOUNT)
@@ -255,5 +253,7 @@ const main = async () => {
 
 
 if (typeof require !== 'undefined' && require.main === module) {
+    console.log("\n\n::::::AAVE WITHDRAWAL TEST::::::")
+
     setup().then(main)
 }

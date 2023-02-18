@@ -12,11 +12,11 @@ const main = async (amt = 0) => {
     await wallet.init()
 
     const swapModule = new TokenSwap()
-    await swapModule.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(swapModule)
     await wallet.deploy()
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
+    console.log("\n\n::::::FACTORY TEST::::::")
     main(0.3).then(main)
 }
