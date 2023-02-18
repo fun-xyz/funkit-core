@@ -4,6 +4,7 @@ const ethers = require('ethers')
 const { transferAmt, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
 const { Token } = require("../utils/Token")
 
+const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const PREFUND_AMT = 0.3
 const AMOUNT = 60
 
@@ -31,8 +32,10 @@ const main = async () => {
 
     await transferAmt(funder, eoa.address, AMOUNT + 1)
 
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, "", 0)
-    const wallet = new FunWallet(walletConfig)
+
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, eoa.address)
+    const wallet = new FunWallet(walletConfig, APIKEY)
+
     await wallet.init()
 
     console.log("wallet balance: ", await getBalance(wallet))

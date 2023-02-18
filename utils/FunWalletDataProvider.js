@@ -27,10 +27,7 @@ class FunWalletDataProvider {
         var _a;
         this.factoryAddress = params.factoryAddress;
         this.owner = params.owner;
-
-
-        this.index = (_a = params.index) !== null && _a !== void 0 ? _a : 0;
-
+        this.salt = params.salt
         this.isPhantom = true;
         this.provider = params.provider;
         this.overheads = params.overheads;
@@ -38,10 +35,9 @@ class FunWalletDataProvider {
         this.accountAddress = params.accountAddress;
         this.paymasterAPI = params.paymasterAPI;
         this.verificationAddress = params.verificationAddress
+        this.implementationAddress = params.implementationAddress ? params.implementationAddress : ethers_1.constants.AddressZero
         // factory "connect" define the contract address. the contract "connect" defines the "from" address.
         this.entryPointView = contracts_1.EntryPoint__factory.connect(params.entryPointAddress, params.provider).connect(ethers_1.ethers.constants.AddressZero);
-
-
     }
     async getAccountContract() {
         if (this.accountContract == null) {
@@ -53,23 +49,31 @@ class FunWalletDataProvider {
      * return the value to put into the "initCode" field, if the account is not yet deployed.
      * this value holds the "factory" address, followed by this account's information
      */
-    async getAccountInitCode() {
+
+    async getFactoryContract() {
         if (this.factory == null) {
             if (this.factoryAddress != null && this.factoryAddress !== '') {
-                this.factory = new ethers_1.Contract(this.factoryAddress, _abi)
+                this.factory = new ethers_1.Contract(this.factoryAddress, _abi, this.provider)
             }
             else {
                 throw new Error('no factory to get initCode');
             }
         }
+        return this.factory
+    }
+    async getAccountInitCode() {
+        await this.getFactoryContract()
+        const accountContract = await this.getAccountContract()
+        const initializerCallData = accountContract.interface.encodeFunctionData('initialize', [this.entryPointAddress, this.verificationAddress, await this.owner.getAddress()])
+
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
-            this.factory.interface.encodeFunctionData('createAccount', [this.entryPointAddress, this.verificationAddress, await this.owner.getAddress(), this.index])
+            this.factory.interface.encodeFunctionData('createAccount', [initializerCallData, this.implementationAddress, this.salt])
         ]);
     }
 
     getNonce() {
-        return ethers_1.BigNumber.from(parseInt(Math.random() * 2 ** 30));
+        return ethers_1.BigNumber.from(ethers_1.utils.randomBytes(32));
     }
     /**
      * encode a method call from entryPoint to our contract
@@ -116,16 +120,18 @@ class FunWalletDataProvider {
      * calculate the account address even before it is deployed
      */
     async getCounterFactualAddress() {
-        const initCode = await this.getAccountInitCode();
-        // use entryPoint to query account address (factory can provide a helper method to do the same, but
-        // this method attempts to be generic
-        try {
-            await this.entryPointView.callStatic.getSenderAddress(initCode);
-        }
-        catch (e) {
-            return e.errorArgs.sender;
-        }
-        throw new Error('must handle revert');
+        await this.getFactoryContract()
+        return await this.factory.getAddress(this.salt)
+        // const initCode = await this.getAccountInitCode();
+        // // use entryPoint to query account address (factory can provide a helper method to do the same, but
+        // // this method attempts to be generic
+        // try {
+        //     await this.entryPointView.callStatic.getSenderAddress(initCode);
+        // }
+        // catch (e) {
+        //     return e.errorArgs.sender;
+        // }
+        // throw new Error('must handle revert');
     }
     /**
      * return initCode value to into the UserOp.
