@@ -1,6 +1,6 @@
 {
   "name": "@fun-wallet-dev/sdk",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,7 @@
   "dependencies": {
     "@account-abstraction/contracts": "^0.4.0",
     "@account-abstraction/sdk": "^0.4.0",
+    "@lifeomic/attempt": "^3.0.3",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
     "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@nomiclabs/hardhat-waffle": "^2.0.5",

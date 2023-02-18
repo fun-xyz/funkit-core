@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.calcPreVerificationGas = exports.DefaultGasOverheads = void 0;
 const utils_1 = require("@account-abstraction/utils");
 const utils_2 = require("ethers/lib/utils");
+const { retry, default_retry_options } = require('./Retry');
 
 exports.DefaultGasOverheads = {
     fixed: 21000,
@@ -88,20 +89,23 @@ async function getPromiseFromOp(op) {
 
 const sendRequest = async (uri, method, apiKey, body) => {
     try {
-        return await fetch(uri, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': apiKey
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
-            body: JSON.stringify(body)
-        }).then(r => r.json())
+        return retry(async function () {
+            return await fetch(uri, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': apiKey
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body: JSON.stringify(body)
+            }).then(r => r.json())
+        }, default_retry_options)
     } catch (e) {
         console.log(e)
     }
 }
+
 
 function packUserOp(op, forSignature = true) {
     if (forSignature) {
