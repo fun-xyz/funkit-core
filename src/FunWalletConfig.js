@@ -31,7 +31,7 @@ class FunWalletConfig {
 
         this.paymaster = paymaster
         this.index = index
-        this.salt = (salt ? salt : eoa.address) + index.toString()
+        this.salt = salt
         this.implementationAddress = implementationAddress
     }
 
@@ -57,7 +57,6 @@ class FunWalletConfig {
         } else {
             this.rpcUrl = this.eoa.provider.connection.url
         }
-
 
         this.chainCurrency = currency
         this.bundlerUrl = bundlerUrl

@@ -23,12 +23,7 @@ class FunWallet extends ContractsHolder {
             throw Error("Config Must be of type FunWalletConfig or child classes")
         }
 
-        const rpcUrl = config.eoa.provider.connection.url
-        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-        super(config.eoa, provider, config.chainId)
-
-        this.rpcUrl = rpcUrl
-        this.provider = provider
+        super(config.eoa, config.eoa.provider, config.chainId)
         this.config = config
         this.dataServer = new DataServer(apiKey);
     }
@@ -47,14 +42,16 @@ class FunWallet extends ContractsHolder {
         }
 
         this.dataServer.init()
+        
+        this.eoaAddr = await this.config.eoa.getAddress()
+        this.config.salt = (this.config.salt ? this.config.salt : this.eoaAddr) + this.config.index.toString()
 
         const { bundlerClient, funWalletDataProvider } = await this.config.getClients()
         this.bundlerClient = bundlerClient
         this.funWalletDataProvider = funWalletDataProvider
 
         this.address = await this.funWalletDataProvider.getAccountAddress()
-        this.eoaAddr = await this.config.eoa.getAddress()
-
+        
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.addEthersContract(this.address, walletContract)
 
