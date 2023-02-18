@@ -58,6 +58,10 @@ class Module {
     verifyRequirements() {
         return true
     }
+
+    async getPreExecTxs() {
+        return []
+    }
 }
 
 module.exports = { Module, EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME }
