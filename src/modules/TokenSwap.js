@@ -45,9 +45,7 @@ class TokenSwap extends Module {
         }
         return await this.createUserOpFromCallData(swapData)
     }
-    async getPreExecTxs() {
-        return []
-    }
+   
 }
 
 module.exports = { TokenSwap }

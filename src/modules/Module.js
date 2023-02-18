@@ -58,6 +58,10 @@ class Module {
     verifyRequirements() {
         return true
     }
+
+    async getPreExecTxs() {
+        return []
+    }
 }
 
 module.exports = { Module, AAVE_WITHDRAWAL_MODULE_NAME, APPROVE_AND_SWAP_MODULE_NAME }
