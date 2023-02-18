@@ -120,8 +120,6 @@ class DataServer {
     }
 
     static async getModuleInfo(moduleName, chainId) {
-        console.log(moduleName, chainId)
-
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             const body = {
                 module: moduleName,
