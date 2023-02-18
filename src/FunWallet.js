@@ -2,7 +2,7 @@ const { ContractsHolder } = require("../utils/ContractsHolder")
 const { DataServer } = require('../utils/DataServer')
 const { generateSha256 } = require("../utils/Tools")
 const UserOpUtils = require('../utils/UserOpUtils')
-const EOAUtils = require('../utils/EOAUtils')
+const EoaUtils = require('../utils/EoaUtils')
 const { ethers } = require('ethers');
 
 const { FunWalletConfig } = require("./FunWalletConfig")
@@ -60,7 +60,7 @@ class FunWallet extends ContractsHolder {
 
         // Pre-fund FunWallet
         if (this.config.prefundAmt) {
-            return await EOAUtils.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)
+            return await EoaUtils.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)
         }
     }
 
