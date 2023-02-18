@@ -34,7 +34,7 @@ const loadAbis = () => {
     const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"
     const approveAndSwapPath = "modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
     const aaveWithdrawPath = "modules/actions/AaveWithdraw.sol/AaveWithdraw.json"
-    const factoryPath = "FunWalletFactory.sol/FunWalletFactory.json"
+    const factoryPath = "deployer/FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "FunWallet.sol/FunWallet.json"
     const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
     const tokenOracle = "paymaster/TokenPriceOracle.sol/TokenPriceOracle.json"
@@ -46,7 +46,7 @@ const loadAbis = () => {
 const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
-    const newPath = `../abis/${fileName}`
+    const newPath = `../utils/abis/${fileName}`
     const basePath = "../../fun-wallet-smart-contract/artifacts/contracts/"
     try {
         const data = require(basePath + path)
@@ -59,7 +59,7 @@ const moveFile = (path) => {
         fs.writeFileSync(newPath, JSON.stringify({ ...data, fileHash }))
         console.log("SUCCESS: ", fileName)
     }
-    catch {
+    catch (e) {
         console.log("ERROR: ", fileName)
     }
 }
@@ -187,8 +187,8 @@ const getUsdcWallet = async (wallet, amount = 10) => {
 
     const startWalletDAI = await getUserBalanceErc(wallet, USDC_ADDR)
 
-    const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
-    const tokenOut = {type: TokenTypes.ERC20, address: USDC_ADDR}
+    const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
+    const tokenOut = { type: TokenTypes.ERC20, address: USDC_ADDR }
     const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
@@ -202,7 +202,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransferTx(to, amount, {address: tokenAddr})
+    const transferActionTx = await transfer.createTransferTx(to, amount, { address: tokenAddr })
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
@@ -246,7 +246,7 @@ const fundPaymasterEth = async (eoa, paymasterAddr, value) => {
 
 // default
 const main = async () => {
-    
+
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const wallet = new ethers.Wallet(PKEY, provider)
     const aaveWithdrawAddress = await deployAaveWithdraw(wallet)

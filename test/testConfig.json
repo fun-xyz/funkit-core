@@ -1,7 +1,11 @@
 {
-    "entryPointAddress": "0xA9d0Fb5837f9c42c874e16da96094b14Af0e2784",
-    "verificationAddress": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75",
-    "factoryAddress": "0x1f53E116c31F171e59f45f0752AEc5d1F5aA3714",
-    "approveAndSwapAddress": "0xa31F4c0eF2935Af25370D9AE275169CCd9793DA3",
-    "aaveWithdrawAddress": "0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a"
+    "entryPointAddress": "0xD855cE0C298537ad5b5b96060Cf90e663696bbf6",
+    "verificationAddress": "0xF45B1CdbA9AACE2e9bbE80bf376CE816bb7E73FB",
+    "factoryAddress": "0x22b1c5C2C9251622f7eFb76E356104E5aF0e996A",
+    "tokenSwapAddress": "0x5A569Ad19272Afa97103fD4DbadF33B2FcbaA175",
+    "poolFactoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "quoterContractAddress": "0x61fFE014bA17989E743c5F6cB21bF9697530B21e",
+    "uniswapV3RouterAddress": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+    "eoaAaveWithdrawAddress": "0x696358bBb1a743052E0E87BeD78AAd9d18f0e1F4",
+    "aaveWithdrawAddress": "0x7036124464A2d2447516309169322c8498ac51e3"
 }

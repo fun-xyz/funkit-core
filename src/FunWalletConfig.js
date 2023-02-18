@@ -13,7 +13,7 @@ class FunWalletConfig {
     * - paymasterAddr: the address of the paymaster which is used to support gasless transactions
     * - index: the uniqueness of fun wallets. Use the different values for different users.
     */
-    constructor(eoa, chainId, prefundAmt, implementationAddress = "", paymasterAddr = "", index = 0) {
+    constructor(eoa, chainId, prefundAmt, salt, implementationAddress = "", paymasterAddr = "", index = 0) {
         if (!eoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }

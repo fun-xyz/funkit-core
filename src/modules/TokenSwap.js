@@ -8,9 +8,8 @@ const { DataServer } = require('../../utils/DataServer')
 class TokenSwap extends Module {
 
     async init(chainId) {
-        const { tokenSwapAddress, univ3router, univ3quoter, univ3factory } = 
-            await DataServer.getModuleInfo(TOKEN_SWAP_MODULE_NAME, chainId)
-        
+        const { tokenSwapAddress, univ3router, univ3quoter, univ3factory } = await DataServer.getModuleInfo(TOKEN_SWAP_MODULE_NAME, chainId)
+
         this.addr = tokenSwapAddress
         this.uniswapV3RouterAddr = univ3router
         this.quoterContractAddr = univ3quoter
@@ -35,7 +34,7 @@ class TokenSwap extends Module {
         const tokenInAddress = await tokenIn.getAddress()
         const tokenOutAddress = await tokenOut.getAddress()
 
-        const { data, to, amount } = await swapExec(this.wallet.provider, this.quoterContractAddr, this.poolFactoryContractAddr, 
+        const { data, to, amount } = await swapExec(this.wallet.provider, this.quoterContractAddr, this.poolFactoryContractAddr,
             this.uniswapV3RouterAddr, tokenInAddress, tokenOutAddress, amountIn, returnAddr, slippage, percentDec)
         let swapData
         if (tokenIn.type == TokenTypes.ETH) {
@@ -45,7 +44,7 @@ class TokenSwap extends Module {
         }
         return await this.createUserOpFromCallData(swapData)
     }
-   
+
 }
 
 module.exports = { TokenSwap }
