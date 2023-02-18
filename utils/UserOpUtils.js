@@ -1,11 +1,10 @@
-const ethers = require('ethers')
 const fetch = require('node-fetch')
+
+const PRICE_URL = "https://min-api.cryptocompare.com/data/price"
+
 async function createUserOp(funWalletDataProvider, { to, data }, gasLimit = 0, noInit = false, calldata = false) {
     return await funWalletDataProvider.createSignedUserOp({ target: to, data, noInit, calldata, gasLimit })
 }
-
-const priceURL="https://min-api.cryptocompare.com/data/price"
-
 
 async function deployUserOp(transaction, bundlerClient, funWalletDataProvider) {
     const { op } = transaction.data
@@ -14,6 +13,7 @@ async function deployUserOp(transaction, bundlerClient, funWalletDataProvider) {
 
     return { userOpHash, txid }
 }
+
 async function gasCalculation(receipt, ethersProvider, chain) {
     const txReceipt = await ethersProvider.getTransactionReceipt(receipt.txid)
     const gasUsed = txReceipt.gasUsed.toNumber()
@@ -23,11 +23,13 @@ async function gasCalculation(receipt, ethersProvider, chain) {
     const gasUSD = gasTotal * chainPrice
     return { gasUsed, gasUSD }
 }
+
 async function getPriceData(chainCurrency) {
-    const data=await fetch(`${priceURL}?fsym=${chainCurrency}&tsyms=USD`)
-    const price=await data.json()
+    const data = await fetch(`${PRICE_URL}?fsym=${chainCurrency}&tsyms=USD`)
+    const price = await data.json()
     return price.USD;
 }
+
 module.exports = {
     createUserOp,
     deployUserOp,
