@@ -1,5 +1,5 @@
 const ethers = require('ethers')
-const { Module, APPROVE_AND_SWAP_MODULE_NAME } = require("./Module")
+const { Module, TOKEN_SWAP_MODULE_NAME } = require("./Module")
 const { Token, TokenTypes } = require('../../utils/Token')
 const { swapExec } = require('../../utils/SwapUtils')
 const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json")
@@ -9,7 +9,7 @@ class TokenSwap extends Module {
 
     async init(chainId) {
         const { approveAndSwapAddress, univ3router, univ3quoter, univ3factory } = 
-            await DataServer.getModuleInfo(APPROVE_AND_SWAP_MODULE_NAME, chainId)
+            await DataServer.getModuleInfo(TOKEN_SWAP_MODULE_NAME, chainId)
         
         this.addr = approveAndSwapAddress
         this.uniswapV3RouterAddr = univ3router

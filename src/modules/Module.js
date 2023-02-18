@@ -1,8 +1,8 @@
 const { Transaction } = require("../../utils/Transaction")
 const ethers = require("ethers")
 
-const AAVE_WITHDRAWAL_MODULE_NAME = "aaveWithdraw"
-const APPROVE_AND_SWAP_MODULE_NAME = "approveAndSwap"
+const EOA_AAVE_WITHDRAWAL_MODULE_NAME = "eoaAaveWithdraw"
+const TOKEN_SWAP_MODULE_NAME = "tokenSwap"
 
 class Module {
     wallet = {}
@@ -60,4 +60,4 @@ class Module {
     }
 }
 
-module.exports = { Module, AAVE_WITHDRAWAL_MODULE_NAME, APPROVE_AND_SWAP_MODULE_NAME }
+module.exports = { Module, EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME }
