@@ -7,7 +7,7 @@ const main = async (amt = 0) => {
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const eoa = new ethers.Wallet(PKEY, provider)
 
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, amt, eoa.address)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, amt)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 

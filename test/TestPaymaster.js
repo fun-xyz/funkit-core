@@ -95,7 +95,7 @@ const fundPaymasterEth = async (eoa, value) => {
     const paymasterInterface = new PaymasterSponsorInterface(eoa)
     await paymasterInterface.init()
 
-    await paymasterInterface.addEthDepositForSponsor(value)
+    await paymasterInterface.addEthDepositForSponsor(value, eoa.address)
     await paymasterInterface.lockTokenDeposit()
     await paymasterInterface.setWhitelistMode(true)
 

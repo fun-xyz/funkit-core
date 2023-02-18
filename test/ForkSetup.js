@@ -7,7 +7,7 @@ const { FunWallet } = require("../index")
 const { FunWalletConfig } = require("../index")
 const { TokenSwap, TokenTransfer } = require("../src/modules")
 
-const { HARDHAT_FORK_CHAIN_ID, API_KEY, RPC_URL, PRIV_KEY, PKEY, USDC_ADDR, logUserPaymasterBalance, timeout, transferAmt } = require("./TestUtils")
+const { HARDHAT_FORK_CHAIN_ID, API_KEY, RPC_URL, PRIV_KEY, PKEY, USDC_ADDR, CHAINLINK_TOKEN_AGGREGATOR_ADDRESS, logUserPaymasterBalance, timeout, transferAmt } = require("./TestUtils")
 
 const ERC20 = require("../utils/abis/ERC20.json")
 const entryPoint = require("../utils/abis/EntryPoint.json")
