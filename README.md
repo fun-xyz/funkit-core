@@ -50,10 +50,14 @@ yarn run test-tokenTransfer [param]
 yarn run test-tokenSwap
 ```
 
-Specify the parameter of which chain token ```tokenTransfer``` is to be ran on. Testnet is set to Avalanche FUJI
+Specify the parameter of which chain token `tokenTransfer` is to be ran on. Testnet is set to Avalanche FUJI
 
-Two examples:
-```yarn run test-tokenTransfer fork```
+### Two examples:
 
-```yarn run test-tokenTransfer testnet```
+```
+yarn run test-tokenTransfer fork
+```
 
+```
+yarn run test-tokenTransfer testnet
+```

@@ -1,6 +1,7 @@
 const hre = require("hardhat");
 const { ethers } = hre
 const ERC20 = require("../utils/abis/ERC20.json")
+const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
 const RPC_URL = "http://127.0.0.1:8545"
@@ -13,6 +14,7 @@ const AVAX_RPC_URL = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947
 const AVAX_CHAIN_ID = "43113"
 const USDC_AVAX_ADDR = "0x5425890298aed601595a70AB815c96711a31Bc65"
 const AVAX_RECEIVE_PKEY = '3ef076e7d3d2e1f65ded46b02372d7c5300aec49e780b3bb4418820bf068e732'
+const CHAINLINK_TOKEN_AGGREGATOR_ADDRESS = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419"
 
 const createErc = (addr, provider) => {
     return new ethers.Contract(addr, ERC20.abi, provider)
@@ -57,11 +59,23 @@ const timeout = async (ms) => {
     })
 }
 
+const logUserPaymasterBalance = async (paymasterObj, wallet, note = "") => {
+    const paymaster = paymasterObj instanceof ethers.Contract ? paymasterObj : loadPaymaster(paymasterObj.paymasterAddr, wallet.provider ? wallet.provider : wallet.eoa.provider)
+    const data = await paymaster.depositInfo(wallet.address)
+    console.log(note, "user paymaster token balance: ", data.tokenAmount.toString())
+    console.log(note, "user paymaster sponsor balance: ", data.sponsorAmount.toString())
+}
+
 const logPairing = (AMOUNT, outDiff, tok1, tok2) => {
     console.log(`${tok1}/${tok2} = ${outDiff / AMOUNT}`)
 }
 
+const loadPaymaster = (address, provider) => {
+    return new ethers.Contract(address, paymasterdata.abi, provider)
+}
+
+
 module.exports = {
-    transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc,
-    getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
+    transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, loadPaymaster, logUserPaymasterBalance,
+    getUserBalanceErc, createErc, logPairing, CHAINLINK_TOKEN_AGGREGATOR_ADDRESS, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
 }

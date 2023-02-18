@@ -153,8 +153,8 @@ const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddres
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
     await getUserBalanceErc(wallet, tokenAddr)
-    const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
-    const tokenOut = {type: TokenTypes.ERC20, address: tokenAddr}
+    const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
+    const tokenOut = { type: TokenTypes.ERC20, address: tokenAddr }
     const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
     await wallet.deployTx(tx)
 
@@ -253,5 +253,7 @@ const main = async () => {
 
 
 if (typeof require !== 'undefined' && require.main === module) {
+    console.log("\n\n::::::AAVE WITHDRAWAL TEST::::::")
+
     setup().then(main)
 }
