@@ -147,14 +147,15 @@ const UNDERLYING_ASSET_ABI = [{
 
 const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddress = "") => {
     const swapModule = new TokenSwap()
+    await swapModule.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await transferAmt(eoa, wallet.address, amount)
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
     await getUserBalanceErc(wallet, tokenAddr)
-    const tokenIn = {type: TokenTypes.ETH, symbol :"weth", chainId: HARDHAT_FORK_CHAIN_ID}
-    const tokenOut = {type: TokenTypes.ERC20, address: tokenAddr}
+    const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
+    const tokenOut = { type: TokenTypes.ERC20, address: tokenAddr }
     const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
     await wallet.deployTx(tx)
 
@@ -197,6 +198,7 @@ const setUpWithdrawEOA = async (eoa, wallet, amount, tokenAddr) => {
 const mainTest = async (wallet, tokenAddr) => {
     // Create a FunWallet with the above access control schema, prefunded with PREFUND_AMT AVAXa
     const module = new EoaAaveWithdrawal()
+    await module.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(module)
 
     const modulePreExecTxs = await module.getPreExecTxs(tokenAddr, WITHDRAW_AMOUNT)

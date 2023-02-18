@@ -1,12 +1,1 @@
-{
-    "entryPointAddress": "0x6B21b3ae41f818Fc91e322b53f8D0773d31eCB75",
-    "verificationAddress": "0x1f53E116c31F171e59f45f0752AEc5d1F5aA3714",
-    "factoryAddress": "0xa31F4c0eF2935Af25370D9AE275169CCd9793DA3",
-    "approveAndSwapAddress": "0xF9c0bF1CFAAB883ADb95fed4cfD60133BffaB18a",
-    "poolFactoryAddress": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-    "quoterContractAddress": "0x61fFE014bA17989E743c5F6cB21bF9697530B21e",
-    "uniswapV3RouterAddress": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-    "aaveWithdrawAddress": "0xb830887eE23d3f9Ed8c27dbF7DcFe63037765475",
-    "tokenPriceOracleAddress": "0x6f2E42BB4176e9A7352a8bF8886255Be9F3D2d13",
-    "paymasterAddress": "0xA3f7BF5b0fa93176c260BBa57ceE85525De2BaF4"
-}
+{"entryPointAddress":"0xD855cE0C298537ad5b5b96060Cf90e663696bbf6","verificationAddress":"0xE7FF84Df24A9a252B6E8A5BB093aC52B1d8bEEdf","factoryAddress":"0x6D712CB50297b97b79dE784d10F487C00d7f8c2C","tokenSwapAddress":"0x04F339eC4D75Cf2833069e6e61b60eF56461CD7C","poolFactoryAddress":"0x1F98431c8aD98523631AE4a59f267346ea31F984","quoterContractAddress":"0x61fFE014bA17989E743c5F6cB21bF9697530B21e","uniswapV3RouterAddress":"0xE592427A0AEce92De3Edee1F18E0157C05861564","tokenPriceOracleAddress":"0x3de00f44ce68FC56DB0e0E33aD4015C6e78eCB39","eoaAaveWithdrawAddress":"0x89372b32b8AF3F1272e2efb3088616318D2834cA","paymasterAddress":"0xc0c5618f0F3Fa66b496F2940f373DC366d765BAe"}

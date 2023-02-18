@@ -76,6 +76,6 @@ const loadPaymaster = (address, provider) => {
 
 
 module.exports = {
-    transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc,loadPaymaster,
+    transferAmt, getAddrBalanceErc, timeout, getBalance, execContractFunc, loadPaymaster, logUserPaymasterBalance,
     getUserBalanceErc, createErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
 }

@@ -29,7 +29,7 @@ const testEthSwap = async (wallet, swapModule, eoa) => {
 
     const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
     const tokenOut = { type: TokenTypes.ERC20, address: DAI.address }
-    const tx = await swapModule.createSwap(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
+    const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)
@@ -56,7 +56,7 @@ const getUsdcWallet = async (wallet, AMOUNT = 10) => {
 
     const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
     const tokenOut = { type: TokenTypes.ERC20, address: USDC_ADDR }
-    const tx = await swapModule.createSwap(tokenIn, tokenOut, AMOUNT, wallet.address)
+    const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address)
     await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, USDC_ADDR)
@@ -72,7 +72,7 @@ const walletTransferERC = async (wallet, to, AMOUNT, tokenAddr) => {
     const start = await getUserBalanceErc(wallet, tokenAddr)
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransfer(to, AMOUNT, { address: tokenAddr })
+    const transferActionTx = await transfer.createTransferTx(to, AMOUNT, { address: tokenAddr })
     await wallet.deployTx(transferActionTx)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
@@ -117,7 +117,7 @@ const main = async () => {
     const sponsorAddress = funder.address
 
     const paymaster = new USDCPaymaster(paymasterAddress, sponsorAddress)
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, paymaster)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, eoa.address, "", paymaster)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 
@@ -126,6 +126,7 @@ const main = async () => {
     console.log("eoa balance: ", await getBalance(eoa))
 
     const swapModule = new TokenSwap()
+    await swapModule.init(HARDHAT_FORK_CHAIN_ID)
     await wallet.addModule(swapModule)
     await wallet.deploy()
     await testEthSwap(wallet, swapModule, eoa)
@@ -174,7 +175,7 @@ const postTest = async (eoa, paymasterAddr) => {
 const setup = async () => {
     const paymasterAddr = require(testConfigPath).paymasterAddress
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, eoa.address)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
     await getUsdcWallet(wallet, AMOUNT)

@@ -15,7 +15,6 @@ const main = async () => {
     await wallet.init()
 
     const swapModule = new TokenSwap()
-    const moduleAddr = require("./testConfig.json").approveAndSwapAddress
     await swapModule.init(31337)
 
     await wallet.addModule(swapModule)

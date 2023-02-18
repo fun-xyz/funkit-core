@@ -2,7 +2,7 @@ const { FunWallet, FunWalletConfig } = require("../index")
 const { TokenSwap, TokenTransfer } = require("../src/modules")
 const ethers = require('ethers')
 const { transferAmt, getAddrBalanceErc, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID,
-    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY} = require("./TestUtils")
+    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY } = require("./TestUtils")
 const { Token, TokenTypes } = require("../utils/Token")
 
 const PREFUND_AMT = 0.3
@@ -34,7 +34,7 @@ const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
     console.log("Starting Wallet ERC Amount: ", start)
     await wallet.addModule(transfer)
     const transferActionTx = await transfer.createTransferTx(to, amount, { address: tokenAddr })
-    const receipt=await wallet.deployTx(transferActionTx)
+    const receipt = await wallet.deployTx(transferActionTx)
     console.log(receipt)
     const end = await getUserBalanceErc(wallet, tokenAddr)
     console.log("End Wallet ERC Amount: ", end)
@@ -76,7 +76,7 @@ const testNetTransfer = async () => {
     const sender = new ethers.Wallet(PRIV_KEY, provider)
     const receiver = new ethers.Wallet(AVAX_RECEIVE_PKEY, provider)
 
-    const walletConfig = new FunWalletConfig(sender, AVAX_CHAIN_ID, PREFUND_AMT)
+    const walletConfig = new FunWalletConfig(sender, AVAX_CHAIN_ID, PREFUND_AMT, sender.address)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 
