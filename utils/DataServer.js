@@ -146,8 +146,7 @@ class DataServer {
 
     static async getPaymasterAddress(chainId) {
         if (chainId == LOCAL_FORK_CHAIN_ID) {
-            const addr = require("../test/testConfig.json").paymasterAddress
-            return addr
+            return testConfig.paymasterAddress
         }
         const { aaData: { paymasterAddress } } = await this.getChainInfo(this.chainId)
         return paymasterAddress
