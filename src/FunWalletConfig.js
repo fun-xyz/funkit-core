@@ -1,12 +1,22 @@
 const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
-const testConfig = require("../test/testConfig.json")
 const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
 
-const LOCAL_FORK_CHAIN_ID = 31337
-
 class FunWalletConfig {
-    constructor(eoa, chainId, prefundAmt, salt, implementationAddress = "", paymasterAddr = "", index = 0) {
+
+    /**
+    * Standard constructor
+    * @params eoa, chainId, prefundAmt, paymasterAddr, index
+    * - eoa: an eoa wallet
+    * - chainId: chainId to specify the chains, e.g., for eth mainnet, use 1
+    * - prefundAmt: the amount of eth to prefund the fun wallet
+    * - paymasterAddr: the address of the paymaster which is used to support gasless transactions
+    * - index: the uniqueness of fun wallets. Use the different values for different users.
+    */
+    constructor(eoa, chainId, prefundAmt, implementationAddress = "", paymasterAddr = "", index = 0) {
+        if (!eoa || !chainId) {
+            throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
+        }
         this.eoa = eoa
         this.chainId = chainId
         this.prefundAmt = prefundAmt
@@ -31,22 +41,17 @@ class FunWalletConfig {
 
     async getChainInfo() {
         this.rpcUrl = this.eoa.provider.connection.url
-        if (this.chainId != LOCAL_FORK_CHAIN_ID) {
-            const {
-                rpcdata: { bundlerUrl },
-                aaData: { entryPointAddress, factoryAddress, verificationAddress }
-            } = await DataServer.getChainInfo(this.chainId)
+        const {
+            rpcdata: { bundlerUrl },
+            aaData: { entryPointAddress, factoryAddress, verificationAddress },
+            currency
+        } = await DataServer.getChainInfo(this.chainId)
 
-            this.bundlerUrl = bundlerUrl
-            this.entryPointAddr = entryPointAddress
-            this.funWalletFactoryAddr = factoryAddress
-            this.verificationAddr = verificationAddress
-        } else {
-            this.bundlerUrl = "http://localhost:3000/rpc"
-            this.entryPointAddr = testConfig.entryPointAddress
-            this.funWalletFactoryAddr = testConfig.factoryAddress
-            this.verificationAddr = testConfig.verificationAddress
-        }
+        this.chainCurrency = currency
+        this.bundlerUrl = bundlerUrl
+        this.entryPointAddr = entryPointAddress
+        this.funWalletFactoryAddr = factoryAddress
+        this.verificationAddr = verificationAddress
     }
 }
 

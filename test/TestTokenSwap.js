@@ -1,8 +1,8 @@
 const { FunWallet, FunWalletConfig } = require("../index")
-const { ApproveAndSwap } = require("../src/modules")
+const { TokenSwap } = require("../src/modules")
 const ethers = require('ethers')
-const { transferAmt, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, ROUTER_ADDR, PRIV_KEY, PKEY, DAI_ADDR } = require("./TestUtils")
-const { Token } = require("../utils/Token")
+const { transferAmt, getBalance, getUserBalanceErc, logPairing, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
+const { Token, TokenTypes } = require("../utils/Token")
 
 const APIKEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const PREFUND_AMT = 0.3
@@ -13,10 +13,12 @@ const testEthSwap = async (wallet, swapModule, eoa) => {
     await transferAmt(eoa, wallet.address, AMOUNT)
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
-    const DAI = await Token.createFrom(DAI_ADDR)
+    const DAI = await Token.createToken({ type: TokenTypes.ERC20, address: DAI_ADDR })
     const startWalletDAI = await getUserBalanceErc(wallet, DAI.address)
 
-    const tx = await swapModule.createSwap("eth", DAI, AMOUNT)
+    const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
+    const tokenOut = { type: TokenTypes.ERC20, address: DAI.address }
+    const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
     await wallet.deployTx(tx)
 
     const endWalletDAI = await getUserBalanceErc(wallet, DAI.address)
@@ -33,18 +35,16 @@ const main = async () => {
     await transferAmt(funder, eoa.address, AMOUNT + 1)
 
 
-    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, eoa.address)
-    const wallet = new FunWallet(walletConfig, APIKEY)
 
+    const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+    const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
 
     console.log("wallet balance: ", await getBalance(wallet))
     console.log("funder balance: ", await getBalance(funder))
     console.log("eoa balance: ", await getBalance(eoa))
 
-    const swapModule = new ApproveAndSwap()
-    const moduleAddr = require("./testConfig.json").approveAndSwapAddress
-    await swapModule.init(ROUTER_ADDR, moduleAddr)
+    const swapModule = new TokenSwap()
     await wallet.addModule(swapModule)
     await wallet.deploy()
 

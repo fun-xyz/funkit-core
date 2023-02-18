@@ -13,25 +13,35 @@ class FunWallet extends ContractsHolder {
 
     /**
     * Standard constructor
-    * @params config, index, userId
+    * @params config, apiKey
     * - config: an instance of FunWalletConfig
-    * - orgId: id of organization operating wallet
     * - apiKey: api key to access Fun Wallet service
     */
+<<<<<<< HEAD:src/funWallet.js
     constructor(config, apiKey, index = 0) {
 
         if (!(config instanceof FunWalletConfig)) {
             throw Error("Config Must be of type FunWalletConfig or child classes")
+=======
+    constructor(config, apiKey) {
+        if (!(config instanceof FunWalletConfig)) {
+            throw Error("config must be a type of FunWalletConfig or children")
+>>>>>>> staging:src/FunWallet.js
         }
 
         const rpcUrl = config.eoa.provider.connection.url
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         super(config.eoa, provider, config.chainId)
+<<<<<<< HEAD:src/funWallet.js
 
         this.rpcUrl = rpcUrl
         this.provider = provider
 
 
+=======
+        this.rpcUrl = rpcUrl
+        this.provider = provider
+>>>>>>> staging:src/FunWallet.js
         this.config = config
         this.dataServer = new DataServer(apiKey);
     }
@@ -77,11 +87,11 @@ class FunWallet extends ContractsHolder {
     * @returns data, to, salt
     */
     async addModule(module, salt = 0) {
+        await module.init(this.config.chainId)
         let initTx = await module.encodeInitCall()
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
         module.innerAddData(this)
-        // module.init()
         return txData
     }
 
@@ -106,9 +116,17 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
+<<<<<<< HEAD:src/funWallet.js
         const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider)
         op.chain = this.chain
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt: receipt })
+=======
+        const deployReceipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
+        const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
+        const receipt = {...gas, deployReceipt}
+        op.chain = this.chainId
+        await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
+>>>>>>> staging:src/FunWallet.js
 
         return { receipt, address: this.address }
     }
@@ -120,9 +138,16 @@ class FunWallet extends ContractsHolder {
      */
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
+            const receipt = {...deployReceipt, ...gas}
             const { op } = transaction.data
+<<<<<<< HEAD:src/funWallet.js
             await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt: receipt })
+=======
+            op.chain = this.chainId
+            await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
+>>>>>>> staging:src/FunWallet.js
             return receipt
         }
         else {

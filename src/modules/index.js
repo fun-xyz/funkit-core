@@ -1,5 +1,5 @@
-const { ApproveAndSwap } = require("./ApproveAndSwap")
+const { TokenSwap } = require("./TokenSwap")
 const { EoaAaveWithdrawal } = require('./EoaAaveWithdrawal')
-const { TransferToken } = require('./TransferToken')
+const { TokenTransfer} = require('./TokenTransfer')
 
-module.exports = { EoaAaveWithdrawal, ApproveAndSwap, TransferToken }
+module.exports = { EoaAaveWithdrawal, TokenSwap, TokenTransfer }

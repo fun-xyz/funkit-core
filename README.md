@@ -11,7 +11,7 @@ npx hardhat node --fork "https://eth-mainnet.g.alchemy.com/v2/lcA7Kyqv42J1Qh-wLm
 Starting point: `/fun-wallet-sdk`
 
 ```
-cd utils/setup
+cd test
 node ForkSetup.js -d
 node ForkSetup.js -b
 ```
@@ -42,4 +42,18 @@ cd packages/bundler
 yarn run bundler --network "http://127.0.0.1:8545" --entryPoint "{GIVEN_ENTRYPOINT_ADDRESS}"
 ```
 
-Then you can run any file inside of the test folder and see the result.
+Now the local fork is setup, you can run any file inside of the test folder and see the result.
+
+```
+yarn run test-aaveWithdrawal
+yarn run test-tokenTransfer [param]
+yarn run test-tokenSwap
+```
+
+Specify the parameter of which chain token ```tokenTransfer``` is to be ran on. Testnet is set to Avalanche FUJI
+
+Two examples:
+```yarn run test-tokenTransfer fork```
+
+```yarn run test-tokenTransfer testnet```
+
