@@ -47,6 +47,7 @@ class DataServer {
             receipt: receipt
 
         }
+
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
             console.log(r.message + " type: " + type)
         })
