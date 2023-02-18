@@ -101,7 +101,7 @@ class FunWallet extends ContractsHolder {
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
         const deployReceipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
-        const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.symbol)
+        const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
         const receipt = {...gas, deployReceipt}
         op.chain = this.chainId
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
@@ -117,7 +117,7 @@ class FunWallet extends ContractsHolder {
     async deployTx(transaction) {
         if (transaction.isUserOp) {
             const deployReceipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
-            const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.symbol)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
             const receipt = {...deployReceipt, ...gas}
             const { op } = transaction.data
             op.chain = this.chainId

@@ -23,8 +23,8 @@ async function gasCalculation(receipt, ethersProvider, chain) {
     const gasUSD = gasTotal * chainPrice
     return { gasUsed, gasUSD }
 }
-async function getPriceData(symbol) {
-    const data=await fetch(`${priceURL}?fsym=${symbol}&tsyms=USD`)
+async function getPriceData(chainCurrency) {
+    const data=await fetch(`${priceURL}?fsym=${chainCurrency}&tsyms=USD`)
     const price=await data.json()
     return price.USD;
 }

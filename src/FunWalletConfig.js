@@ -44,7 +44,7 @@ class FunWalletConfig {
             currency
         } = await DataServer.getChainInfo(this.chainId)
 
-        this.symbol=currency
+        this.chainCurrency=currency
         this.bundlerUrl = bundlerUrl
         this.entryPointAddr = entryPointAddress
         this.funWalletFactoryAddr = factoryAddress
