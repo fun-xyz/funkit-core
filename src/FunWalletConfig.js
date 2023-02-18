@@ -13,7 +13,8 @@ class FunWalletConfig {
     * - paymasterAddr: the address of the paymaster which is used to support gasless transactions
     * - index: the uniqueness of fun wallets. Use the different values for different users.
     */
-    constructor(eoa, chainId, prefundAmt, paymaster = undefined, index = 0) {
+
+    constructor(eoa, chainId, prefundAmt, salt, implementationAddress = "", paymaster = undefined, index = 0) {
         if (!eoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
@@ -22,6 +23,8 @@ class FunWalletConfig {
         this.prefundAmt = prefundAmt
         this.paymaster = paymaster
         this.index = index
+        this.salt = salt
+        this.implementationAddress = implementationAddress
     }
 
     async getClients() {
@@ -29,8 +32,8 @@ class FunWalletConfig {
         if (!this.eoa) {
             return await OnChainResources.connectEmpty(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr)
         } else {
-            return await OnChainResources.connect(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr,
-                this.verificationAddr, this.paymaster, this.eoa, this.index)
+            return await OnChainResources.connect(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.implementationAddress, this.funWalletFactoryAddr,
+                this.verificationAddr, this.paymaster, this.eoa, this.salt, this.index)
         }
     }
 
@@ -38,7 +41,8 @@ class FunWalletConfig {
         this.rpcUrl = this.eoa.provider.connection.url
         const {
             rpcdata: { bundlerUrl },
-            aaData: { entryPointAddress, factoryAddress, verificationAddress }
+            aaData: { entryPointAddress, factoryAddress, verificationAddress },
+            currency
         } = await DataServer.getChainInfo(this.chainId)
 
         this.chainCurrency = currency

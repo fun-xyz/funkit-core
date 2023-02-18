@@ -18,8 +18,9 @@ class FunWallet extends ContractsHolder {
     * - apiKey: api key to access Fun Wallet service
     */
     constructor(config, apiKey) {
+
         if (!(config instanceof FunWalletConfig)) {
-            throw Error("config must be a type of FunWalletConfig or children")
+            throw Error("Config Must be of type FunWalletConfig or child classes")
         }
 
         const rpcUrl = config.eoa.provider.connection.url
@@ -44,6 +45,7 @@ class FunWallet extends ContractsHolder {
         if (this.address) {
             return
         }
+
         this.dataServer.init()
 
         const { bundlerClient, funWalletDataProvider } = await this.config.getClients()
@@ -101,9 +103,11 @@ class FunWallet extends ContractsHolder {
         const createWalleteData = await this.contracts[this.address].getMethodEncoding("execBatchInit", [actionCreateData.dests, actionCreateData.values, actionCreateData.data])
 
         const op = await UserOpUtils.createUserOp(this.funWalletDataProvider, createWalleteData, 0, false, true)
-        const receipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
+        const deployReceipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
+        const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
+        const receipt = { ...gas, deployReceipt }
         op.chain = this.chainId
-        await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt: receipt })
+        await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
 
         return { receipt, address: this.address }
     }
@@ -115,10 +119,12 @@ class FunWallet extends ContractsHolder {
      */
     async deployTx(transaction) {
         if (transaction.isUserOp) {
-            const receipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider, this.provider)
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
+            const receipt = { ...deployReceipt, ...gas }
             const { op } = transaction.data
             op.chain = this.chainId
-            await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt: receipt })
+            await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
             return receipt
         }
         else {

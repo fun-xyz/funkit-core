@@ -125,26 +125,33 @@ class DataServer {
                 module: moduleName,
                 chain: chainId
             }
-            return await this.sendPostRequest("get-module-info", body).then((r) => {
+            return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
             })
-        } else {
-            if (moduleName == EOA_AAVE_WITHDRAWAL_MODULE_NAME) {
-                return { eoaAaveWithdrawAddress: testConfig.eoaAaveWithdrawAddress }
-            } else if (moduleName == TOKEN_SWAP_MODULE_NAME) {
-<<<<<<< HEAD
-                return {
-                    approveAndSwapAddress: testConfig.approveAndSwapAddress,
-                    univ3router: testConfig.uniswapV3RouterAddress,
-                    univ3quoter: testConfig.quoterContractAddress,
-=======
-                return { 
-                    tokenSwapAddress: testConfig.tokenSwapAddress, 
-                    univ3router: testConfig.uniswapV3RouterAddress, 
-                    univ3quoter: testConfig.quoterContractAddress, 
->>>>>>> 74ab951 (rename module)
-                    univ3factory: testConfig.poolFactoryAddress
-                }
+
+        }
+        if (moduleName == EOA_AAVE_WITHDRAWAL_MODULE_NAME) {
+            return { eoaAaveWithdrawAddress: testConfig.eoaAaveWithdrawAddress }
+        }
+        if (moduleName == TOKEN_SWAP_MODULE_NAME) {
+            return {
+                tokenSwapAddress: testConfig.tokenSwapAddress,
+                univ3router: testConfig.uniswapV3RouterAddress,
+                univ3quoter: testConfig.quoterContractAddress,
+                univ3factory: testConfig.poolFactoryAddress
+            }
+
+        }
+        if (moduleName == EOA_AAVE_WITHDRAWAL_MODULE_NAME) {
+            return { eoaAaveWithdrawAddress: testConfig.eoaAaveWithdrawAddress }
+        }
+        if (moduleName == TOKEN_SWAP_MODULE_NAME) {
+            return {
+                tokenSwapAddress: testConfig.tokenSwapAddress,
+                univ3router: testConfig.uniswapV3RouterAddress,
+                univ3quoter: testConfig.quoterContractAddress,
+                univ3factory: testConfig.poolFactoryAddress
+
             }
         }
     }

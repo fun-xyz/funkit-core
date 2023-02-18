@@ -13,7 +13,7 @@ const { HttpRpcClient, ERC4337EthersProvider } = require('@account-abstraction/s
  * @param config see ClientConfig for more info
  * @param originalSigner use this signer as the owner. of this wallet. By default, use the provider's signer
  */
-async function wrapProvider(originalProvider, config, originalSigner = originalProvider.getSigner(), factoryAddress, verificationAddress) {
+async function wrapProvider(originalProvider, config, originalSigner = originalProvider.getSigner(), implementationAddress, salt, factoryAddress, verificationAddress) {
     const entryPoint = contracts_1.EntryPoint__factory.connect(config.entryPointAddress, originalProvider);
     // Initial SimpleAccount instance is not deployed and exists just for the interface
 
@@ -23,7 +23,9 @@ async function wrapProvider(originalProvider, config, originalSigner = originalP
         owner: originalSigner,
         factoryAddress,
         verificationAddress,
-        paymasterAPI: config.paymasterAPI
+        paymasterAPI: config.paymasterAPI,
+        implementationAddress,
+        salt
     });
     const chainId = await originalProvider.getNetwork().then(net => net.chainId);
     const httpRpcClient = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, chainId);
