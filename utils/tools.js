@@ -89,7 +89,7 @@ async function getPromiseFromOp(op) {
 
 const sendRequest = async (uri, method, apiKey, body) => {
     try {
-        return retry(async function(){
+        return retry(async function () {
             return await fetch(uri, {
                 method,
                 headers: {
@@ -100,13 +100,12 @@ const sendRequest = async (uri, method, apiKey, body) => {
                 referrerPolicy: 'no-referrer',
                 body: JSON.stringify(body)
             }).then(r => r.json())
-        },default_retry_options)
-        
+        }, default_retry_options)
     } catch (e) {
         console.log(e)
     }
 }
-        
+
 
 function packUserOp(op, forSignature = true) {
     if (forSignature) {
