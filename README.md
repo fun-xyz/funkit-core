@@ -6,35 +6,21 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 <br></br>
 
-## Installation
-
-To install the FunWallet SDK, run either commands:
-
-```bash
-npm i @fun-wallet/sdk
-
-# or
-
-yarn add @fun-wallet/sdk
-```
-
-<br></br>
-
 # **Table of Contents**
 
-1. **[Quickstart](#quickstart)**
+## 1. **[Installation](#installation)**
 
-2. **[Imports](#imports)**
+## 2. **[Imports](#imports)**
 
-3. **[Create EOA Instance](#createeoa)**
+## 3. **[Create EOA Instance](#createeoa)**
 
-4. **[Create a FunWallet](#createwallet)**
+## 4. **[Create a FunWallet](#createwallet)**
 
-5. **[Add Module](#addmmodule)**
+## 5. **[Add Module](#addmmodule)**
 
-6. **[Deploy FunWallet](#deploywallet)**
+## 6. **[Deploy FunWallet](#deploywallet)**
 
-7. **[Create Token Transfer & Deploy Onchain](#createtransfer)**
+## 7. **[Create Token Transfer & Deploy Onchain](#createtransfer)**
 
 <br></br>
 
@@ -97,6 +83,20 @@ console.log(tokenTransferReceipt);
 >
 > For example, if you're using AVAX, you can enter the following:
 > https://testnet.snowtrace.io/tx/0xb98e9c5cd9451a5b7335723f223738eaa0c16b3a60f47e9d3592ff5faef54fb4
+
+<br></br>
+
+## **Installation**
+
+To install the FunWallet SDK, run either commands:
+
+```bash
+npm i @fun-wallet/sdk
+
+# or
+
+yarn add @fun-wallet/sdk
+```
 
 <br></br>
 
