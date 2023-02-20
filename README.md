@@ -146,10 +146,12 @@ Once we have an EOA we can move onto creating a `FunWallet` instance. `FunWallet
 The `FunWallet` class infers multiple properties via the `FunWalletConfig` class.
 
 ```js
-// Create a FunWallet
+// Parameters
 const chainID = "43113";
 const prefundAmt = 0.3; // ether
 const APIKEY = ""; // Get your API key from app.fun.xyz/api-key
+
+// Creating Wallet
 const config = new FunWalletConfig(eoa, chainID, prefundAmt);
 const wallet = new FunWallet(config, APIKEY);
 await wallet.init();
@@ -204,6 +206,11 @@ const deployWalletReceipt = await wallet.deploy();
 We finish off our flow by creating & deploying a `Transaction` onchain. This method returns a receipt indicating the success or failure of the deployment.
 
 ```js
+// Parameters
+const to = "0xB4C3826aFea3Bc437C49695983eAaCFF2Bf8E305"; // Receiver of tokens
+const amount = ethers.utils.parseEther(".01"); // Amount of tokens
+const tokenAddr = "0x9983f755bbd60d1886cbfe103c98c272aa0f03d6"; // Token address
+// Creating Transfer Transaction
 const tokenTransferTx = await tokenTransferModule.createTransferTx(to, amount, { address: tokenAddr });
 const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 ```
