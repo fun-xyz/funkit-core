@@ -4,8 +4,6 @@
 
 The FunWallet SDK empowers developers to access all of web3's features while working within web2 frameworks. Leveraging the FunWallet SDK, developers can create, deploy and interact with smart contract wallets through customized, modular access control.
 
-<br></br>
-
 ## **Table of Contents**
 
 1. **[Installation](#installation)**
@@ -21,8 +19,6 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 6. **[Deploy FunWallet](#deploywallet)**
 
 7. **[Create Token Transfer & Deploy Onchain](#createtransfer)**
-
-<br></br>
 
 ## **Quickstart**
 
@@ -86,8 +82,6 @@ console.log(tokenTransferReceipt);
 > For example, if you're using AVAX, you can enter the following:
 > https://testnet.snowtrace.io/tx/0xb98e9c5cd9451a5b7335723f223738eaa0c16b3a60f47e9d3592ff5faef54fb4
 
-<br></br>
-
 ## <a id="installation"></a> **1. Installation**
 
 To install the FunWallet SDK, run either commands:
@@ -100,8 +94,6 @@ npm i @fun-wallet/sdk
 yarn add @fun-wallet/sdk
 ```
 
-<br></br>
-
 ## <a id="imports"></a> **2. Imports**
 
 We begin by importing the required libraries. For this sample flow we will need the FunWallet class, the FunWallet config class, and the TokenTransfer Module from the FunWallet SDK, as well as the ethers library to make sure we can sign Transactions from an EOA.
@@ -111,8 +103,6 @@ import { ethers } from "ethers";
 import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
 const { TokenTransfer } = Modules;
 ```
-
-<br></br>
 
 ## <a id="createeoa"></a> **3. Create EOA Instance**
 
@@ -138,8 +128,6 @@ const provider = new ethers.providers.Web3Provider(window.ethereum);
 await provider.send("eth_requestAccounts", []); // <- this promps user to connect metamask
 const eoa = provider.getSigner();
 ```
-
-<br></br>
 
 ## <a id="createwallet"></a> **4. Create a FunWallet**
 
@@ -175,8 +163,6 @@ await wallet.init();
 > - If you have never run `wallet.deploy()` make sure that you have enough eth in your testnet wallet to properly fund the `FunWallet` account.
 > - If you have run `wallet.deploy()` already, it is possible that the account already has enough ETH already. Here, you can just set the `prefundAmt` to `0.0`.
 
-<br></br>
-
 ## <a id="addmmodule"></a> **5. Add a Module**
 
 Now that we have a `FunWallet` instance, we can add and remove Modules as we see fit. All of these modifications are stored locally and will not be reflected on-chain until we deploy the wallet instance.
@@ -191,8 +177,6 @@ const tokenTransferModule = new TokenTransfer();
 await wallet.addModule(tokenTransferModule);
 ```
 
-<br></br>
-
 ## <a id="deploywallet"></a> **6. Deploy FunWallet**
 
 We are now ready to deploy our FunWallet instance containing the `TokenTransfer` Module. To deploy this wallet to a chain (specified by chainId parameter in FunWallet constructor), we simply call the deploy method. This method returns a receipt indicating the success or failure of the deployment.
@@ -200,8 +184,6 @@ We are now ready to deploy our FunWallet instance containing the `TokenTransfer`
 ```js
 const deployWalletReceipt = await wallet.deploy();
 ```
-
-<br></br>
 
 ## <a id="createtransfer"></a> **7. Create Transaction & Deploy Onchain**
 
@@ -216,8 +198,6 @@ const tokenAddr = "0x9983f755bbd60d1886cbfe103c98c272aa0f03d6"; // Token address
 const tokenTransferTx = await tokenTransferModule.createTransferTx(to, amount, { address: tokenAddr });
 const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 ```
-
-<br></br>
 
 # **Testing With a Fork Environment**
 
