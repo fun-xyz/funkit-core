@@ -8,19 +8,19 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 # **Table of Contents**
 
-## 1. **[Installation](#installation)**
+1. **[Installation](#installation)**
 
-## 2. **[Imports](#imports)**
+2. **[Imports](#imports)**
 
-## 3. **[Create EOA Instance](#createeoa)**
+3. **[Create EOA Instance](#createeoa)**
 
-## 4. **[Create a FunWallet](#createwallet)**
+4. **[Create a FunWallet](#createwallet)**
 
-## 5. **[Add Module](#addmmodule)**
+5. **[Add Module](#addmmodule)**
 
-## 6. **[Deploy FunWallet](#deploywallet)**
+6. **[Deploy FunWallet](#deploywallet)**
 
-## 7. **[Create Token Transfer & Deploy Onchain](#createtransfer)**
+7. **[Create Token Transfer & Deploy Onchain](#createtransfer)**
 
 <br></br>
 
