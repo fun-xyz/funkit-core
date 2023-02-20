@@ -29,12 +29,13 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 **Example**
 
 ```js
+// Imports
 import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
 const { TokenTransfer } = Modules;
 import { ethers } from "ethers";
 
-// An internal Fun RPC for customer testing
-const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7";
+// Create EOA Instance
+const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"; // An internal Fun RPC for customer testing
 
 // Note that the key here will be exposed and should never be used in production
 const provider = new ethers.providers.JsonRpcProvider(rpc);
@@ -50,13 +51,14 @@ const wallet = new FunWallet(eoa, prefundAmt, chainID, APIKEY);
 // Gather data asynchronously from onchain resources to get expected wallet data
 await wallet.init();
 
-// Add the Transfer module
+// Add Module
 const tokenTransferModule = new TokenTransfer();
 await wallet.addModule(tokenTransferModule);
 
-// Deploy wallet
+// Deploy FunWallet
 const deployWalletReceipt = await wallet.deploy();
 
+// Create Token Transfer & Deploy Onchain
 const to = "0xB4C3826aFea3Bc437C49695983eAaCFF2Bf8E305"; // Receiver of tokens
 const amount = ethers.utils.parseEther(".01"); // Amount of tokens
 const tokenAddr = "0x9983f755bbd60d1886cbfe103c98c272aa0f03d6"; // Token address
