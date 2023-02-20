@@ -109,14 +109,17 @@ class DataServer {
                 return r.data
             })
         } else {
-            return {
-                rpcdata: { bundlerUrl: "http://localhost:3000/rpc" },
-                aaData: {
-                    entryPointAddress: testConfig.entryPointAddress,
-                    factoryAddress: testConfig.factoryAddress,
-                    verificationAddress: testConfig.verificationAddress
-                }
-            }
+            return await this.sendPostRequest("http://localhost:3000/get-chain-info", { chain: LOCAL_FORK_CHAIN_ID }).then((r) => {
+                return r.data
+            })
+            // return {
+            //     rpcdata: { bundlerUrl: "http://localhost:3000/rpc" },
+            //     aaData: {
+            //         entryPointAddress: testConfig.entryPointAddress,
+            //         factoryAddress: testConfig.factoryAddress,
+            //         verificationAddress: testConfig.verificationAddress
+            //     }
+            // }
         }
     }
 
