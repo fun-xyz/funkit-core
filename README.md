@@ -1,12 +1,12 @@
 ![backdrop](https://user-images.githubusercontent.com/5194671/219986266-bfbf6143-dfdf-4154-8afc-156d19d9603e.png)
 
-# FunWallet SDK
+# **Overview**
 
 The FunWallet SDK empowers developers to access all of web3's features while working within web2 frameworks. Leveraging the FunWallet SDK, developers can create, deploy and interact with smart contract wallets through customized, modular access control.
 
 <br></br>
 
-# **Table of Contents**
+## **Table of Contents**
 
 1. **[Installation](#installation)**
 
@@ -24,7 +24,7 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 <br></br>
 
-# **Quickstart**
+## **Quickstart**
 
 **Example**
 
@@ -86,7 +86,7 @@ console.log(tokenTransferReceipt);
 
 <br></br>
 
-## **Installation**
+## **1. Installation**
 
 To install the FunWallet SDK, run either commands:
 
@@ -100,7 +100,7 @@ yarn add @fun-wallet/sdk
 
 <br></br>
 
-## **Imports**
+## **2. Imports**
 
 We begin by importing the required libraries. For this sample flow we will need the FunWallet class, the FunWallet config class, and the TokenTransfer Module from the FunWallet SDK, as well as the ethers library to make sure we can sign Transactions from an EOA.
 
@@ -112,7 +112,7 @@ import { ethers } from "ethers";
 
 <br></br>
 
-## <a id="createeoa"></a> **Create EOA Instance**
+## <a id="createeoa"></a> **3. Create EOA Instance**
 
 Next, we create an EOA instance which we will use to sign transactions in this flow. We can create an EOA instance in one of 2 ways:
 
@@ -139,7 +139,7 @@ const eoa = provider.getSigner();
 
 <br></br>
 
-## <a id="createwallet"></a> **Create a FunWallet**
+## <a id="createwallet"></a> **4. Create a FunWallet**
 
 Once we have an EOA we can move onto creating a `FunWallet` instance. `FunWallet` is the main class of the FunWallet SDK, it is responsible for coordinating the movement of assets and data between Modules. The FunWallet class also stores information relating to the access control schema of said wallet.
 
@@ -175,7 +175,7 @@ await wallet.init();
 
 <br></br>
 
-## <a id="addmmodule"></a> **Add a Module**
+## <a id="addmmodule"></a> **5. Add a Module**
 
 Now that we have a `FunWallet` instance, we can add and remove Modules as we see fit. All of these modifications are stored locally and will not be reflected on-chain until we deploy the wallet instance.
 
@@ -191,7 +191,7 @@ await wallet.addModule(tokenTransferModule);
 
 <br></br>
 
-## <a id="deploywallet"></a> **Deploy FunWallet**
+## <a id="deploywallet"></a> **6. Deploy FunWallet**
 
 We are now ready to deploy our FunWallet instance containing the `TokenTransfer` Module. To deploy this wallet to a chain (specified by chainId parameter in FunWallet constructor), we simply call the deploy method. This method returns a receipt indicating the success or failure of the deployment.
 
@@ -201,7 +201,7 @@ const deployWalletReceipt = await wallet.deploy();
 
 <br></br>
 
-## <a id="createtransfer"></a> **Create Transaction & Deploy Onchain**
+## <a id="createtransfer"></a> **7. Create Transaction & Deploy Onchain**
 
 We finish off our flow by creating & deploying a `Transaction` onchain. This method returns a receipt indicating the success or failure of the deployment.
 
