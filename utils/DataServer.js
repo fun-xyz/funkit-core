@@ -112,14 +112,6 @@ class DataServer {
             return await this.sendPostRequest("http://localhost:3000", "get-chain-info", body).then((r) => {
                 return r
             })
-            // return {
-            //     rpcdata: { bundlerUrl: "http://localhost:3000/rpc" },
-            //     aaData: {
-            //         entryPointAddress: testConfig.entryPointAddress,
-            //         factoryAddress: testConfig.factoryAddress,
-            //         verificationAddress: testConfig.verificationAddress
-            //     }
-            // }
         }
     }
 
