@@ -4,11 +4,17 @@
 
 The FunWallet SDK empowers developers to access all of web3's features while working within web2 frameworks. Leveraging the FunWallet SDK, developers can create, deploy and interact with smart contract wallets through customized, modular access control.
 
+## **Features**
+
+- 💰 Automate Defi Actions for an EOA
+- ⛽ Sponsor/Gasless Transactions
+- 🔄 Swap tokens with Uniswap
+
 ## **Table of Contents**
 
-1. **[Installation](#installation)**
+1. **[Install packages](#installation)**
 
-2. **[Imports](#imports)**
+2. **[Add Imports](#imports)**
 
 3. **[Create EOA Instance](#createeoa)**
 
@@ -22,10 +28,12 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 ## **Quickstart**
 
-**Example**
+For our example flow, we add the TokenTransfer module to our FunWallet.
 
 ```js
-// 2. Imports
+// 1. Install necessary packages
+
+// 2. Add Imports
 import { ethers } from "ethers";
 import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
 const { TokenTransfer } = Modules;
@@ -82,7 +90,7 @@ console.log(tokenTransferReceipt);
 > For example, if you're using AVAX, you can enter the following:
 > https://testnet.snowtrace.io/tx/0xb98e9c5cd9451a5b7335723f223738eaa0c16b3a60f47e9d3592ff5faef54fb4
 
-## <a id="installation"></a> **1. Installation**
+## <a id="installation"></a> **1. Install packages**
 
 To install the FunWallet SDK, run either commands:
 
@@ -94,7 +102,7 @@ npm i @fun-wallet/sdk
 yarn add @fun-wallet/sdk
 ```
 
-## <a id="imports"></a> **2. Imports**
+## <a id="imports"></a> **2. Add Imports**
 
 We begin by importing the required libraries. For this sample flow we will need the FunWallet class, the FunWallet config class, and the TokenTransfer Module from the FunWallet SDK, as well as the ethers library to make sure we can sign Transactions from an EOA.
 
