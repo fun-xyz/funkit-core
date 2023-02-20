@@ -24,7 +24,7 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 <br></br>
 
-# Quickstart
+# **Quickstart**
 
 **Example**
 
