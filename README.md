@@ -29,19 +29,19 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 **Example**
 
 ```js
-// Imports
+// 2. Imports
+import { ethers } from "ethers";
 import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
 const { TokenTransfer } = Modules;
-import { ethers } from "ethers";
 
-// Create EOA Instance
+// 3. Create EOA Instance
 const rpc = "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7"; // An internal Fun RPC for customer testing
 
 // Note that the key here will be exposed and should never be used in production
 const provider = new ethers.providers.JsonRpcProvider(rpc);
 const eoa = new ethers.Wallet(pkey, provider);
 
-// Create a FunWallet
+// 4. Create a FunWallet
 const chainID = "43113";
 const prefundAmt = 0.3; // ether
 const APIKEY = ""; // Get your API key from app.fun.xyz/api-key
@@ -51,14 +51,14 @@ const wallet = new FunWallet(eoa, prefundAmt, chainID, APIKEY);
 // Gather data asynchronously from onchain resources to get expected wallet data
 await wallet.init();
 
-// Add Module
+// 5. Add Module
 const tokenTransferModule = new TokenTransfer();
 await wallet.addModule(tokenTransferModule);
 
-// Deploy FunWallet
+// 6. Deploy FunWallet
 const deployWalletReceipt = await wallet.deploy();
 
-// Create Token Transfer & Deploy Onchain
+// 7. Create Token Transfer & Deploy Onchain
 const to = "0xB4C3826aFea3Bc437C49695983eAaCFF2Bf8E305"; // Receiver of tokens
 const amount = ethers.utils.parseEther(".01"); // Amount of tokens
 const tokenAddr = "0x9983f755bbd60d1886cbfe103c98c272aa0f03d6"; // Token address
@@ -88,7 +88,7 @@ console.log(tokenTransferReceipt);
 
 <br></br>
 
-## **1. Installation**
+## <a id="installation"></a> **1. Installation**
 
 To install the FunWallet SDK, run either commands:
 
@@ -102,14 +102,14 @@ yarn add @fun-wallet/sdk
 
 <br></br>
 
-## **2. Imports**
+## <a id="imports"></a> **2. Imports**
 
 We begin by importing the required libraries. For this sample flow we will need the FunWallet class, the FunWallet config class, and the TokenTransfer Module from the FunWallet SDK, as well as the ethers library to make sure we can sign Transactions from an EOA.
 
 ```js
+import { ethers } from "ethers";
 import { FunWallet, FunWalletConfig, Modules } from "@fun-wallet/sdk";
 const { TokenTransfer } = Modules;
-import { ethers } from "ethers";
 ```
 
 <br></br>
