@@ -103,20 +103,15 @@ class DataServer {
     }
 
     static async getChainInfo(chainId) {
+        const body = { chain: chainId }
         if (chainId != LOCAL_FORK_CHAIN_ID) {
-            const body = { chain: chainId }
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 return r.data
             })
         } else {
-            return {
-                rpcdata: { bundlerUrl: "http://localhost:3000/rpc" },
-                aaData: {
-                    entryPointAddress: testConfig.entryPointAddress,
-                    factoryAddress: testConfig.factoryAddress,
-                    verificationAddress: testConfig.verificationAddress
-                }
-            }
+            return await this.sendPostRequest("http://localhost:3000", "get-chain-info", body).then((r) => {
+                return r
+            })
         }
     }
 
