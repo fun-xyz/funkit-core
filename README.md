@@ -1,4 +1,4 @@
-!(Backdrop)[/backdrop.png]
+![backdrop](https://user-images.githubusercontent.com/5194671/219986266-bfbf6143-dfdf-4154-8afc-156d19d9603e.png)
 
 # FunWallet SDK
 The FunWallet SDK empowers developers to access all of web3's features while working within web2 frameworks. Leveraging the FunWallet SDK, developers can create, deploy and interact with smart contract wallets through customized, modular access control.
@@ -86,7 +86,8 @@ console.log("Public Address for Fun Wallet: ", wallet.address)
 Public Address for Fun Wallet: 0xA5165f8E16dF9FE1EA6866320fd2AbF78c429de8
 ```
 
->[!Note]
+>**Note**
+> 
 >The `FunWallet` address is pre-programmed to be consistent across all chains, pre-deployment.
 
 
@@ -133,7 +134,7 @@ console.log(wallet.transactions)
 ```
 
 **Example Output**
-```json
+```
 {
   '4abaa3c94b5f71de4ffd9df4978401b8ca62a11becb4dafee07e0fa95c615e68': { salt: 0 }
 }
@@ -179,7 +180,7 @@ console.log(deployWalletReceipt)
 ```
 
 **Example Output**
-```json
+```
 {
   receipt: {
     gasUsed: 145627,
@@ -193,14 +194,14 @@ console.log(deployWalletReceipt)
 }
 ```
 
-> **Verify Success On-Chain**
+>**Verify Success On-Chain**
 > 
 >To verify that this transaction executed successfully, view the transaction id on your testnet.
 >
 > For example, if you're using AVAX, you can enter the following:
 > https://testnet.snowtrace.io/tx/0x532cae123462615038c1eb41ff76a866c16b7a9ab736bc8782fe690557651f8d
 
-> **Common Errors On This Step**
+>**Common Errors On This Step**
 > 
 > **Error**
 > `Error: insufficient funds for intrinsic transaction cost`
@@ -261,7 +262,7 @@ console.log(tokenTransferReceipt)
 ```
 
 **Example Output**
-```json
+```
 {
   userOpHash: '0xd7ea68043200a00db7bdf072842cb3669456525ab24db6032f910fe7aafd56cb',
   txid: '0xb98e9c5cd9451a5b7335723f223738eaa0c16b3a60f47e9d3592ff5faef54fb4',
