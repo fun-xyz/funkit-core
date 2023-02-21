@@ -209,19 +209,21 @@ const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 
 # **Testing With a Fork Environment**
 
-### 1. Clone Bundler Repo
+## 1. Clone the Bundler Repo
 
 Starting point: `~/{HOME_DIR}`
 ```
 git clone https://github.com/TheFunGroup/AA_Bundler.git
 ```
 
-### 2. Set up the fork and bundler locally
+## 2. Set Up the Fork and Bundler Locally
 
 Once the bundler is cloned, follow the instructions in https://github.com/TheFunGroup/AA_Bundler/blob/main/README.md before moving onto the following steps
 
 
-### 3.Now the local fork is setup, you can run any file inside of the test folder and see the result.
+## 3. Run Test
+
+Now the local fork is setup, you can run any file inside of the test folder and see the result.
 
 Starting point: `/fun-wallet-sdk`
 
