@@ -1,6 +1,5 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 const ethers = require("ethers")
-const testConfig = require("../test/testConfig.json")
 const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const LOCAL_FORK_CHAIN_ID = 31337
