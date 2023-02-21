@@ -1,11 +1,11 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 const ethers = require("ethers")
-const testConfig = require("../test/testConfig.json")
 const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
+const LOCAL_URL = "http://localhost:3000"
 class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey
@@ -103,54 +103,43 @@ class DataServer {
     }
 
     static async getChainInfo(chainId) {
+        const body = { chain: chainId.toString() }
+
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             const body = { chain: chainId }
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 return r.data
             })
         } else {
-            return {
-                rpcdata: { bundlerUrl: "http://localhost:3000/rpc" },
-                aaData: {
-                    entryPointAddress: testConfig.entryPointAddress,
-                    factoryAddress: testConfig.factoryAddress,
-                    verificationAddress: testConfig.verificationAddress
-                }
-            }
+            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
+                return r
+            })
+
         }
     }
 
     static async getModuleInfo(moduleName, chainId) {
+        const body = {
+            module: moduleName,
+            chain: chainId.toString()
+        }
         if (chainId != LOCAL_FORK_CHAIN_ID) {
-            const body = {
-                module: moduleName,
-                chain: chainId
-            }
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
             })
-
         }
-        if (moduleName == EOA_AAVE_WITHDRAWAL_MODULE_NAME) {
-            return { eoaAaveWithdrawAddress: testConfig.eoaAaveWithdrawAddress }
-        }
-        if (moduleName == TOKEN_SWAP_MODULE_NAME) {
-            return {
-                tokenSwapAddress: testConfig.tokenSwapAddress,
-                univ3router: testConfig.uniswapV3RouterAddress,
-                univ3quoter: testConfig.quoterContractAddress,
-                univ3factory: testConfig.poolFactoryAddress
-            }
+        else {
+            return await this.sendPostRequest(LOCAL_URL, "get-module-info", body).then((r) => {
+                return r
+            })
 
         }
     }
 
     static async getPaymasterAddress(chainId) {
-        if (chainId == LOCAL_FORK_CHAIN_ID) {
-            return testConfig.paymasterAddress
-        }
-        const { aaData: { paymasterAddress } } = await this.getChainInfo(this.chainId)
+        const { moduleAddresses: { paymaster: { paymasterAddress } } } = await this.getChainInfo(chainId)
         return paymasterAddress
+
     }
 }
 
