@@ -116,36 +116,27 @@ class DataServer {
     }
 
     static async getModuleInfo(moduleName, chainId) {
+        const body = {
+            module: moduleName,
+            chain: chainId.toString()
+        }
         if (chainId != LOCAL_FORK_CHAIN_ID) {
-            const body = {
-                module: moduleName,
-                chain: chainId
-            }
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
             })
-
         }
-        if (moduleName == EOA_AAVE_WITHDRAWAL_MODULE_NAME) {
-            return { eoaAaveWithdrawAddress: testConfig.eoaAaveWithdrawAddress }
-        }
-        if (moduleName == TOKEN_SWAP_MODULE_NAME) {
-            return {
-                tokenSwapAddress: testConfig.tokenSwapAddress,
-                univ3router: testConfig.uniswapV3RouterAddress,
-                univ3quoter: testConfig.quoterContractAddress,
-                univ3factory: testConfig.poolFactoryAddress
-            }
+        else {
+            return await this.sendPostRequest("http://localhost:3000", "get-module-info", body).then((r) => {
+                return r
+            })
 
         }
     }
 
     static async getPaymasterAddress(chainId) {
-        if (chainId == LOCAL_FORK_CHAIN_ID) {
-            return testConfig.paymasterAddress
-        }
-        const { aaData: { paymasterAddress } } = await this.getChainInfo(this.chainId)
+        const { moduleAddresses: { paymaster: { paymasterAddress } } } = await this.getChainInfo(chainId)
         return paymasterAddress
+
     }
 }
 
