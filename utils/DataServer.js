@@ -5,6 +5,7 @@ const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../
 const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
+const LOCAL_URL = "http://localhost:3000"
 class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey
@@ -108,7 +109,7 @@ class DataServer {
                 return r.data
             })
         } else {
-            return await this.sendPostRequest("http://localhost:3000", "get-chain-info", body).then((r) => {
+            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
             })
         }
@@ -125,7 +126,7 @@ class DataServer {
             })
         }
         else {
-            return await this.sendPostRequest("http://localhost:3000", "get-module-info", body).then((r) => {
+            return await this.sendPostRequest(LOCAL_URL, "get-module-info", body).then((r) => {
                 return r
             })
 
