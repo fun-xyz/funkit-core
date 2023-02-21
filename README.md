@@ -209,19 +209,19 @@ const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 
 # **Testing With a Fork Environment**
 
-### How to set up Hardhat Fork Enviroment
-
-
+## 1. Clone the Bundler Repo
 
 Starting point: `~/{HOME_DIR}`
 ```
 git clone https://github.com/TheFunGroup/AA_Bundler.git
 ```
 
+## 2. Set Up the Fork and Bundler Locally
 
-## **Once the bundler is cloned, follow the instructions in ```https://github.com/TheFunGroup/AA_Bundler/blob/main/README.md``` before moving onto the following steps** 
+Once the bundler is cloned, follow the instructions in https://github.com/TheFunGroup/AA_Bundler/blob/main/README.md before moving onto the following steps
 
 
+## 3. Run Test
 
 Now the local fork is setup, you can run any file inside of the test folder and see the result.
 
@@ -231,18 +231,6 @@ Starting point: `/fun-wallet-sdk`
 cd test
 chmod +x runAll.sh
 ./runAll.sh
-```
-
-Specify the parameter of which chain token `tokenTransfer` is to be ran on. Testnet is set to Avalanche FUJI
-
-### Two examples:
-
-```
-yarn run test-tokenTransfer fork
-```
-
-```
-yarn run test-tokenTransfer testnet
 ```
 
 ## More Documentation
