@@ -4,16 +4,15 @@ const ethers = require('ethers')
 const { transferAmt, getBalance, getUserBalanceErc, loadPaymaster, logPairing, execContractFunc, logUserPaymasterBalance, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
 const { Token, TokenTypes } = require("../utils/Token")
 const { USDCPaymaster } = require("../src/paymasters/USDCPaymaster")
-
-const paymasterAddress = require("./testConfig.json").paymasterAddress
-const ROUTER_ADDR = require("./testConfig.json").uniswapV3RouterAddress
-const entryPointAddress = require("./testConfig.json").entryPointAddress
+const { DataServer} = require('../utils/DataServer')
+let paymasterAddress 
+let ROUTER_ADDR 
+let entryPointAddress
 
 const EntryPointAbi = require("../utils/abis/EntryPoint.json")
 const { PaymasterSponsorInterface } = require("../src/paymasters/PaymasterSponsorInterface")
 const PREFUND_AMT = 0.3
 const AMOUNT = 60
-const testConfigPath = "./testConfig.json"
 
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
 const funder = new ethers.Wallet(PKEY, provider)
@@ -171,14 +170,18 @@ const postTest = async (eoa, paymasterAddr) => {
 }
 
 const setup = async () => {
-    const paymasterAddr = require(testConfigPath).paymasterAddress
+    const getData = await DataServer.getChainInfo("31337")
+    paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
+    ROUTER_ADDR = getData.moduleAddresses.tokenSwap.univ3router
+    entryPointAddress = getData.aaData.entryPointAddress
+
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
     const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
     const wallet = new FunWallet(walletConfig, API_KEY)
     await wallet.init()
     await getUsdcWallet(wallet, AMOUNT)
     await walletTransferERC(wallet, funder.address, USDCETHAMT, USDC_ADDR)
-    await fundUserUSDCPaymaster(funder, paymasterAddr, wallet, AMOUNT)
+    await fundUserUSDCPaymaster(funder, paymasterAddress, wallet, AMOUNT)
     await fundPaymasterEth(funder, AMOUNT)
 }
 
