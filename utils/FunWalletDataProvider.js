@@ -72,8 +72,11 @@ class FunWalletDataProvider {
         ]);
     }
 
-    getNonce() {
-        return ethers_1.BigNumber.from(ethers_1.utils.randomBytes(32));
+    getNonce(address, callData) {
+        const now = Date.now()
+        const timeout = 1000
+        const time = now - now % timeout
+        return ethers_1.BigNumber.from(ethers_1.utils.keccak256(ethers_1.utils.toUtf8Bytes(`${address}${callData}${time}`)));
     }
     /**
      * encode a method call from entryPoint to our contract
@@ -230,9 +233,10 @@ class FunWalletDataProvider {
                 maxPriorityFeePerGas = (_b = feeData.maxPriorityFeePerGas) !== null && _b !== void 0 ? _b : undefined;
             }
         }
+        const address = await this.getAccountAddress()
         const partialUserOp = {
-            sender: await this.getAccountAddress(),
-            nonce: this.getNonce(),
+            sender: address,
+            nonce: this.getNonce(address, callData),
             initCode,
             callData,
             callGasLimit: info.gasLimit ? info.gasLimit : 400000,
