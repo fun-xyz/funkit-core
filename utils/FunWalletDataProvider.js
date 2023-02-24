@@ -74,7 +74,7 @@ class FunWalletDataProvider {
 
     getNonce(address, callData) {
         const now = Date.now()
-        const timeout = 1000
+        const timeout = 5000
         const time = now - now % timeout
         return ethers_1.BigNumber.from(ethers_1.utils.keccak256(ethers_1.utils.toUtf8Bytes(`${address}${callData}${time}`)));
     }
