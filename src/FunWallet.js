@@ -152,8 +152,7 @@ class FunWallet extends ContractsHolder {
         }
 
         this.config.paymaster = paymaster
-        const { bundlerClient, funWalletDataProvider } = await this.config.getClients()
-        this.bundlerClient = bundlerClient
+        const {  funWalletDataProvider } = await this.config.getClients()
         this.funWalletDataProvider = funWalletDataProvider
     }
 }
