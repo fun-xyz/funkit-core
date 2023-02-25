@@ -1,6 +1,6 @@
 const ethers = require("ethers")
 const { Enum } = require('./Enum');
-const { DataServer, tokens } = require("./DataServer")
+const { DataServer } = require("./DataServer")
 
 
 const TokenTypesData = [
