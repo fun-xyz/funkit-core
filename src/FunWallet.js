@@ -146,12 +146,15 @@ class FunWallet extends ContractsHolder {
         return receipts
     }
 
-    updatePaymaster(paymaster) {
+    async updatePaymaster(paymaster) {
         if (paymaster && !(paymaster instanceof BasePaymaster)) {
             throw new Error("Paymaster must be of type BasePaymaster or children")
         }
 
         this.config.paymaster = paymaster
+        const { bundlerClient, funWalletDataProvider } = await this.config.getClients()
+        this.bundlerClient = bundlerClient
+        this.funWalletDataProvider = funWalletDataProvider
     }
 }
 
