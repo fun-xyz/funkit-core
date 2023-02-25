@@ -7,7 +7,7 @@ const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 const LOCAL_URL = "http://localhost:3000"
 
-const tokens = {
+const WETH_ADDR = {
     "1": {
         weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
@@ -82,8 +82,8 @@ class DataServer {
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
         if (chain != LOCAL_FORK_CHAIN_ID) {
-            if (symbol == "weth" && tokens[chain]) {
-                return { contract_address: tokens[chain][symbol] }
+            if (symbol == "weth" && WETH_ADDR[chain]) {
+                return { contract_address: WETH_ADDR[chain][symbol] }
             }
             const body = {
                 symbol,
