@@ -31,18 +31,23 @@ class Token {
             throw Error("Type is not a token");
         }
         this.type = config.type
+        if (!((config.address || config.symbol) && config.chainId)) {
+            throw Error("Must specify address or symbol and chainId")
+        }
+
 
         if (this.address) {
             this.type = TokenTypes.ERC20
-
         }
         this.address = config.address
         this.symbol = config.symbol
         if (this.symbol == "eth") {
             this.type = TokenTypes.ETH
         }
+
+        config.chainId = typeof config.chainId == "string" ? config.chainId : config.chainId.toString()
         this.chainId = config.chainId ? config.chainId : "1"
-        this.chainId = config.chainId == 31337 ? "1" : config.chainId
+        this.chainId = config.chainId == "31337" ? "1" : config.chainId
 
     }
 
@@ -51,10 +56,12 @@ class Token {
             return this.address;
         }
         if (this.type == TokenTypes.ETH) {
-
             return tokens[this.chainId].weth
         }
-        console.log(this)
+        if (this.symbol && this.chainId) {
+            let tokenInfo = await DataServer.getTokenInfo(this.symbol, this.chainId)
+            return tokenInfo.contract_address
+        }
         throw Error("Token is not found")
     }
 
@@ -134,17 +141,11 @@ class Token {
             }
         }
     }
-
-    static async getAddressFrom(data) {
-        const { address } = await this.createFrom(data)
-        return address
-    }
 }
 
 
 
 
-const eth = new Token({ type: TokenTypes.ETH })
 
 module.exports = {
     Token,
