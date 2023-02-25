@@ -63,6 +63,7 @@ describe("Paymaster", function() {
         await paymasterInterface.addTokenDepositTo(wallet.address, USDCETHAMT)
         
         const data = await getPaymasterBalance(paymasterContract, wallet)
+
         expect(data.tokenAmount.toNumber()).to.be.greaterThanOrEqual(USDCETHAMT.toNumber())
     }
 
@@ -73,7 +74,6 @@ describe("Paymaster", function() {
         await paymasterInterface.addEthDepositForSponsor(value, eoa.address)
         await paymasterInterface.lockTokenDeposit()
         await paymasterInterface.setWhitelistMode(true)
-
     }
 
     async function testEthSwap(wallet, swapModule, eoa) {
@@ -101,12 +101,13 @@ describe("Paymaster", function() {
         paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
         entryPointAddress = getData.aaData.entryPointAddress
     
-        const walletConfig = new FunWalletConfig(funder, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+
         await getUsdcForWallet(wallet, AMOUNT)
         await walletTransferERC(wallet, funder.address, USDCETHAMT, USDC_ADDR)
-        await fundUserUSDCPaymaster(funder, paymasterAddress, wallet, AMOUNT)
+        await fundUserUSDCPaymaster(funder, paymasterAddress, wallet)
         await fundPaymasterEth(funder, AMOUNT)
     })
 
@@ -130,6 +131,7 @@ describe("Paymaster", function() {
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)
         await wallet.deploy()
+
         await testEthSwap(wallet, swapModule, eoa)
 
         // verify paymaster works
