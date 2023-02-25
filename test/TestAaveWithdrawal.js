@@ -4,7 +4,7 @@ const { FunWallet } = require("../index")
 const { transferAmt, getAddrBalanceErc, getBalance, execContractFunc, getUserBalanceErc,
     createErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, API_KEY } = require("./TestUtils")
 const ethers = require('ethers')
-const { TokenTypes } = require("../utils/Token")
+const { TokenTypes, Token } = require("../utils/Token")
 
 const POOL_ADDRESS = "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9"
 const PREFUND_AMT = 0.3
@@ -153,8 +153,9 @@ const walletEthToERC20Swap = async (wallet, eoa, amount, tokenAddr, returnAddres
     console.log("Wallet Eth Start Balance: ", await getBalance(wallet))
 
     await getUserBalanceErc(wallet, tokenAddr)
-    const tokenIn = { type: TokenTypes.ETH, symbol: "weth", chainId: HARDHAT_FORK_CHAIN_ID }
-    const tokenOut = { type: TokenTypes.ERC20, address: tokenAddr }
+    const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
+    const tokenOut = new Token({ address: tokenAddr, chainId: HARDHAT_FORK_CHAIN_ID })
+
     const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
     await wallet.deployTx(tx)
 
