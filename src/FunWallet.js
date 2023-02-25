@@ -42,7 +42,7 @@ class FunWallet extends ContractsHolder {
         }
 
         this.dataServer.init()
-        
+
         this.eoaAddr = await this.config.eoa.getAddress()
         this.config.salt = (this.config.salt ? this.config.salt : this.eoaAddr) + this.config.index.toString()
 
@@ -51,7 +51,7 @@ class FunWallet extends ContractsHolder {
         this.funWalletDataProvider = funWalletDataProvider
 
         this.address = await this.funWalletDataProvider.getAccountAddress()
-        
+
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.addEthersContract(this.address, walletContract)
 
@@ -144,6 +144,16 @@ class FunWallet extends ContractsHolder {
             receipts.push(await this.deployTx(transaction))
         }
         return receipts
+    }
+
+    async updatePaymaster(paymaster) {
+        if (paymaster && !(paymaster instanceof BasePaymaster)) {
+            throw new Error("Paymaster must be of type BasePaymaster or children")
+        }
+
+        this.config.paymaster = paymaster
+        const {  funWalletDataProvider } = await this.config.getClients()
+        this.funWalletDataProvider = funWalletDataProvider
     }
 }
 
