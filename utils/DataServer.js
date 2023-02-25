@@ -158,4 +158,4 @@ class DataServer {
     }
 }
 
-module.exports = { DataServer, tokens }
+module.exports = { DataServer }
