@@ -6,6 +6,18 @@ const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 const LOCAL_URL = "http://localhost:3000"
+
+const tokens = {
+    "1": {
+        weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    },
+    "5": {
+        weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+    },
+    "43113": {
+        weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
+    }
+}
 class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey
@@ -143,4 +155,4 @@ class DataServer {
     }
 }
 
-module.exports = { DataServer }
+module.exports = { DataServer,tokens }

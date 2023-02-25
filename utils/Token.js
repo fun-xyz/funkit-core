@@ -1,6 +1,6 @@
 const ethers = require("ethers")
 const { Enum } = require('./Enum');
-const { DataServer } = require("./DataServer")
+const { DataServer, tokens } = require("./DataServer")
 
 
 const TokenTypesData = [
@@ -10,17 +10,7 @@ const TokenTypesData = [
 
 const TokenTypes = new Enum(TokenTypesData)
 
-const tokens = {
-    "1": {
-        weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    },
-    "5": {
-        weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
-    },
-    "43113": {
-        weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
-    }
-}
+
 
 const defaultChain = "1"
 
