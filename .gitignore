@@ -3,5 +3,3 @@
 **/node_modules
 
 **/.DS_Store
-
-./test/testConfig.json

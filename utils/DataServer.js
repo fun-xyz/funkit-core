@@ -1,11 +1,10 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
-const ethers = require("ethers")
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 const LOCAL_URL = "http://localhost:3000"
+const TEST_API_KEY = "localtest"
 
 const WETH_ADDR = {
     "1": {
@@ -30,26 +29,19 @@ class DataServer {
     }
 
     async getOrgInfo() {
+        if (this.apiKey == TEST_API_KEY) {
+            return {id: "test", name: "test"}
+        }
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
         })
     }
 
-    async getStoredUserOp(userOpHash) {
-        const body = { userOpHash }
-        const op = await this.sendPostRequest(APIURL, "get-user-op", body).then((r) => {
-            return r.data
-        })
-
-        Object.keys(op).map(key => {
-            if (op[key].type == "BigNumber") {
-                op[key] = ethers.BigNumber.from(op[key].hex)
-            }
-        })
-        return op
-    }
-
     async storeUserOp({ op, type, balance = 0, receipt = {} }) {
+        if (this.apiKey == TEST_API_KEY) {
+            return
+        }
+
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
@@ -67,6 +59,10 @@ class DataServer {
     }
 
     async storeEVMCall(receipt) {
+        if (this.apiKey == TEST_API_KEY) {
+            return
+        }
+        
         const body = {
             receipt,
             txHash: receipt.transactionHash,
