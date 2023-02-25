@@ -47,6 +47,7 @@ class Module {
         Object.keys(wallet).forEach(varKey => {
             this.wallet[varKey] = wallet[varKey]
         })
+        this.wallet.prototype = wallet.prototype
     }
 
     async createUserOpFromCallData({ to, data }, gasLimit = 0, noInit = false, isAction = false) {

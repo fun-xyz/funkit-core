@@ -9,8 +9,7 @@ const { DataServer} = require('../utils/DataServer')
 const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 const { PaymasterSponsorInterface } = require("../src/paymasters/PaymasterSponsorInterface")
 
-
-describe("TokenSwap", function() {
+describe("Paymaster", function() {
     let eoa
     let funder
     let provider

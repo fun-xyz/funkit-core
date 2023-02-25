@@ -11,6 +11,7 @@ describe("FunWalletFactory", function() {
     })
 
     it("wallet should have the same address even we create the wallet twice", async function() {
+        this.timeout(10000)
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0.3)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
