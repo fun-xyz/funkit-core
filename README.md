@@ -229,9 +229,7 @@ Starting point: `/fun-wallet-sdk`
 
 ```
 yarn install
-cd test
-chmod +x runAll.sh
-./runAll.sh
+yarn test
 ```
 
 ## More Documentation
