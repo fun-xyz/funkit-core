@@ -10,10 +10,6 @@ const TokenTypesData = [
 
 const TokenTypes = new Enum(TokenTypesData)
 
-
-
-const defaultChain = "1"
-
 class Token {
 
     constructor(config) {
@@ -25,7 +21,6 @@ class Token {
             throw Error("Must specify address or symbol and chainId")
         }
 
-
         if (this.address) {
             this.type = TokenTypes.ERC20
         }
@@ -36,25 +31,26 @@ class Token {
         }
 
         config.chainId = typeof config.chainId == "string" ? config.chainId : config.chainId.toString()
-        this.chainId = config.chainId ? config.chainId : "1"
         this.chainId = config.chainId == "31337" ? "1" : config.chainId
-
     }
 
     async getAddress() {
         if (this.address) {
             return this.address;
         }
+        let tokenInfo;
         if (this.type == TokenTypes.ETH) {
-            return tokens[this.chainId].weth
+            tokenInfo = await DataServer.getTokenInfo("weth", this.chainId)
+        } else if (this.symbol && this.chainId) {
+            tokenInfo = await DataServer.getTokenInfo(this.symbol, this.chainId)
         }
-        if (this.symbol && this.chainId) {
-            let tokenInfo = await DataServer.getTokenInfo(this.symbol, this.chainId)
+
+        if (tokenInfo.contract_address) {
             return tokenInfo.contract_address
         }
+
         throw Error("Token is not found")
     }
-
 }
 
 

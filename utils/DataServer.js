@@ -82,6 +82,9 @@ class DataServer {
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
         if (chain != LOCAL_FORK_CHAIN_ID) {
+            if (symbol == "weth" && tokens[chain]) {
+                return { contract_address: tokens[chain][symbol] }
+            }
             const body = {
                 symbol,
                 chain
@@ -155,4 +158,4 @@ class DataServer {
     }
 }
 
-module.exports = { DataServer,tokens }
+module.exports = { DataServer, tokens }
