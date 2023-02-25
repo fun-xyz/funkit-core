@@ -16,7 +16,7 @@ describe("FunWalletFactory", function() {
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
-        const walletConfig1 = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0.3)
+        const walletConfig1 = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0)
         const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
         await wallet1.init()
         
