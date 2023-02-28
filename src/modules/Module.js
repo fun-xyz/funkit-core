@@ -3,6 +3,9 @@ const ethers = require("ethers")
 
 const EOA_AAVE_WITHDRAWAL_MODULE_NAME = "eoaAaveWithdraw"
 const TOKEN_SWAP_MODULE_NAME = "tokenSwap"
+const TOKEN_TRANSFER_MODULE_NAME = "tokenTransfer"
+const USER_MANAGEMENT_MODULE_NAME = "user"
+const ROLE_MANAGEMENT_MODULE_NAME = "role"
 
 class Module {
     wallet = {}
@@ -62,6 +65,10 @@ class Module {
     async getPreExecTxs() {
         return []
     }
+
+    async getTargetData() {
+        return
+    }
 }
 
-module.exports = { Module, EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME }
+module.exports = { Module, EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME, TOKEN_TRANSFER_MODULE_NAME, USER_MANAGEMENT_MODULE_NAME, ROLE_MANAGEMENT_MODULE_NAME }

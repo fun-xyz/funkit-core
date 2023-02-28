@@ -1,4 +1,3 @@
-const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
 const { BasePaymaster } = require("./paymasters/BasePaymaster")
@@ -8,7 +7,8 @@ class FunWalletConfig {
     /**
     * Standard constructor
     * @params eoa, chainId, prefundAmt, paymasterAddr, index
-    * - eoa: an eoa wallet
+    * - eoa: an eoa wallet of the current user, used to sign the userOp tx
+    * - ownerAddr: an identifier of the fun wallet owner. Only ethereum address type is supported as of now
     * - chainId: chainId to specify the chains, e.g., for eth mainnet, use 1
     * - prefundAmt: the amount of eth to prefund the fun wallet
     * - paymaster: the paymaster instance to support gasless transactions
@@ -17,11 +17,12 @@ class FunWalletConfig {
     * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
-    constructor(eoa, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
+    constructor(eoa, ownerAddr, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
         if (!eoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
         this.eoa = eoa
+        this.ownerAddr = ownerAddr
         this.chainId = chainId
         this.prefundAmt = prefundAmt
 
@@ -31,7 +32,8 @@ class FunWalletConfig {
 
         this.paymaster = paymaster
         this.index = index
-        this.salt = salt
+
+        this.salt = (salt? salt : this.ownerAddr) + this.index.toString()
         this.implementationAddress = implementationAddress
     }
 
@@ -41,7 +43,7 @@ class FunWalletConfig {
             return await OnChainResources.connectEmpty(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr)
         } else {
             return await OnChainResources.connect(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.implementationAddress, this.funWalletFactoryAddr,
-                this.verificationAddr, this.paymaster, this.eoa, this.salt, this.index)
+                this.verificationAddr, this.paymaster, this.eoa, this.ownerAddr, this.salt, this.index)
         }
     }
 

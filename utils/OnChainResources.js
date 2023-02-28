@@ -4,7 +4,7 @@ const { FunWalletDataProvider } = require("./FunWalletDataProvider")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
 class OnChainResources {
-    static async connect(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
+    static async connect(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, ownerAddr, preHashSalt, index = 0) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const config = { bundlerUrl, entryPointAddress }
         const salt = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(`${preHashSalt}`))
@@ -12,7 +12,8 @@ class OnChainResources {
         const funWalletDataProvider = new FunWalletDataProvider({
             provider: erc4337Provider,
             entryPointAddress,
-            owner: eoa,
+            eoa,
+            ownerAddr,
             paymasterAPI,
             factoryAddress,
             verificationAddress,

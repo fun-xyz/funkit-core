@@ -1,12 +1,12 @@
 const hre = require("hardhat");
 const { ethers } = hre
 const ERC20 = require("../utils/abis/ERC20.json")
-const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
 const RPC_URL = "http://127.0.0.1:8545"
 const PRIV_KEY = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const PKEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+const OWNER_PKEY = "b3d179b7e24ec01d983cf248f6110d73e0905fc2641e9666e01a252ed90949ae"
 const DAI_ADDR = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 const TEST_API_KEY = "localtest"
 const USDC_ADDR = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
@@ -55,5 +55,5 @@ const timeout = async (ms) => {
 
 module.exports = {
     transferAmt, getAddrBalanceErc, timeout, execContractFunc, getUserBalanceErc, createErc, CHAINLINK_TOKEN_AGGREGATOR_ADDRESS, 
-    HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
+    HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, OWNER_PKEY, DAI_ADDR, TEST_API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
 }

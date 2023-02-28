@@ -1,7 +1,8 @@
 const { PrimitiveModule } = require("../PrimitiveModule")
 const { Enum } = require('../../../utils/Enum')
 const ethers = require('ethers')
-const ABI = ethers.utils.defaultAbiCoder;
+const ABI = ethers.utils.defaultAbiCoder
+const { ROLE_MANAGEMENT_MODULE_NAME } = require('../Module')
 
 const KeywordData = [
     "GREATER",
@@ -29,6 +30,10 @@ class Rule {
 
 class RoleManager extends PrimitiveModule {
 
+    init() {
+        this.name = ROLE_MANAGEMENT_MODULE_NAME
+    }
+
     // modify role through userOp
     async createRoleTx(roleName, moduleAddr, rules) {
         if (!roleName || !moduleAddr || !rules || rules.length == 0) {
@@ -40,7 +45,7 @@ class RoleManager extends PrimitiveModule {
             }
         })
         const roleNameBytes = ethers.utils.formatBytes32String(roleName)
-        const txData = await this.wallet.contracts[this.wallet.address].contract.populateTransaction.createRole(roleNameBytes, moduleAddr, rules)
+        const txData = await this.wallet.contract.contract.populateTransaction.createRole(roleNameBytes, moduleAddr, rules)
         return await this.createUserOpFromCallData(txData, 0, false, true)
     }
 
@@ -49,7 +54,7 @@ class RoleManager extends PrimitiveModule {
             throw Error("Role name, module address and rules are needed to attach a rule to a role")
         }
         const roleNameBytes = ethers.utils.formatBytes32String(roleName)
-        const txData = await this.wallet.contracts[this.wallet.address].contract.populateTransaction.attachRuleToRole(roleNameBytes, moduleAddr, rule)
+        const txData = await this.wallet.contract.contract.populateTransaction.attachRuleToRole(roleNameBytes, moduleAddr, rule)
         return await this.createUserOpFromCallData(txData, 0, false, true)
     }
 
@@ -58,7 +63,7 @@ class RoleManager extends PrimitiveModule {
             throw Error("Role name, module address and rules are needed to remove a rule from a role")
         }
         const roleNameBytes = ethers.utils.formatBytes32String(roleName)
-        const txData = await this.wallet.contracts[this.wallet.address].contract.populateTransaction.removeRuleFromRole(roleNameBytes, moduleAddr, rule)
+        const txData = await this.wallet.contract.contract.populateTransaction.removeRuleFromRole(roleNameBytes, moduleAddr, rule)
         return await this.createUserOpFromCallData(txData, 0, false, true)
     }
 
@@ -68,7 +73,7 @@ class RoleManager extends PrimitiveModule {
             throw Error("Role name, module address and rules are needed to get rules of a role")
         }
         const roleNameBytes = ethers.utils.formatBytes32String(roleName)
-        return await this.wallet.contracts[this.wallet.address].contract.getRulesOfRole(roleNameBytes, moduleAddr)
+        return await this.wallet.contract.contract.getRulesOfRole(roleNameBytes, moduleAddr)
     }
 }
 

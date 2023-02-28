@@ -8,6 +8,7 @@ const { USDCPaymaster } = require("../src/paymasters/USDCPaymaster")
 const { DataServer} = require('../utils/DataServer')
 const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 const { PaymasterSponsorInterface } = require("../src/paymasters/PaymasterSponsorInterface")
+const { TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 describe("Paymaster", function() {
     let eoa
@@ -35,8 +36,8 @@ describe("Paymaster", function() {
 
         const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
         const tokenOut = new Token({ address: USDC_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, wallet.address)
-        await wallet.deployTx(tx)
+        const createSwapTx = await wallet.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, amount, wallet.address)
+        await wallet.deployTx(createSwapTx)
     
         const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
     
@@ -46,8 +47,8 @@ describe("Paymaster", function() {
     async function walletTransferERC(wallet, to, amount, tokenAddr) {
         const transfer = new TokenTransfer()
         await wallet.addModule(transfer)
-        const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
-        await wallet.deployTx(transferActionTx)
+        const createTransferTx = await wallet.createTransferTx(to, amount, tokenAddr)
+        await wallet.deployTx(createTransferTx)
     }
 
     async function getPaymasterBalance(paymasterObj, wallet) {
@@ -76,14 +77,14 @@ describe("Paymaster", function() {
         await paymasterInterface.setWhitelistMode(true)
     }
 
-    async function testEthSwap(wallet, swapModule, eoa) {
+    async function testEthSwap(wallet, eoa) {
         await transferAmt(eoa, wallet.address, AMOUNT)
         const startWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
     
         const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
         const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
-        await wallet.deployTx(tx)
+        const createSwapTx = await wallet.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
+        await wallet.deployTx(createSwapTx)
     
         const endWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
         expect(parseFloat(endWalletDAI) - parseFloat(startWalletDAI)).to.be.greaterThan(0)
@@ -99,7 +100,7 @@ describe("Paymaster", function() {
         paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
         entryPointAddress = getData.aaData.entryPointAddress
     
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
@@ -117,7 +118,7 @@ describe("Paymaster", function() {
         await transferAmt(funder, eoa.address, AMOUNT + 1)
         
         const paymaster = new USDCPaymaster(paymasterAddress, funder.address)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, "", paymaster)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, "", paymaster)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
@@ -130,7 +131,7 @@ describe("Paymaster", function() {
         await wallet.addModule(swapModule)
         await wallet.deploy()
 
-        await testEthSwap(wallet, swapModule, eoa)
+        await testEthSwap(wallet, eoa)
 
         // verify paymaster works
         const endWalletPaymasterUSDC = (await paymasterInterface.depositInfo(wallet.address)).tokenAmount

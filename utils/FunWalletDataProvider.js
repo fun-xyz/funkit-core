@@ -24,16 +24,16 @@ const calcPreVerificationGas_1 = require("./Tools");
 
 class FunWalletDataProvider {
     constructor(params) {
-        var _a;
-        this.factoryAddress = params.factoryAddress;
-        this.owner = params.owner;
+        this.factoryAddress = params.factoryAddress
+        this.eoa = params.eoa
+        this.ownerAddr = params.ownerAddr
         this.salt = params.salt
-        this.isPhantom = true;
-        this.provider = params.provider;
-        this.overheads = params.overheads;
-        this.entryPointAddress = params.entryPointAddress;
-        this.accountAddress = params.accountAddress;
-        this.paymasterAPI = params.paymasterAPI;
+        this.isPhantom = true
+        this.provider = params.provider
+        this.overheads = params.overheads
+        this.entryPointAddress = params.entryPointAddress
+        this.accountAddress = params.accountAddress
+        this.paymasterAPI = params.paymasterAPI
         this.verificationAddress = params.verificationAddress
         this.implementationAddress = params.implementationAddress ? params.implementationAddress : ethers_1.constants.AddressZero
         // factory "connect" define the contract address. the contract "connect" defines the "from" address.
@@ -64,7 +64,7 @@ class FunWalletDataProvider {
     async getAccountInitCode() {
         await this.getFactoryContract()
         const accountContract = await this.getAccountContract()
-        const initializerCallData = accountContract.interface.encodeFunctionData('initialize', [this.entryPointAddress, this.verificationAddress, await this.owner.getAddress()])
+        const initializerCallData = accountContract.interface.encodeFunctionData('initialize', [this.entryPointAddress, this.verificationAddress, this.ownerAddr])
 
         return (0, utils_1.hexConcat)([
             this.factoryAddress,
@@ -87,7 +87,7 @@ class FunWalletDataProvider {
     }
 
     async signUserOpHash(userOpHash) {
-        return await this.owner.signMessage((0, utils_1.arrayify)(userOpHash));
+        return await this.eoa.signMessage((0, utils_1.arrayify)(userOpHash));
     }
 
 

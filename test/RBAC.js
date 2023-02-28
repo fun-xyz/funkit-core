@@ -20,7 +20,7 @@ describe("RBAC", function() {
         const funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, AMOUNT + 1)
 
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
     })
@@ -42,11 +42,11 @@ describe("RBAC", function() {
             const rule1 = new Rule("*", WILDCARD_BYTES32, Keyword.WILDCARD, 1000)
             const rule2 = new Rule("test action", WILDCARD_BYTES32, Keyword.GREATER, 1000)
             const roleName = "create role test" + getRndInteger(1, 100000).toString()
-            
-            const createRoleTx = await roleManager.createRoleTx(roleName, wallet.address, [rule1, rule2])
+
+            const createRoleTx = await wallet.createRoleTx(roleName, wallet.address, [rule1, rule2])
             await wallet.deployTx(createRoleTx)
 
-            const rulesOfCreatedRole = await roleManager.getRulesOfRole(roleName, wallet.address)
+            const rulesOfCreatedRole = await wallet.getRulesOfRole(roleName, wallet.address)
             
             expect(rulesOfCreatedRole[0].action).to.be.equal(rule1.action)
             expect(rulesOfCreatedRole[0].target).to.be.equal(rule1.target)
@@ -63,10 +63,10 @@ describe("RBAC", function() {
             this.timeout(10000)
             const rule1 = new Rule("*", WILDCARD_BYTES32, Keyword.WILDCARD, 1000)
             const roleName = "attach role test" + getRndInteger(1, 100000).toString()
-            const createRoleTx = await roleManager.createRoleTx(roleName, wallet.address, [rule1])
+            const createRoleTx = await wallet.createRoleTx(roleName, wallet.address, [rule1])
             await wallet.deployTx(createRoleTx)
 
-            const rulesOfCreatedRole1 = await roleManager.getRulesOfRole(roleName, wallet.address)
+            const rulesOfCreatedRole1 = await wallet.getRulesOfRole(roleName, wallet.address)
             expect(rulesOfCreatedRole1.length).to.be.equal(1)
             expect(rulesOfCreatedRole1[0].action).to.be.equal(rule1.action)
             expect(rulesOfCreatedRole1[0].target).to.be.equal(rule1.target)
@@ -74,10 +74,10 @@ describe("RBAC", function() {
             expect(rulesOfCreatedRole1[0].extent).to.be.equal(rule1.extent)
 
             const rule2 = new Rule("test action", WILDCARD_BYTES32, Keyword.GREATER, 1000)
-            const attachRuleTx = await roleManager.attachRuleToRoleTx(roleName, wallet.address, rule2)
-            await wallet.deployTx(attachRuleTx)
+            const attachRuleToRoleTx = await wallet.attachRuleToRoleTx(roleName, wallet.address, rule2)
+            await wallet.deployTx(attachRuleToRoleTx)
 
-            const rulesOfCreatedRole2 = await roleManager.getRulesOfRole(roleName, wallet.address)
+            const rulesOfCreatedRole2 = await wallet.getRulesOfRole(roleName, wallet.address)
             expect(rulesOfCreatedRole2.length).to.be.equal(2)
             expect(rulesOfCreatedRole2[1].action).to.be.equal(rule2.action)
             expect(rulesOfCreatedRole2[1].target).to.be.equal(rule2.target)
@@ -91,14 +91,15 @@ describe("RBAC", function() {
             const rule2 = new Rule("test action", WILDCARD_BYTES32, Keyword.GREATER, 1000)
             const roleName = "remove rule test" + getRndInteger(1, 100000).toString()
             
-            const createRoleTx = await roleManager.createRoleTx(roleName, wallet.address, [rule1, rule2])
+            const createRoleTx = await wallet.createRoleTx(roleName, wallet.address, [rule1, rule2])
             await wallet.deployTx(createRoleTx)
-            const rulesOfCreatedRole1 = await roleManager.getRulesOfRole(roleName, wallet.address)
+            
+            const rulesOfCreatedRole1 = await wallet.getRulesOfRole(roleName, wallet.address)
             expect(rulesOfCreatedRole1.length).to.be.equal(2)
             
-            const removeRuleTx = await roleManager.removeRuleFromRoleTx(roleName, wallet.address, rule1)
-            await wallet.deployTx(removeRuleTx)
-            const rulesOfCreatedRole2 = await roleManager.getRulesOfRole(roleName, wallet.address)
+            const removeRuleFromRoleTx = await wallet.removeRuleFromRoleTx(roleName, wallet.address, rule1)
+            await wallet.deployTx(removeRuleFromRoleTx)
+            const rulesOfCreatedRole2 = await wallet.getRulesOfRole(roleName, wallet.address)
             expect(rulesOfCreatedRole2.length).to.be.equal(1)
             expect(rulesOfCreatedRole2[0].action).to.be.equal(rule2.action)
             expect(rulesOfCreatedRole2[0].target).to.be.equal(rule2.target)
@@ -120,10 +121,10 @@ describe("RBAC", function() {
             const userId = "create user test" + getRndInteger(1, 100000).toString()
             const roleName = "create user test" + getRndInteger(1, 100000).toString()
             const userMetadata = new UserMetadata(roleName, AuthType.ECDSA, eoa.address)
-            const createUserTx = await userManager.createUserTx(userId, userMetadata)
+            const createUserTx = await wallet.createUserTx(userId, userMetadata)
             await wallet.deployTx(createUserTx)
             
-            const user = await userManager.getUser(userId)
+            const user = await wallet.getUser(userId)
             expect(user.role).to.be.equal(userMetadata.role)
             expect(user.authType).to.be.equal(userMetadata.authType)
             expect(user.authMetadata).to.be.equal(userMetadata.authMetadata)
@@ -134,18 +135,18 @@ describe("RBAC", function() {
             const userId = "delete user test" + getRndInteger(1, 100000).toString()
             const roleName = "delete user test" + getRndInteger(1, 100000).toString()
             const userMetadata = new UserMetadata(roleName, AuthType.ECDSA, eoa.address)
-            const createUserTx = await userManager.createUserTx(userId, userMetadata)
+            const createUserTx = await wallet.createUserTx(userId, userMetadata)
             await wallet.deployTx(createUserTx)
             
-            const user = await userManager.getUser(userId)
+            const user = await wallet.getUser(userId)
             expect(user.role).to.be.equal(userMetadata.role)
             expect(user.authType).to.be.equal(userMetadata.authType)
             expect(user.authMetadata).to.be.equal(userMetadata.authMetadata)
 
-            const deleteUserTx = await userManager.deleteUserTx(userId)
+            const deleteUserTx = await wallet.deleteUserTx(userId)
             await wallet.deployTx(deleteUserTx)
 
-            const userAfterDelete = await userManager.getUser(userId)
+            const userAfterDelete = await wallet.getUser(userId)
             expect(userAfterDelete.role).to.be.equal("0x0000000000000000000000000000000000000000000000000000000000000000")
             expect(userAfterDelete.authType).to.be.equal(0)
             expect(userAfterDelete.authMetadata).to.be.equal("0x")
@@ -156,20 +157,20 @@ describe("RBAC", function() {
             const userId = "update user test" + getRndInteger(1, 100000).toString()
             const roleName1 = "update user test" + getRndInteger(1, 100000).toString()
             const userMetadata1 = new UserMetadata(roleName1, AuthType.ECDSA, eoa.address)
-            const createUserTx = await userManager.createUserTx(userId, userMetadata1)
+            const createUserTx = await wallet.createUserTx(userId, userMetadata1)
             await wallet.deployTx(createUserTx)
             
-            const user = await userManager.getUser(userId)
+            const user = await wallet.getUser(userId)
             expect(user.role).to.be.equal(userMetadata1.role)
             expect(user.authType).to.be.equal(userMetadata1.authType)
             expect(user.authMetadata).to.be.equal(userMetadata1.authMetadata)
 
             const roleName2 = "update user test 1" + getRndInteger(1, 100000).toString()
             const userMetadata2 = new UserMetadata(roleName2, AuthType.ECDSA, eoa.address)
-            const updateUserTx = await userManager.updateUserTx(userId, userMetadata2)
+            const updateUserTx = await wallet.updateUserTx(userId, userMetadata2)
             await wallet.deployTx(updateUserTx)
 
-            const userAfterUpdate = await userManager.getUser(userId)
+            const userAfterUpdate = await wallet.getUser(userId)
             expect(userAfterUpdate.role).to.be.equal(userMetadata2.role)
             expect(userAfterUpdate.authType).to.be.equal(userMetadata2.authType)
             expect(userAfterUpdate.authMetadata).to.be.equal(userMetadata2.authMetadata)

@@ -2,6 +2,7 @@ const { PrimitiveModule } = require("../PrimitiveModule")
 const { Enum } = require('../../../utils/Enum')
 const ethers = require('ethers')
 const ABI = ethers.utils.defaultAbiCoder
+const { USER_MANAGEMENT_MODULE_NAME } = require('../Module')
 
 const AuthTypeData = [
     "ECDSA"
@@ -26,6 +27,10 @@ class UserMetadata {
 
 class UserManager extends PrimitiveModule {
 
+    init() {
+        this.name = USER_MANAGEMENT_MODULE_NAME
+    }
+
     // modify user through userOp
     async createUserTx(userId, userMetadata) {
         if (!userId || !userMetadata || !(userMetadata instanceof UserMetadata)) {
@@ -33,7 +38,7 @@ class UserManager extends PrimitiveModule {
         }
 
         const userIdBytes = ethers.utils.formatBytes32String(userId)
-        const txData = await this.wallet.contracts[this.wallet.address].contract.populateTransaction.createUser(userIdBytes, userMetadata)
+        const txData = await this.wallet.contract.contract.populateTransaction.createUser(userIdBytes, userMetadata)
         return await this.createUserOpFromCallData(txData, 0, false, true)
     }
 
@@ -43,7 +48,7 @@ class UserManager extends PrimitiveModule {
         }
 
         const userIdBytes = ethers.utils.formatBytes32String(userId)
-        const txData = await this.wallet.contracts[this.wallet.address].contract.populateTransaction.deleteUser(userIdBytes)
+        const txData = await this.wallet.contract.contract.populateTransaction.deleteUser(userIdBytes)
         return await this.createUserOpFromCallData(txData, 0, false, true)
     }
 
@@ -53,7 +58,7 @@ class UserManager extends PrimitiveModule {
         }
 
         const userIdBytes = ethers.utils.formatBytes32String(userId)
-        const txData = await this.wallet.contracts[this.wallet.address].contract.populateTransaction.updateUser(userIdBytes, userMetadata)
+        const txData = await this.wallet.contract.contract.populateTransaction.updateUser(userIdBytes, userMetadata)
         return await this.createUserOpFromCallData(txData, 0, false, true)
     }
 
@@ -63,7 +68,7 @@ class UserManager extends PrimitiveModule {
             throw Error("User id is needed to get an user")
         }
         const userIdBytes = ethers.utils.formatBytes32String(userId)
-        return await this.wallet.contracts[this.wallet.address].contract.getUser(userIdBytes)
+        return await this.wallet.contract.contract.getUser(userIdBytes)
     }
 }
 

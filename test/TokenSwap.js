@@ -4,6 +4,7 @@ const { TokenSwap } = require("../src/modules")
 const ethers = require('ethers')
 const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
 const { Token } = require("../utils/Token")
+const { TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 describe("TokenSwap", function() {
     let eoa
@@ -20,7 +21,7 @@ describe("TokenSwap", function() {
 
     it("succeed case", async function() {
         this.timeout(10000)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
@@ -34,8 +35,8 @@ describe("TokenSwap", function() {
         
         const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
         const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
-        await wallet.deployTx(tx)
+        const createSwapTx = await wallet.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
+        await wallet.deployTx(createSwapTx)
     
         const endWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
         expect(parseFloat(endWalletDAI) - parseFloat(startWalletDAI)).to.be.greaterThan(0)
