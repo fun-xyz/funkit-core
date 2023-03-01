@@ -6,8 +6,8 @@ class FunWalletConfig {
 
     /**
     * Standard constructor
-    * @params eoa, chainId, prefundAmt, paymasterAddr, index
-    * - eoa: an eoa wallet of the current user, used to sign the userOp tx
+    * @params userEoa, chainId, prefundAmt, paymasterAddr, index
+    * - userEoa: an eoa wallet of the current user, used to sign the userOp tx
     * - ownerAddr: an identifier of the fun wallet owner. Only ethereum address type is supported as of now
     * - chainId: chainId to specify the chains, e.g., for eth mainnet, use 1
     * - prefundAmt: the amount of eth to prefund the fun wallet
@@ -17,11 +17,11 @@ class FunWalletConfig {
     * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
-    constructor(eoa, ownerAddr, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
-        if (!eoa || !chainId) {
+    constructor(userEoa, ownerAddr, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
+        if (!userEoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
-        this.eoa = eoa
+        this.userEoa = userEoa
         this.ownerAddr = ownerAddr
         this.chainId = chainId
         this.prefundAmt = prefundAmt
@@ -39,11 +39,11 @@ class FunWalletConfig {
 
     async getClients() {
         await this.getChainInfo()
-        if (!this.eoa) {
+        if (!this.userEoa) {
             return await OnChainResources.connectEmpty(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr)
         } else {
             return await OnChainResources.connect(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.implementationAddress, this.funWalletFactoryAddr,
-                this.verificationAddr, this.paymaster, this.eoa, this.ownerAddr, this.salt, this.index)
+                this.verificationAddr, this.paymaster, this.userEoa, this.ownerAddr, this.salt, this.index)
         }
     }
 
@@ -54,10 +54,10 @@ class FunWalletConfig {
             currency
         } = await DataServer.getChainInfo(this.chainId)
 
-        if (this.eoa.provider.connection.url === "metamask") {
+        if (this.userEoa.provider.connection.url === "metamask") {
             this.rpcUrl = rpcurl
         } else {
-            this.rpcUrl = this.eoa.provider.connection.url
+            this.rpcUrl = this.userEoa.provider.connection.url
         }
 
         this.chainCurrency = currency

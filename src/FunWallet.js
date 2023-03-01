@@ -25,9 +25,9 @@ class FunWallet extends ModuleManager {
         }
 
         super(config.chainId)
-        this.eoa = config.eoa
+        this.userEoa = config.userEoa
         this.chainId = config.chainId
-        this.provider = config.eoa.provider
+        this.provider = config.userEoa.provider
         this.config = config
         this.dataServer = new DataServer(apiKey)
     }
@@ -55,11 +55,11 @@ class FunWallet extends ModuleManager {
 
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.address = await this.funWalletDataProvider.getAccountAddress()
-        this.contract = new WrappedEthersContract(this.config.eoa, this.provider, this.chainId, walletContract)
+        this.contract = new WrappedEthersContract(this.config.userEoa, this.provider, this.chainId, walletContract)
 
         // Pre-fund FunWallet
         if (this.config.prefundAmt) {
-            return await EoaUtils.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)
+            return await EoaUtils.fundAccount(this.config.userEoa, this.address, this.config.prefundAmt)
         }
     }
 
@@ -124,7 +124,7 @@ class FunWallet extends ModuleManager {
             return receipt
         }
         else {
-            const tx = await this.eoa.sendTransaction(transaction.data)
+            const tx = await this.userEoa.sendTransaction(transaction.data)
             const receipt = await tx.wait()
             receipt.chain = this.chain
             this.dataServer.storeEVMCall(receipt)
