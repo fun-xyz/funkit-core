@@ -2,7 +2,8 @@ const { expect } = require("chai")
 const { FunWallet, FunWalletConfig } = require("../index")
 const { RoleManager, Rule, Keyword, UserManager, UserMetadata, AuthType } = require("../src/modules")
 const ethers = require('ethers')
-const { transferAmt, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, TEST_API_KEY } = require("./TestUtils")
+const { transferAmt, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, OWNER_PKEY, TEST_API_KEY } = require("./TestUtils")
+const { TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const PREFUND_AMT = 0.3
 const AMOUNT = 60
@@ -10,6 +11,7 @@ const WILDCARD_BYTES32 = ethers.utils.formatBytes32String("*")
 
 describe("RBAC", function() {
     let eoa
+    let owner
     let wallet
     let roleManager
     let userManager
@@ -17,8 +19,10 @@ describe("RBAC", function() {
     before(async function() {
         const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
+        owner = new ethers.Wallet(OWNER_PKEY, provider)
         const funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, AMOUNT + 1)
+        await transferAmt(funder, owner.address, AMOUNT + 1)
 
         const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         wallet = new FunWallet(walletConfig, TEST_API_KEY)
@@ -128,6 +132,60 @@ describe("RBAC", function() {
             expect(user.role).to.be.equal(userMetadata.role)
             expect(user.authType).to.be.equal(userMetadata.authType)
             expect(user.authMetadata).to.be.equal(userMetadata.authMetadata)
+        })
+
+        it("create user using owner eoa then swap token using user eoa", async function() {
+            const walletConfig1 = new FunWalletConfig(owner, await owner.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+            const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
+            const swapModule = new TokenSwap()
+            await wallet1.addModule(swapModule)
+            await wallet1.deploy()
+
+            // the following commented out code snipet is an example of creating token swap tx
+            // now we want to create a role to allowlist an user to do token swap for the following params
+
+            // const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
+            // const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
+            // const createSwapTx = await wallet.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
+            // await wallet.deployTx(createSwapTx)
+
+            // create a role for swapModule with rules as
+            // - allowlist any kind of actions
+            // - for target as swapTargetData, allowlist less than 10000 swap
+            // - for target as swapTargetData, allowlist greater than 1000 swap
+            // - reject any transactions not matching the above rules
+            const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
+            const swapTargetData = await wallet1.modules[TOKEN_SWAP_MODULE_NAME].getTargetData(tokenIn)
+            const rule1 = new Rule("*", swapTargetData, Keyword.LESS, 10000)
+            const rule2 = new Rule("*", swapTargetData, Keyword.GREATER, 1000)
+            const roleName = "tokenSwap role" + getRndInteger(1, 100000).toString()
+
+            const createRoleTx = await wallet1.createRoleTx(roleName, swapModule.addr, [rule1, rule2])
+            await wallet1.deployTx(createRoleTx)
+
+            // create an user for eoa address within the fun wallet. the user has access to the tokenSwap role
+            const userId = "tokenSwap user" + getRndInteger(1, 100000).toString()
+            const userMetadata = new UserMetadata(roleName, AuthType.ECDSA, eoa.address)
+            const createUserTx = await wallet1.createUserTx(userId, userMetadata)
+            await wallet1.deployTx(createUserTx)
+            
+            const user = await wallet1.getUser(userId)
+            expect(user.role).to.be.equal(userMetadata.role)
+            expect(user.authType).to.be.equal(userMetadata.authType)
+            expect(user.authMetadata).to.be.equal(userMetadata.authMetadata)
+
+            // now use eoa as the user to do tokenSwap in the fun wallet
+            // all the transaction sent out by wallet2 will be signed by eoa
+            // using owner address here is to ensure the eoa is operating on the right fun wallet as the fun wallet address is 
+            // by default calculated based on hash(ownerAddr, index)
+            const walletConfig2 = new FunWalletConfig(eoa, await owner.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+            const wallet2 = new FunWallet(walletConfig2, TEST_API_KEY)
+            wallet2.addModule(swapModule)
+            wallet2.deploy()
+            
+            const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
+            const createSwapTx = await wallet2.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, AMOUNT, wallet2.address, 5, 100)
+            await wallet2.deployTx(createSwapTx)
         })
 
         it("delete the user after create user", async function() {
