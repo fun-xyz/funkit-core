@@ -1,5 +1,6 @@
 const { FunWallet } = require("./src/FunWallet")
 const { FunWalletConfig } = require("./src/FunWalletConfig")
+const { FunAccountManager } = require('./src/FunAccountManager');
 const Modules = require("./src/modules")
 const Paymasters = require("./src/paymasters")
 
@@ -7,6 +8,7 @@ const Paymasters = require("./src/paymasters")
 module.exports = {
     FunWallet,
     FunWalletConfig,
+    FunAccountManager,
     Modules,
     Paymasters
 }
