@@ -74,7 +74,7 @@ describe("Paymaster", function() {
     
         await paymasterInterface.addEthDepositForSponsor(value, eoa.address)
         await paymasterInterface.lockTokenDeposit()
-        await paymasterInterface.setWhitelistMode(true)
+        await paymasterInterface.setWhitelistMode(false)
         await paymasterInterface.deploy()
     }
 
