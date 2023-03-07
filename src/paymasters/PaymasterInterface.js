@@ -2,13 +2,14 @@ const { execContractFunc, createErc, HARDHAT_FORK_CHAIN_ID } = require("../../ut
 const paymasterAbi = require("../../utils/abis/TokenPaymaster.json").abi
 const { DataServer } = require("../../utils/DataServer")
 const ethers = require("ethers")
+const { BasePaymaster } = require("./BasePaymaster")
 
 
 /**
  * The PaymasterInterface class provides an interface to interact with the Paymaster smart contracts.
  * Currently, each call to a this.contract method is an EVM transaction.
  */
-class PaymasterInterface {
+class PaymasterInterface extends BasePaymaster{
     batchData = []
     stakeBatchData = []
     constructor(eoa) {
