@@ -1,6 +1,6 @@
 const { DataServer} = require('../utils/DataServer')
-require('dotenv').config();
-const dataServer = new DataServer(process.env.API_KEY);
+const { TEST_API_KEY } = require("./TestUtils")
+const dataServer = new DataServer(TEST_API_KEY);
 
 async function main(){
   await dataServer.init();

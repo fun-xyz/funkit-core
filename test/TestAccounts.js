@@ -1,7 +1,6 @@
 const { DataServer} = require('../utils/DataServer')
-require('dotenv').config();
-
-const dataServer = new DataServer(process.env.API_KEY);
+const { TEST_API_KEY } = require("./TestUtils")
+const dataServer = new DataServer(TEST_API_KEY);
 
 async function main(){
   try {
@@ -16,6 +15,7 @@ async function main(){
 
 async function saveAccount(){
   console.log("Saving a test wallet");
+  console.log(dataServer)
   try {
     await dataServer.storeWallet({
       user_id: "user-1",
