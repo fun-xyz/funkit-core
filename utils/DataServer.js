@@ -118,11 +118,18 @@ class DataServer {
         }
     }
 
-    static async getChainFromName(name) {
-        const body = { name }
-        return await this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
-            return r.data
+    async getChainFromName(name) {
+        return new Promise(async (res, rej) => {
+            const body = { name }
+            this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
+                if(r.data){
+                    return res(r.data)
+                } else {
+                    return rej({err: "No chain found"})
+                }
+            })
         })
+       
     }
 
     static async getModuleInfo(moduleName, chainId) {
