@@ -106,6 +106,14 @@ class FunWallet extends ContractsHolder {
         op.chain = this.chainId
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
 
+        await this.dataServer.storeWallet({
+            user_id: "<unique-user-id>",
+            address: this.address,
+            chain_id: this.chainId,
+            roles: [],
+            users: []
+        })
+
         return { receipt, address: this.address }
     }
 

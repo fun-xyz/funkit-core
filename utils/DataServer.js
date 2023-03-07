@@ -142,11 +142,12 @@ class DataServer {
 
     }
 
-    async storeAccount(account){
+    async storeWallet(wallet){
         const body = {
-            ...account
+            ...wallet,
+            organization: this.id
         }
-        return await this.sendPostRequest(APIURL, "save-account", body).then(r => {
+        return await this.sendPostRequest(APIURL, "save-wallet", body).then(r => {
             return r
         })
     }
