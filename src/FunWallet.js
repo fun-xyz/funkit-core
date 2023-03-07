@@ -33,6 +33,27 @@ class FunWallet extends ContractsHolder {
         const wallet = new FunWallet(walletConfig, API_KEY)
         await wallet.init()
         //call data server to get modules
+
+        const currentState = this.dataServer.getAccountState(userId);
+        currentState.chains.map((chain)=>{
+            chain.wallet.map((wallets)=>{
+                wallets.users.roles.map((role_hash)=>{
+                    //do logic
+                })
+                wallets.roles.map((role)=>{
+                    role.modules((module)=>{
+                        module.constraints.map((constraint)=>{
+                            //do logic
+                        })
+                        //logic
+                        wallet.addModule()
+                    })
+                })
+
+            })
+        })
+        
+        
         return wallet
     }
 
