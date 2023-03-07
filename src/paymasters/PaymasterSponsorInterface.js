@@ -1,8 +1,13 @@
-const ethers = require("ethers")
 const { execContractFunc, createErc, HARDHAT_FORK_CHAIN_ID } = require("../../utils/Web3utils")
-const { DataServer } = require("../../utils/DataServer")
 const paymasterAbi = require("../../utils/abis/TokenPaymaster.json").abi
+const { DataServer } = require("../../utils/DataServer")
+const ethers = require("ethers")
 
+
+/**
+ * The PaymasterSponsorInterface class provides an interface to interact with the Paymaster smart contracts.
+ * Currently, each call to a this.contract method is an EVM transaction.
+ */
 class PaymasterSponsorInterface {
     constructor(eoa) {
         this.eoa = eoa
