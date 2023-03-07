@@ -172,9 +172,9 @@ class DataServer {
             ...wallet,
             organization: this.id
         }
-        return await this.sendPostRequest(APIURL, "save-wallet", body).then(r => {
-            return r
-        })
+        return await this.sendPostRequest(APIURL, "save-wallet", body).then((r) => {
+            return r;
+        });
     }
 
     async getUserData(user_id){

@@ -1,10 +1,9 @@
 const { DataServer} = require('../utils/DataServer')
-const { API_KEY } = require("./TestUtils")
-
-const dataServer = new DataServer(API_KEY);
-dataServer.init();
+require('dotenv').config();
+const dataServer = new DataServer(process.env.API_KEY);
 
 async function main(){
+  await dataServer.init();
   console.log("Testing DataServer.getChainFromName");
   try {
     let chain = await dataServer.getChainFromName("ethereum");

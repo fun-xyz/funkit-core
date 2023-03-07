@@ -110,8 +110,8 @@ class FunWallet extends ContractsHolder {
             user_id: "<unique-user-id>",
             address: this.address,
             chain_id: this.chainId,
-            roles: [],
-            users: []
+            roles: [], //roles data
+            users: [] //users data
         })
 
         return { receipt, address: this.address }
