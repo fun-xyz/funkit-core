@@ -14,7 +14,7 @@ class ContractsHolder {
         }
         this.contracts[address] = createWrappedContract(address, abi, this.eoa, this.provider, this.chainId)
     }
-
+    
     addEthersContract(address, contract) {
         if (this.contracts[address]) {
             return

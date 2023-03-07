@@ -28,6 +28,15 @@ class FunWallet extends ContractsHolder {
         this.dataServer = new DataServer(apiKey);
     }
 
+    static async retrieve(API_KEY, auth, chainName, userId = 0, index = 0) {
+        const walletConfig = new FunWalletConfig(auth.eoa, chainName, 0, userId, null, index)  //TODO: refractor to make similar to auth
+        const wallet = new FunWallet(walletConfig, API_KEY)
+        await wallet.init()
+        //call data server to get modules
+        return wallet
+    }
+
+
     /**     
      * Runs initialization for a given wallet.
      * The function acts as a constructor for many parameters in the class, creating
@@ -44,7 +53,7 @@ class FunWallet extends ContractsHolder {
         this.dataServer.init()
 
         this.eoaAddr = await this.config.eoa.getAddress()
-        this.config.salt = (this.config.salt ? this.config.salt : this.eoaAddr) + this.config.index.toString()
+        this.config.userId = (this.config.userId ? this.config.userId : this.eoaAddr) + this.config.index.toString()
 
         const { bundlerClient, funWalletDataProvider } = await this.config.getClients()
         this.bundlerClient = bundlerClient
@@ -152,7 +161,7 @@ class FunWallet extends ContractsHolder {
         }
 
         this.config.paymaster = paymaster
-        const {  funWalletDataProvider } = await this.config.getClients()
+        const { funWalletDataProvider } = await this.config.getClients()
         this.funWalletDataProvider = funWalletDataProvider
     }
 }
