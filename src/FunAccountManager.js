@@ -21,33 +21,19 @@ class FunAccountManager {
      */
     async getAllUserData(){
       return new Promise(async (res, rej) => {
-        return res({
-          users: [{
-            id: "",
-            accounts: [{
-              wallet_addr: "",
-              chain_id: "",
-              chain_name: ""
-            }]
-          }]
-        });
+        const data = await DataServer.getAllUserData()
+        return res(data)
       })
     }
 
      /**
      * Load specific user data by their unique identifier
-     * @param {string} userId Unique user identifier
+     * @param {string} user_id Unique user identifier
      */
-     async getUserData(userId){
+     async getUserData(user_id){
       return new Promise(async (res, rej) => {
-        return res({
-          id: userId,
-          accounts: [{
-            wallet_addr: "",
-            chain_id: "",
-            chain_name: ""
-          }]
-        });
+        const data = await DataServer.getUserData(user_id)
+        return res(data)
       })
     }
     

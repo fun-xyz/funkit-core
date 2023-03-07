@@ -141,6 +141,34 @@ class DataServer {
         return paymasterAddress
 
     }
+
+    async storeAccount(account){
+        const body = {
+            ...account
+        }
+        return await this.sendPostRequest(APIURL, "save-account", body).then(r => {
+            return r
+        })
+    }
+
+    async getUserData(user_id){
+        const body = {
+            user_id
+        }
+        return await this.sendPostRequest(APIURL, "get-account", body).then(r => {
+            return r
+        })
+    }
+
+    async getAllUserData(){
+        const body = {
+            organization: this.id,
+        }
+        return await this.sendPostRequest(APIURL, "get-accounts", body).then(r => {
+            return r
+        })
+    }
+
 }
 
 module.exports = { DataServer }
