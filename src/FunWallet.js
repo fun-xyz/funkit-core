@@ -6,11 +6,16 @@ const { FunWalletConfig } = require("./FunWalletConfig")
 const { USER_MANAGEMENT_MODULE_NAME, ROLE_MANAGEMENT_MODULE_NAME, TOKEN_TRANSFER_MODULE_NAME } = require("./modules/Module")
 const { ModuleManager } = require("../utils/ModuleManager")
 const { WrappedEthersContract } = require("../utils/WrappedEthersContract")
+const { objDiffMapper } = require("../utils/FunWalletUtils")
 
 class FunWallet extends ModuleManager {
 
     transactions = {}
     modules = {}
+    dupes = new Map()
+    batch = []
+    chainState = {}
+    localState = {}
 
     /**
     * Standard constructor
@@ -30,6 +35,68 @@ class FunWallet extends ModuleManager {
         this.provider = config.eoa.provider
         this.config = config
         this.dataServer = new DataServer(apiKey)
+    }
+
+    static async retrieve(API_KEY, auth, chainName, userId = 0, index = 0) {
+        const walletConfig = new FunWalletConfig(auth.eoa, await auth.eoa.getAddress(), chainName, 0, userId, null, index)  //TODO: refractor to make similar to auth
+        const wallet = new FunWallet(walletConfig, API_KEY)
+        await wallet.init()
+        //call data server to get modules
+        const dataServer = new DataServer(API_KEY)
+        await dataServer.init()
+
+        // const currentState = dataServer.getAccountState(userId);
+        // currentState.chains.map((chain) => {
+        //     chain.wallet.map((wallets) => {
+        //         wallets.users.roles.map((role_hash) => {
+        //             //do logic
+        //         })
+        //         wallets.roles.map((role) => {
+        //             role.modules((module) => {
+        //                 module.constraints.map((constraint) => {
+        //                     //do logic
+        //                 })
+        //                 //logic
+        //                 wallet.addModule()
+        //             })
+        //         })
+        //
+        //     })
+        // })
+
+        return wallet
+    }
+
+
+    async compressTxs(action) {
+        //transactions is a list of transactions, in order
+        let identifiers = ""
+        action.identifiers.map((identifier) => {
+            identifiers += "." + identifier
+        })
+        let hash = `${action.type}${identifiers}`
+        const params = action.data
+
+        //add or remove user
+        //whitelist or blacklist user
+
+        //item can be canceled
+        if (this.dupes.has(hash)) {
+            const idx = this.batch.map((storedAction) => {
+                storedAction.id
+            }).indexOf(hash)
+            this.batch.splice(idx, 1)
+            this.dupes.delete(hash)
+        }
+        else {
+            this.dupes.set(hash, params)
+            action.id = hash
+            batch.push(action)
+        }
+    }
+
+    async getLocalVsChainState() {
+        return objDiffMapper(chainState, localState)
     }
 
     /**     
@@ -56,7 +123,7 @@ class FunWallet extends ModuleManager {
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.address = await this.funWalletDataProvider.getAccountAddress()
         this.contract = new WrappedEthersContract(this.config.eoa, this.provider, this.chainId, walletContract)
-
+        this.userId = (this.config.userId ? this.config.userId : this.ownerAddr) + this.config.index.toString()
         // Pre-fund FunWallet
         if (this.config.prefundAmt) {
             return await EoaUtils.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)

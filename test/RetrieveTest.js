@@ -13,7 +13,7 @@ describe("Retrieve FunWallet", function () {
 
     it("wallet should have the same address as the retrieved wallet", async function () {
         this.timeout(10000)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0.3, 7987) //random userId (salt0)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, 0.3, 7987) //random userId (salt0)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 

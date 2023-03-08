@@ -45,7 +45,7 @@ class DataServer {
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
-            userOpHash, userOp, type, balance, receipt,
+            userOpHash, userOp, type, balance,
             organization: this.id,
             orgName: this.name,
             receipt: receipt
@@ -115,7 +115,6 @@ class DataServer {
 
     static async getChainInfo(chainId) {
         const body = { chain: chainId.toString() }
-
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             const body = { chain: chainId }
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
