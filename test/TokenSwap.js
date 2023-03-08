@@ -35,7 +35,7 @@ describe("TokenSwap", function() {
         const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
         const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
         const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
-        await wallet.deployTx(tx)
+        await wallet.dloyTx(tx)
     
         const endWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
         expect(parseFloat(endWalletDAI) - parseFloat(startWalletDAI)).to.be.greaterThan(0)

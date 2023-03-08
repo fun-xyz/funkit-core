@@ -18,6 +18,7 @@ class FunWallet extends ContractsHolder {
         batch = []
         chainState = {}
         localState = {}
+        modules = {}
         /**
         * Standard constructor
         * @params config, apiKey
@@ -91,7 +92,7 @@ class FunWallet extends ContractsHolder {
                 batch.push(action)
             }
         }
-
+        
         async getLocalVsChainState() {
             return objDiffMapper(chainState, localState)
         }
@@ -146,6 +147,7 @@ class FunWallet extends ContractsHolder {
             let txData = { ...initTx, salt }
             this.transactions[generateSha256(txData)] = txData;
             module.innerAddData(this)
+            this.modules[module]
             return txData
         }
 
