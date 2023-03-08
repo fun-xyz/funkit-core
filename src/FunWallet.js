@@ -6,10 +6,14 @@ const EoaUtils = require('../utils/EoaUtils')
 const { ethers } = require('ethers');
 
 const { FunWalletConfig } = require("./FunWalletConfig")
+const { BADHINTS } = require("dns")
+const { arrayBuffer } = require("stream/consumers")
 
 class FunWallet extends ContractsHolder {
 
     transactions = {}
+    dupes = new Map()
+    batch = []
 
     /**
     * Standard constructor
@@ -17,7 +21,7 @@ class FunWallet extends ContractsHolder {
     * - config: an instance of FunWalletConfig
     * - apiKey: api key to access Fun Wallet service
     */
-    constructor(config, apiKey) {
+    constructor(config, API_KEY) {
 
         if (!(config instanceof FunWalletConfig)) {
             throw Error("Config Must be of type FunWalletConfig or child classes")
@@ -25,7 +29,7 @@ class FunWallet extends ContractsHolder {
 
         super(config.eoa, config.eoa.provider, config.chainId)
         this.config = config
-        this.dataServer = new DataServer(apiKey);
+        this.dataServer = new DataServer(API_KEY);
     }
 
     static async retrieve(API_KEY, auth, chainName, userId = 0, index = 0) {
@@ -33,16 +37,18 @@ class FunWallet extends ContractsHolder {
         const wallet = new FunWallet(walletConfig, API_KEY)
         await wallet.init()
         //call data server to get modules
+        const dataServer = new DataServer(API_KEY)
+        await dataServer.init()
 
         const currentState = this.dataServer.getAccountState(userId);
-        currentState.chains.map((chain)=>{
-            chain.wallet.map((wallets)=>{
-                wallets.users.roles.map((role_hash)=>{
+        currentState.chains.map((chain) => {
+            chain.wallet.map((wallets) => {
+                wallets.users.roles.map((role_hash) => {
                     //do logic
                 })
-                wallets.roles.map((role)=>{
-                    role.modules((module)=>{
-                        module.constraints.map((constraint)=>{
+                wallets.roles.map((role) => {
+                    role.modules((module) => {
+                        module.constraints.map((constraint) => {
                             //do logic
                         })
                         //logic
@@ -52,9 +58,34 @@ class FunWallet extends ContractsHolder {
 
             })
         })
-        
-        
         return wallet
+    }
+
+    async compressTxs(action) {
+        //transactions is a list of transactions, in order 
+        let identifiers = ""
+        action.identifiers.map((identifier) => {
+            identifiers += "." + identifier
+        })
+        let hash = `${action.type}${identifiers}`
+        const params = action.data
+
+        //add or remove user
+        //whitelist or blacklist user
+
+        //item can be canceled
+        if (this.dupes.has(hash)) {
+            const idx = this.batch.map((storedAction) => {
+                storedAction.id
+            }).indexOf(hash)
+            this.batch.splice(idx, 1)
+            this.dupes.delete(hash)
+        }
+        else {
+            this.dupes.set(hash, params)
+            action.id=hash
+            batch.push(action)
+        }
     }
 
 
@@ -135,6 +166,8 @@ class FunWallet extends ContractsHolder {
         const receipt = { ...gas, deployReceipt }
         op.chain = this.chainId
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
+
+
 
         return { receipt, address: this.address }
     }
