@@ -26,7 +26,7 @@ class EoaAaveWithdrawal extends Module {
     }
 
     /**
-    * Grants approval to controller wallet to liquidate funds
+    * Grants approval to controller wallet   to liquidate funds
     * @return {Transaction} 
     * Transaction - Transaction data
     */

@@ -13,11 +13,11 @@ class FunWalletConfig {
     * - prefundAmt: the amount of eth to prefund the fun wallet
     * - paymaster: the paymaster instance to support gasless transactions
     * - implementationAddress: the fun wallet implementation address. used for fun wallet upgradability
-    * - salt: the uniqueness of fun wallets. the default value is hash(eoa addr, index)
+    * - userId: the uniqueness of fun wallets. the default value is hash(eoa addr, index)
     * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
-    constructor(eoa, ownerAddr, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
+    constructor(eoa, ownerAddr, chainId, prefundAmt = 0, userId, paymaster = undefined, index = 0, implementationAddress = "") {
         if (!eoa || !chainId) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
@@ -33,7 +33,7 @@ class FunWalletConfig {
         this.paymaster = paymaster
         this.index = index
 
-        this.salt = (salt? salt : this.ownerAddr) + this.index.toString()
+        this.userId = (userId? userId : this.ownerAddr) + this.index.toString()
         this.implementationAddress = implementationAddress
     }
 
@@ -43,7 +43,7 @@ class FunWalletConfig {
             return await OnChainResources.connectEmpty(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.funWalletFactoryAddr)
         } else {
             return await OnChainResources.connect(this.rpcUrl, this.bundlerUrl, this.entryPointAddr, this.implementationAddress, this.funWalletFactoryAddr,
-                this.verificationAddr, this.paymaster, this.eoa, this.ownerAddr, this.salt, this.index)
+                this.verificationAddr, this.paymaster, this.eoa, this.ownerAddr, this.userId, this.index)
         }
     }
 
