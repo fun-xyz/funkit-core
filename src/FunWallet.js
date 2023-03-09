@@ -23,7 +23,7 @@ class FunWallet extends ContractsHolder {
             throw Error("Config Must be of type FunWalletConfig or child classes")
         }
 
-        super(config.eoa, config.eoa.provider, config.chainId)
+        super(config.eoa, config.eoa.provider, config.chain)
         this.config = config
         this.dataServer = new DataServer(apiKey);
     }
@@ -71,7 +71,7 @@ class FunWallet extends ContractsHolder {
     * @returns data, to, salt
     */
     async addModule(module, salt = 0) {
-        await module.init(this.config.chainId)
+        await module.init(this.config.chain_id)
         let initTx = await module.encodeInitCall()
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
@@ -103,7 +103,7 @@ class FunWallet extends ContractsHolder {
         const deployReceipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
         const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
         const receipt = { ...gas, deployReceipt }
-        op.chain = this.chainId
+        op.chain = this.config.chain_id;
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
 
         return { receipt, address: this.address }
@@ -120,14 +120,14 @@ class FunWallet extends ContractsHolder {
             const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
             const receipt = { ...deployReceipt, ...gas }
             const { op } = transaction.data
-            op.chain = this.chainId
+            op.chain = this.config.chain_id;
             await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
             return receipt
         }
         else {
             const tx = await this.eoa.sendTransaction(transaction.data)
             const receipt = await tx.wait()
-            receipt.chain = this.chain
+            receipt.chain = this.config.chain_id;
             this.dataServer.storeEVMCall(receipt)
             return receipt
         }

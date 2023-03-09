@@ -115,7 +115,6 @@ class DataServer {
 
     static async getChainInfo(chainId) {
         const body = { chain: chainId.toString() }
-
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             const body = { chain: chainId }
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
@@ -125,7 +124,6 @@ class DataServer {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
             })
-
         }
     }
 
