@@ -9,10 +9,11 @@ const { BasePaymaster } = require("./BasePaymaster")
  * The PaymasterInterface class provides an interface to interact with the Paymaster smart contracts.
  * Currently, each call to a this.contract method is an EVM transaction.
  */
-class PaymasterInterface extends BasePaymaster{
+class PaymasterInterface extends BasePaymaster {
     batchData = []
     stakeBatchData = []
     constructor(eoa) {
+        super()
         this.eoa = eoa
     }
 
@@ -58,7 +59,7 @@ class PaymasterInterface extends BasePaymaster{
 
     // BATCH
 
-    async _addToBatch({ data }) {
+    async _addToBatch(data) {
         this.batchData.push(data)
     }
 
@@ -71,7 +72,15 @@ class PaymasterInterface extends BasePaymaster{
         for (let tx of this.stakeBatchData) {
             await execContractFunc(this.eoa, tx)
         }
-        const txData = await this.contract.populateTransaction.batchActions(this.batchData)
+
+        let val = ethers.BigNumber.from(0)
+        const outdata = this.batchData.map(({ data, value }) => {
+            if (value) {
+                val.add(value)
+            }
+            return data
+        })
+        const txData = await this.contract.populateTransaction.batchActions(outdata)
         this.batchData = []
         this.stakeBatchData = []
         return await execContractFunc(this.eoa, txData)
@@ -100,9 +109,10 @@ class PaymasterInterface extends BasePaymaster{
 
     async addEthDepositForSponsor(value, sponsor = this.eoaAddress) {
         this.errorCatcher()
-        const depositData = await this.contract.populateTransaction.addEthDepositForSponsor(sponsor)
-        const txData = { ...depositData, value: ethers.utils.parseEther(value.toString()) }
-        await this._addToStakeBatch(txData)
+        const amount = ethers.utils.parseEther(value.toString())
+        const depositData = await this.contract.populateTransaction.addEthDepositForSponsor(sponsor, amount)
+        const txData = { ...depositData, value: amount }
+        await this._addToBatch(txData)
     }
 
     async withdrawEthDepositTo(target, amount) {
@@ -168,7 +178,7 @@ class PaymasterInterface extends BasePaymaster{
         await this._loadToken()
         const sendamt = amount instanceof ethers.BigNumber ? amount : ethers.utils.parseUnits(amount, this.decimals)
         const txData = await this.erc20Token.populateTransaction.approve(this.paymasterAddress, sendamt)
-        const data = await execContractFunc(this.eoa, txData)
+        await this._addToStakeBatch(txData)
     }
 
     async _loadToken() {

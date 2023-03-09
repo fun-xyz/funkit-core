@@ -20,15 +20,15 @@ class TokenPaymaster extends BasePaymaster {
 
     }
 
-    addWallet
-    removeWallet
-    setWhitelistMode
-    setBlacklistMode
-    stakeEth
-    unstakeEth
-    stakeToken
-    unstakeToken
-    deploy
+    async addWallet(walletAddress) { }
+    async removeWallet(walletAddress) { }
+    async setWhitelistMode() { }
+    async setBlacklistMode() { }
+    async stakeEth() { }
+    async unstakeEth() { }
+    async stakeToken(walletAddress, amount, token) { }
+    async unstakeToken(walletAddress, amount, token) { }
+    async deploy() { }
 
 }
 
