@@ -78,6 +78,10 @@ class FunWallet extends ModuleManager {
         module.innerAddData(this)
     }
 
+    async removeModule() {
+        
+    }
+
     /**
      * deploy the fun wallet
      * @returns receipt of the wallet deployment transaction and the fun wallet contract address
@@ -157,6 +161,23 @@ class FunWallet extends ModuleManager {
 
     /* Primitive module can be called directly from FunWallet instance
     */
+
+    async addUser(user) {
+        const addUserTx = user.addUser()
+        // TODO: add tx
+    }
+
+    async removeUser(userId) {
+        
+    }
+
+    async addRole(role) {
+
+    }
+
+    async removeRole(role) {
+
+    }
 
     // TokenTransfer
     async createTransferTx(to, amount, ERC20Token) {
