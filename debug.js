@@ -35,7 +35,6 @@ const main = async () => {
     console.log("usdc funded")
     await fundPaymasterEth(funder, AMOUNT)
     console.log("eth funded")
-
 }
 
 
@@ -77,12 +76,14 @@ async function fundPaymasterEth(eoa, value) {
 
     const startFunderPaymasterETH = (await paymasterInterface.depositInfo(funder.address)).sponsorAmount
     await paymasterInterface.addEthDepositForSponsor(value, eoa.address)
+    await paymasterInterface.addEthDepositForSponsor(value, ethers.constants.AddressZero)
     await paymasterInterface.lockTokenDeposit()
     await paymasterInterface.setWhitelistMode(true)
     await paymasterInterface.deploy()
     const endFunderPaymasterETH = (await paymasterInterface.depositInfo(funder.address)).sponsorAmount
+    const endFunderPaymasterETH0 = (await paymasterInterface.depositInfo(ethers.constants.AddressZero)).sponsorAmount
 
-    console.log(startFunderPaymasterETH, endFunderPaymasterETH)
+    console.log(startFunderPaymasterETH, endFunderPaymasterETH, endFunderPaymasterETH0)
 }
 
 

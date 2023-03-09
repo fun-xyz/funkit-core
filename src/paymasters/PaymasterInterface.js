@@ -73,17 +73,17 @@ class PaymasterInterface extends BasePaymaster {
             await execContractFunc(this.eoa, tx)
         }
 
-        let val = ethers.BigNumber.from(0)
-        const outdata = this.batchData.map(({ data, value }) => {
-            if (value) {
-                val.add(value)
+        let value = ethers.BigNumber.from(0)
+        const outdata = this.batchData.map((tx) => {
+            if (tx.value) {
+                value = value.add(tx.value)
             }
-            return data
+            return tx.data
         })
         const txData = await this.contract.populateTransaction.batchActions(outdata)
         this.batchData = []
         this.stakeBatchData = []
-        return await execContractFunc(this.eoa, txData)
+        return await execContractFunc(this.eoa, { value, ...txData })
     }
 
 
@@ -113,6 +113,7 @@ class PaymasterInterface extends BasePaymaster {
         const depositData = await this.contract.populateTransaction.addEthDepositForSponsor(sponsor, amount)
         const txData = { ...depositData, value: amount }
         await this._addToBatch(txData)
+        // await execContractFunc(this.eoa,txData)
     }
 
     async withdrawEthDepositTo(target, amount) {
