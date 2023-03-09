@@ -7,7 +7,7 @@ const { USDCPaymaster } = require("./src/paymasters/USDCPaymaster")
 const { DataServer } = require('./utils/DataServer')
 const paymasterdata = require("./utils/abis/TokenPaymaster.json")
 const { PaymasterInterface } = require("./src/paymasters/PaymasterInterface")
-const { PaymasterSponsor } = require("./src/paymasters/SponsorPaymaster")
+const { PaymasterSponsor } = require("./src/paymasters/PaymasterSponsor")
 
 
 
