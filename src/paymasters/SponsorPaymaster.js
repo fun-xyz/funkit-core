@@ -24,10 +24,10 @@ class PaymasterSponsor extends PaymasterInterface {
     }
 
     async setWhitelistMode() {
-        await this._setWhitelistMode(true)
+        await this._setWhitelistMode(false)
     }
     async setBlacklistMode() {
-        await this._setWhitelistMode(false)
+        await this._setWhitelistMode(true)
     }
 
     async stakeEth(walletAddress, amount) {
