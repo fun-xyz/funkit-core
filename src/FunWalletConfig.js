@@ -47,7 +47,7 @@ class FunWalletConfig {
 
     async getChainInfo() {
         let chain;
-        if(this.chain == "hardhat") this.chain = 31337; //For local tests
+        if(this.chain == "ethereum-localfork") this.chain = 31337; //For local tests
         if(!Number(this.chain)){
             chain = await DataServer.getChainFromName(this.chain)
         } else {
@@ -58,9 +58,9 @@ class FunWalletConfig {
         } else {
             this.rpcUrl = this.eoa.provider.connection.url
         }
-        if(this.chain == "hardhat" || this.chain == 31337){
+        if(this.chain == "ethereum-localfork" || this.chain == 31337){
             this.chain_id = 31337
-            this.chain_name = "hardhat"
+            this.chain_name = "ethereum-localfork"
         } else {
             this.chain_id = chain.chain;
             this.chain_name = chain.key;

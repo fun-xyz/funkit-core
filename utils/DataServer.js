@@ -128,17 +128,20 @@ class DataServer {
     }
 
     async getChainFromName(name) {
-        return new Promise(async (res, rej) => {
-            const body = { name }
-            this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
-                if(r.data){
-                    return res(r.data)
-                } else {
-                    return rej({err: "No chain found"})
-                }
+        if(name == "ethereum-localfork"){
+            return await DataServer.getChainInfo(31337);
+        } else {
+            return new Promise(async (res, rej) => {
+                const body = { name }
+                this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
+                    if(r.data){
+                        return res(r.data)
+                    } else {
+                        return rej({err: "No chain found"})
+                    }
+                })
             })
-        })
-       
+        }
     }
 
     static async getModuleInfo(moduleName, chainId) {
