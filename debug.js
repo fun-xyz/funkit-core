@@ -7,6 +7,8 @@ const { USDCPaymaster } = require("./src/paymasters/USDCPaymaster")
 const { DataServer } = require('./utils/DataServer')
 const paymasterdata = require("./utils/abis/TokenPaymaster.json")
 const { PaymasterInterface } = require("./src/paymasters/PaymasterInterface")
+const { PaymasterSponsor } = require("./src/paymasters/SponsorPaymaster")
+
 
 
 const PREFUND_AMT = 0.3
@@ -71,17 +73,15 @@ async function fundUserUSDCPaymaster(eoa, paymasterAddr, wallet) {
 }
 
 async function fundPaymasterEth(eoa, value) {
-    const paymasterInterface = new PaymasterInterface(eoa)
+    const paymasterInterface = new PaymasterSponsor(eoa)
     await paymasterInterface.init()
 
     const startFunderPaymasterETH = (await paymasterInterface.depositInfo(funder.address)).sponsorAmount
-    await paymasterInterface.addEthDepositForSponsor(value, eoa.address)
-    await paymasterInterface.addEthDepositForSponsor(value, ethers.constants.AddressZero)
+    await paymasterInterface.stakeEth(eoa.address, value)
     await paymasterInterface.lockTokenDeposit()
-    await paymasterInterface.setWhitelistMode(true)
+    await paymasterInterface.setWhitelistMode()
     await paymasterInterface.deploy()
     const endFunderPaymasterETH = (await paymasterInterface.depositInfo(funder.address)).sponsorAmount
-    const endFunderPaymasterETH0 = (await paymasterInterface.depositInfo(ethers.constants.AddressZero)).sponsorAmount
 
     console.log(startFunderPaymasterETH, endFunderPaymasterETH, endFunderPaymasterETH0)
 }

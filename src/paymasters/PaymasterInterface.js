@@ -125,7 +125,7 @@ class PaymasterInterface extends BasePaymaster {
 
     // WHITELIST OPERATION
 
-    async setWhitelistMode(mode) {
+    async _setWhitelistMode(mode) {
         this.errorCatcher()
         const txData = await this.contract.populateTransaction.setWhitelistMode(mode)
         await this._addToBatch(txData)
