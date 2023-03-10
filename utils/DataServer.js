@@ -113,10 +113,13 @@ class DataServer {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
 
-    static async getChainInfo(chainId) {
-        const body = { chain: chainId.toString() }
-        if (chainId != LOCAL_FORK_CHAIN_ID) {
-            const body = { chain: chainId }
+    static async getChainInfo(chain) {
+        if(!Number(chain)){
+            return await this.getChainFromName(chain)
+        }
+        const body = { chain: chain.toString() }
+        if (chain != LOCAL_FORK_CHAIN_ID) {
+            const body = { chain }
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 return r.data
             })
@@ -128,20 +131,16 @@ class DataServer {
     }
 
     async getChainFromName(name) {
-        if(name == "ethereum-localfork"){
-            return await DataServer.getChainInfo(31337);
-        } else {
-            return new Promise(async (res, rej) => {
-                const body = { name }
-                this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
-                    if(r.data){
-                        return res(r.data)
-                    } else {
-                        return rej({err: "No chain found"})
-                    }
-                })
+        return new Promise(async (res, rej) => {
+            const body = { name }
+            this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
+                if(r.data){
+                    return res(r.data)
+                } else {
+                    return rej({err: "No chain found"})
+                }
             })
-        }
+        })
     }
 
     static async getModuleInfo(moduleName, chainId) {

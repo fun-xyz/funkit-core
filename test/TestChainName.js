@@ -17,6 +17,8 @@ async function main(){
     console.log(chain)
     chain = await dataServer.getChainFromName("polygon-mumbai");
     console.log(chain)
+    chain = await dataServer.getChainFromName("ethereum-localfork");
+    console.log(chain)
   } catch(e){
     console.log(e)
   }

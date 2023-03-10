@@ -46,25 +46,14 @@ class FunWalletConfig {
     }
 
     async getChainInfo() {
-        let chain;
-        if(this.chain == "ethereum-localfork") this.chain = 31337; //For local tests
-        if(!Number(this.chain)){
-            chain = await DataServer.getChainFromName(this.chain)
-        } else {
-            chain = await DataServer.getChainInfo(this.chain)
-        }
         if (this.eoa.provider.connection.url === "metamask") {
             this.rpcUrl = rpcurl
         } else {
             this.rpcUrl = this.eoa.provider.connection.url
         }
-        if(this.chain == "ethereum-localfork" || this.chain == 31337){
-            this.chain_id = 31337
-            this.chain_name = "ethereum-localfork"
-        } else {
-            this.chain_id = chain.chain;
-            this.chain_name = chain.key;
-        }
+        let chain = await DataServer.getChainInfo(this.chain)
+        this.chain_id = chain.chain;
+        this.chain_name = chain.key;
         this.chainCurrency = chain.currency
         this.bundlerUrl = chain.rpcdata.bundlerUrl
         this.entryPointAddr = chain.aaData.entryPointAddress
