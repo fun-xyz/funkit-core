@@ -8,22 +8,22 @@ dataServer.init();
 describe("Getting chain info", async function() {
   it("succeed case", async function() {
     try {
-      let chainFromName = await dataServer.getChainFromName("ethereum");
+      let chainFromName = await DataServer.getChainFromName("ethereum");
       let chainFromId = await DataServer.getChainInfo(1);
       expect(JSON.stringify(chainFromName)).to.be.equal(JSON.stringify(chainFromId))
-      chainFromName = await dataServer.getChainFromName("avalanche");
+      chainFromName = await DataServer.getChainFromName("avalanche");
       chainFromId = await DataServer.getChainInfo(43114);
       expect(JSON.stringify(chainFromName)).to.be.equal(JSON.stringify(chainFromId))
-      chainFromName = await dataServer.getChainFromName("avalanche-fuji");
+      chainFromName = await DataServer.getChainFromName("avalanche-fuji");
       chainFromId = await DataServer.getChainInfo(43113);
       expect(JSON.stringify(chainFromName)).to.be.equal(JSON.stringify(chainFromId))
-      chainFromName = await dataServer.getChainFromName("polygon");
+      chainFromName = await DataServer.getChainFromName("polygon");
       chainFromId = await DataServer.getChainInfo(137);
       expect(JSON.stringify(chainFromName)).to.be.equal(JSON.stringify(chainFromId))
-      chainFromName = await dataServer.getChainFromName("polygon-mumbai");
+      chainFromName = await DataServer.getChainFromName("polygon-mumbai");
       chainFromId = await DataServer.getChainInfo(80001);
       expect(JSON.stringify(chainFromName)).to.be.equal(JSON.stringify(chainFromId))
-      chainFromName = await dataServer.getChainFromName("ethereum-localfork");
+      chainFromName = await DataServer.getChainFromName("ethereum-localfork");
       chainFromId = await DataServer.getChainInfo(31337);
       expect(JSON.stringify(chainFromName)).to.be.equal(JSON.stringify(chainFromId))
     } catch(e){

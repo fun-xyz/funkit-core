@@ -132,14 +132,13 @@ class DataServer {
         
     }
 
-    async getChainFromName(name) {
+    static async getChainFromName(name) {
         if (name == LOCAL_FORK_CHAIN_KEY) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", {chain: name}).then((r) => {
                 return r
             })
         } else {
             return await this.sendPostRequest(APIURL, "get-chain-from-name", {name}).then((r) => {
-                console.log(r)
                 return r.data
             })
         }

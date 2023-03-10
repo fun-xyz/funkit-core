@@ -5,13 +5,17 @@ const ethers = require("ethers")
 
 
 /**
- * The PaymasterSponsorInterface class provides an interface to interact with the Paymaster smart contracts.
+ * The PaymasterInterface class provides an interface to interact with the Paymaster smart contracts.
  * Currently, each call to a this.contract method is an EVM transaction.
  */
-class PaymasterSponsorInterface {
+class PaymasterInterface {
+    batchData = []
+    stakeBatchData = []
     constructor(eoa) {
+
         this.eoa = eoa
     }
+
 
     // INIT RELATED
 
@@ -21,9 +25,8 @@ class PaymasterSponsorInterface {
         }
 
         const { chainId } = await this.eoa.provider.getNetwork()
-        this.eoaAddress = await this.eoa.getAddress()
         this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
-
+        this.eoaAddress = await this.eoa.getAddress()
         this.contract = new ethers.Contract(this.paymasterAddress, paymasterAbi, this.eoa.provider)
     }
 
@@ -53,6 +56,35 @@ class PaymasterSponsorInterface {
         }
     }
 
+    // BATCH
+
+    async _addToBatch(data) {
+        this.batchData.push(data)
+    }
+
+    async _addToStakeBatch(data) {
+        this.stakeBatchData.push(data)
+    }
+
+    async deploy() {
+        this.errorCatcher()
+        for (let tx of this.stakeBatchData) {
+            await execContractFunc(this.eoa, tx)
+        }
+
+        let value = ethers.BigNumber.from(0)
+        const outdata = this.batchData.map((tx) => {
+            if (tx.value) {
+                value = value.add(tx.value)
+            }
+            return tx.data
+        })
+        const txData = await this.contract.populateTransaction.batchActions(outdata)
+        this.batchData = []
+        this.stakeBatchData = []
+        return await execContractFunc(this.eoa, { value, ...txData })
+    }
+
 
 
     // DEPOSIT MANIPULTION 
@@ -63,48 +95,49 @@ class PaymasterSponsorInterface {
         this.errorCatcher()
         await this._tokenApproval(amount)
         const txData = await this.contract.populateTransaction.addTokenDepositTo(account, amount)
-        return await execContractFunc(this.eoa, txData)
+        await this._addToBatch(txData)
     }
 
     async withdrawTokenDepositTo(target, amount) {
         this.errorCatcher()
         const txData = await this.contract.populateTransaction.withdrawTokenDepositTo(target, amount)
-        return await execContractFunc(this.eoa, txData)
+        await this._addToBatch(txData)
     }
 
     // eth specific
 
     async addEthDepositForSponsor(value, sponsor = this.eoaAddress) {
         this.errorCatcher()
-        const depositData = await this.contract.populateTransaction.addEthDepositForSponsor(sponsor)
-        const tx = { ...depositData, value: ethers.utils.parseEther(value.toString()) }
-        return await execContractFunc(this.eoa, tx)
+        const amount = ethers.utils.parseEther(value.toString())
+        const depositData = await this.contract.populateTransaction.addEthDepositForSponsor(sponsor, amount)
+        const txData = { ...depositData, value: amount }
+        await this._addToBatch(txData)
     }
 
     async withdrawEthDepositTo(target, amount) {
         this.errorCatcher()
-        const whitelistData = await this.contract.populateTransaction.withdrawEthDepositTo(target, amount)
-        return await execContractFunc(this.eoa, whitelistData)
+        const txData = await this.contract.populateTransaction.withdrawEthDepositTo(target, amount)
+        await this._addToBatch(txData)
     }
 
 
     // WHITELIST OPERATION
 
-    async setWhitelistMode(mode) {
+    async _setWhitelistMode(mode) {
         this.errorCatcher()
-        const whitelistData = await this.contract.populateTransaction.setWhitelistMode(mode)
-        return await execContractFunc(this.eoa, whitelistData)
+        const txData = await this.contract.populateTransaction.setWhitelistMode(mode)
+        await this._addToBatch(txData)
     }
-    async setSpenderToBlackListMode(spender, mode) {
+    async setSpenderBlackListMode(spender, mode) {
         this.errorCatcher()
-        const txData = await this.contract.populateTransaction.setSpenderToBlackListMode(spender, mode)
-        return await execContractFunc(this.eoa, txData)
+        const txData = await this.contract.populateTransaction.setSpenderBlackListMode(spender, mode)
+        await this._addToBatch(txData)
 
     }
-    async setSponsorApproval(spender, isWhiteListed) {
+    async setSpenderWhiteListMode(spender, isWhiteListed) {
         this.errorCatcher()
-        const txData = await this.contract.populateTransaction.setSponsorApproval(spender, isWhiteListed)
-        return await execContractFunc(this.eoa, txData)
+        const txData = await this.contract.populateTransaction.setSpenderWhiteListMode(spender, isWhiteListed)
+        await this._addToBatch(txData)
     }
 
 
@@ -115,26 +148,27 @@ class PaymasterSponsorInterface {
     async unlockTokenDeposit() {
         this.errorCatcher()
         const txData = await this.contract.populateTransaction.unlockTokenDeposit()
-        return await execContractFunc(this.eoa, txData)
+        await this._addToBatch(txData)
     }
     async lockTokenDeposit() {
         this.errorCatcher()
         const txData = await this.contract.populateTransaction.lockTokenDeposit()
-        return await execContractFunc(this.eoa, txData)
+        await this._addToBatch(txData)
     }
 
     //eth specific
     async lockSponsorEntrypointStake() {
         this.errorCatcher()
         const txData = await this.contract.populateTransaction.lockSponsorEntrypointStake();
-        return await execContractFunc(this.eoa, txData)
+        await this._addToBatch(txData)
     }
 
     async unlockSponsorEntrypointStakeAfter(blockNum) {
         this.errorCatcher()
         const txData = await this.contract.populateTransaction.unlockSponsorEntrypointStakeAfter(blockNum);
-        return await execContractFunc(this.eoa, txData)
+        await this._addToBatch(txData)
     }
+
 
 
 
@@ -143,8 +177,7 @@ class PaymasterSponsorInterface {
         await this._loadToken()
         const sendamt = amount instanceof ethers.BigNumber ? amount : ethers.utils.parseUnits(amount, this.decimals)
         const txData = await this.erc20Token.populateTransaction.approve(this.paymasterAddress, sendamt)
-        const data = await execContractFunc(this.eoa, txData)
-
+        await this._addToStakeBatch(txData)
     }
 
     async _loadToken() {
@@ -156,4 +189,4 @@ class PaymasterSponsorInterface {
 
 }
 
-module.exports = { PaymasterSponsorInterface }
+module.exports = { PaymasterInterface }
