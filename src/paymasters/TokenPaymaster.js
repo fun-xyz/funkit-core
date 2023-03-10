@@ -30,7 +30,7 @@ class TokenPaymaster extends BasePaymaster {
 
     async changeChain(chainId) {
         this.chainId = chainId
-        this.paymasterAddr = ""
+        this.paymasterAddress = await DataServer.getPaymasterAddress(this.chainId)
     }
 }
 
