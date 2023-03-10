@@ -4,10 +4,10 @@ const { expect } = require("chai")
 const ethers = require('ethers')
 const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
 const { Token } = require("../utils/Token")
-const { USDCPaymaster } = require("../src/paymasters/USDCPaymaster")
 const { DataServer } = require('../utils/DataServer')
 const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 const { PaymasterSponsor } = require("../src/paymasters/PaymasterSponsor")
+const { TokenPaymaster } = require("../src/paymasters")
 
 
 
@@ -72,7 +72,7 @@ describe("Paymaster", function () {
     async function fundPaymasterEth(eoa, value) {
         const paymasterInterface = new PaymasterSponsor(eoa)
         await paymasterInterface.init()
-    
+
         await paymasterInterface.stakeEth(eoa.address, value)
         await paymasterInterface.lockTokenDeposit()
         await paymasterInterface.setWhitelistMode()
@@ -119,7 +119,7 @@ describe("Paymaster", function () {
 
         await transferAmt(funder, eoa.address, AMOUNT + 1)
 
-        const paymaster = new USDCPaymaster(paymasterAddress, funder.address)
+        const paymaster = new TokenPaymaster(funder.address, HARDHAT_FORK_CHAIN_ID)
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, "", paymaster)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
