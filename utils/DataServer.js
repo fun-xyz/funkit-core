@@ -1,7 +1,6 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 
 const LOCAL_FORK_CHAIN_ID = 31337
-const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 const LOCAL_URL = "http://localhost:3000"
@@ -114,35 +113,34 @@ class DataServer {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
 
-    static async getChainInfo(chain) {
-        chain = chain.toString();
-        if(!Number(chain)){
-            return await this.getChainFromName(chain)
-        }
-        const body = { chain }
-        if (Number(chain) == LOCAL_FORK_CHAIN_ID) {
-            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
-                return r
-            })
-        } else {
+    static async getChainInfo(chainId) {
+        const body = { chain: chainId.toString() }
+
+        if (chainId != LOCAL_FORK_CHAIN_ID) {
+            const body = { chain: chainId }
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 return r.data
             })
+        } else {
+            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
+                return r
+            })
+
         }
-        
     }
 
     async getChainFromName(name) {
-        if (name == LOCAL_FORK_CHAIN_KEY) {
-            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", {chain: name}).then((r) => {
-                return r
+        return new Promise(async (res, rej) => {
+            const body = { name }
+            this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
+                if(r.data){
+                    return res(r.data)
+                } else {
+                    return rej({err: "No chain found"})
+                }
             })
-        } else {
-            return await this.sendPostRequest(APIURL, "get-chain-from-name", {name}).then((r) => {
-                console.log(r)
-                return r.data
-            })
-        }
+        })
+       
     }
 
     static async getModuleInfo(moduleName, chainId) {
