@@ -128,15 +128,15 @@ class PaymasterInterface {
         const txData = await this.contract.populateTransaction.setWhitelistMode(mode)
         await this._addToBatch(txData)
     }
-    async setSpenderToBlackListMode(spender, mode) {
+    async setSpenderBlackListMode(spender, mode) {
         this.errorCatcher()
-        const txData = await this.contract.populateTransaction.setSpenderToBlackListMode(spender, mode)
+        const txData = await this.contract.populateTransaction.setSpenderBlackListMode(spender, mode)
         await this._addToBatch(txData)
 
     }
-    async setSponsorApproval(spender, isWhiteListed) {
+    async setSpenderWhiteListMode(spender, isWhiteListed) {
         this.errorCatcher()
-        const txData = await this.contract.populateTransaction.setSponsorApproval(spender, isWhiteListed)
+        const txData = await this.contract.populateTransaction.setSpenderWhiteListMode(spender, isWhiteListed)
         await this._addToBatch(txData)
     }
 

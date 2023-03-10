@@ -1,6 +1,5 @@
 const { DataServer } = require("../../utils/DataServer");
 const { BasePaymaster } = require("./BasePaymaster");
-const { PaymasterInterface } = require("./PaymasterInterface");
 
 /**
  * Token Paymaster is a Paymaster allowing for the payment of gas in the ERC-20 token, USDC.

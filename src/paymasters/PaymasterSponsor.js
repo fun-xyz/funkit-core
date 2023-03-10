@@ -10,17 +10,17 @@ class PaymasterSponsor extends PaymasterInterface {
     }
 
     async addWalletToWhitelist(walletAddress) {
-        await this.setSponsorApproval(walletAddress, true)
+        await this.setSpenderWhiteListMode(walletAddress, true)
     }
     async removeWalletFromWhitelist(walletAddress) {
-        await this.setSponsorApproval(walletAddress, false)
+        await this.setSpenderWhiteListMode(walletAddress, false)
     }
 
     async addWalletToBlacklist(walletAddress) {
-        await this.setSpenderToBlackListMode(walletAddress, true)
+        await this.setSpenderBlackListMode(walletAddress, true)
     }
     async removeWalletFromBlacklist(walletAddress) {
-        await this.setSpenderToBlackListMode(walletAddress, false)
+        await this.setSpenderBlackListMode(walletAddress, false)
     }
 
     async setWhitelistMode() {
