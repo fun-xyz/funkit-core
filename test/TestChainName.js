@@ -19,6 +19,8 @@ async function main(){
     console.log(chain)
     chain = await dataServer.getChainFromName("ethereum-localfork");
     console.log(chain)
+    chain = await DataServer.getChainInfo("31337");
+    console.log(chain)
   } catch(e){
     console.log(e)
   }
