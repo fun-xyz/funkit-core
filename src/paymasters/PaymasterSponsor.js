@@ -1,7 +1,7 @@
 const { PaymasterInterface } = require("./PaymasterInterface");
 
 /**
- * USDC Paymaster is a Paymaster allowing for the payment of gas in the ERC-20 token, USDC.
+ * PaymasterSponsor is a Paymaster allowing for the payment of gas in the ERC-20 token, USDC.
  */
 
 class PaymasterSponsor extends PaymasterInterface {

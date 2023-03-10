@@ -3,14 +3,15 @@ const { BasePaymaster } = require("./BasePaymaster");
 const { PaymasterInterface } = require("./PaymasterInterface");
 
 /**
- * USDC Paymaster is a Paymaster allowing for the payment of gas in the ERC-20 token, USDC.
+ * Token Paymaster is a Paymaster allowing for the payment of gas in the ERC-20 token, USDC.
  */
 
 class TokenPaymaster extends BasePaymaster {
-    constructor(sponsorAddress, chainId) {
+    constructor(sponsorAddress, chainId, token = "usdc") {
         super()
         this.sponsorAddress = sponsorAddress
         this.chainId = chainId
+        this.token = token;
     }
 
     async _getPaymasterAddress() {
@@ -28,7 +29,7 @@ class TokenPaymaster extends BasePaymaster {
         this.sponsorAddress = sponsorAddress
     }
 
-    async changeChain(chainId) {
+    async _changeChain(chainId) {
         this.chainId = chainId
         this.paymasterAddress = await DataServer.getPaymasterAddress(this.chainId)
     }
