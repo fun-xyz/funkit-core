@@ -113,7 +113,6 @@ class PaymasterInterface extends BasePaymaster {
         const depositData = await this.contract.populateTransaction.addEthDepositForSponsor(sponsor, amount)
         const txData = { ...depositData, value: amount }
         await this._addToBatch(txData)
-        // await execContractFunc(this.eoa,txData)
     }
 
     async withdrawEthDepositTo(target, amount) {
