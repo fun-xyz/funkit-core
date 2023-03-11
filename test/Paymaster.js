@@ -38,7 +38,7 @@ describe("Paymaster", function () {
         const tokenIn = new Token({ symbol: "eth", chainId: wallet.config.chain_id })
         const tokenOut = new Token({ address: USDC_ADDR, chainId: wallet.config.chain_id })
         const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, wallet.address)
-        await wallet.deployTx(tx)
+        await FunWallet.deployTx(tx, wallet.config.chain_id, TEST_API_KEY)
 
         const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
 

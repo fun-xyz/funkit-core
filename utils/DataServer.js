@@ -31,7 +31,7 @@ class DataServer {
 
     async getOrgInfo() {
         if (this.apiKey == TEST_API_KEY) {
-            return {id: "test", name: "test"}
+            return { id: "test", name: "test" }
         }
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
@@ -63,7 +63,7 @@ class DataServer {
         if (this.apiKey == TEST_API_KEY) {
             return
         }
-        
+
         const body = {
             receipt,
             txHash: receipt.transactionHash,
