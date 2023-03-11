@@ -5,7 +5,7 @@ const ethers = require('ethers')
 const { transferAmt, getAddrBalanceErc, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
 const { Token } = require("../utils/Token")
 
-describe("TokenTransfer", function () {
+describe("GenCall", function () {
     let eoa
     let funder
     const AMOUNT = 60
@@ -44,7 +44,6 @@ describe("TokenTransfer", function () {
         const ERC20 = require('../utils/abis/ERC20.json')
         const ERC20Contract = new ethers.Contract(DAI_ADDR, ERC20.abi)
         const transferData = await ERC20Contract.populateTransaction.transfer(funder.address, ethers.utils.parseEther(transferNum.toString()))
-        console.log(transferData)
 
         const tx = await wallet.createGeneralAction(transferData)
         await wallet.deployTx(tx)
