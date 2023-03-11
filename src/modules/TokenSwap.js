@@ -26,7 +26,11 @@ class TokenSwap extends Module {
         return await this.actionContract.populateTransaction.executeSwapETH(to, amount, data)
     }
 
-    async createSwapTx(tokenIn, tokenOut, amountIn, returnAddr = this.wallet.address, slippage, percentDec) {
+    async createSwapTx(inData, outData, amountIn, returnAddr = this.wallet.address, slippage, percentDec) {
+
+        const tokenIn = new Token(inData, this.wallet.config.chainId)
+        const tokenOut = new Token(outData, this.wallet.config.chainId)
+
         const tokenInAddress = await tokenIn.getAddress()
         const tokenOutAddress = await tokenOut.getAddress()
 

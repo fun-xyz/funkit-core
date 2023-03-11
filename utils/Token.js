@@ -12,26 +12,26 @@ const TokenTypes = new Enum(TokenTypesData)
 
 class Token {
 
-    constructor(config) {
-        if (config.type && !TokenTypesData[config.type]) {
-            throw Error("Type is not a token");
-        }
-        this.type = config.type
-        if (!((config.address || config.symbol) && config.chainId)) {
+    constructor(data, chainId) {
+        if (!(data && chainId)) {
             throw Error("Must specify address or symbol and chainId")
         }
 
         if (this.address) {
             this.type = TokenTypes.ERC20
         }
-        this.address = config.address
-        this.symbol = config.symbol
-        if (this.symbol == "eth") {
-            this.type = TokenTypes.ETH
+
+        if (ethers.utils.isAddress(data)) {
+            this.address = data
+        } else {
+            this.symbol = data
+            if (this.symbol == "eth") {
+                this.type = TokenTypes.ETH
+            }
         }
 
-        config.chainId = typeof config.chainId == "string" ? config.chainId : config.chainId.toString()
-        this.chainId = config.chainId == "31337" ? "1" : config.chainId
+        chainId = typeof chainId == "string" ? chainId : chainId.toString()
+        this.chainId = chainId == "31337" ? "1" : chainId
     }
 
     async getAddress() {

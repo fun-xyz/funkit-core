@@ -14,9 +14,7 @@ describe("TokenTransfer", function () {
     async function getEthSwapToDAI(wallet, swapModule, eoa, amount) {
         // ETH SWAP: ETH=>WETH=>DAI
         await transferAmt(eoa, wallet.address, amount)
-        const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
-        const DAI = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, DAI, amount, wallet.address, 5, 100)
+        const tx = await swapModule.createSwapTx("eth", DAI_ADDR, amount, wallet.address, 5, 100)
         await wallet.deployTx(tx)
     }
 

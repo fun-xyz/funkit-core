@@ -34,10 +34,7 @@ describe("Paymaster", function () {
         await transferAmt(funder, wallet.address, amount)
 
         const startWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
-
-        const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
-        const tokenOut = new Token({ address: USDC_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, wallet.address)
+        const tx = await swapModule.createSwapTx("eth", USDC_ADDR, amount, wallet.address)
         await FunWallet.deployTx(tx, HARDHAT_FORK_CHAIN_ID, TEST_API_KEY)
 
         const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
@@ -82,10 +79,8 @@ describe("Paymaster", function () {
     async function testEthSwap(wallet, swapModule, eoa) {
         await transferAmt(eoa, wallet.address, AMOUNT)
         const startWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
-
-        const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
-        const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
+        
+        const tx = await swapModule.createSwapTx("eth", DAI_ADDR, AMOUNT, wallet.address, 5, 100)
         await wallet.deployTx(tx)
 
         const endWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
