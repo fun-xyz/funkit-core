@@ -18,7 +18,7 @@ class FunWalletConfig {
     */
 
     constructor(eoa, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
-        if (!eoa || !chainId) {
+        if (!(eoa || chainId)) {
             throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
         }
         this.eoa = eoa
