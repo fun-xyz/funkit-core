@@ -3,7 +3,7 @@ const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 const LOCAL_FORK_CHAIN_ID = 31337
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
-const LOCAL_URL = "http://localhost:3000"
+const LOCAL_URL = "http://127.0.0.1:3000"
 const TEST_API_KEY = "localtest"
 
 const WETH_ADDR = {
@@ -30,7 +30,7 @@ class DataServer {
 
     async getOrgInfo() {
         if (this.apiKey == TEST_API_KEY) {
-            return {id: "test", name: "test"}
+            return { id: "test", name: "test" }
         }
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
@@ -62,7 +62,7 @@ class DataServer {
         if (this.apiKey == TEST_API_KEY) {
             return
         }
-        
+
         const body = {
             receipt,
             txHash: receipt.transactionHash,
@@ -133,14 +133,14 @@ class DataServer {
         return new Promise(async (res, rej) => {
             const body = { name }
             this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
-                if(r.data){
+                if (r.data) {
                     return res(r.data)
                 } else {
-                    return rej({err: "No chain found"})
+                    return rej({ err: "No chain found" })
                 }
             })
         })
-       
+
     }
 
     static async getModuleInfo(moduleName, chainId) {
