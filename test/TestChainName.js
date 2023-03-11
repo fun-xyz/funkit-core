@@ -4,6 +4,7 @@ const { expect } = require("chai")
 
 describe("Getting chain info", async function() {
   it("succeed case", async function() {
+    await this.timeout(30000)
     try {
       let chainFromName = await DataServer.getChainFromName("ethereum");
       let chainFromId = await DataServer.getChainInfo(1);
