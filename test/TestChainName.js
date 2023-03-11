@@ -2,9 +2,6 @@ const { DataServer} = require('../utils/DataServer')
 const { API_KEY } = require("./TestUtils")
 const { expect } = require("chai")
 
-const dataServer = new DataServer(API_KEY);
-dataServer.init();
-
 describe("Getting chain info", async function() {
   it("succeed case", async function() {
     try {
@@ -32,5 +29,4 @@ describe("Getting chain info", async function() {
   })
 
 })
-
 

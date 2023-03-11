@@ -129,7 +129,6 @@ class DataServer {
                 return r.data
             })
         }
-        
     }
 
     static async getChainFromName(name) {

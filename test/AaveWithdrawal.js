@@ -2,7 +2,7 @@ const { FunWalletConfig } = require("../index")
 const { EoaAaveWithdrawal, TokenSwap } = require("../src/modules/index")
 const { FunWallet } = require("../index")
 const { expect } = require("chai")
-const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, HARDHAT_FORK_CHAIN_NAME, 
+const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, HARDHAT_FORK_CHAIN_ID, 
     RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
 const ethers = require('ethers')
 const { Token, TokenTypes } = require("../utils/Token")
@@ -156,8 +156,8 @@ describe("AaveWithDrawal", function() {
         await transferAmt(eoa, wallet.address, amount)
     
         await getUserBalanceErc(wallet, tokenAddr)
-        const tokenIn = new Token({ symbol: "eth", chainId: wallet.config.chain_id })
-        const tokenOut = new Token({ address: tokenAddr, chainId: wallet.config.chain_id })
+        const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
+        const tokenOut = new Token({ address: tokenAddr, chainId: HARDHAT_FORK_CHAIN_ID })
         const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
         await wallet.deployTx(tx)
     
@@ -181,7 +181,7 @@ describe("AaveWithDrawal", function() {
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_NAME, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
         await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
@@ -190,13 +190,14 @@ describe("AaveWithDrawal", function() {
     it("succeed case", async function() {
         this.timeout(10000)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_NAME, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
     
         const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
         const eoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
         
+
         const module = new EoaAaveWithdrawal()
         await wallet.addModule(module)
 
