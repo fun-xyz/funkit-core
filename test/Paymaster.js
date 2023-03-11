@@ -38,7 +38,7 @@ describe("Paymaster", function () {
         const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
         const tokenOut = new Token({ address: USDC_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
         const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, wallet.address)
-        await wallet.deployTx(tx)
+        await FunWallet.deployTx(tx, HARDHAT_FORK_CHAIN_ID, TEST_API_KEY)
 
         const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
 

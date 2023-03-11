@@ -4,8 +4,10 @@ const { generateSha256 } = require("../utils/Tools")
 const UserOpUtils = require('../utils/UserOpUtils')
 const EoaUtils = require('../utils/EoaUtils')
 const { ethers } = require('ethers');
+const { Transaction } = require("../utils/Transaction")
 
 const { FunWalletConfig } = require("./FunWalletConfig")
+const { OnChainResources } = require("../utils/OnChainResources")
 
 class FunWallet extends ContractsHolder {
 
@@ -133,6 +135,38 @@ class FunWallet extends ContractsHolder {
         }
     }
 
+    static async deployTx(transaction, chainId, apiKey) {
+        if (transaction.isUserOp) {
+
+            const config = new FunWalletConfig(false, chainId, 0, "")
+
+            const {
+                rpcdata: { bundlerUrl, rpcUrl },
+                aaData: { entryPointAddress, factoryAddress },
+                currency
+            } = await DataServer.getChainInfo(chainId)
+            const { bundlerClient, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
+
+            const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, bundlerClient, funWalletDataProvider)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, provider, config.chainCurrency)
+            const receipt = { ...deployReceipt, ...gas }
+            const { op } = transaction.data
+            op.chain = this.chainId
+            const dataServer = new DataServer(apiKey)
+            await dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
+            return receipt
+        }
+        else {
+            const tx = await this.eoa.sendTransaction(transaction.data)
+            const receipt = await tx.wait()
+            receipt.chain = this.chain
+            this.dataServer.storeEVMCall(receipt)
+            return receipt
+        }
+    }
+
     /**
      * deploy transactions. only work after deploy fun wallet
      * @param {*} txs 
@@ -152,9 +186,16 @@ class FunWallet extends ContractsHolder {
         }
 
         this.config.paymaster = paymaster
-        const {  funWalletDataProvider } = await this.config.getClients()
+        const { funWalletDataProvider } = await this.config.getClients()
         this.funWalletDataProvider = funWalletDataProvider
     }
+
+    async createGeneralAction({ to, data, }) {
+        const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
+        return new Transaction({ op }, true)
+    }
+
+
 }
 
 module.exports = { FunWallet }
