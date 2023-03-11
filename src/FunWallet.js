@@ -138,7 +138,6 @@ class FunWallet extends ContractsHolder {
     static async deployTx(transaction, chainId, apiKey) {
         if (transaction.isUserOp) {
 
-            const config = new FunWalletConfig(false, chainId, 0, "")
 
             const {
                 rpcdata: { bundlerUrl, rpcUrl },
@@ -150,7 +149,7 @@ class FunWallet extends ContractsHolder {
             const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
             const deployReceipt = await UserOpUtils.deployUserOp(transaction, bundlerClient, funWalletDataProvider)
-            const gas = await UserOpUtils.gasCalculation(deployReceipt, provider, config.chainCurrency)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, provider, currency)
             const receipt = { ...deployReceipt, ...gas }
             const { op } = transaction.data
             op.chain = this.chainId
