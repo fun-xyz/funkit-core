@@ -1,11 +1,23 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
-const ethers = require("ethers")
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
 
 const LOCAL_FORK_CHAIN_ID = 31337
+const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
-const LOCAL_URL = "http://localhost:3000"
+const LOCAL_URL = "http://127.0.0.1:3000"
+const TEST_API_KEY = "localtest"
+
+const WETH_ADDR = {
+    "1": {
+        weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    },
+    "5": {
+        weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+    },
+    "43113": {
+        weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
+    }
+}
 class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey
@@ -18,26 +30,19 @@ class DataServer {
     }
 
     async getOrgInfo() {
+        if (this.apiKey == TEST_API_KEY) {
+            return { id: "test", name: "test" }
+        }
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
         })
     }
 
-    async getStoredUserOp(userOpHash) {
-        const body = { userOpHash }
-        const op = await this.sendPostRequest(APIURL, "get-user-op", body).then((r) => {
-            return r.data
-        })
-
-        Object.keys(op).map(key => {
-            if (op[key].type == "BigNumber") {
-                op[key] = ethers.BigNumber.from(op[key].hex)
-            }
-        })
-        return op
-    }
-
     async storeUserOp({ op, type, balance = 0, receipt = {} }) {
+        if (this.apiKey == TEST_API_KEY) {
+            return
+        }
+
         const userOp = await getPromiseFromOp(op)
         const userOpHash = generateSha256(userOp.signature.toString())
         const body = {
@@ -55,6 +60,10 @@ class DataServer {
     }
 
     async storeEVMCall(receipt) {
+        if (this.apiKey == TEST_API_KEY) {
+            return
+        }
+
         const body = {
             receipt,
             txHash: receipt.transactionHash,
@@ -70,6 +79,9 @@ class DataServer {
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
         if (chain != LOCAL_FORK_CHAIN_ID) {
+            if (symbol == "weth" && WETH_ADDR[chain]) {
+                return { contract_address: WETH_ADDR[chain][symbol] }
+            }
             const body = {
                 symbol,
                 chain
@@ -102,19 +114,32 @@ class DataServer {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
 
-    static async getChainInfo(chainId) {
-        const body = { chain: chainId.toString() }
-
-        if (chainId != LOCAL_FORK_CHAIN_ID) {
-            const body = { chain: chainId }
-            return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
-                return r.data
-            })
-        } else {
+    static async getChainInfo(chain) {
+        chain = chain.toString();
+        if(!Number(chain)){
+            return await this.getChainFromName(chain)
+        }
+        const body = { chain }
+        if (Number(chain) == LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
             })
+        } else {
+            return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
+                return r.data
+            })
+        }
+    }
 
+    static async getChainFromName(name) {
+        if (name == LOCAL_FORK_CHAIN_KEY) {
+            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", {chain: name}).then((r) => {
+                return r
+            })
+        } else {
+            return await this.sendPostRequest(APIURL, "get-chain-from-name", {name}).then((r) => {
+                return r.data
+            })
         }
     }
 

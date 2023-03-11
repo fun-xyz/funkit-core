@@ -4,8 +4,10 @@ const { generateSha256 } = require("../utils/Tools")
 const UserOpUtils = require('../utils/UserOpUtils')
 const EoaUtils = require('../utils/EoaUtils')
 const { ethers } = require('ethers');
+const { Transaction } = require("../utils/Transaction")
 
 const { FunWalletConfig } = require("./FunWalletConfig")
+const { OnChainResources } = require("../utils/OnChainResources")
 
 class FunWallet extends ContractsHolder {
 
@@ -23,7 +25,7 @@ class FunWallet extends ContractsHolder {
             throw Error("Config Must be of type FunWalletConfig or child classes")
         }
 
-        super(config.eoa, config.eoa.provider, config.chainId)
+        super(config.eoa, config.eoa.provider, config.chain)
         this.config = config
         this.dataServer = new DataServer(apiKey);
     }
@@ -42,7 +44,7 @@ class FunWallet extends ContractsHolder {
         }
 
         this.dataServer.init()
-        
+
         this.eoaAddr = await this.config.eoa.getAddress()
         this.config.salt = (this.config.salt ? this.config.salt : this.eoaAddr) + this.config.index.toString()
 
@@ -51,7 +53,7 @@ class FunWallet extends ContractsHolder {
         this.funWalletDataProvider = funWalletDataProvider
 
         this.address = await this.funWalletDataProvider.getAccountAddress()
-        
+
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.addEthersContract(this.address, walletContract)
 
@@ -71,7 +73,7 @@ class FunWallet extends ContractsHolder {
     * @returns data, to, salt
     */
     async addModule(module, salt = 0) {
-        await module.init(this.config.chainId)
+        await module.init(this.config.chain_id)
         let initTx = await module.encodeInitCall()
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
@@ -103,7 +105,7 @@ class FunWallet extends ContractsHolder {
         const deployReceipt = await UserOpUtils.deployUserOp({ data: { op } }, this.bundlerClient, this.funWalletDataProvider, this.provider)
         const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
         const receipt = { ...gas, deployReceipt }
-        op.chain = this.chainId
+        op.chain = this.config.chain_id;
         await this.dataServer.storeUserOp({ op, type: 'deploy_wallet', balance: totalBalance, receipt })
 
         return { receipt, address: this.address }
@@ -120,8 +122,39 @@ class FunWallet extends ContractsHolder {
             const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
             const receipt = { ...deployReceipt, ...gas }
             const { op } = transaction.data
-            op.chain = this.chainId
+            op.chain = this.config.chain_id;
             await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
+            return receipt
+        }
+        else {
+            const tx = await this.eoa.sendTransaction(transaction.data)
+            const receipt = await tx.wait()
+            receipt.chain = this.config.chain_id;
+            this.dataServer.storeEVMCall(receipt)
+            return receipt
+        }
+    }
+
+    static async deployTx(transaction, chainId, apiKey) {
+        if (transaction.isUserOp) {
+
+
+            const {
+                rpcdata: { bundlerUrl, rpcUrl },
+                aaData: { entryPointAddress, factoryAddress },
+                currency
+            } = await DataServer.getChainInfo(chainId)
+            const { bundlerClient, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
+
+            const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, bundlerClient, funWalletDataProvider)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, provider, currency)
+            const receipt = { ...deployReceipt, ...gas }
+            const { op } = transaction.data
+            op.chain = this.chainId
+            const dataServer = new DataServer(apiKey)
+            await dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
             return receipt
         }
         else {
@@ -145,6 +178,23 @@ class FunWallet extends ContractsHolder {
         }
         return receipts
     }
+
+    async updatePaymaster(paymaster) {
+        if (paymaster && !(paymaster instanceof BasePaymaster)) {
+            throw new Error("Paymaster must be of type BasePaymaster or children")
+        }
+
+        this.config.paymaster = paymaster
+        const { funWalletDataProvider } = await this.config.getClients()
+        this.funWalletDataProvider = funWalletDataProvider
+    }
+
+    async createGeneralAction({ to, data, }) {
+        const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
+        return new Transaction({ op }, true)
+    }
+
+
 }
 
 module.exports = { FunWallet }
