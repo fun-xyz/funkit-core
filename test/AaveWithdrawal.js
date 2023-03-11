@@ -128,7 +128,7 @@ const SUPPLY_ABI = [{
 }]
 
 
-describe("AaveWithDrawal", function() {
+describe("AaveWithDrawal", function () {
     let provider
     let eoa
     let funder
@@ -154,13 +154,11 @@ describe("AaveWithDrawal", function() {
         await wallet.addModule(swapModule)
         await wallet.deploy()
         await transferAmt(eoa, wallet.address, amount)
-    
+
         await getUserBalanceErc(wallet, tokenAddr)
-        const tokenIn = new Token({ symbol: "eth", chainId: wallet.config.chain_id })
-        const tokenOut = new Token({ address: tokenAddr, chainId: wallet.config.chain_id })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
+        const tx = await swapModule.createSwapTx("eth", tokenAddr, amount, returnAddress, 5, 100)
         await wallet.deployTx(tx)
-    
+
         await getUserBalanceErc(wallet, tokenAddr)
     }
 
@@ -175,7 +173,7 @@ describe("AaveWithDrawal", function() {
         await eoaSupplyAave(eoa, (eoaDaiBalance), tokenAddr)
     }
 
-    before(async function() {
+    before(async function () {
         this.timeout(20000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
@@ -187,16 +185,16 @@ describe("AaveWithDrawal", function() {
         await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
     })
 
-    it("succeed case", async function() {
+    it("succeed case", async function () {
         this.timeout(10000)
         await transferAmt(funder, eoa.address, amount + 1)
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
-    
+
         const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
         const eoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
-        
+
 
         const module = new EoaAaveWithdrawal()
         await wallet.addModule(module)
@@ -205,12 +203,12 @@ describe("AaveWithDrawal", function() {
         await wallet.deployTxs(modulePreExecTxs)
         await module.verifyRequirements(aTokenAddress, WITHDRAW_AMOUNT)
         await wallet.deploy()
-        
+
         const aaveActionTx = await module.createWithdrawTx(aTokenAddress, wallet.eoa.address, WITHDRAW_AMOUNT)
         await wallet.deployTx(aaveActionTx)
-        
+
         const endEoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
-    
+
         expect(eoaATokenBalance - endEoaATokenBalance).to.be.greaterThan(0)
     })
 })
