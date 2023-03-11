@@ -28,8 +28,8 @@ class TokenSwap extends Module {
 
     async createSwapTx(inData, outData, amountIn, returnAddr = this.wallet.address, slippage, percentDec) {
 
-        const tokenIn = new Token(inData, this.wallet.config.chainId)
-        const tokenOut = new Token(outData, this.wallet.config.chainId)
+        const tokenIn = new Token(inData, this.wallet.config.chain_id)
+        const tokenOut = new Token(outData, this.wallet.config.chain_id)
 
         const tokenInAddress = await tokenIn.getAddress()
         const tokenOutAddress = await tokenOut.getAddress()

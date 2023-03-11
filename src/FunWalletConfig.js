@@ -7,9 +7,9 @@ class FunWalletConfig {
 
     /**
     * Standard constructor
-    * @params eoa, chainId, prefundAmt, paymasterAddr, index
+    * @params eoa, chain, prefundAmt, paymasterAddr, index
     * - eoa: an eoa wallet
-    * - chainId: chainId to specify the chains, e.g., for eth mainnet, use 1
+    * - chain: chain to specify the chains by name or id, e.g., for eth mainnet, use 1 or "ethereum"
     * - prefundAmt: the amount of eth to prefund the fun wallet
     * - paymaster: the paymaster instance to support gasless transactions
     * - implementationAddress: the fun wallet implementation address. used for fun wallet upgradability
@@ -17,12 +17,12 @@ class FunWalletConfig {
     * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
-    constructor(eoa, chainId, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
-        if (!eoa || !chainId) {
-            throw Error("Eoa and chainId must be specified to construct FunWalletConfig")
+    constructor(eoa, chain, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
+        if (!eoa || !chain) {
+            throw Error("Eoa and chain must be specified to construct FunWalletConfig")
         }
         this.eoa = eoa
-        this.chainId = chainId
+        this.chain = chain
         this.prefundAmt = prefundAmt
 
         if (paymaster && !(paymaster instanceof BasePaymaster)) {
@@ -46,24 +46,21 @@ class FunWalletConfig {
     }
 
     async getChainInfo() {
-        const {
-            rpcdata: { bundlerUrl, rpcurl },
-            aaData: { entryPointAddress, factoryAddress, verificationAddress },
-            currency
-        } = await DataServer.getChainInfo(this.chainId)
-
         if (this.eoa.provider.connection.url === "metamask") {
             this.rpcUrl = rpcurl
         } else {
             this.rpcUrl = this.eoa.provider.connection.url
         }
-
-        this.chainCurrency = currency
-        this.bundlerUrl = bundlerUrl
-        this.entryPointAddr = entryPointAddress
-        this.funWalletFactoryAddr = factoryAddress
-        this.verificationAddr = verificationAddress
+        const chain = await DataServer.getChainInfo(this.chain)
+        this.chain_id = chain.chain;
+        this.chain_name = chain.key;
+        this.chainCurrency = chain.currency
+        this.bundlerUrl = chain.rpcdata.bundlerUrl
+        this.entryPointAddr = chain.aaData.entryPointAddress
+        this.funWalletFactoryAddr = chain.aaData.factoryAddress
+        this.verificationAddr = chain.aaData.verificationAddress
     }
+
 }
 
 module.exports = { FunWalletConfig }

@@ -2,7 +2,7 @@ const { FunWallet, FunWalletConfig } = require("../index")
 const { TokenSwap, TokenTransfer } = require("../src/modules")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
+const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
 const { Token } = require("../utils/Token")
 const { DataServer } = require('../utils/DataServer')
 const paymasterdata = require("../utils/abis/TokenPaymaster.json")
@@ -34,8 +34,9 @@ describe("Paymaster", function () {
         await transferAmt(funder, wallet.address, amount)
 
         const startWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
+
         const tx = await swapModule.createSwapTx("eth", USDC_ADDR, amount, wallet.address)
-        await FunWallet.deployTx(tx, HARDHAT_FORK_CHAIN_ID, TEST_API_KEY)
+        await FunWallet.deployTx(tx, wallet.config.chain_id, TEST_API_KEY)
 
         const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
 
@@ -97,7 +98,7 @@ describe("Paymaster", function () {
         paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
         entryPointAddress = getData.aaData.entryPointAddress
 
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
@@ -115,7 +116,7 @@ describe("Paymaster", function () {
         await transferAmt(funder, eoa.address, AMOUNT + 1)
 
         const paymaster = new TokenPaymaster(funder.address, HARDHAT_FORK_CHAIN_ID)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT, "", paymaster)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT, "", paymaster)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
