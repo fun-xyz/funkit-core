@@ -4,8 +4,10 @@ const { generateSha256 } = require("../utils/Tools")
 const UserOpUtils = require('../utils/UserOpUtils')
 const EoaUtils = require('../utils/EoaUtils')
 const { ethers } = require('ethers');
+const { Transaction } = require("../utils/Transaction")
 
 const { FunWalletConfig } = require("./FunWalletConfig")
+const { OnChainResources } = require("../utils/OnChainResources")
 
 class FunWallet extends ContractsHolder {
 
@@ -128,8 +130,8 @@ class FunWallet extends ContractsHolder {
         if (transaction.isUserOp) {
             const deployReceipt = await UserOpUtils.deployUserOp(transaction, this.bundlerClient, this.funWalletDataProvider)
             const gas = await UserOpUtils.gasCalculation(deployReceipt, this.provider, this.config.chainCurrency)
-            const receipt = { ...deployReceipt, ...gas };
-            const { op } = transaction.data;
+            const receipt = { ...deployReceipt, ...gas }
+            const { op } = transaction.data
             op.chain = this.config.chain_id;
             await this.dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
             return receipt
@@ -137,7 +139,38 @@ class FunWallet extends ContractsHolder {
         else {
             const tx = await this.eoa.sendTransaction(transaction.data)
             const receipt = await tx.wait()
-            receipt.chain = this.config.chain_id
+            receipt.chain = this.config.chain_id;
+            this.dataServer.storeEVMCall(receipt)
+            return receipt
+        }
+    }
+
+    static async deployTx(transaction, chainId, apiKey) {
+        if (transaction.isUserOp) {
+
+
+            const {
+                rpcdata: { bundlerUrl, rpcUrl },
+                aaData: { entryPointAddress, factoryAddress },
+                currency
+            } = await DataServer.getChainInfo(chainId)
+            const { bundlerClient, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
+
+            const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, bundlerClient, funWalletDataProvider)
+            const gas = await UserOpUtils.gasCalculation(deployReceipt, provider, currency)
+            const receipt = { ...deployReceipt, ...gas }
+            const { op } = transaction.data
+            op.chain = this.chainId
+            const dataServer = new DataServer(apiKey)
+            await dataServer.storeUserOp({ op, type: 'deploy_transaction', receipt })
+            return receipt
+        }
+        else {
+            const tx = await this.eoa.sendTransaction(transaction.data)
+            const receipt = await tx.wait()
+            receipt.chain = this.chain
             this.dataServer.storeEVMCall(receipt)
             return receipt
         }
@@ -162,9 +195,16 @@ class FunWallet extends ContractsHolder {
         }
 
         this.config.paymaster = paymaster
-        const {  funWalletDataProvider } = await this.config.getClients()
+        const { funWalletDataProvider } = await this.config.getClients()
         this.funWalletDataProvider = funWalletDataProvider
     }
+
+    async createGeneralAction({ to, data, }) {
+        const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
+        return new Transaction({ op }, true)
+    }
+
+
 }
 
 module.exports = { FunWallet }

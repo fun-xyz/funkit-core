@@ -1,9 +1,10 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 
 const LOCAL_FORK_CHAIN_ID = 31337
+const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
-const LOCAL_URL = "http://localhost:3000"
+const LOCAL_URL = "http://127.0.0.1:3000"
 const TEST_API_KEY = "localtest"
 
 const WETH_ADDR = {
@@ -30,7 +31,7 @@ class DataServer {
 
     async getOrgInfo() {
         if (this.apiKey == TEST_API_KEY) {
-            return {id: "test", name: "test"}
+            return { id: "test", name: "test" }
         }
         return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
             return r.data
@@ -62,7 +63,7 @@ class DataServer {
         if (this.apiKey == TEST_API_KEY) {
             return
         }
-        
+
         const body = {
             receipt,
             txHash: receipt.transactionHash,
@@ -113,34 +114,33 @@ class DataServer {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
     }
 
-    static async getChainInfo(chainId) {
-        const body = { chain: chainId.toString() }
-
-        if (chainId != LOCAL_FORK_CHAIN_ID) {
-            const body = { chain: chainId }
-            return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
-                return r.data
-            })
-        } else {
+    static async getChainInfo(chain) {
+        chain = chain.toString();
+        if(!Number(chain)){
+            return await this.getChainFromName(chain)
+        }
+        const body = { chain }
+        if (Number(chain) == LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
             })
-
+        } else {
+            return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
+                return r.data
+            })
         }
     }
 
-    async getChainFromName(name) {
-        return new Promise(async (res, rej) => {
-            const body = { name }
-            this.sendPostRequest(APIURL, "get-chain-from-name", body).then((r) => {
-                if(r.data){
-                    return res(r.data)
-                } else {
-                    return rej({err: "No chain found"})
-                }
+    static async getChainFromName(name) {
+        if (name == LOCAL_FORK_CHAIN_KEY) {
+            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", {chain: name}).then((r) => {
+                return r
             })
-        })
-       
+        } else {
+            return await this.sendPostRequest(APIURL, "get-chain-from-name", {name}).then((r) => {
+                return r.data
+            })
+        }
     }
 
     static async getModuleInfo(moduleName, chainId) {

@@ -1,4 +1,8 @@
 const { USDCPaymaster } = require("./USDCPaymaster")
-const { PaymasterSponsorInterface } = require("./PaymasterSponsorInterface")
+const { PaymasterInterface } = require("./PaymasterInterface")
+const { PaymasterSponsor } = require("./PaymasterSponsor")
+const { TokenPaymaster } = require("./TokenPaymaster")
+PaymasterSponsor
 
-module.exports = { USDCPaymaster, PaymasterSponsorInterface }
+
+module.exports = { USDCPaymaster, PaymasterInterface, TokenPaymaster, PaymasterSponsor }

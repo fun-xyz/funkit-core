@@ -4,6 +4,7 @@ const ERC20 = require("../utils/abis/ERC20.json")
 const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
+const HARDHAT_FORK_CHAIN_KEY = "ethereum-localfork"
 const RPC_URL = "http://127.0.0.1:8545"
 const PRIV_KEY = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const PKEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
@@ -55,5 +56,5 @@ const timeout = async (ms) => {
 
 module.exports = {
     transferAmt, getAddrBalanceErc, timeout, execContractFunc, getUserBalanceErc, createErc, CHAINLINK_TOKEN_AGGREGATOR_ADDRESS, 
-    HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
+    HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
 }

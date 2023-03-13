@@ -9,7 +9,7 @@ class FunWalletConfig {
     * Standard constructor
     * @params eoa, chain, prefundAmt, paymasterAddr, index
     * - eoa: an eoa wallet
-    * - chain: Chain Id or Chain Name to specify the chains, e.g., for eth mainnet, use 1 or "ethereum"
+    * - chain: chain to specify the chains by name or id, e.g., for eth mainnet, use 1 or "ethereum"
     * - prefundAmt: the amount of eth to prefund the fun wallet
     * - paymaster: the paymaster instance to support gasless transactions
     * - implementationAddress: the fun wallet implementation address. used for fun wallet upgradability
@@ -22,8 +22,7 @@ class FunWalletConfig {
             throw Error("Eoa and chain must be specified to construct FunWalletConfig")
         }
         this.eoa = eoa
-        this.chain = chain;
-
+        this.chain = chain
         this.prefundAmt = prefundAmt
 
         if (paymaster && !(paymaster instanceof BasePaymaster)) {
@@ -47,17 +46,12 @@ class FunWalletConfig {
     }
 
     async getChainInfo() {
-        let chain;
-        if(!Number(this.chain)){
-            chain = await DataServer.getChainFromName(this.chain)
-        } else {
-            chain = await DataServer.getChainInfo(this.chain)
-        }
         if (this.eoa.provider.connection.url === "metamask") {
             this.rpcUrl = rpcurl
         } else {
             this.rpcUrl = this.eoa.provider.connection.url
         }
+        const chain = await DataServer.getChainInfo(this.chain)
         this.chain_id = chain.chain;
         this.chain_name = chain.key;
         this.chainCurrency = chain.currency
@@ -66,6 +60,7 @@ class FunWalletConfig {
         this.funWalletFactoryAddr = chain.aaData.factoryAddress
         this.verificationAddr = chain.aaData.verificationAddress
     }
+
 }
 
 module.exports = { FunWalletConfig }
