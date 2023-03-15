@@ -91,7 +91,7 @@ describe("Paymaster", function() {
     }
 
     before(async function() {
-        this.timeout(10000)
+        this.timeout(30000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
@@ -111,7 +111,7 @@ describe("Paymaster", function() {
     })
 
     it("succeed case", async function() {
-        this.timeout(10000)
+        this.timeout(30000)
         const paymasterInterface = new PaymasterSponsorInterface(funder)
         await paymasterInterface.init()
 

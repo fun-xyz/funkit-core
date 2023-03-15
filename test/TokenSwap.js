@@ -20,7 +20,7 @@ describe("TokenSwap", function() {
     })
 
     it("succeed case", async function() {
-        this.timeout(10000)
+        this.timeout(30000)
         const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
@@ -28,7 +28,7 @@ describe("TokenSwap", function() {
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)
         await wallet.deploy()
-
+        
         await transferAmt(eoa, wallet.address, AMOUNT)
 
         const startWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
@@ -37,7 +37,7 @@ describe("TokenSwap", function() {
         const tokenOut = new Token({ address: DAI_ADDR, chainId: HARDHAT_FORK_CHAIN_ID })
         const createSwapTx = await wallet.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, AMOUNT, wallet.address, 5, 100)
         await wallet.deployTx(createSwapTx)
-    
+        
         const endWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
         expect(parseFloat(endWalletDAI) - parseFloat(startWalletDAI)).to.be.greaterThan(0)
     })

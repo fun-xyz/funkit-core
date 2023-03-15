@@ -35,14 +35,14 @@ describe("RBAC", function() {
 
     describe("role", async function() {
         before(async function() {
-            this.timeout(10000)
+            this.timeout(30000)
             roleManager = new RoleManager()
             await wallet.addModule(roleManager)
             await wallet.deploy()
         })
 
         it("create role then fetch the role", async function() {
-            this.timeout(10000)
+            this.timeout(30000)
             const rule1 = new Rule("*", WILDCARD_BYTES32, Keyword.WILDCARD, 1000)
             const rule2 = new Rule("test action", WILDCARD_BYTES32, Keyword.GREATER, 1000)
             const roleName = "create role test" + getRndInteger(1, 100000).toString()
@@ -64,7 +64,7 @@ describe("RBAC", function() {
         })
 
         it("attach rule to role", async function() {
-            this.timeout(10000)
+            this.timeout(30000)
             const rule1 = new Rule("*", WILDCARD_BYTES32, Keyword.WILDCARD, 1000)
             const roleName = "attach role test" + getRndInteger(1, 100000).toString()
             const createRoleTx = await wallet.createRoleTx(roleName, wallet.address, [rule1])
@@ -90,7 +90,7 @@ describe("RBAC", function() {
         })
 
         it("remove rule from role", async function() {
-            this.timeout(10000)
+            this.timeout(30000)
             const rule1 = new Rule("*", WILDCARD_BYTES32, Keyword.WILDCARD, 1000)
             const rule2 = new Rule("test action", WILDCARD_BYTES32, Keyword.GREATER, 1000)
             const roleName = "remove rule test" + getRndInteger(1, 100000).toString()

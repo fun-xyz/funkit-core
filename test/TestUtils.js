@@ -16,6 +16,9 @@ const USDC_AVAX_ADDR = "0x5425890298aed601595a70AB815c96711a31Bc65"
 const AVAX_RECEIVE_PKEY = '3ef076e7d3d2e1f65ded46b02372d7c5300aec49e780b3bb4418820bf068e732'
 const CHAINLINK_TOKEN_AGGREGATOR_ADDRESS = "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419"
 
+
+
+
 const createErc = (addr, provider) => {
     return new ethers.Contract(addr, ERC20.abi, provider)
 }
