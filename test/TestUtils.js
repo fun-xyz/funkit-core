@@ -35,8 +35,8 @@ const execContractFunc = async (eoa, data) => {
     return await tx.wait()
 }
 
-const getAddrBalanceErc = async (provider, token, addr, format = true) => {
-    const contract = createErc(token, provider)
+const getAddrBalanceErc = async (signer, token, addr, format = true) => {
+    const contract = createErc(token, signer)
     const decimals = await contract.decimals()
     const balance = await contract.balanceOf(addr)
     if (format) {

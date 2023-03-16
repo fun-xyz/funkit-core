@@ -12,7 +12,7 @@ const main =async ()=>{
     const provider = new ethers.providers.JsonRpcProvider("https://goerli.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7")
     eoa = new ethers.Wallet("6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064", provider)
     //8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38
-    // console.log(eoa)
+    console.log(await eoa.getAddress())
     const config = new FunWalletConfig(eoa, "0x175C5611402815Eba550Dad16abd2ac366a63329", "5", 0);
     const wallet = new FunWallet(config, "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf");
     await wallet.init()

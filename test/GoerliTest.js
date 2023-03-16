@@ -1,63 +1,85 @@
-const { FunWallet, FunWalletConfig } = require("../index")
-const { expect } = require("chai")
+const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { FunWallet, FunWalletConfig, Modules } = require('../index')
-const ethers = require('ethers')
-describe("Test on Goerli", function() {
-    let eoa
-    before(async function() {
-        const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
-        eoa = new ethers.Wallet(PKEY, provider)
-    })
+const { EoaAaveWithdrawal, TokenTransfer } = require("../src/modules/index")
 
-    it("FunWalletFactory", async function() {
-        this.timeout(30000)
-        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, 0.3)
-        const wallet = new FunWallet(walletConfig, TEST_API_KEY)
+const { FunWallet, FunWalletConfig } = require('../index')
+const { TEST_API_KEY, getAddrBalanceErc, } = require('./TestUtils')
+const { ETHEREUM } = require('./TestnetTest.config')
+const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
+const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+
+//PLEASE READ 
+//Steps to take before running this test
+//1. Ensure your wallet has enough goerliEth to meet the prefund amount
+//2. Ensure your FunWallet has enough (.001) USDC to transfer
+//3. Ensure that an AAVE Dai position has been declared 
+
+
+describe("Test on Goerli", function () {
+    const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
+        const transfer = new TokenTransfer()
+        await wallet.addModule(transfer)
+        const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
+        const receipt = await wallet.deployTx(transferActionTx)
+        console.log(receipt)
+        return receipt
+    }
+
+    let eoa, wallet
+    before(async function () {
+        this.timeout(60000)
+        const provider = new ethers.providers.JsonRpcProvider(ETHEREUM.GOERLI.RPC)
+        eoa = new ethers.Wallet(ETHEREUM.GOERLI.PRIVKEY, provider)
+        console.log(`Eoa Address: ${eoa.address}`)
+
+        const balance = await provider.getBalance(eoa.address)
+        const balanceInEth = parseFloat(ethers.utils.formatEther(balance))
+        console.log(`Balance of Wallet: ${balanceInEth}eth`)
+        assert.isBelow(ETHEREUM.GOERLI.PREFUNDAMT, balanceInEth, `Balance of wallet is less than ${ETHEREUM.GOERLI.PREFUNDAMT}, please load up with GoerliEth in a faucet.`)
+
+        const config = new FunWalletConfig(eoa, await eoa.getAddress(), ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT)
+        wallet = new FunWallet(config, TEST_API_KEY);
         await wallet.init()
-
-        const walletConfig1 = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, 0)
-        const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
-        await wallet1.init()
-        
-        expect(wallet.address).to.be.equal(wallet1.address)
+        console.log(`FunWallet Address: ${wallet.address}`)
     })
-    it("Transfer USDC", async function(){
-        this.timeout(30000)
+    // it("Transfer USDC", async function () {
+    //     this.timeout(90000)
+    //     //TODO: check USDC balance, check on chain success
+    //     const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
+    //     const receipt = await walletTransferERC(wallet, ETHEREUM.GOERLI.TO, "100", ETHEREUM.GOERLI.USDC_ADDR) //1000000 = 1usdc
+    //     expect(receipt).to.have.property('txid')
+    //     const funderWalletErc20BalanceEnd = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
+    //     expect(funderWalletErc20BalanceStart - funderWalletErc20BalanceEnd).to.be.lessThan(.0001001).and.greaterThan(.000099)
+    // })
+
+    it("Aave Withdrawal", async function () {
+        //TODO: add faucet docs
+        this.timeout(120000)
+
+        const eoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
+        expect(eoaATokenBalance).to.not.equal("0.0", "Position not declared. Please supply an AAVE DAI position.")
+
+        const module = new EoaAaveWithdrawal()
+        await wallet.addModule(module)
+        await wallet.deploy()
+
+        const getPreExecTxs = await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].getPreExecTxs(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
+        wallet.deployTxs(getPreExecTxs)
+        await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].verifyRequirements(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
+
+        const aaveWithdrawTx = await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].createWithdrawTx(ETHEREUM.GOERLI.ADAIADDRESS, wallet.eoa.address, WITHDRAW_AMOUNT)
+        const receipt = await wallet.deployTx(aaveWithdrawTx)
+
+        console.log(receipt)
+        const endEoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
+
+        expect(eoaATokenBalance - endEoaATokenBalance).to.be.greaterThan(0)
 
     })
 })
 
-const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
-    const transfer = new Modules.TokenTransfer()
-    await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
-    // console.log(transferActionTx);
-    const receipt = await wallet.deployTx(transferActionTx)
-    console.log(receipt)
-}
 
-const main = async () => {
-    const provider = new ethers.providers.JsonRpcProvider("https://goerli.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7")
-    eoa = new ethers.Wallet("6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064", provider)
-    //8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38
-    // console.log(eoa)
-    const config = new FunWalletConfig(eoa, "0x175C5611402815Eba550Dad16abd2ac366a63329", "5", 0);
-    const wallet = new FunWallet(config, "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf");
-    await wallet.init()
 
-    console.log(wallet.address)
-    await walletTransferERC(wallet, "0xDc054C4C5052F0F0c28AA8042BB333842160AEA2", "100", "0x07865c6E87B9F70255377e024ace6630C1Eaa37F") //1000000 = 1usdc
-
-    const transfer = new Modules.TokenTransfer()
-    await wallet.addModule(transfer)
-    const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
-    // console.log(transferActionTx);
-    const receipt = await wallet.deployTx(transferActionTx)
-    console.log(receipt)
-
-}
-main()
 
 
 
