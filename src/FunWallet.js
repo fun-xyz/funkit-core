@@ -137,13 +137,12 @@ class FunWallet extends ContractsHolder {
 
     static async deployTx(transaction, chainId, apiKey) {
         if (transaction.isUserOp) {
-
-
             const {
                 rpcdata: { bundlerUrl, rpcUrl },
                 aaData: { entryPointAddress, factoryAddress },
                 currency
             } = await DataServer.getChainInfo(chainId)
+            console.log(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
             const { bundlerClient, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
 
             const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
