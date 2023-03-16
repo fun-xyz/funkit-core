@@ -42,15 +42,15 @@ describe("Test on Goerli", function () {
         await wallet.init()
         console.log(`FunWallet Address: ${wallet.address}`)
     })
-    // it("Transfer USDC", async function () {
-    //     this.timeout(90000)
-    //     //TODO: check USDC balance, check on chain success
-    //     const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
-    //     const receipt = await walletTransferERC(wallet, ETHEREUM.GOERLI.TO, "100", ETHEREUM.GOERLI.USDC_ADDR) //1000000 = 1usdc
-    //     expect(receipt).to.have.property('txid')
-    //     const funderWalletErc20BalanceEnd = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
-    //     expect(funderWalletErc20BalanceStart - funderWalletErc20BalanceEnd).to.be.lessThan(.0001001).and.greaterThan(.000099)
-    // })
+    it("Transfer USDC", async function () {
+        this.timeout(90000)
+        //TODO: check USDC balance, check on chain success
+        const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
+        const receipt = await walletTransferERC(wallet, ETHEREUM.GOERLI.TO, "100", ETHEREUM.GOERLI.USDC_ADDR) //1000000 = 1usdc
+        expect(receipt).to.have.property('txid')
+        const funderWalletErc20BalanceEnd = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
+        expect(funderWalletErc20BalanceStart - funderWalletErc20BalanceEnd).to.be.lessThan(.0001001).and.greaterThan(.000099)
+    })
 
     it("Aave Withdrawal", async function () {
         //TODO: add faucet docs
