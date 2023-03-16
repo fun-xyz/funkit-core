@@ -1,9 +1,9 @@
 const { expect } = require("chai")
-const { FunWallet, FunWalletConfig } = require("../index")
-const { RoleManager, Rule, Keyword, UserManager, UserMetadata, AuthType } = require("../src/modules")
+const { FunWallet, FunWalletConfig } = require("../../index")
+const { RoleManager, Rule, Keyword, UserManager, UserMetadata, AuthType } = require("../../src/modules")
 const ethers = require('ethers')
 const { transferAmt, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, OWNER_PKEY, TEST_API_KEY } = require("./TestUtils")
-const { TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
+const { TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 
 const PREFUND_AMT = 0.3
 const AMOUNT = 60

@@ -1,10 +1,10 @@
-const { FunWallet, FunWalletConfig } = require("../index")
+const { FunWallet, FunWalletConfig } = require("../../index")
 const { expect } = require("chai")
-const { TokenSwap } = require("../src/modules")
+const { TokenSwap } = require("../../src/modules")
 const ethers = require('ethers')
 const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
-const { TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
+const { Token } = require("../../utils/Token")
+const { TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 
 describe("TokenSwap", function() {
     let eoa

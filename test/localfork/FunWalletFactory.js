@@ -1,4 +1,4 @@
-const { FunWallet, FunWalletConfig } = require("../index")
+const { FunWallet, FunWalletConfig } = require("../../index")
 const { expect } = require("chai")
 const ethers = require('ethers')
 const { HARDHAT_FORK_CHAIN_ID, RPC_URL, PKEY, TEST_API_KEY } = require("./TestUtils")

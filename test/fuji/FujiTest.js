@@ -1,11 +1,11 @@
 const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { EoaAaveWithdrawal, TokenTransfer } = require("../src/modules/index")
+const { EoaAaveWithdrawal, TokenTransfer } = require("../../src/modules/index")
 
-const { FunWallet, FunWalletConfig } = require('../index')
-const { TEST_API_KEY, getAddrBalanceErc, } = require('./TestUtils')
-const { ETHEREUM } = require('./TestnetTest.config')
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
+const { FunWallet, FunWalletConfig } = require('../../index')
+const { TEST_API_KEY, getAddrBalanceErc, } = require('../localfork/TestUtils')
+const { ETHEREUM } = require('../TestnetTest.config')
+const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
 
 //PLEASE READ 

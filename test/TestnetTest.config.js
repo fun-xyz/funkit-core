@@ -7,13 +7,23 @@ const ETHEREUM={
         CHAIN:"5",
         PREFUNDAMT:0,
         ADAIADDRESS:"0xADD98B0342e4094Ec32f3b67Ccfd3242C876ff7a"
+    },
+    MAIN:{
+
     }
 }
 const AVALANCHE={
+    FUJI:{
 
+    }
 }
 const POLYGON={
+    MUMBAI:{
 
+    },
+    MAIN:{
+        
+    }
 }
 
 

@@ -1,12 +1,12 @@
-const { FunWalletConfig } = require("../index")
-const { EoaAaveWithdrawal, TokenSwap } = require("../src/modules/index")
-const { FunWallet } = require("../index")
+const { FunWalletConfig } = require("../../index")
+const { EoaAaveWithdrawal, TokenSwap } = require("../../src/modules/index")
+const { FunWallet } = require("../../index")
 const { expect } = require("chai")
 const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, HARDHAT_FORK_CHAIN_ID, 
     RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
 const ethers = require('ethers')
-const { Token } = require("../utils/Token")
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../src/modules/Module")
+const { Token } = require("../../utils/Token")
+const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 
 const GET_RESERVE_DATA_ABI = [
     {
