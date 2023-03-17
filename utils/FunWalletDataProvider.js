@@ -141,7 +141,7 @@ class FunWalletDataProvider {
      * NOTE: createUnsignedUserOp will add to this value the cost of creation, if the contract is not yet created.
      */
     async getVerificationGasLimit() {
-        return 250000;
+        return 5000000;
     }
     /**
      * should cover cost of putting calldata on-chain, and some overhead.
