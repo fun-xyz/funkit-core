@@ -228,10 +228,8 @@ Now the local fork is setup, you can run any file inside of the test folder and 
 Starting point: `/fun-wallet-sdk`
 
 ```
-yarn install
-cd test
-chmod +x runAll.sh
-./runAll.sh
+mocha test/localfork
+
 ```
 
 ## More Documentation
