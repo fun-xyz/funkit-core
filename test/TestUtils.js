@@ -1,6 +1,6 @@
 const hre = require("hardhat");
 const { ethers } = hre
-const ERC20 = require("../../utils/abis/ERC20.json")
+const ERC20 = require("../utils/abis/ERC20.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
 const RPC_URL = "http://127.0.0.1:8545"

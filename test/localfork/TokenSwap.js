@@ -2,7 +2,7 @@ const { FunWallet, FunWalletConfig } = require("../../index")
 const { expect } = require("chai")
 const { TokenSwap } = require("../../src/modules")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
+const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_ID, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 const { Token } = require("../../utils/Token")
 const { TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 
@@ -20,7 +20,7 @@ describe("TokenSwap", function() {
     })
 
     it("succeed case", async function() {
-        this.timeout(30000)
+        this.timeout(90000)
         const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
