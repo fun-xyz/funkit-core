@@ -1,0 +1,66 @@
+const { expect, assert } = require("chai")
+const ethers = require('ethers')
+const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modules/index")
+
+const { FunWallet, FunWalletConfig } = require('../../index')
+const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
+const { ETHEREUM } = require('../TestnetTest.config')
+const { Token } = require("../../utils/Token")
+const { USDCPaymaster } = require("../../src/paymasters/USDCPaymaster")
+const { PaymasterSponsorInterface } = require("../../src/paymasters/PaymasterSponsorInterface")
+
+
+const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
+const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+
+//PLEASE READ 
+//Steps to take before running this test
+//1. Ensure your wallet has enough goerliEth to meet the prefund amount
+//2. Ensure that an AAVE Dai position has been declared 
+
+describe("Aave Withdrawal", function () {
+    let eoa, wallet
+    before(async function () {
+        this.timeout(90000)
+        const provider = new ethers.providers.JsonRpcProvider(ETHEREUM.GOERLI.RPC)
+        eoa = new ethers.Wallet(ETHEREUM.GOERLI.PRIVKEY, provider)
+        console.log(`Eoa Address: ${eoa.address}`)
+
+        const balance = await provider.getBalance(eoa.address)
+        const balanceInEth = parseFloat(ethers.utils.formatEther(balance))
+        console.log(`Balance of Wallet: ${balanceInEth}eth`)
+        assert.isBelow(ETHEREUM.GOERLI.PREFUNDAMT, balanceInEth, `Balance of wallet is less than ${ETHEREUM.GOERLI.PREFUNDAMT}, please load up with GoerliEth in a faucet.`)
+
+        const config = new FunWalletConfig(eoa, await eoa.getAddress(), ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT)
+        wallet = new FunWallet(config, TEST_API_KEY);
+        await wallet.init()
+        console.log(`FunWallet Address: ${wallet.address}`)
+    })
+    
+    it("Success case", async function () {
+        //TODO: add faucet docs
+        this.timeout(120000)
+
+        const eoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
+        expect(eoaATokenBalance).to.not.equal("0.0", "Position not declared. Please supply an AAVE DAI position.")
+
+        const module = new EoaAaveWithdrawal()
+        await wallet.addModule(module)
+        await wallet.deploy()
+
+        const getPreExecTxs = await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].getPreExecTxs(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
+        wallet.deployTxs(getPreExecTxs)
+        await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].verifyRequirements(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
+
+        const aaveWithdrawTx = await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].createWithdrawTx(ETHEREUM.GOERLI.ADAIADDRESS, eoa.address, WITHDRAW_AMOUNT)
+        const receipt = await wallet.deployTx(aaveWithdrawTx)
+
+        console.log(receipt)
+        const endEoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
+
+        expect(eoaATokenBalance - endEoaATokenBalance).to.be.greaterThan(0)
+
+    })
+
+})
+

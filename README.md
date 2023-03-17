@@ -228,9 +228,7 @@ Now the local fork is setup, you can run any file inside of the test folder and 
 Starting point: `/fun-wallet-sdk`
 
 ```
-cd test
-chmod +x runAll.sh
-./runAll.sh
+yarn run test-localfork
 ```
 
 ## More Documentation

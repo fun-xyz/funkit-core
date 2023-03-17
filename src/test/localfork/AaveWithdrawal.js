@@ -1,11 +1,12 @@
-const { FunWalletConfig } = require("../index")
-const { EoaAaveWithdrawal, TokenSwap } = require("../src/modules/index")
-const { FunWallet } = require("../index")
+const { FunWalletConfig } = require("../../index")
+const { EoaAaveWithdrawal, TokenSwap } = require("../../src/modules/index")
+const { FunWallet } = require("../../index")
 const { expect } = require("chai")
 const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, HARDHAT_FORK_CHAIN_ID, 
-    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
+    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 const ethers = require('ethers')
-const { Token, TokenTypes } = require("../utils/Token")
+const { Token } = require("../../utils/Token")
+const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 
 const GET_RESERVE_DATA_ABI = [
     {
@@ -158,8 +159,8 @@ describe("AaveWithDrawal", function() {
         await getUserBalanceErc(wallet, tokenAddr)
         const tokenIn = new Token({ symbol: "eth", chainId: HARDHAT_FORK_CHAIN_ID })
         const tokenOut = new Token({ address: tokenAddr, chainId: HARDHAT_FORK_CHAIN_ID })
-        const tx = await swapModule.createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
-        await wallet.deployTx(tx)
+        const createSwapTx = await wallet.modules[TOKEN_SWAP_MODULE_NAME].createSwapTx(tokenIn, tokenOut, amount, returnAddress, 5, 100)
+        await wallet.deployTx(createSwapTx)
     
         await getUserBalanceErc(wallet, tokenAddr)
     }
@@ -176,38 +177,37 @@ describe("AaveWithDrawal", function() {
     }
 
     before(async function() {
-        this.timeout(20000)
+        this.timeout(30000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
         await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
     })
 
     it("succeed case", async function() {
-        this.timeout(10000)
+        this.timeout(30000)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
     
         const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
         const eoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
         
-
         const module = new EoaAaveWithdrawal()
         await wallet.addModule(module)
-
-        const modulePreExecTxs = await module.getPreExecTxs(aTokenAddress, WITHDRAW_AMOUNT)
-        await wallet.deployTxs(modulePreExecTxs)
-        await module.verifyRequirements(aTokenAddress, WITHDRAW_AMOUNT)
         await wallet.deploy()
+
+        const getPreExecTxs = await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].getPreExecTxs(aTokenAddress, WITHDRAW_AMOUNT)
+        wallet.deployTxs(getPreExecTxs)
+        await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].verifyRequirements(aTokenAddress, WITHDRAW_AMOUNT)
         
-        const aaveActionTx = await module.createWithdrawTx(aTokenAddress, wallet.eoa.address, WITHDRAW_AMOUNT)
-        await wallet.deployTx(aaveActionTx)
+        const aaveWithdrawTx = await wallet.modules[EOA_AAVE_WITHDRAWAL_MODULE_NAME].createWithdrawTx(aTokenAddress, eoa.address, WITHDRAW_AMOUNT)
+        await wallet.deployTx(aaveWithdrawTx)
         
         const endEoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)
     

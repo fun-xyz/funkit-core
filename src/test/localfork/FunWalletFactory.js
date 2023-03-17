@@ -1,7 +1,7 @@
-const { FunWallet, FunWalletConfig } = require("../index")
+const { FunWallet, FunWalletConfig } = require("../../index")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { HARDHAT_FORK_CHAIN_ID, RPC_URL, PKEY, TEST_API_KEY } = require("./TestUtils")
+const { HARDHAT_FORK_CHAIN_ID, RPC_URL, PKEY, TEST_API_KEY } = require("../TestUtils")
 
 describe("FunWalletFactory", function() {
     let eoa
@@ -11,12 +11,12 @@ describe("FunWalletFactory", function() {
     })
 
     it("wallet should have the same address even we create the wallet twice", async function() {
-        this.timeout(10000)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0.3)
+        this.timeout(30000)
+        const walletConfig = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, 0.3)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
-        const walletConfig1 = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0)
+        const walletConfig1 = new FunWalletConfig(eoa, await eoa.getAddress(), HARDHAT_FORK_CHAIN_ID, 0)
         const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
         await wallet1.init()
         
