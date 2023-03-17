@@ -19,15 +19,6 @@ const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
 //2. Ensure that an AAVE Dai position has been declared 
 
 describe("Aave Withdrawal", function () {
-    const walletTransferERC = async (wallet, to, amount, tokenAddr) => {
-        const transfer = new TokenTransfer()
-        await wallet.addModule(transfer)
-        const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
-        const receipt = await wallet.deployTx(transferActionTx)
-        console.log(receipt)
-        return receipt
-    }
-
     let eoa, wallet
     before(async function () {
         this.timeout(90000)
@@ -72,12 +63,4 @@ describe("Aave Withdrawal", function () {
     })
 
 })
-
-
-
-
-
-
-
-
 
