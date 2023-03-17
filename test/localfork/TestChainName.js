@@ -1,5 +1,5 @@
-const { DataServer} = require('../utils/DataServer')
-const { API_KEY } = require("./TestUtils")
+const { DataServer} = require('../../utils/DataServer')
+const { API_KEY } = require("../TestUtils")
 const { expect } = require("chai")
 
 describe("Getting chain info", async function() {
