@@ -174,7 +174,7 @@ describe("AaveWithDrawal", function () {
     }
 
     before(async function () {
-        this.timeout(20000)
+        this.timeout(30000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)

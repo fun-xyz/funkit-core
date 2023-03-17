@@ -142,7 +142,6 @@ class FunWallet extends ContractsHolder {
                 aaData: { entryPointAddress, factoryAddress },
                 currency
             } = await DataServer.getChainInfo(chainId)
-            console.log(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
             const { bundlerClient, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
 
             const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
