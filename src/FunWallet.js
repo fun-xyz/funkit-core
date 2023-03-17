@@ -137,8 +137,6 @@ class FunWallet extends ContractsHolder {
 
     static async deployTx(transaction, chainId, apiKey) {
         if (transaction.isUserOp) {
-
-
             const {
                 rpcdata: { bundlerUrl, rpcUrl },
                 aaData: { entryPointAddress, factoryAddress },
