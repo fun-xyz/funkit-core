@@ -5,10 +5,9 @@ const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modul
 const { FunWallet, FunWalletConfig } = require('../../index')
 const { TEST_API_KEY, getAddrBalanceErc, getUserBalanceErc } = require('../TestUtils')
 const { ETHEREUM } = require('../TestnetTest.config')
-const { Token } = require("../../utils/Token")
 
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
-const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+const { TokenPaymaster } = require("../../src/paymasters/TokenPaymaster")
+
 
 //PLEASE READ 
 //Steps to take before running this test
@@ -27,21 +26,22 @@ describe("Token swap", function () {
         const balanceInEth = parseFloat(ethers.utils.formatEther(balance))
         console.log(`Balance of Wallet: ${balanceInEth}eth`)
         assert.isBelow(ETHEREUM.GOERLI.PREFUNDAMT, balanceInEth, `Balance of wallet is less than ${ETHEREUM.GOERLI.PREFUNDAMT}, please load up with GoerliEth in a faucet.`)
+        const paymaster = new TokenPaymaster(ETHEREUM.GOERLI.FUNDERADDRESS, ETHEREUM.GOERLI.CHAIN)
 
-        const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT)
+        const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT, "",)
         wallet = new FunWallet(config, TEST_API_KEY);
         await wallet.init()
         console.log(`FunWallet Address: ${wallet.address}`)
     })
-    it("succeed case", async function(){
+    it("succeed case", async function () {
         this.timeout(60000)
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)
         await wallet.deploy()
-        
+
         const startWalletDAI = await getUserBalanceErc(wallet, ETHEREUM.GOERLI.DAIADDRESS)
         const tx = await swapModule.createSwapTx("eth", ETHEREUM.GOERLI.DAIADDRESS, .01, wallet.address, 5, 100)
-        
+
         const receipt = await wallet.deployTx(tx)
         console.log(receipt)
         const endWalletDAI = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.DAIADDRESS, wallet.address)

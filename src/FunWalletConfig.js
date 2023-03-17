@@ -55,7 +55,7 @@ class FunWalletConfig {
         this.chain_id = chain.chain;
         this.chain_name = chain.key;
         this.chainCurrency = chain.currency
-        this.bundlerUrl = chain.rpcdata.bundlerUrl
+        this.bundlerUrl = chain.rpcdata.bundlerUrl[0]
         this.entryPointAddr = chain.aaData.entryPointAddress
         this.funWalletFactoryAddr = chain.aaData.factoryAddress
         this.verificationAddr = chain.aaData.verificationAddress
