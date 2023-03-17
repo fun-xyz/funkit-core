@@ -228,7 +228,20 @@ Now the local fork is setup, you can run any file inside of the test folder and 
 Starting point: `/fun-wallet-sdk`
 
 ```
-mocha test/localfork
+npm run test-localfork
+
+```
+
+# **Testing With a Goerli Environment**
+
+## 1. Run Test
+
+The bundler has been set up already in goerli so you can just run the tests. To test Aave Withdraw, you may need to pre-supply some token to the wallet
+
+Starting point: `/fun-wallet-sdk`
+
+```
+npm run test-goerli
 
 ```
 

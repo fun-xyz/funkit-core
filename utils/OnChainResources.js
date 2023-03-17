@@ -5,6 +5,25 @@ const { HttpRpcClient } = require('@account-abstraction/sdk')
 
 class OnChainResources {
     static async connect(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
+        const bundlerClients = await Promise.all(bundlerUrl.map((url) => { return OnChainResources.connectBundler(rpcurl, url, entryPointAddress) }))
+        const funWalletDataProvider = await OnChainResources.connectFunWalletDataProvider(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress,
+            verificationAddress, paymasterAPI, eoa, preHashSalt, index)
+        return { bundlerClients, funWalletDataProvider }
+    }
+
+    static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
+        const bundlerClients = await Promise.all(bundlerUrl.map((url) => { return this.connectBundler(rpcurl, url, entryPointAddress) }))
+        const funWalletDataProvider = await this.connectEmptyFunWalletDataProvider(rpcurl, entryPointAddress, factoryAddress)
+        return { bundlerClients, funWalletDataProvider }
+    }
+
+    static async connectBundler(rpcurl, bundlerUrl, entryPointAddress) {
+        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
+        const chainId = (await provider.getNetwork()).chainId
+        return new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
+    }
+
+    static async connectFunWalletDataProvider(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
         const config = { bundlerUrl, entryPointAddress }
         const salt = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(`${preHashSalt}`))
@@ -20,23 +39,17 @@ class OnChainResources {
             salt,
             index
         })
-        const net = await provider.getNetwork()
-        const chainId = net.chainId
-        const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-
-        return { bundlerClient, funWalletDataProvider }
+        return funWalletDataProvider
     }
 
-    static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
+    static async connectEmptyFunWalletDataProvider(rpcurl, entryPointAddress, factoryAddress) {
         const provider = new ethers.providers.JsonRpcProvider(rpcurl);
-        const chainId = (await provider.getNetwork()).chainId
-        const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
         const funWalletDataProvider = new FunWalletDataProvider({
             provider: provider,
             entryPointAddress: entryPointAddress,
             factoryAddress: factoryAddress
         })
-        return { bundlerClient, funWalletDataProvider }
+        return funWalletDataProvider
     }
 }
 
