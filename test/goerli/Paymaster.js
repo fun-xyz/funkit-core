@@ -7,7 +7,7 @@ const { TEST_API_KEY, getAddrBalanceErc, PKEY} = require('../TestUtils')
 const { ETHEREUM } = require('../TestnetConfig')
 const { TokenPaymaster, PaymasterSponsor } = require("../../src/paymasters")
 
-const WITHDRAW_AMOUNT = "100000000000000000"
+const WITHDRAW_AMOUNT = "1000000000000000000"
 
 //PLEASE READ 
 //Steps to take before running this test
