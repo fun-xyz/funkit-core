@@ -1,15 +1,9 @@
 const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modules/index")
 
 const { FunWallet, FunWalletConfig } = require('../../index')
-const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
-const { ETHEREUM } = require('../TestnetTest.config')
-const { Token } = require("../../utils/Token")
-
-
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
-const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+const { TEST_API_KEY } = require('../TestUtils')
+const { ETHEREUM } = require('../TestnetConfig')
 
 //PLEASE READ 
 //Steps to take before running this test
@@ -29,7 +23,7 @@ describe("FunWalletFactory", function () {
         assert.isBelow(ETHEREUM.GOERLI.PREFUNDAMT, balanceInEth, `Balance of wallet is less than ${ETHEREUM.GOERLI.PREFUNDAMT}, please load up with GoerliEth in a faucet.`)
 
     })
-    
+
     it("Success case", async function () {
         //TODO: add faucet docs
         this.timeout(120000)
@@ -42,9 +36,8 @@ describe("FunWalletFactory", function () {
         const walletConfig1 = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT)
         const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
         await wallet1.init()
-        
+
         expect(wallet.address).to.be.equal(wallet1.address)
     })
-
 })
 

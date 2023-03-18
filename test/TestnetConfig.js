@@ -12,6 +12,7 @@ const ETHEREUM = {
         FUNDERADDRESS: "0x38835ddaC97596c0240048f371C4c89495814B48"
     }
 }
+
 const AVALANCHE = {
     FUJI: {
         RPC: "https://avalanche-fuji.infura.io/v3/4a1a0a67f6874be6bb6947a62792dab7",
@@ -23,10 +24,8 @@ const AVALANCHE = {
         ADAIADDRESS: "0x7021eB315AD2Ce787E3A6FD1c4a136c9722457Cc"
     }
 }
-const POLYGON = {
-    MUMBAI: {
 
-    },
+const POLYGON = {
     MAIN: {
 
     }

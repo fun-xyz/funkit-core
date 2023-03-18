@@ -6,18 +6,9 @@ async function createUserOp(funWalletDataProvider, { to, data }, gasLimit = 0, n
     return await funWalletDataProvider.createSignedUserOp({ target: to, data, noInit, calldata, gasLimit })
 }
 
-async function deployUserOp(transaction, bundlerClients, funWalletDataProvider) {
+async function deployUserOp(transaction, bundlerClient, funWalletDataProvider) {
     const { op } = transaction.data
-    let userOpHash
-    for (let i = 0; i < bundlerClients.length; i++) {
-        try {
-            userOpHash = await bundlerClients[i].sendUserOpToBundler(op)
-            break;
-        } catch (error) {
-            console.log("switching bundler due to errors", error)
-            i++
-        }
-    }
+    const userOpHash = await bundlerClient.sendUserOpToBundler(op)
     const txid = await funWalletDataProvider.getUserOpReceipt(userOpHash)
 
     return { userOpHash, txid }

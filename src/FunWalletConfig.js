@@ -1,4 +1,3 @@
-const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
 const { BasePaymaster } = require("./paymasters/BasePaymaster")

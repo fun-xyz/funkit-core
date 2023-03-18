@@ -1,15 +1,10 @@
 const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modules/index")
+const { TokenTransfer } = require("../../src/modules/index")
 
 const { FunWallet, FunWalletConfig } = require('../../index')
 const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
-const { ETHEREUM } = require('../TestnetTest.config')
-const { Token } = require("../../utils/Token")
-
-
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
-const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+const { ETHEREUM } = require('../TestnetConfig')
 
 //PLEASE READ 
 //Steps to take before running this test
@@ -43,6 +38,7 @@ describe("Token Transfer", function () {
         await wallet.init()
         console.log(`FunWallet Address: ${wallet.address}`)
     })
+
     it("Success Case", async function () {
         this.timeout(90000)
         //TODO: check USDC balance, check on chain success
@@ -52,5 +48,4 @@ describe("Token Transfer", function () {
         const funderWalletErc20BalanceEnd = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.USDC_ADDR, wallet.address)
         expect(funderWalletErc20BalanceStart - funderWalletErc20BalanceEnd).to.be.lessThan(.0001001).and.greaterThan(.000099)
     })
-
 })

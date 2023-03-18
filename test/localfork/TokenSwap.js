@@ -2,8 +2,7 @@ const { FunWallet, FunWalletConfig } = require("../../index")
 const { expect } = require("chai")
 const { TokenSwap } = require("../../src/modules")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
-const { Token } = require("../../utils/Token")
+const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 
 describe("TokenSwap", function () {
     let eoa

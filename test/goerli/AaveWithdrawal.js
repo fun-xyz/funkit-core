@@ -1,10 +1,10 @@
 const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modules/index")
+const { EoaAaveWithdrawal } = require("../../src/modules/index")
 
 const { FunWallet, FunWalletConfig } = require('../../index')
 const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
-const { ETHEREUM } = require('../TestnetTest.config')
+const { ETHEREUM } = require('../TestnetConfig')
 
 const WITHDRAW_AMOUNT = "100000000000000000"
 
@@ -39,8 +39,6 @@ describe("Aave Withdrawal", function () {
         const eoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
         expect(eoaATokenBalance).to.not.equal("0.0", "Position not declared. Please supply an AAVE DAI position.")
 
-
-
         const module = new EoaAaveWithdrawal()
         await wallet.addModule(module)
 
@@ -56,8 +54,5 @@ describe("Aave Withdrawal", function () {
         const endEoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
 
         expect(eoaATokenBalance - endEoaATokenBalance).to.be.greaterThan(0)
-
     })
-
 })
-

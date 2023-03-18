@@ -1,14 +1,10 @@
 const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modules/index")
+const { TokenSwap } = require("../../src/modules/index")
 
 const { FunWallet, FunWalletConfig } = require('../../index')
 const { TEST_API_KEY, getAddrBalanceErc, getUserBalanceErc } = require('../TestUtils')
-const { ETHEREUM } = require('../TestnetTest.config')
-const { Token } = require("../../utils/Token")
-
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
-const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+const { ETHEREUM } = require('../TestnetConfig')
 
 //PLEASE READ 
 //Steps to take before running this test
@@ -18,7 +14,7 @@ const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
 describe("Token swap", function () {
     let eoa, wallet
     before(async function () {
-        this.timeout(60000)
+        this.timeout(100000)
         const provider = new ethers.providers.JsonRpcProvider(ETHEREUM.GOERLI.RPC)
         eoa = new ethers.Wallet(ETHEREUM.GOERLI.PRIVKEY, provider)
         console.log(`Eoa Address: ${eoa.address}`)
@@ -33,8 +29,9 @@ describe("Token swap", function () {
         await wallet.init()
         console.log(`FunWallet Address: ${wallet.address}`)
     })
+    
     it("succeed case", async function(){
-        this.timeout(60000)
+        this.timeout(100000)
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)
         await wallet.deploy()
@@ -50,4 +47,3 @@ describe("Token swap", function () {
     })
 
 })
-

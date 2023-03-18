@@ -1,20 +1,20 @@
 const { expect, assert } = require("chai")
 const ethers = require('ethers')
-const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modules/index")
+const { EoaAaveWithdrawal } = require("../../src/modules/index")
 
 const { FunWallet, FunWalletConfig } = require('../../index')
-const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
-const { ETHEREUM } = require('../TestnetTest.config')
+const { TEST_API_KEY, getAddrBalanceErc, PKEY} = require('../TestUtils')
+const { ETHEREUM } = require('../TestnetConfig')
 const { TokenPaymaster, PaymasterSponsor } = require("../../src/paymasters")
 
-const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+const WITHDRAW_AMOUNT = "100000000000000000"
 
 //PLEASE READ 
 //Steps to take before running this test
 //1. Ensure your wallet has enough goerliEth to meet the prefund amount
 //2. Ensure that an AAVE Dai position has been declared 
 
-describe("Aave Withdrawal", function () {
+describe("Paymaster - Aave Withdraw", function () {
     let eoa, wallet
     before(async function () {
         this.timeout(90000)
@@ -56,7 +56,6 @@ describe("Aave Withdrawal", function () {
         const endEoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
 
         expect(eoaATokenBalance - endEoaATokenBalance).to.be.greaterThan(0)
-
     })
 
 })
@@ -94,5 +93,3 @@ const paymasterSetup = async (signer) => {
     await paymasterSponsor.setWhitelistMode()
     await paymasterSponsor.deploy()
 }
-
-

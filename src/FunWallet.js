@@ -48,8 +48,8 @@ class FunWallet extends ContractsHolder {
         this.eoaAddr = await this.config.eoa.getAddress()
         this.config.salt = (this.config.salt ? this.config.salt : this.eoaAddr) + this.config.index.toString()
 
-        const { bundlerClients, funWalletDataProvider } = await this.config.getClients()
-        this.bundlerClient = bundlerClients
+        const { bundlerClient, funWalletDataProvider } = await this.config.getClients()
+        this.bundlerClient = bundlerClient
         this.funWalletDataProvider = funWalletDataProvider
 
         this.address = await this.funWalletDataProvider.getAccountAddress()
@@ -142,11 +142,11 @@ class FunWallet extends ContractsHolder {
                 aaData: { entryPointAddress, factoryAddress },
                 currency
             } = await DataServer.getChainInfo(chainId)
-            const { bundlerClients, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
+            const { bundlerClient, funWalletDataProvider } = await OnChainResources.connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress)
 
             const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
-            const deployReceipt = await UserOpUtils.deployUserOp(transaction, bundlerClients, funWalletDataProvider)
+            const deployReceipt = await UserOpUtils.deployUserOp(transaction, bundlerClient, funWalletDataProvider)
             const gas = await UserOpUtils.gasCalculation(deployReceipt, provider, currency)
             const receipt = { ...deployReceipt, ...gas }
             const { op } = transaction.data
@@ -191,8 +191,6 @@ class FunWallet extends ContractsHolder {
         const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
         return new Transaction({ op }, true)
     }
-
-
 }
 
 module.exports = { FunWallet }
