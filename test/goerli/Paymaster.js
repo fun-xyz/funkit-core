@@ -5,7 +5,7 @@ const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modul
 const { FunWallet, FunWalletConfig } = require('../../index')
 const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
 const { ETHEREUM } = require('../TestnetTest.config')
-const { TokenPaymaster } = require("../../src/paymasters")
+const { TokenPaymaster, PaymasterSponsor } = require("../../src/paymasters")
 
 const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
 
@@ -61,5 +61,38 @@ describe("Aave Withdrawal", function () {
 
 })
 
+
+const main = async () => {
+    const paymaster = new TokenPaymaster(ETHEREUM.GOERLI.FUNDERADDRESS, "5")
+    const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT, "", paymaster)
+    const wallet = new FunWallet(config, TEST_API_KEY);
+    await wallet.init()
+    console.log(`FunWallet Address: ${wallet.address}`)
+    const module = new EoaAaveWithdrawal()
+    await wallet.addModule(module)
+
+    const modulePreExecTxs = await module.getPreExecTxs(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
+    await wallet.deployTxs(modulePreExecTxs)
+    await module.verifyRequirements(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
+    await wallet.deploy()
+
+    const aaveActionTx = await module.createWithdrawTx(ETHEREUM.GOERLI.ADAIADDRESS, eoa.address, WITHDRAW_AMOUNT)
+    const receipt = await wallet.deployTx(aaveActionTx)
+
+    console.log(receipt)
+}
+
+
+// TOKEN: 0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60 must have balance
+// Must have aave v3 position set up
+const paymasterSetup = async (signer) => {
+    const paymasterSponsor = new PaymasterSponsor(signer)
+    await paymasterSponsor.init()
+    await paymasterSponsor.stakeEth(signer.address, ".1")
+    await paymasterSponsor.addTokenDepositTo(walletAddress, "10")
+    await paymasterSponsor.lockTokenDeposit()
+    await paymasterSponsor.setWhitelistMode()
+    await paymasterSponsor.deploy()
+}
 
 

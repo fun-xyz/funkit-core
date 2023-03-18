@@ -44,7 +44,7 @@ const PKEY = "01f3645a0c1b322e37fd6402253dd02c0b92e45b4dd072a9b6e76e4eb657345b"
 const walletAddress = "0x177716aBA5dC062e51d3d08FE2b00588c6a5e4a3"
 
 
-
+// TOKEN: 0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60
 const paymasterSetup = async (signer) => {
     const paymasterSponsor = new PaymasterSponsor(signer)
     await paymasterSponsor.init()
