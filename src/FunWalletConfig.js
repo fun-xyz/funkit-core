@@ -46,12 +46,12 @@ class FunWalletConfig {
     }
 
     async getChainInfo() {
+        const chain = await DataServer.getChainInfo(this.chain)
         if (this.eoa.provider.connection.url === "metamask") {
-            this.rpcUrl = rpcurl
+            this.rpcUrl = chain.rpcurl
         } else {
             this.rpcUrl = this.eoa.provider.connection.url
         }
-        const chain = await DataServer.getChainInfo(this.chain)
         this.chain_id = chain.chain;
         this.chain_name = chain.key;
         this.chainCurrency = chain.currency
