@@ -9,7 +9,8 @@ const { Token } = require("../../utils/Token")
 
 
 const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
-const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+const WITHDRAW_AMOUNT = "100000000000000000"
+
 
 //PLEASE READ 
 //Steps to take before running this test
