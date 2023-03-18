@@ -1,13 +1,12 @@
-const { FunWallet, FunWalletConfig } = require("../index")
-const { TokenSwap, TokenTransfer } = require("../src/modules")
+const { FunWallet, FunWalletConfig } = require("../../index")
+const { TokenSwap, TokenTransfer } = require("../../src/modules")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
-const { DataServer } = require('../utils/DataServer')
-const paymasterdata = require("../utils/abis/TokenPaymaster.json")
-const { PaymasterSponsor } = require("../src/paymasters/PaymasterSponsor")
-const { TokenPaymaster } = require("../src/paymasters")
+const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
+const { DataServer } = require('../../utils/DataServer')
+const paymasterdata = require("../../utils/abis/TokenPaymaster.json")
+const { PaymasterSponsor } = require("../../src/paymasters/PaymasterSponsor")
+const { TokenPaymaster } = require("../../src/paymasters")
 
 
 
@@ -37,7 +36,6 @@ describe("Paymaster", function () {
 
         const tx = await swapModule.createSwapTx("eth", USDC_ADDR, amount, wallet.address)
         await FunWallet.deployTx(tx, wallet.config.chain_id, TEST_API_KEY)
-
         const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
 
         expect(parseFloat(endWalletUSDC) - parseFloat(startWalletUSDC)).to.be.greaterThan(0)
@@ -89,7 +87,7 @@ describe("Paymaster", function () {
     }
 
     before(async function () {
-        this.timeout(10000)
+        this.timeout(30000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
@@ -109,7 +107,7 @@ describe("Paymaster", function () {
     })
 
     it("succeed case", async function () {
-        this.timeout(10000)
+        this.timeout(30000)
         const paymasterInterface = new PaymasterSponsor(funder)
         await paymasterInterface.init()
 

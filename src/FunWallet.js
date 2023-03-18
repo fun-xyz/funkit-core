@@ -137,8 +137,6 @@ class FunWallet extends ContractsHolder {
 
     static async deployTx(transaction, chainId, apiKey) {
         if (transaction.isUserOp) {
-
-
             const {
                 rpcdata: { bundlerUrl, rpcUrl },
                 aaData: { entryPointAddress, factoryAddress },
@@ -193,8 +191,6 @@ class FunWallet extends ContractsHolder {
         const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
         return new Transaction({ op }, true)
     }
-
-
 }
 
 module.exports = { FunWallet }

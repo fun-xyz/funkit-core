@@ -93,8 +93,8 @@ class PaymasterInterface {
 
     async addTokenDepositTo(account, amount) {
         this.errorCatcher()
-        await this._tokenApproval(amount)
-        const txData = await this.contract.populateTransaction.addTokenDepositTo(account, amount)
+        const sendamt = await this._tokenApproval(amount)
+        const txData = await this.contract.populateTransaction.addTokenDepositTo(account, sendamt)
         await this._addToBatch(txData)
     }
 
@@ -178,6 +178,7 @@ class PaymasterInterface {
         const sendamt = amount instanceof ethers.BigNumber ? amount : ethers.utils.parseUnits(amount, this.decimals)
         const txData = await this.erc20Token.populateTransaction.approve(this.paymasterAddress, sendamt)
         await this._addToStakeBatch(txData)
+        return sendamt
     }
 
     async _loadToken() {

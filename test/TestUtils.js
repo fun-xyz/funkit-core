@@ -1,7 +1,6 @@
 const hre = require("hardhat");
 const { ethers } = hre
 const ERC20 = require("../utils/abis/ERC20.json")
-const paymasterdata = require("../utils/abis/TokenPaymaster.json")
 
 const HARDHAT_FORK_CHAIN_ID = 31337
 const HARDHAT_FORK_CHAIN_KEY = "ethereum-localfork"

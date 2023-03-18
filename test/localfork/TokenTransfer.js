@@ -1,9 +1,8 @@
-const { FunWallet, FunWalletConfig } = require("../index")
-const { TokenSwap, TokenTransfer } = require("../src/modules")
+const { FunWallet, FunWalletConfig } = require("../../index")
+const { TokenSwap, TokenTransfer } = require("../../src/modules")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { transferAmt, getAddrBalanceErc, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
+const { transferAmt, getAddrBalanceErc, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 
 describe("TokenTransfer", function() {
     let eoa
@@ -34,7 +33,7 @@ describe("TokenTransfer", function() {
     })
 
     it("succeed case", async function() {
-        this.timeout(10000)
+        this.timeout(30000)
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()

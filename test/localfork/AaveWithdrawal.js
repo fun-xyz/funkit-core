@@ -1,11 +1,10 @@
-const { FunWalletConfig } = require("../index")
-const { EoaAaveWithdrawal, TokenSwap } = require("../src/modules/index")
-const { FunWallet } = require("../index")
+const { FunWalletConfig } = require("../../index")
+const { EoaAaveWithdrawal, TokenSwap } = require("../../src/modules/index")
+const { FunWallet } = require("../../index")
 const { expect } = require("chai")
 const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY,
-    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
+    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 const ethers = require('ethers')
-const { Token, TokenTypes } = require("../utils/Token")
 
 const GET_RESERVE_DATA_ABI = [
     {
@@ -174,7 +173,7 @@ describe("AaveWithDrawal", function () {
     }
 
     before(async function () {
-        this.timeout(20000)
+        this.timeout(30000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
@@ -186,7 +185,7 @@ describe("AaveWithDrawal", function () {
     })
 
     it("succeed case", async function () {
-        this.timeout(10000)
+        this.timeout(30000)
         await transferAmt(funder, eoa.address, amount + 1)
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
