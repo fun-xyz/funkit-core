@@ -5,12 +5,8 @@ const { EoaAaveWithdrawal, TokenTransfer, TokenSwap } = require("../../src/modul
 const { FunWallet, FunWalletConfig } = require('../../index')
 const { TEST_API_KEY, getAddrBalanceErc, } = require('../TestUtils')
 const { ETHEREUM } = require('../TestnetTest.config')
-const { Token } = require("../../utils/Token")
 
-
-const { EOA_AAVE_WITHDRAWAL_MODULE_NAME, TOKEN_SWAP_MODULE_NAME } = require("../../src/modules/Module")
 const WITHDRAW_AMOUNT = "100000000000000000"
-
 
 //PLEASE READ 
 //Steps to take before running this test
@@ -35,7 +31,7 @@ describe("Aave Withdrawal", function () {
         await wallet.init()
         console.log(`FunWallet Address: ${wallet.address}`)
     })
-    
+
     it("Success case", async function () {
         //TODO: add faucet docs
         this.timeout(120000)
@@ -43,7 +39,7 @@ describe("Aave Withdrawal", function () {
         const eoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
         expect(eoaATokenBalance).to.not.equal("0.0", "Position not declared. Please supply an AAVE DAI position.")
 
-        
+
 
         const module = new EoaAaveWithdrawal()
         await wallet.addModule(module)
