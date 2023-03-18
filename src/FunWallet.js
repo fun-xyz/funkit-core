@@ -191,8 +191,6 @@ class FunWallet extends ContractsHolder {
         const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
         return new Transaction({ op }, true)
     }
-
-
 }
 
 module.exports = { FunWallet }

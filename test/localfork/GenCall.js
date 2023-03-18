@@ -1,9 +1,8 @@
-const { FunWallet, FunWalletConfig } = require("../index")
-const { TokenSwap, TokenTransfer } = require("../src/modules")
+const { FunWallet, FunWalletConfig } = require("../../index")
+const { TokenSwap, TokenTransfer } = require("../../src/modules")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { transferAmt, getAddrBalanceErc, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
+const { transferAmt, getAddrBalanceErc, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 
 describe("GenCall", function () {
     let eoa
@@ -41,7 +40,7 @@ describe("GenCall", function () {
         const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, DAI_ADDR, funder.address)
 
 
-        const ERC20 = require('../utils/abis/ERC20.json')
+        const ERC20 = require('../../utils/abis/ERC20.json')
         const ERC20Contract = new ethers.Contract(DAI_ADDR, ERC20.abi)
         const transferData = await ERC20Contract.populateTransaction.transfer(funder.address, ethers.utils.parseEther(transferNum.toString()))
 

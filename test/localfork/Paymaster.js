@@ -1,13 +1,12 @@
-const { FunWallet, FunWalletConfig } = require("../index")
-const { TokenSwap, TokenTransfer } = require("../src/modules")
+const { FunWallet, FunWalletConfig } = require("../../index")
+const { TokenSwap, TokenTransfer } = require("../../src/modules")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("./TestUtils")
-const { Token } = require("../utils/Token")
-const { DataServer } = require('../utils/DataServer')
-const paymasterdata = require("../utils/abis/TokenPaymaster.json")
-const { PaymasterSponsor } = require("../src/paymasters/PaymasterSponsor")
-const { TokenPaymaster } = require("../src/paymasters")
+const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
+const { DataServer } = require('../../utils/DataServer')
+const paymasterdata = require("../../utils/abis/TokenPaymaster.json")
+const { PaymasterSponsor } = require("../../src/paymasters/PaymasterSponsor")
+const { TokenPaymaster } = require("../../src/paymasters")
 
 
 

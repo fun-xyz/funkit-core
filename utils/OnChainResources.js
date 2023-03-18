@@ -4,8 +4,27 @@ const { FunWalletDataProvider } = require("./FunWalletDataProvider")
 const { HttpRpcClient } = require('@account-abstraction/sdk')
 
 class OnChainResources {
-    static async connect(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
-        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
+    static async connect(rpcUrl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
+        const bundlerClient = await this.connectBundler(rpcUrl, bundlerUrl, entryPointAddress)
+        const funWalletDataProvider = await OnChainResources.connectFunWalletDataProvider(rpcUrl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress,
+            verificationAddress, paymasterAPI, eoa, preHashSalt, index)
+        return { bundlerClient, funWalletDataProvider }
+    }
+
+    static async connectEmpty(rpcUrl, bundlerUrl, entryPointAddress, factoryAddress) {
+        const bundlerClient = await this.connectBundler(rpcUrl, bundlerUrl, entryPointAddress)
+        const funWalletDataProvider = await this.connectEmptyFunWalletDataProvider(rpcUrl, entryPointAddress, factoryAddress)
+        return { bundlerClient, funWalletDataProvider }
+    }
+
+    static async connectBundler(rpcUrl, bundlerUrl, entryPointAddress) {
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+        const chainId = (await provider.getNetwork()).chainId
+        return new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
+    }
+
+    static async connectFunWalletDataProvider(rpcUrl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         const config = { bundlerUrl, entryPointAddress }
         const salt = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(`${preHashSalt}`))
         const erc4337Provider = await wrapProvider(provider, config, eoa, implementationAddress, salt, factoryAddress, verificationAddress)
@@ -20,23 +39,17 @@ class OnChainResources {
             salt,
             index
         })
-        const net = await provider.getNetwork()
-        const chainId = net.chainId
-        const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
-
-        return { bundlerClient, funWalletDataProvider }
+        return funWalletDataProvider
     }
 
-    static async connectEmpty(rpcurl, bundlerUrl, entryPointAddress, factoryAddress) {
-        const provider = new ethers.providers.JsonRpcProvider(rpcurl);
-        const chainId = (await provider.getNetwork()).chainId
-        const bundlerClient = new HttpRpcClient(bundlerUrl, entryPointAddress, chainId)
+    static async connectEmptyFunWalletDataProvider(rpcUrl, entryPointAddress, factoryAddress) {
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
         const funWalletDataProvider = new FunWalletDataProvider({
             provider: provider,
             entryPointAddress: entryPointAddress,
             factoryAddress: factoryAddress
         })
-        return { bundlerClient, funWalletDataProvider }
+        return funWalletDataProvider
     }
 }
 

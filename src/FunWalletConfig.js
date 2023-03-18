@@ -1,4 +1,3 @@
-const { USDCPaymaster } = require("./paymasters/USDCPaymaster")
 const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
 const { BasePaymaster } = require("./paymasters/BasePaymaster")
@@ -46,12 +45,8 @@ class FunWalletConfig {
     }
 
     async getChainInfo() {
-        if (this.eoa.provider.connection.url === "metamask") {
-            this.rpcUrl = rpcurl
-        } else {
-            this.rpcUrl = this.eoa.provider.connection.url
-        }
         const chain = await DataServer.getChainInfo(this.chain)
+        this.rpcUrl = chain.rpcdata.rpcUrl
         this.chain_id = chain.chain;
         this.chain_name = chain.key;
         this.chainCurrency = chain.currency
