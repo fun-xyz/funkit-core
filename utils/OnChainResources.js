@@ -6,7 +6,7 @@ const { HttpRpcClient } = require('@account-abstraction/sdk')
 class OnChainResources {
     static async connect(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress, verificationAddress, paymasterAPI, eoa, preHashSalt, index = 0) {
         const bundlerClients = await Promise.all(bundlerUrl.map((url) => { return OnChainResources.connectBundler(rpcurl, url, entryPointAddress) }))
-        const funWalletDataProvider = await OnChainResources.connectFunWalletDataProvider(rpcurl, bundlerUrl, entryPointAddress, implementationAddress, factoryAddress,
+        const funWalletDataProvider = await OnChainResources.connectFunWalletDataProvider(rpcurl, bundlerUrl[0], entryPointAddress, implementationAddress, factoryAddress,
             verificationAddress, paymasterAPI, eoa, preHashSalt, index)
         return { bundlerClients, funWalletDataProvider }
     }
