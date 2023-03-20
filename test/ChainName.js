@@ -4,7 +4,7 @@ const { expect } = require("chai")
 describe("Getting chain info", async function () {
 
   function compareObjects(obj1, obj2) {
-    if (Object.keys(obj1).length !== Object.keys(obj1).length) {
+    if (Object.keys(obj1).length !== Object.keys(obj2).length) {
       return false
     }
 
