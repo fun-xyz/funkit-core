@@ -5,14 +5,14 @@ const UserOpUtils = require('../utils/UserOpUtils')
 const EoaUtils = require('../utils/EoaUtils')
 const { ethers } = require('ethers');
 const { Transaction } = require("../utils/Transaction")
-
+const { TokenSwap, TokenTransfer } = require("../src/modules")
 const { FunWalletConfig } = require("./FunWalletConfig")
 const { OnChainResources } = require("../utils/OnChainResources")
 
 class FunWallet extends ContractsHolder {
 
     transactions = {}
-
+    modules = new Map()
 
     /**
     * Standard constructor
@@ -20,7 +20,7 @@ class FunWallet extends ContractsHolder {
     * - config: an instance of FunWalletConfig
     * - apiKey: api key to access Fun Wallet service
     */
-     constructor(config, apiKey) {
+    constructor(config, apiKey) {
 
         if (!(config instanceof FunWalletConfig)) {
             throw Error("Config Must be of type FunWalletConfig or child classes")
@@ -31,10 +31,10 @@ class FunWallet extends ContractsHolder {
         this.dataServer = new DataServer(apiKey);
     }
 
-    async init(uid){
-        
+    async init(uid) {
+
     }
-    async init(salt, index){
+    async init(salt, index) {
 
     }
 
@@ -65,6 +65,9 @@ class FunWallet extends ContractsHolder {
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.addEthersContract(this.address, walletContract)
 
+        //add first class modules to wallet
+        const transfer = new TokenTransfer()
+        await this.addModule(transfer)
     }
 
     /**
@@ -82,6 +85,7 @@ class FunWallet extends ContractsHolder {
         let txData = { ...initTx, salt }
         this.transactions[generateSha256(txData)] = txData;
         module.innerAddData(this)
+        this.modules.set(module.name, module)
         return txData
     }
 
@@ -195,11 +199,23 @@ class FunWallet extends ContractsHolder {
         const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
         return new Transaction({ op }, true)
     }
+
+    //1st class methods
+    async transfer(to, amount, erc20, options) {
+        const transferModule = this.modules.get("TokenTransfer")
+        const transferActionTx = await transferModule.createTransferTx(to, amount, erc20) //TODO: have name->token mapping
+        if (options && options.sendTxLater) {
+            return transferActionTx
+        }
+        else {
+            return await this.deployTx(transferActionTx)
+        }
+    }
 }
 
 FunWallet.utils = class {
     static fund = async (signer, address, amt) => {
-        return await EoaUtils.fundAccount(signer, address, amt) 
+        return await EoaUtils.fundAccount(signer, address, amt)
     }
 
 }

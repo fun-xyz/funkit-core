@@ -6,7 +6,7 @@ const ApproveAndSwapObj = require("../../utils/abis/ApproveAndSwap.json")
 const { DataServer } = require('../../utils/DataServer')
 
 class TokenSwap extends Module {
-
+    name="TokenSwap"
     async init(chainId) {
         const { tokenSwapAddress, univ3router, univ3quoter, univ3factory } = await DataServer.getModuleInfo(TOKEN_SWAP_MODULE_NAME, chainId)
         this.addr = tokenSwapAddress

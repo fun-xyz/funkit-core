@@ -7,7 +7,7 @@ const ABI = ethers.utils.defaultAbiCoder;
 const { DataServer } = require("../../utils/DataServer")
 
 class EoaAaveWithdrawal extends Module {
-
+    name = "EoaAaveWithdrawal"
     async init(chainId) {
         const { eoaAaveWithdrawAddress } = await DataServer.getModuleInfo(EOA_AAVE_WITHDRAWAL_MODULE_NAME, chainId)
         this.addr = eoaAaveWithdrawAddress

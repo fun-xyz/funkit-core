@@ -4,7 +4,7 @@ const { expect } = require("chai")
 const ethers = require('ethers')
 const { transferAmt, getAddrBalanceErc, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 
-describe("TokenTransfer", function() {
+describe("TokenTransfer", function () {
     let eoa
     let funder
     const AMOUNT = 60
@@ -16,38 +16,44 @@ describe("TokenTransfer", function() {
         const tx = await swapModule.createSwapTx("eth", DAI_ADDR, amount, wallet.address, 5, 100)
         await wallet.deployTx(tx)
     }
-    
+
     async function walletTransferERC(wallet, to, amount, tokenAddr) {
-        const transfer = new TokenTransfer()
-        await wallet.addModule(transfer)
-        const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
+        const transferActionTx = await wallet.transfer(to, amount, tokenAddr, { sendTxLater: true })
         await wallet.deployTx(transferActionTx)
     }
-    
-    before(async function() {
+
+    before(async function () {
         const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, AMOUNT + 1)
-        
+
     })
 
-    it("succeed case", async function() {
+    it("succeed case", async function () {
         this.timeout(30000)
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
         await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
-    
+
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)
         await wallet.deploy()
         await getEthSwapToDAI(wallet, swapModule, eoa, AMOUNT)
 
+        //native
         const transferNum = 5
         const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, DAI_ADDR, funder.address)
         await walletTransferERC(wallet, funder.address, ethers.utils.parseEther(transferNum.toString()), DAI_ADDR)
         const funderWalletErc20BalanceEnd = await getAddrBalanceErc(eoa, DAI_ADDR, funder.address)
         expect(Math.floor(funderWalletErc20BalanceEnd - funderWalletErc20BalanceStart)).to.be.equal(transferNum)
+
+        //with option
+        await wallet.transfer(funder.address, ethers.utils.parseEther(transferNum.toString()), DAI_ADDR)
+        const funderWalletErc20BalanceEnd2 = await getAddrBalanceErc(eoa, DAI_ADDR, funder.address)
+        expect(Math.floor(funderWalletErc20BalanceEnd2 - funderWalletErc20BalanceEnd)).to.be.equal(transferNum)
+
+
     })
 })
