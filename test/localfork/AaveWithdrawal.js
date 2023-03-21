@@ -178,18 +178,21 @@ describe("AaveWithDrawal", function () {
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY)
         wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
+
         await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
     })
 
     it("succeed case", async function () {
         this.timeout(30000)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
 
         const { aTokenAddress } = await getAtokenAddress(eoa, TOKEN_ADDRESS)
         const eoaATokenBalance = await getAddrBalanceErc(eoa, aTokenAddress, eoa.address)

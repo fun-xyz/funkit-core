@@ -13,13 +13,14 @@ class FunWallet extends ContractsHolder {
 
     transactions = {}
 
+
     /**
     * Standard constructor
     * @params config, apiKey
     * - config: an instance of FunWalletConfig
     * - apiKey: api key to access Fun Wallet service
     */
-    constructor(config, apiKey) {
+     constructor(config, apiKey) {
 
         if (!(config instanceof FunWalletConfig)) {
             throw Error("Config Must be of type FunWalletConfig or child classes")
@@ -28,6 +29,13 @@ class FunWallet extends ContractsHolder {
         super(config.eoa, config.eoa.provider, config.chain)
         this.config = config
         this.dataServer = new DataServer(apiKey);
+    }
+
+    async init(uid){
+        
+    }
+    async init(salt, index){
+
     }
 
     /**     
@@ -57,10 +65,6 @@ class FunWallet extends ContractsHolder {
         const walletContract = await this.funWalletDataProvider.getAccountContract()
         this.addEthersContract(this.address, walletContract)
 
-        // Pre-fund FunWallet
-        if (this.config.prefundAmt) {
-            return await EoaUtils.fundAccount(this.config.eoa, this.address, this.config.prefundAmt)
-        }
     }
 
     /**
@@ -191,6 +195,13 @@ class FunWallet extends ContractsHolder {
         const op = await this.funWalletDataProvider.createSignedUserOp({ target: to, data })
         return new Transaction({ op }, true)
     }
+}
+
+FunWallet.utils = class {
+    static fund = async (signer, address, amt) => {
+        return await EoaUtils.fundAccount(signer, address, amt) 
+    }
+
 }
 
 module.exports = { FunWallet }

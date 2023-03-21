@@ -28,12 +28,14 @@ describe("FunWalletFactory", function () {
         //TODO: add faucet docs
         this.timeout(120000)
 
-        const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT)
+        const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN)
         wallet = new FunWallet(config, TEST_API_KEY);
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, ETHEREUM.GOERLI.PREFUNDAMT)
         console.log(`FunWallet Address: ${wallet.address}`)
+        
 
-        const walletConfig1 = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT)
+        const walletConfig1 = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN)
         const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
         await wallet1.init()
 

@@ -14,14 +14,15 @@ describe("Fun SDK Flow", function () {
     it("Fun Wallet Factory: wallet should have the same address even we create the wallet twice", async function () {
         this.timeout(30000)
         const salt = ethers.utils.randomBytes(32).toString();
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0.3, salt)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, salt)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, 0.3)
 
-        const walletConfig1 = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, 0.3, salt)
-
+        const walletConfig1 = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_ID, salt)
         const wallet1 = new FunWallet(walletConfig1, TEST_API_KEY)
         await wallet1.init()
+        await FunWallet.utils.fund(eoa, wallet.address, 0.3)
 
         expect(wallet.address).to.be.equal(wallet1.address)
     })

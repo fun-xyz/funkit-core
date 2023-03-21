@@ -22,6 +22,7 @@ describe("TokenSwap", function () {
         const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
 
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)

@@ -1,9 +1,12 @@
 const { OnChainResources } = require("../utils/OnChainResources")
 const { DataServer } = require("../utils/DataServer")
 const { BasePaymaster } = require("./paymasters/BasePaymaster")
+const MPCWallet = require("./walletTemplates/MPCWallet.json")
 
 class FunWalletConfig {
-
+    //templates (don't have this yet)
+    MPCWallet=MPCWallet 
+    
     /**
     * Standard constructor
     * @params eoa, chain, prefundAmt, paymasterAddr, index
@@ -16,13 +19,12 @@ class FunWalletConfig {
     * - index: part of the uniqueness of fun wallets. Use the different values for different wallets.
     */
 
-    constructor(eoa, chain, prefundAmt, salt, paymaster = undefined, index = 0, implementationAddress = "") {
+    constructor(eoa, chain, salt, paymaster = undefined, index = 0, implementationAddress = "") {
         if (!eoa || !chain) {
             throw Error("Eoa and chain must be specified to construct FunWalletConfig")
         }
         this.eoa = eoa
         this.chain = chain
-        this.prefundAmt = prefundAmt
 
         if (paymaster && !(paymaster instanceof BasePaymaster)) {
             throw new Error("Paymaster must be of type BasePaymaster or children")

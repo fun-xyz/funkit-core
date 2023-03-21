@@ -34,9 +34,10 @@ describe("TokenTransfer", function() {
 
     it("succeed case", async function() {
         this.timeout(30000)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
     
         const swapModule = new TokenSwap()
         await wallet.addModule(swapModule)

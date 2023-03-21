@@ -96,9 +96,11 @@ describe("Paymaster", function () {
         paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
         entryPointAddress = getData.aaData.entryPointAddress
 
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
+
 
         await getUsdcForWallet(wallet, AMOUNT)
         await walletTransferERC(wallet, funder.address, USDCETHAMT, USDC_ADDR)
@@ -114,9 +116,11 @@ describe("Paymaster", function () {
         await transferAmt(funder, eoa.address, AMOUNT + 1)
 
         const paymaster = new TokenPaymaster(funder.address, HARDHAT_FORK_CHAIN_ID)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT, "", paymaster)
+        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, "", paymaster)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
+        await FunWallet.utils.fund(eoa, wallet.address, PREFUND_AMT)
+
 
         const startWalletPaymasterUSDC = (await paymasterInterface.depositInfo(wallet.address)).tokenAmount
         const startFunderPaymasterUSDC = (await paymasterInterface.depositInfo(funder.address)).tokenAmount
