@@ -38,8 +38,6 @@ class WalletAbiManager {
         const initCodeParams = {
             salt, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
         }
-        const initializercalldata = this.walletInterface.encodeFunctionData("initialize", [entryPointAddress, verificationAddress, owner])
-        console.log(initializercalldata)
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero
         }
@@ -50,7 +48,6 @@ class WalletAbiManager {
         const data = this.encodeFactoryCall("createAccount", initCodeParams, "WalletAbiManager.getInitCode")
         return hexConcat([input.factoryAddress, data])
     }
-
 }
 
 

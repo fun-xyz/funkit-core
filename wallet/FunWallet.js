@@ -90,13 +90,17 @@ const main = async () => {
     const wallet = new FunWallet()
     const auth = new EoaAuth({ privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" })
     const salt = await auth.getUniqueId()
-    wallet.init({ salt, index: 0 })
+    wallet.init({ salt, index: 1 })
     const toAddress = "0x3949c97925e5Aa13e34ddb18EAbf0B70ABB0C7d4"
     const address = await wallet.getAddress()
     const prefundReceipt = await prefundWallet(address, 1, auth)
+    const provider = await global.chain.getProvider()
+    const start = await provider.getBalance(toAddress)
+
     const opreceipt = await wallet.execute(auth, genCall(toAddress, 1))
     console.log(opreceipt)
-
+    const end = await provider.getBalance(toAddress)
+    console.log(start.lt(end))
 
 }
 

@@ -4,7 +4,7 @@ const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/ut
 const calcPreVerificationGas = (userOp) => {
     const ov = DefaultGasOverheads
     const p = Object.assign({
-        preVerificationGas: 21000, signature: hexlify(Buffer.alloc(ov.sigSize, 1))
+        preVerificationGas: 28000, signature: hexlify(Buffer.alloc(ov.sigSize, 1))
     }, userOp);
     const packed = arrayify(packUserOp(p, false));
     const callDataCost = packed.map(x => x === 0 ? ov.zeroByte : ov.nonZeroByte).reduce((sum, x) => sum + x);
@@ -55,7 +55,7 @@ const getPromiseFromOp = async (op) => {
 // Constants
 
 const DefaultGasOverheads = {
-    fixed: 21000,
+    fixed: 28000,
     perUserOp: 18300,
     perUserOpWord: 4,
     zeroByte: 4,

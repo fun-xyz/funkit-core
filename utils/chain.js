@@ -53,7 +53,6 @@ const encodeContractCall = (interface, encodeFunctionName, input, location, isIn
     verifyValidParamsFromAbi(interface.fragments, encodeFunctionName, input, location, isInternal)
     const paramOrder = getFunctionParamOrderFromInterface(interface, encodeFunctionName)
     const paramsInOrder = orderParams(paramOrder, input)
-    console.log(paramsInOrder)
     return interface.encodeFunctionData(encodeFunctionName, paramsInOrder)
 }
 
@@ -66,7 +65,6 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
         throw new DataFormatError(param.name, `{solidity ${param.type}}`, location, helper, isInternal)
     }
 }
-
 
 const verifyBundlerUrl = async (url) => {
     const provider = new JsonRpcProvider(url)
