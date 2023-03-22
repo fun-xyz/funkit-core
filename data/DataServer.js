@@ -1,4 +1,5 @@
-const { getPromiseFromOp, sendRequest } = require('../utils')
+const { sendRequest } = require('../utils/network')
+const { getPromiseFromOp } = require('../utils/userop')
 
 const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"

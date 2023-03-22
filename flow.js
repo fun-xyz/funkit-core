@@ -2,16 +2,22 @@ import { FunWallet, FunWalletConfig, FunAccountManager, Auth, Modules } from "Fu
 
 // 1. How to specify global Fun settings
 // There is some file containing env variables so we don't need to specify varibales like API_KEY over & over again
-const env_options = {
+const globalOptions = {
   paymaster: {
-    "sponsor_address": "", // Dev-specific
-    "token_name": ""
+    sponsorAddress: "", // Dev-specific
+    token: ""
   }, // Defaults to
-  api_key: "", // Default to None
-  sendTxLater: False, // Defaults to False
-  chains: [""] // Defaults to an array of all supported chains. Reasons for modifying this are if we do not want to create a FunWallet on all chains & have to prefund it on all chains, needing gas tokens for each one.
+  apiKey: "", // Default to None
+  sendTxLater: false, // Defaults to False
+  // chains: [""] // Defaults to an array of all supported chains. Reasons for modifying this are if we do not want to create a FunWallet on all chains & have to prefund it on all chains, needing gas tokens for each one.
+  chain: { // only a parameter one needed
+    id: 1,
+    name: "ethereum",
+    rpc: "https://eth-rpc.gateway.pokt.network",
+    bundler: ""
+  } // Defaults to an array of all supported chains. Reasons for modifying this are if we do not want to create a FunWallet on all chains & have to prefund it on all chains, needing gas tokens for each one.
 }
-FunAccountManager.configureEnvironment(env_options)
+FunAccountManager.configureEnvironment(globalOptions)
 
 
 // 2. How to create a validator/authorizer for a FunWallet

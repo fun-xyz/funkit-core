@@ -1,6 +1,9 @@
 const { constants, Signer, providers } = require("ethers");
 const { arrayify } = require("ethers/lib/utils");
-const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey, validateClassInstance, getSignerFromPrivateKey, getSignerFromProvider } = require("../utils");
+
+const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey, validateClassInstance, } = require("../utils/data")
+const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
+
 const { Auth } = require("./Auth");
 
 
@@ -48,6 +51,11 @@ class EoaAuth extends Auth {
     async signHash(hash) {
         await this.init()
         return await this.signer.signMessage(arrayify(hash))
+    }
+
+    async getSigner() {
+        await this.init()
+        return this.signer
     }
 
     async getUniqueId() {

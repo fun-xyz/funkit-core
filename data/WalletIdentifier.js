@@ -1,5 +1,5 @@
 const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
-const { verifyValidParametersForLocation, validateType, getUsedParametersFromOptions } = require("../utils")
+const { verifyValidParametersForLocation, validateType, getUsedParametersFromOptions } = require("../utils/data")
 
 const walletIdentifierExpectedKeys = [["salt", "uid"]]
 
@@ -31,7 +31,7 @@ class WalletIdentifier {
 
     async loadIdentifierFromServer(forced = false) { }
 
-    getIdentifierFromSalt() {
+    getIdentifierFromSalt(forced = false) {
         if (!this.identifier || forced) {
             this.identifier = keccak256(toUtf8Bytes(`${this.salt}-${this.index}`))
         }
@@ -44,9 +44,7 @@ class WalletIdentifier {
             return this.getIdentifierFromSalt(true)
         }
         return this.getIdentifierFromSalt(forced)
-
     }
-
 
 }
 

@@ -1,12 +1,11 @@
-const { constants, ethers, BigNumber } = require("ethers")
-const { Interface } = require("ethers/lib/utils")
-const { Helper, DataFormatError } = require("../errors")
-const { verifyValidParametersForLocation, verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../utils")
+const { constants } = require("ethers")
+const { verifyValidParametersForLocation } = require("../utils/data")
+const { verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../utils/chain")
+const { hexConcat } = require("ethers/lib/utils")
 
 
-const encodeCallExpectedKeys = ["to", "calldata"]
-// const initCodeExpectedKeys = ["salt", "_entryPointAddr", "_userAuthAddr", "_owner"]
-const initCodeExpectedKeys = ["salt", "entryPointAddress", "verificationAddress", "owner"]
+const encodeCallExpectedKeys = ["to", "data"]
+const initCodeExpectedKeys = ["salt", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
 
 class WalletAbiManager {
     constructor(walletAbi, factoryAbi) {
@@ -17,7 +16,7 @@ class WalletAbiManager {
 
     encodeCall(input) {
         verifyValidParametersForLocation("WalletAbiManager.encodeCall", input, encodeCallExpectedKeys)
-        let { to: dest, calldata: data, value } = input
+        let { to: dest, data, value } = input
         value = value ? value : 0
         const encodeObj = { dest, data, value }
         return this.encodeWalletCall("execFromEntryPointOrOwner", encodeObj)
@@ -39,16 +38,17 @@ class WalletAbiManager {
         const initCodeParams = {
             salt, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
         }
-
+        const initializercalldata = this.walletInterface.encodeFunctionData("initialize", [entryPointAddress, verificationAddress, owner])
+        console.log(initializercalldata)
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero
         }
 
         verifyValidParamsFromAbi(this.walletInterface.fragments, "initialize", initCodeParams, "WalletAbiManager.getInitCode")
         initCodeParams.initializerCallData = this.encodeWalletCall("initialize", initCodeParams)
-
         verifyValidParamsFromAbi(this.factoryInterface.fragments, "createAccount", initCodeParams, "WalletAbiManager.getInitCode")
-        return this.encodeFactoryCall("createAccount", initCodeParams, "WalletAbiManager.getInitCode")
+        const data = this.encodeFactoryCall("createAccount", initCodeParams, "WalletAbiManager.getInitCode")
+        return hexConcat([input.factoryAddress, data])
     }
 
 }
@@ -72,8 +72,8 @@ const encodeCallParams = {
 }
 
 
-console.log(manager.getInitCode(initcodeParams), "\n");
-console.log(manager.encodeCall(encodeCallParams))
+// manager.getInitCode(initcodeParams), "\n")
+// manager.encodeCall(encodeCallParams)
 
 
 module.exports = { WalletAbiManager }

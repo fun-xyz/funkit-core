@@ -1,24 +1,13 @@
-const { ParameterFormatError, Helper } = require("../errors")
-const { verifyValidParametersForLocation } = require("../utils")
+const { parseOptions } = require("../utils/chain")
+// const { verifyValidParametersForLocation, getChainsFromList, getUsedParametersFromOptions, getChainFromUnlabeledData } = require("../utils")
 
-const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
 
-const paymasterExpectedKeys = ["sponsorAddress", "token"]
 
-const configureEnvironment = (envOptions) => {
-    let { paymaster, apiKey, sendTxLater, chains } = envOptions
-    if (paymaster) {
-        verifyValidParametersForLocation("EnvironmentConfigError.configureEnvironment", paymaster, paymasterExpectedKeys)
-    }
-    if (chains && !Array.isArray(chains)) {
-        const helperMessage = "chains must be of type array"
-        const helper = new Helper("chains", chains, helperMessage)
-        throw new ParameterFormatError("configureEnvironment", helper)
-    }
-    chains = chains ? chains : SUPPORTED_CHAINS
-    global = { ...global, paymaster, apiKey, sendTxLater, chains }
+const configureEnvironment = async (envOptions) => {
+    const parsedOptions = await parseOptions(envOptions, "EnvironmentConfigError.configureEnvironment")
+    global = { ...global, ...parsedOptions }
 }
 
 
 
-module.exports = { configureEnvironment }
+module.exports = { configureEnvironment, parseOptions }

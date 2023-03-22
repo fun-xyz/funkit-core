@@ -1,6 +1,6 @@
 const { Chain } = require("../chain/Chain")
 const { WalletIdentifier } = require("../data/WalletIdentifier")
-const { validateClassInstance } = require("../utils")
+const { validateClassInstance } = require("../utils/data")
 
 const factoryAbi = require("../abis/FunWalletFactory.json")
 const entryPointAbi = require("../abis/EntryPoint.json")
@@ -13,8 +13,11 @@ class WalletOnChainManager {
         validateClassInstance(chain, "chain", Chain, currentLocation)
         validateClassInstance(walletIdentifier, "walletIdentifier", WalletIdentifier, currentLocation)
         this.chain = chain
+        this.key = chain.key
         this.walletIdentifier = walletIdentifier
     }
+
+
 
     async init() {
         if (!this.factory) {
@@ -32,7 +35,7 @@ class WalletOnChainManager {
 
     async getWalletAddress() {
         await this.init()
-        const salt = await walletIdentifier.getIdentifier()
+        const salt = await this.walletIdentifier.getIdentifier()
         return await this.factory.getAddress(salt)
     }
 
@@ -56,6 +59,12 @@ class WalletOnChainManager {
             return txReceipt;
         }
     }
+
+    async addressIsContract(address) {
+        const provider = await this.chain.getProvider()
+        const addressCode = await provider.getCode(address)
+        return !(addressCode.length == 2)
+    }
 }
 
 
@@ -64,11 +73,11 @@ const identifier = new WalletIdentifier({ salt: "sdfa" })
 
 const main = async () => {
     const onchain = new WalletOnChainManager(chain, identifier)
-    console.log(await onchain.getReceipt("0x6d970b07efab0d65ea70df7c3db62ef9736fd5fa7b0e7211ac340f3a1734bd27"))
+    await onchain.getReceipt("0x6d970b07efab0d65ea70df7c3db62ef9736fd5fa7b0e7211ac340f3a1734bd27")
 }
 
 
-main()
+// main()
 
 
 module.exports = { WalletOnChainManager }

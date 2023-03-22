@@ -1,5 +1,5 @@
 const { constants } = require("ethers")
-const { isHexString } = require("ethers/lib/utils")
+const { isHexString, hexlify } = require("ethers/lib/utils")
 const { MissingParameterError, Helper, DataFormatError } = require("../errors")
 
 const compareToExpectedStructure = (input, expected) => {
@@ -70,7 +70,16 @@ const orderParams = (paramOrder, input) => {
 
 
 const getUsedParametersFromOptions = (input, options) => {
-    return options.filter(key => (input[key]))
+    return options.filter(key => (!!input[key]))
+}
+const objectValuesToBigNumber = (obj) => {
+    Object.keys(obj).forEach(key => {
+        const val = obj[key]
+        if (typeof val == 'object' && val.type == "BigNumber") {
+            obj[key] = BigNumber.from(val.hex)
+        }
+    })
+    return obj
 }
 
 const verifyPrivateKey = (value, location = "", isInternal = false) => {
@@ -116,7 +125,7 @@ const deepHexlify = (obj) => {
         return obj;
     }
     else if (obj._isBigNumber != null || typeof obj !== 'object') {
-        return (0, utils_1.hexlify)(obj).replace(/^0x0/, '0x');
+        return hexlify(obj).replace(/^0x0/, '0x');
     }
     if (Array.isArray(obj)) {
         return obj.map(member => deepHexlify(member));
@@ -125,4 +134,4 @@ const deepHexlify = (obj) => {
 }
 
 
-module.exports = { deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+module.exports = { objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };

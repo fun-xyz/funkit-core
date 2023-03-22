@@ -1,10 +1,11 @@
-
-const { verifyValidParametersForLocation, calcPreVerificationGas, getOpHash, objectValuesToBigNumber } = require("../utils")
+const { verifyValidParametersForLocation, } = require("../utils/data")
+const { objectValuesToBigNumber } = require("../utils/data")
+const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
 
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
 
 class UserOp {
-    
+
     opHashData = {}
 
     constructor(input) {

@@ -1,17 +1,17 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
 const { DataServer, UserOp } = require("../data")
-const { verifyValidParametersForLocation, getUsedParametersFromOptions, flattenObj, validateClassInstance } = require("../utils")
-const { MissingParameterError, Helper } = require("../errors")
+const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnenectionError } = require("../errors")
 const { Bundler } = require("../data/Bundler")
 
-const chainExpectedKeys = [["chainId", "chainName", "rpcUrl", "bundlerUrl"]]
+const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
+
+const chainExpectedKeys = ["chainId", "chainName", "rpcUrl", "bundlerUrl"]
 
 class Chain {
     constructor(input) {
         const currentLocation = "Chain constructor"
-        verifyValidParametersForLocation(currentLocation, input, chainExpectedKeys)
-        const [key] = getUsedParametersFromOptions(input, chainExpectedKeys[0])
-
+        verifyValidParametersForLocation(currentLocation, input, [chainExpectedKeys])
+        const [key] = getUsedParametersFromOptions(input, chainExpectedKeys)
         this[key] = input[key]
         this.key = key
     }
@@ -22,11 +22,17 @@ class Chain {
             await this.loadChainData(this[this.key])
         }
         if (this.key == "rpcUrl") {
-            this.provider = new JsonRpcProvider(this.rpcUrl)
+            await this.loadProvider()
             const { chainId } = await this.provider.getNetwork()
             await this.loadChainData(chainId)
         }
-        // await this.loadBundler()
+        if (this.key == "bundlerUrl") {
+            const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
+            await this.loadChainData(bundlerChainId)
+            await this.loadBundler()
+        }
+
+        await this.loadBundler()
         await this.loadProvider()
     }
 
@@ -37,23 +43,33 @@ class Chain {
     }
 
     async loadBundler() {
-        if (this.bundler) {
-            const bundlerChainId = await this.bundler.getChainId(this.bundlerUrl)
-            if (bundlerChainId == this.chainId) {
-                return
+        if (!this.bundler) {
+            try {
+                this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
+                await this.bundler.validateChainId()
+            } catch {
+                const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
+                throw new NoServerConnenectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
             }
         }
-        this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
     }
 
     async loadChainData(chainId) {
-        if (!this.id) {
-            const chain = await DataServer.getChainInfo(chainId)
-            this.id = chain.chain;
-            this.name = chain.key;
-            this.currency = chain.currency
-            const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
-            Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+        let chain;
+        try {
+            if (!this.id) {
+                chain = await DataServer.getChainInfo(chainId)
+                this.id = chain.chain;
+                this.name = chain.key;
+                this.currency = chain.currency
+                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+                Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+            }
+        } catch {
+            const helper = new Helper("getChainInfo", chain, "call failed")
+            helper.pushMessage(`Chain identifier ${chainId} not found`)
+
+            throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
         }
     }
 
@@ -68,13 +84,11 @@ class Chain {
     }
 
     async getAddress(name) {
-
         await this.init()
-
         const res = this.addresses[name]
         if (!res) {
             const currentLocation = "Chain.getAddress"
-            const helperMainMessage = "Key doesn't exist"
+            const helperMainMessage = "Search key does not exist"
             const helper = new Helper(`${currentLocation} was given these parameters`, name, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
@@ -99,18 +113,19 @@ class Chain {
         await this.init()
         return await this.bundler.sendUserOpToBundler(userOp.op)
     }
+    async getFeeData() {
+        await this.init()
+        return await this.provider.getFeeData();
+    }
 }
 
 
 const main = async () => {
     const chainParams = {
-        chainId: 31337
+        rpcUrl: "http://localhost:8545"
     }
-
     const chain = new Chain(chainParams)
-
-    console.log(await chain.getAddress("entryPointAddress"))
+    await chain.getAddress("entryPointAddress")
 }
-
 
 module.exports = { Chain }

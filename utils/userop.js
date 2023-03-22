@@ -1,8 +1,5 @@
 
 const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/utils");
-const calcCallGasLimit = (input) => {
-
-}
 
 const calcPreVerificationGas = (userOp) => {
     const ov = DefaultGasOverheads
@@ -152,4 +149,4 @@ const userOpTypeSig = {
 
 
 
-module.exports = { calcCallGasLimit, calcPreVerificationGas, getOpHash, getPromiseFromOp };
+module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp };

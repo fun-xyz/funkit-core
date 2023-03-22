@@ -1,8 +1,11 @@
-const { Interface, defaultAbiCoder } = require("ethers/lib/utils")
-const { BigNumber, Wallet } = require("ethers")
-const { orderParams } = require("./data")
-const { Helper, DataFormatError, MissingParameterError } = require("../errors")
+const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
+const { JsonRpcProvider } = require("@ethersproject/providers")
 
+const { BigNumber, Wallet, providers } = require("ethers")
+const { orderParams, verifyValidParametersForLocation, validateClassInstance } = require("./data")
+const { Helper, DataFormatError, MissingParameterError } = require("../errors")
+const { Chain } = require("../chain/Chain")
+const { EoaAuth } = require("../auth")
 
 const getFunctionParamOrderFromInterface = (interface, func) => {
     for (const field of interface.fragments) {
@@ -50,6 +53,7 @@ const encodeContractCall = (interface, encodeFunctionName, input, location, isIn
     verifyValidParamsFromAbi(interface.fragments, encodeFunctionName, input, location, isInternal)
     const paramOrder = getFunctionParamOrderFromInterface(interface, encodeFunctionName)
     const paramsInOrder = orderParams(paramOrder, input)
+    console.log(paramsInOrder)
     return interface.encodeFunctionData(encodeFunctionName, paramsInOrder)
 }
 
@@ -63,27 +67,79 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-const objectValuesToBigNumber = (obj) => {
-    Object.keys(obj).forEach(key => {
-        const val = obj[key]
-        if (typeof val == 'object' && val.type == "BigNumber") {
-            obj[key] = BigNumber.from(val.hex)
+
+const verifyBundlerUrl = async (url) => {
+    const provider = new JsonRpcProvider(url)
+    const data = await provider.send("web3_clientVersion", [])
+    return (data.indexOf("aa-bundler") + 1)
+}
+
+const getChainsFromList = async (chains) => {
+    const out = chains.map(getChainFromUnlabeledData)
+    return await Promise.all(out)
+}
+
+const getChainFromUnlabeledData = async (chainIdentifier) => {
+    let chain
+    if (chainIdentifier instanceof Chain) {
+        return chainIdentifier
+    }
+    if (Number(chainIdentifier)) {
+        chain = new Chain({ chainId: chainIdentifier })
+    }
+    else if (chainIdentifier.indexOf("http") + 1) {
+        if (await verifyBundlerUrl(chainIdentifier)) {
+            chain = new Chain({ bundlerUrl: chainIdentifier })
+        } else {
+            chain = new Chain({ rpcUrl: chainIdentifier })
         }
-    })
-    return obj
+    }
+    else {
+        chain = new Chain({ chainName: chainIdentifier })
+    }
+    await chain.init()
+    return chain
 }
 
-const getSignerFromPrivateKey = (key) => {
-    return new Wallet(key)
+const prefundWallet = async (to, value, auth, chain = global.chain) => {
+    validateClassInstance(auth, "prefund auth", EoaAuth, "prefundWallet")
+    const signer = await auth.getSigner()
+    const provider = await chain.getProvider()
+    const txSigner = signer.connect(provider)
+    const txData = { to, data: "0x", value: parseEther(`${value}`) }
+    const tx = await txSigner.sendTransaction(txData)
+    return await tx.wait()
 }
 
-const getSignerFromProvider = async (provider) => {
-    await provider.send('eth_requestAccounts', [])
-    return provider.getSigner()
+
+
+const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
+
+const paymasterExpectedKeys = ["sponsorAddress", "token"]
+const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
+const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
+
+const parseOptions = async (options, location) => {
+    const { paymaster, chain } = options
+    if (paymaster) {
+        verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
+    }
+
+    // if (chain) {
+    //     verifyValidParametersForLocation("EnvironmentConfigError.configureEnvironment", chain, [chainExpectedKeys])
+    // }
+
+    // const [key] = getUsedParametersFromOptions(chain, chainExpectedKeys[0])
+    // let chainInput = { [chainExpectedKeysToInput[chainExpectedKeys.indexOf(key)]]: chain[key] }
+
+    return {
+        ...options, chain: await getChainFromUnlabeledData(chain)
+    }
 }
 
+defaultAbiCoder.encodeWith
 
 
 module.exports = {
-    getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, objectValuesToBigNumber, verifyValidParamsFromAbi, getSignerFromPrivateKey, getSignerFromProvider
+    parseOptions, prefundWallet, getChainsFromList, getChainFromUnlabeledData, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
 };
