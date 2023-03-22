@@ -58,8 +58,8 @@ const authParams = {
 
 const main = async () => {
     const auth = new EoaAuth(authParams)
-    const opHash = "0x0ec93ca833f32ab9ca76e97d33b30bd2d6b59b4ecd778319d9673bf5c6173572"
-    console.log(await auth.signHash(opHash), "\n0xcd4d2a1f71c6890ebfac6f9d0fce757bcf0c40ec75102f3b43ec5164df8e8042344d57ee577bb5b0208df71aa9779b17fc63ae095232a974a7d247106522307e1b")
+    const opHash = "0x42050058edf1b723e8834e454f2ca82d0a4b08284c7fe0acf9c4376bb2a96acc"
+    console.log(await auth.signHash(opHash), "\0xcd4d2a1f71c6890ebfac6f9d0fce757bcf0c40ec75102f3b43ec5164df8e8042344d57ee577bb5b0208df71aa9779b17fc63ae095232a974a7d247106522307e1b")
 }
 
 main()
