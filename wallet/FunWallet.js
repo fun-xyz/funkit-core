@@ -10,6 +10,7 @@ const { constants } = require("ethers")
 const { EoaAuth } = require("../auth")
 const { parseEther } = require("ethers/lib/utils")
 const { Chain } = require("../chain/Chain")
+const { gasCalculation } = require('../utils/userop')
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
@@ -54,7 +55,9 @@ class FunWallet {
         await userOp.sign(auth, chain)
         const ophash = await chain.sendOpToBundler(userOp)
         const txid = await onChainDataManager.getTxId(ophash)
-        return { ophash, txid }
+        const gasData = await gasCalculation(txid, chain.provider, chain.currency)
+        
+        return { ophash, txid, ...gasData}
     }
 
     async _getThisInitCode(chain, auth) {

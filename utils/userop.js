@@ -1,5 +1,7 @@
 
 const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/utils");
+const fetch = require('node-fetch')
+const PRICE_URL = "https://min-api.cryptocompare.com/data/price"
 
 const calcPreVerificationGas = (userOp) => {
     const ov = DefaultGasOverheads
@@ -14,6 +16,30 @@ const calcPreVerificationGas = (userOp) => {
         ov.perUserOpWord * packed.length);
     return ret;
 }
+
+async function gasCalculation(txid, provider, currency) {
+    try {
+        const txReceipt = await provider.getTransactionReceipt(txid)
+        const gasUsed = txReceipt.gasUsed.toNumber()
+        const gasPrice = txReceipt.effectiveGasPrice.toNumber() * 1e-18
+        const gasTotal = gasUsed * gasPrice
+        const chainPrice = await getPriceData(currency)
+        const gasUSD = gasTotal * chainPrice
+        return { gasUsed, gasUSD }
+    }
+    catch {
+        return { gasUsed: "Gas cannot be calculated", gasUSD: "Gas cannot be calculated" }
+    }
+}
+
+async function getPriceData(chainCurrency) {
+    const data = await fetch(`${PRICE_URL}?fsym=${chainCurrency}&tsyms=USD`)
+    const price = await data.json()
+    return price.USD;
+}
+
+
+
 
 function encode(typevalues, forSignature) {
     const types = typevalues.map(typevalue => typevalue.type === 'bytes' && forSignature ? 'bytes32' : typevalue.type);
@@ -149,4 +175,4 @@ const userOpTypeSig = {
 
 
 
-module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp };
+module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp, gasCalculation };

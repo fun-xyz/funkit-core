@@ -1,8 +1,8 @@
-const { EoaAuth } = require("./auth")
-const { configureEnvironment } = require("./managers")
-const { prefundWallet } = require("./utils")
-const { FunWallet } = require("./wallet")
-const { ethTransfer } = require("./actions")
+const { EoaAuth } = require("../../auth")
+const { configureEnvironment } = require("../../managers")
+const { prefundWallet } = require("../../utils")
+const { FunWallet } = require("../../wallet")
+const { transfer } = require("../../actions")
 
 const options = {
     chain: 31337,
@@ -30,12 +30,14 @@ const main = async () => {
     const wallet = new FunWallet()
     wallet.init({ salt })
 
+    wallet.transfer(to, amount)
+
     await prefundWallet(auth, wallet, 1)
-    const opreceipt = await wallet.execute(auth, ethTransfer(to, value))
+    const opreceipt = await wallet.execute(auth, transfer(to, value))
 
     console.log(opreceipt)
     getbalance(global.chain, to)
-
 }
+
 
 main()
