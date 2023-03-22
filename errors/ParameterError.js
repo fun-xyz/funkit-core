@@ -1,5 +1,5 @@
 const { BaseError } = require("./BaseError");
-const { DataFormatError } = require("./DataFormatError");
+const { DataFormatError } = require("./DataError");
 
 class ParameterError extends BaseError {
     constructor(errorType, location, helper = "", isInternal = false) {

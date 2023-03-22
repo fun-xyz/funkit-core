@@ -7,7 +7,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@account-abstraction/utils": "^0.5.0",
+    "@account-abstraction/sdk": "^0.4.0",
     "@lifeomic/attempt": "^3.0.3",
     "ethers": "5.7.2",
     "node-fetch": "2.0.0"

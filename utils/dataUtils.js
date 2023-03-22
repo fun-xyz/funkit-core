@@ -33,8 +33,17 @@ const validateClassInstance = (data, dataName, classObj, location = "", isIntern
     }
     const helper = new Helper(dataName, data)
     throw new DataFormatError(dataName, classObj.name, location, helper, isInternal);
-
 }
+
+const validateType = (data, dataName, type, location = "", isInternal = false) => {
+    if (typeof data == type) {
+        return;
+    }
+    const helper = new Helper(dataName, data)
+    throw new DataFormatError(dataName, type, location, helper, isInternal);
+}
+
+
 const formatMissingForError = (missing) => {
     let out = ""
     for (let term of missing) {
@@ -77,5 +86,43 @@ const verifyPrivateKey = (value, location = "", isInternal = false) => {
 
 }
 
+const flattenObj = (obj) => {
+    let out = {}
+    Object.keys(obj).forEach(key => {
+        if (typeof obj[key] == "object" && !Array.isArray(obj[key])) {
+            out = { ...out, ...flattenObj(obj[key]) }
+        }
+        else {
+            out[key] = obj[key]
+        }
+    })
+    return out
+}
 
-module.exports = { getUsedParametersFromOptions, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+const objValToArray = (obj) => {
+    let out = {}
+    for (const [key, value] of Object.entries(obj)) {
+        out[key] = [value]
+    }
+    return out
+}
+
+
+const deepHexlify = (obj) => {
+    if (typeof obj === 'function') {
+        return undefined;
+    }
+    if (obj == null || typeof obj === 'string' || typeof obj === 'boolean') {
+        return obj;
+    }
+    else if (obj._isBigNumber != null || typeof obj !== 'object') {
+        return (0, utils_1.hexlify)(obj).replace(/^0x0/, '0x');
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(member => deepHexlify(member));
+    }
+    return Object.keys(obj).reduce((set, key) => (Object.assign(Object.assign({}, set), { [key]: deepHexlify(obj[key]) })), {});
+}
+
+
+module.exports = { deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };

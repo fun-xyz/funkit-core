@@ -4,9 +4,11 @@ const { verifyValidParametersForLocation, calcPreVerificationGas, getOpHash, obj
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
 
 class UserOp {
+    
     opHashData = {}
+
     constructor(input) {
-        verifyValidParametersForLocation("UserOp", input, userOpExpectedKeys)
+        verifyValidParametersForLocation("UserOp constructor", input, userOpExpectedKeys)
         input = objectValuesToBigNumber(input)
         let { initCode, paymasterAndData, preVerificationGas } = input
         initCode = initCode ? initCode : "0x"
@@ -17,7 +19,7 @@ class UserOp {
 
     async sign(auth, chain) {
         const opHash = await this.getOpHashData(chain)
-        this.op.signature = await auth.sign(opHash.hash) 
+        this.op.signature = await auth.signHash(opHash.hash)
     }
 
     async getOpHashData(chain) {
