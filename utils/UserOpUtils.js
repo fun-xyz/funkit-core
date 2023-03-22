@@ -1,37 +1,155 @@
-const fetch = require('node-fetch')
 
-const PRICE_URL = "https://min-api.cryptocompare.com/data/price"
+const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/utils");
+const calcCallGasLimit = (input) => {
 
-async function createUserOp(funWalletDataProvider, { to, data }, gasLimit = 0, noInit = false, calldata = false) {
-    return await funWalletDataProvider.createSignedUserOp({ target: to, data, noInit, calldata, gasLimit })
 }
 
-async function deployUserOp(transaction, bundlerClient, funWalletDataProvider) {
-    const { op } = transaction.data
-    const userOpHash = await bundlerClient.sendUserOpToBundler(op)
-    const txid = await funWalletDataProvider.getUserOpReceipt(userOpHash)
-
-    return { userOpHash, txid }
+const calcPreVerificationGas = (userOp) => {
+    const ov = DefaultGasOverheads
+    const p = Object.assign({
+        preVerificationGas: 21000, signature: hexlify(Buffer.alloc(ov.sigSize, 1))
+    }, userOp);
+    const packed = arrayify(packUserOp(p, false));
+    const callDataCost = packed.map(x => x === 0 ? ov.zeroByte : ov.nonZeroByte).reduce((sum, x) => sum + x);
+    const ret = Math.round(callDataCost +
+        ov.fixed / ov.bundleSize +
+        ov.perUserOp +
+        ov.perUserOpWord * packed.length);
+    return ret;
 }
 
-async function gasCalculation(receipt, ethersProvider, chain) {
-    const txReceipt = await ethersProvider.getTransactionReceipt(receipt.txid)
-    const gasUsed = txReceipt.gasUsed.toNumber()
-    const gasPrice = txReceipt.effectiveGasPrice.toNumber() * 1e-18
-    const gasTotal = gasUsed * gasPrice
-    const chainPrice = await getPriceData(chain)
-    const gasUSD = gasTotal * chainPrice
-    return { gasUsed, gasUSD }
+function encode(typevalues, forSignature) {
+    const types = typevalues.map(typevalue => typevalue.type === 'bytes' && forSignature ? 'bytes32' : typevalue.type);
+    const values = typevalues.map((typevalue) => typevalue.type === 'bytes' && forSignature ? keccak256(typevalue.val) : typevalue.val);
+    return defaultAbiCoder.encode(types, values);
 }
 
-async function getPriceData(chainCurrency) {
-    const data = await fetch(`${PRICE_URL}?fsym=${chainCurrency}&tsyms=USD`)
-    const price = await data.json()
-    return price.USD;
+
+function packUserOp(op, forSignature = true) {
+    if (forSignature) {
+        let encoded = defaultAbiCoder.encode([userOpTypeSig], [{ ...op, signature: '0x' }]);
+        encoded = '0x' + encoded.slice(66, encoded.length - 64);
+        return encoded;
+    }
+    const typevalues = UserOpType.components.map((c) => ({
+        type: c.type,
+        val: op[c.name]
+    }));
+    return encode(typevalues, forSignature);
 }
 
-module.exports = {
-    createUserOp,
-    deployUserOp,
-    gasCalculation
+const getOpHash = (op, chainId, entryPoint) => {
+    const userOpHash = keccak256(packUserOp(op, true));
+    const enc = defaultAbiCoder.encode(['bytes32', 'address', 'uint256'], [userOpHash, entryPoint, chainId]);
+    return keccak256(enc);
+
 }
+
+const getPromiseFromOp = async (op) => {
+    const out = {}
+    await Promise.all(Object.keys(op).map(async (key) => {
+        out[key] = await op[key]
+    }))
+    return out
+}
+
+
+
+// Constants
+
+const DefaultGasOverheads = {
+    fixed: 21000,
+    perUserOp: 18300,
+    perUserOpWord: 4,
+    zeroByte: 4,
+    nonZeroByte: 16,
+    bundleSize: 1,
+    sigSize: 65
+};
+
+
+const UserOpType = {
+    components: [
+        { internalType: 'address', name: 'sender', type: 'address' },
+        { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        { internalType: 'bytes', name: 'initCode', type: 'bytes' },
+        { internalType: 'bytes', name: 'callData', type: 'bytes' },
+        { internalType: 'uint256', name: 'callGasLimit', type: 'uint256' },
+        {
+            internalType: 'uint256',
+            name: 'verificationGasLimit',
+            type: 'uint256'
+        },
+        {
+            internalType: 'uint256',
+            name: 'preVerificationGas',
+            type: 'uint256'
+        },
+        { internalType: 'uint256', name: 'maxFeePerGas', type: 'uint256' },
+        {
+            internalType: 'uint256',
+            name: 'maxPriorityFeePerGas',
+            type: 'uint256'
+        },
+        { internalType: 'bytes', name: 'paymasterAndData', type: 'bytes' },
+        { internalType: 'bytes', name: 'signature', type: 'bytes' }
+    ],
+    internalType: 'struct UserOperation',
+    name: 'userOp',
+    type: 'tuple'
+}
+
+const userOpTypeSig = {
+    components: [
+        {
+            type: 'address',
+            name: 'sender'
+        },
+        {
+            type: 'uint256',
+            name: 'nonce'
+        },
+        {
+            type: 'bytes',
+            name: 'initCode'
+        },
+        {
+            type: 'bytes',
+            name: 'callData'
+        },
+        {
+            type: 'uint256',
+            name: 'callGasLimit'
+        },
+        {
+            type: 'uint256',
+            name: 'verificationGasLimit'
+        },
+        {
+            type: 'uint256',
+            name: 'preVerificationGas'
+        },
+        {
+            type: 'uint256',
+            name: 'maxFeePerGas'
+        },
+        {
+            type: 'uint256',
+            name: 'maxPriorityFeePerGas'
+        },
+        {
+            type: 'bytes',
+            name: 'paymasterAndData'
+        },
+        {
+            type: 'bytes',
+            name: 'signature'
+        }
+    ],
+    name: 'userOp',
+    type: 'tuple'
+};
+
+
+
+module.exports = { calcCallGasLimit, calcPreVerificationGas, getOpHash, getPromiseFromOp };

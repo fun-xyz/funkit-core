@@ -1,0 +1,39 @@
+
+const { verifyValidParametersForLocation, calcPreVerificationGas, getOpHash, objectValuesToBigNumber } = require("../utils")
+
+const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
+
+class UserOp {
+    opHashData = {}
+    constructor(input) {
+        verifyValidParametersForLocation("UserOp", input, userOpExpectedKeys)
+        input = objectValuesToBigNumber(input)
+        let { initCode, paymasterAndData, preVerificationGas } = input
+        initCode = initCode ? initCode : "0x"
+        paymasterAndData = paymasterAndData ? paymasterAndData : "0x"
+        this.op = { ...input, initCode, paymasterAndData, signature: '0x' }
+        this.op.preVerificationGas = preVerificationGas ? preVerificationGas : calcPreVerificationGas(this.op)
+    }
+
+    async sign(auth, chain) {
+        const opHash = await this.getOpHashData(chain)
+        this.op.signature = await auth.sign(opHash.hash) 
+    }
+
+    async getOpHashData(chain) {
+        const chainId = await chain.getChainId()
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
+
+        const { chainId: prevChainId, entryPointAddress: prevEntryPointAddress } = this.opHashData
+
+        if (chainId == prevChainId && entryPointAddress == prevEntryPointAddress) {
+            return this.opHashData
+        }
+
+        const hash = getOpHash(this.op, chainId, entryPointAddress)
+        this.opHashData = { chainId, entryPointAddress, hash }
+        return this.opHashData
+    }
+}
+
+module.exports = { UserOp };
