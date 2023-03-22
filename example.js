@@ -5,7 +5,7 @@ const { FunWallet } = require("./wallet")
 const { ethTransfer } = require("./actions")
 
 const options = {
-    chain: 31337,
+    chain: 5,
     apiKey: "localtest"
 }
 
@@ -31,7 +31,7 @@ const main = async () => {
     wallet.init({ salt })
 
     await prefundWallet(auth, wallet, 1)
-    const opreceipt = await wallet.execute(auth, ethTransfer(to, value))
+    const opreceipt = await wallet.execute(auth, ethTransfer(to, value), options)
 
     console.log(opreceipt)
     getbalance(global.chain, to)

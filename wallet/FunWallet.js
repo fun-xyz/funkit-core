@@ -4,11 +4,8 @@ const { WalletAbiManager, WalletOnChainManager, configureEnvironment } = require
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 const { verifyValidParametersForLocation, validateClassInstance, } = require("../utils/data")
-const { parseOptions, prefundWallet } = require("../utils/chain")
+const { parseOptions } = require("../utils/chain")
 const { UserOp } = require("../data")
-const { constants } = require("ethers")
-const { EoaAuth } = require("../auth")
-const { parseEther } = require("ethers/lib/utils")
 const { Chain } = require("../chain/Chain")
 
 const executeExpectedKeys = ["chain", "apiKey"]
