@@ -99,8 +99,9 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
     return chain
 }
 
-const prefundWallet = async (to, value, auth, chain = global.chain) => {
+const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
     validateClassInstance(auth, "prefund auth", EoaAuth, "prefundWallet")
+    const to = await wallet.getAddress()
     const signer = await auth.getSigner()
     const provider = await chain.getProvider()
     const txSigner = signer.connect(provider)
