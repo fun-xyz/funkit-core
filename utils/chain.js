@@ -1,6 +1,6 @@
 const { Interface, defaultAbiCoder } = require("ethers/lib/utils")
 const { BigNumber, Wallet } = require("ethers")
-const { orderParams } = require("./dataUtils")
+const { orderParams } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 
 

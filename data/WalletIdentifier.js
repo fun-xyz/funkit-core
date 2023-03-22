@@ -51,16 +51,5 @@ class WalletIdentifier {
 }
 
 
-const identifierParams = {
-    salt: "asdfadsf",
-}
-
-
-const main = async () => {
-    const iden = new WalletIdentifier(identifierParams)
-    console.log(await iden.getIdentifier())
-}
-
-main()
 
 module.exports = { WalletIdentifier };

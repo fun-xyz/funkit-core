@@ -1,6 +1,6 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
 const { DataServer, UserOp } = require("../data")
-const { verifyValidParametersForLocation, getUsedParametersFromOptions, flattenObj, objValToArray, validateClassInstance } = require("../utils")
+const { verifyValidParametersForLocation, getUsedParametersFromOptions, flattenObj, validateClassInstance } = require("../utils")
 const { MissingParameterError, Helper } = require("../errors")
 const { Bundler } = require("../data/Bundler")
 
@@ -26,7 +26,14 @@ class Chain {
             const { chainId } = await this.provider.getNetwork()
             await this.loadChainData(chainId)
         }
-        await this.loadBundler()
+        // await this.loadBundler()
+        await this.loadProvider()
+    }
+
+    async loadProvider() {
+        if (!this.provider) {
+            this.provider = new JsonRpcProvider(this.rpcUrl)
+        }
     }
 
     async loadBundler() {
@@ -37,36 +44,33 @@ class Chain {
             }
         }
         this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
-
     }
 
     async loadChainData(chainId) {
-        const chain = await DataServer.getChainInfo(chainId)
-        this.id = chain.chain;
-        this.name = chain.key;
-        this.currency = chain.currency
-        const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
-        Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+        if (!this.id) {
+            const chain = await DataServer.getChainInfo(chainId)
+            this.id = chain.chain;
+            this.name = chain.key;
+            this.currency = chain.currency
+            const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+            Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+        }
     }
 
     async getData(key) {
-        if (!this.id) {
-            await this.init()
-        }
+        await this.init()
         return this[key]
     }
 
     async getAddresses() {
-        if (!this.id) {
-            await this.init()
-        }
+        await this.init()
         return this.addresses
     }
 
     async getAddress(name) {
-        if (!this.id) {
-            await this.init()
-        }
+
+        await this.init()
+
         const res = this.addresses[name]
         if (!res) {
             const currentLocation = "Chain.getAddress"
@@ -78,38 +82,35 @@ class Chain {
     }
 
     async getChainId() {
-        if (!this.id) {
-            await this.init()
-        }
+        await this.init()
         return this.id
     }
 
+    async getProvider() {
+        await this.init()
+        return this.provider
+    }
     setAddress(name, address) {
         this.addresses[name] = address
     }
 
     async sendOpToBundler(userOp) {
         validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
-        if (!this.id) {
-            await this.init()
-        }
+        await this.init()
         return await this.bundler.sendUserOpToBundler(userOp.op)
     }
-
-
 }
 
 
 const main = async () => {
     const chainParams = {
-        chainId: 5
+        chainId: 31337
     }
+
     const chain = new Chain(chainParams)
 
-    await chain.init()
-    // console.log(await chain.getAddress("entryPointAddress"))
+    console.log(await chain.getAddress("entryPointAddress"))
 }
 
-main()
 
 module.exports = { Chain }

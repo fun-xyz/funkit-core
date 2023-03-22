@@ -25,12 +25,6 @@ class Bundler {
         }
     }
 
-    static async getChainId(bundlerUrl) {
-        const provider = new JsonRpcProvider(bundlerUrl);
-        const chain = await provider.send('eth_chainId', []);
-        const bundlerChain = parseInt(chain);
-    }
-
     async sendUserOpToBundler(userOp1) {
         await this.initializing;
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp1));
@@ -45,6 +39,12 @@ class Bundler {
         const jsonRequestData = [hexifiedUserOp, this.entryPointAddress];
         await this.printUserOperation('eth_estimateUserOperationGas', jsonRequestData);
         return await this.userOpJsonRpcProvider.send('eth_estimateUserOperationGas', [hexifiedUserOp, this.entryPointAddress]);
+    }
+
+    static async getChainId(bundlerUrl) {
+        const provider = new JsonRpcProvider(bundlerUrl);
+        const chain = await provider.send('eth_chainId', []);
+        const bundlerChain = parseInt(chain);
     }
 }
 
