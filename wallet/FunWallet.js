@@ -44,7 +44,7 @@ class FunWallet {
         const sender = await this.getAddress(chain)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(auth, chain))
 
         let partialOp = { ...userOpDefaultOptionalParams, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
@@ -57,7 +57,7 @@ class FunWallet {
         return { ophash, txid }
     }
 
-    async _getThisInitCode(chain, auth) {
+    async _getThisInitCode(auth, chain = global.chain) {
         const owner = await auth.getUniqueId()
         const salt = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
