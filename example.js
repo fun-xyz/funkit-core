@@ -22,7 +22,7 @@ const getbalance = async (chain, to) => {
 const main = async () => {
     await configureEnvironment(options)
 
-    const auth = new EoaAuth({ privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" })
+    const auth = new EoaAuth({ privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690" })
     const salt = await auth.getUniqueId()
 
     getbalance(global.chain, to)
