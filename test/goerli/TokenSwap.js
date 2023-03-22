@@ -15,6 +15,7 @@ describe("Token swap", function () {
     let eoa, wallet
     before(async function () {
         this.timeout(100000)
+        await new Promise(resolve => setTimeout(resolve, 5000));
         const provider = new ethers.providers.JsonRpcProvider(ETHEREUM.GOERLI.RPC)
         eoa = new ethers.Wallet(ETHEREUM.GOERLI.PRIVKEY, provider)
         console.log(`Eoa Address: ${eoa.address}`)
@@ -38,7 +39,6 @@ describe("Token swap", function () {
         
         const startWalletDAI = await getUserBalanceErc(wallet, ETHEREUM.GOERLI.DAIADDRESS)
         const tx = await swapModule.createSwapTx("eth", ETHEREUM.GOERLI.DAIADDRESS, .01, wallet.address, 5, 100)
-        
         const receipt = await wallet.deployTx(tx)
         console.log(receipt)
         const endWalletDAI = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.DAIADDRESS, wallet.address)

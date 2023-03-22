@@ -253,7 +253,9 @@ env REMOTE_FORK_TEST=false npx mocha test/fork/TokenSwap.js
 
 # **Testing With a Goerli Environment**
 
-You can run any file inside of the test/goerli folder and see the result. To test Aave Withdraw, you may need to pre-supply some token to the wallet otherwise the test will fail
+You can run any file inside of the test/goerli folder and see the result. To test Aave Withdraw, you may need to pre-supply some token to the wallet otherwise the test will fail.
+
+Please retry if you identify "invalid hash" failure as goerli testing environemnt is not very stable.
 
 Starting point: `/fun-wallet-sdk`
 
