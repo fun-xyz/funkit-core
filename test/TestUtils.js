@@ -2,9 +2,12 @@ const hre = require("hardhat");
 const { ethers } = hre
 const ERC20 = require("../utils/abis/ERC20.json")
 
-const HARDHAT_FORK_CHAIN_ID = 31337
-const HARDHAT_FORK_CHAIN_KEY = "ethereum-localfork"
-const RPC_URL = "http://127.0.0.1:8545"
+const REMOTE_FORK_CHAIN_ID = 31337
+const LOCAL_FORK_CHAIN_ID = 1337
+const REMOTE_FORK_CHAIN_KEY = "ethereum-remotefork"
+const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
+const REMOTE_FORK_RPC_URL = "http://34.221.214.161:3001"
+const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
 const PRIV_KEY = "0x66f37ee92a08eebb5da72886f3c1280d5d1bd5eb8039f52fdb8062df7e364206"
 const PKEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 const DAI_ADDR = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
@@ -55,5 +58,5 @@ const timeout = async (ms) => {
 
 module.exports = {
     transferAmt, getAddrBalanceErc, timeout, execContractFunc, getUserBalanceErc, createErc, CHAINLINK_TOKEN_AGGREGATOR_ADDRESS, 
-    HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
+    REMOTE_FORK_CHAIN_ID, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY, USDC_ADDR, AVAX_CHAIN_ID, AVAX_RPC_URL, USDC_AVAX_ADDR, AVAX_RECEIVE_PKEY
 }
