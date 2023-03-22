@@ -2,12 +2,15 @@ const { FunWallet, FunWalletConfig } = require("../../index")
 const { expect } = require("chai")
 const { TokenSwap } = require("../../src/modules")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
+const { transferAmt, getUserBalanceErc, REMOTE_FORK_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 
 describe("TokenSwap", function () {
     let eoa
     const AMOUNT = 60
     const PREFUND_AMT = 0.3
+    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
+    const FORK_CHAIN_KEY = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_KEY : LOCAL_FORK_CHAIN_KEY
+    const RPC_URL = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_RPC_URL : LOCAL_FORK_RPC_URL
 
     before(async function () {
         const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
@@ -19,7 +22,7 @@ describe("TokenSwap", function () {
 
     it("succeed case", async function () {
         this.timeout(30000)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 

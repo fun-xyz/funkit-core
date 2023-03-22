@@ -1,11 +1,11 @@
 const { generateSha256, getPromiseFromOp, sendRequest } = require('./Tools')
 
-const LOCAL_FORK_CHAIN_ID = 31337
+const LOCAL_FORK_CHAIN_ID = 1337
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
-const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
-const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 const LOCAL_URL = "http://127.0.0.1:3000"
 const TEST_API_KEY = "localtest"
+const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
+const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 
 const WETH_ADDR = {
     "1": {
@@ -136,11 +136,10 @@ class DataServer {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", {chain: name}).then((r) => {
                 return r
             })
-        } else {
-            return await this.sendPostRequest(APIURL, "get-chain-from-name", {name}).then((r) => {
-                return r.data
-            })
         }
+        return await this.sendPostRequest(APIURL, "get-chain-from-name", {name}).then((r) => {
+            return r.data
+        })
     }
 
     static async getModuleInfo(moduleName, chainId) {
@@ -152,19 +151,16 @@ class DataServer {
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
             })
-        }
-        else {
+        } else {
             return await this.sendPostRequest(LOCAL_URL, "get-module-info", body).then((r) => {
                 return r
             })
-
         }
     }
 
     static async getPaymasterAddress(chainId) {
         const { moduleAddresses: { paymaster: { paymasterAddress } } } = await this.getChainInfo(chainId)
         return paymasterAddress
-
     }
 }
 

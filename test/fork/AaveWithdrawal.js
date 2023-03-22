@@ -2,8 +2,8 @@ const { FunWalletConfig } = require("../../index")
 const { EoaAaveWithdrawal, TokenSwap } = require("../../src/modules/index")
 const { FunWallet } = require("../../index")
 const { expect } = require("chai")
-const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY,
-    RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
+const { transferAmt, getAddrBalanceErc, execContractFunc, getUserBalanceErc, createErc, REMOTE_FORK_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY,
+    REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 const ethers = require('ethers')
 
 const GET_RESERVE_DATA_ABI = [
@@ -138,6 +138,9 @@ describe("AaveWithDrawal", function () {
     const PREFUND_AMT = 0.3
     const TOKEN_ADDRESS = DAI_ADDR
     const WITHDRAW_AMOUNT = ethers.constants.MaxInt256
+    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
+    const FORK_CHAIN_KEY = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_KEY : LOCAL_FORK_CHAIN_KEY
+    const RPC_URL = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_RPC_URL : LOCAL_FORK_RPC_URL
 
     async function eoaSupplyAave(eoa, amount, tokenAddr) {
         const tokenContract = createErc(tokenAddr, eoa)
@@ -173,21 +176,21 @@ describe("AaveWithDrawal", function () {
     }
 
     before(async function () {
-        this.timeout(30000)
+        this.timeout(100000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT)
         wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
         await setUpWithdrawEOA(eoa, wallet, amount, TOKEN_ADDRESS)
     })
 
     it("succeed case", async function () {
-        this.timeout(30000)
+        this.timeout(100000)
         await transferAmt(funder, eoa.address, amount + 1)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 

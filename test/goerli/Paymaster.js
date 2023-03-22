@@ -18,6 +18,7 @@ describe("Paymaster - Aave Withdraw", function () {
     let eoa, wallet
     before(async function () {
         this.timeout(90000)
+        await new Promise(resolve => setTimeout(resolve, 5000));
         const provider = new ethers.providers.JsonRpcProvider(ETHEREUM.GOERLI.RPC)
         eoa = new ethers.Wallet(ETHEREUM.GOERLI.PRIVKEY, provider)
         console.log(`Eoa Address: ${eoa.address}`)

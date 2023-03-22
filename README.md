@@ -209,19 +209,35 @@ const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 
 # **Testing With a Fork Environment**
 
-## 1. Clone the Bundler Repo
+## <a id="testwithremotebundler"></a> **1. [Easy] Testing with remote bundler**
+
+You can run any file inside of the test/fork folder and see the result. By default, the tests will use the Fun managed bundler running on localfork
+
+Starting point: `/fun-wallet-sdk`
+```
+npm run test-remotefork
+```
+or
+```
+env REMOTE_FORK_TEST=true npx mocha test/fork/TokenSwap.js
+```
+
+## <a id="testwithlocalbundler"></a> **2. [Pro] Testing with local bundler**
+
+You need to spin up a bundler and local fork at your local environment and then run tests. Please follow the following steps.
+
+### <a id="testwithlocalbundler"></a> **1. Clone the Bundler Repo**
 
 Starting point: `~/{HOME_DIR}`
 ```
-git clone https://github.com/TheFunGroup/AA_Bundler.git
+git clone https://github.com/TheFunGroup/bundler.git
 ```
 
-## 2. Set Up the Fork and Bundler Locally
+### <a id="testwithlocalbundler"></a> **2. Set Up the Fork and Bundler Locally**
 
-Once the bundler is cloned, follow the instructions in https://github.com/TheFunGroup/AA_Bundler/blob/main/README.md before moving onto the following steps
+Once the bundler is cloned, follow the instructions in https://github.com/TheFunGroup/bundler/blob/main/README.md before moving onto the following steps
 
-
-## 3. Run Test
+### <a id="testwithlocalbundler"></a> **3. Run Test**
 
 Now the local fork is setup, you can run any file inside of the test folder and see the result.
 
@@ -229,22 +245,27 @@ Starting point: `/fun-wallet-sdk`
 
 ```
 npm run test-localfork
-
+```
+or 
+```
+env REMOTE_FORK_TEST=false npx mocha test/fork/TokenSwap.js
 ```
 
 # **Testing With a Goerli Environment**
 
-## 1. Run Test
+You can run any file inside of the test/goerli folder and see the result. To test Aave Withdraw, you may need to pre-supply some token to the wallet otherwise the test will fail.
 
-The bundler has been set up already in goerli so you can just run the tests. To test Aave Withdraw, you may need to pre-supply some token to the wallet
+Please retry if you identify "invalid hash" failure as goerli testing environemnt is not very stable.
 
 Starting point: `/fun-wallet-sdk`
 
 ```
 npm run test-goerli
-
 ```
-
+or 
+```
+npx mocha test/goerli/TokenSwap
+```
 ## More Documentation
 
 For more detailed information on how to use the FunWallet SDK, please refer to the [FunWallet Documentation](http://docs.fun.xyz).

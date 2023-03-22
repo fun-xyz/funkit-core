@@ -1,4 +1,4 @@
-const { execContractFunc, createErc, HARDHAT_FORK_CHAIN_ID } = require("../../utils/Web3utils")
+const { execContractFunc, createErc } = require("../../utils/Web3utils")
 const paymasterAbi = require("../../utils/abis/TokenPaymaster.json").abi
 const { DataServer } = require("../../utils/DataServer")
 const ethers = require("ethers")

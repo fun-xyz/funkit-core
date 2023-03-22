@@ -2,19 +2,21 @@ const { FunWallet, FunWalletConfig } = require("../../index")
 const { TokenSwap, TokenTransfer } = require("../../src/modules")
 const { expect } = require("chai")
 const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, USDC_ADDR, HARDHAT_FORK_CHAIN_ID, HARDHAT_FORK_CHAIN_KEY, RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
+const { transferAmt, getUserBalanceErc, USDC_ADDR, REMOTE_FORK_CHAIN_ID, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
 const { DataServer } = require('../../utils/DataServer')
 const paymasterdata = require("../../utils/abis/TokenPaymaster.json")
 const { PaymasterSponsor } = require("../../src/paymasters/PaymasterSponsor")
 const { TokenPaymaster } = require("../../src/paymasters")
-
-
 
 describe("Paymaster", function () {
     let eoa
     let funder
     let provider
     let paymasterAddress
+    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
+    const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    const FORK_CHAIN_KEY = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_KEY : LOCAL_FORK_CHAIN_KEY
+    const RPC_URL = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_RPC_URL : LOCAL_FORK_RPC_URL
 
     const PREFUND_AMT = 0.3
     const AMOUNT = 60
@@ -87,16 +89,16 @@ describe("Paymaster", function () {
     }
 
     before(async function () {
-        this.timeout(30000)
+        this.timeout(100000)
         provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
 
-        const getData = await DataServer.getChainInfo(HARDHAT_FORK_CHAIN_ID)
+        const getData = await DataServer.getChainInfo(FORK_CHAIN_ID)
         paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
         entryPointAddress = getData.aaData.entryPointAddress
 
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT)
+        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
@@ -107,14 +109,14 @@ describe("Paymaster", function () {
     })
 
     it("succeed case", async function () {
-        this.timeout(30000)
+        this.timeout(100000)
         const paymasterInterface = new PaymasterSponsor(funder)
         await paymasterInterface.init()
 
         await transferAmt(funder, eoa.address, AMOUNT + 1)
 
-        const paymaster = new TokenPaymaster(funder.address, HARDHAT_FORK_CHAIN_ID)
-        const walletConfig = new FunWalletConfig(eoa, HARDHAT_FORK_CHAIN_KEY, PREFUND_AMT, "", paymaster)
+        const paymaster = new TokenPaymaster(funder.address, FORK_CHAIN_ID)
+        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT, "", paymaster)
         const wallet = new FunWallet(walletConfig, TEST_API_KEY)
         await wallet.init()
 
