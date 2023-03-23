@@ -21,11 +21,11 @@ describe("GenCall", function () {
     }
 
     before(async function () {
+        this.timeout(30000)
         const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         funder = new ethers.Wallet(PKEY, provider)
         await transferAmt(funder, eoa.address, AMOUNT + 1)
-
     })
 
     it("succeed case", async function () {
