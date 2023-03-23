@@ -30,6 +30,7 @@ class EoaAuth extends Auth {
                 validateClassInstance(input[key], key, providers.Provider, currentLocation)
                 break;
         }
+        
         this[key] = input[key]
         this.key = key
     }

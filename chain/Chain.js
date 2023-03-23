@@ -1,9 +1,11 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
 const { DataServer, UserOp } = require("../data")
-const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnenectionError } = require("../errors")
+const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectionError } = require("../errors")
 const { Bundler } = require("../data/Bundler")
+const entryPointAbi = require("../abis/EntryPoint.json")
 
 const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
+const { Contract } = require("ethers")
 
 const chainExpectedKeys = ["chainId", "chainName", "rpcUrl", "bundlerUrl"]
 
@@ -34,11 +36,19 @@ class Chain {
 
         await this.loadBundler()
         await this.loadProvider()
+
+
     }
 
     async loadProvider() {
         if (!this.provider) {
             this.provider = new JsonRpcProvider(this.rpcUrl)
+        }
+    }
+
+    async loadEntryPoint() {
+        if (!this.entrypoint) {
+            this.entrypoint = new Contract(this.addresses.entryPointAddress, entryPointAbi.abi, this.provider)
         }
     }
 
@@ -49,7 +59,7 @@ class Chain {
                 await this.bundler.validateChainId()
             } catch {
                 const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
-                throw new NoServerConnenectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
+                throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
             }
         }
     }
@@ -66,7 +76,7 @@ class Chain {
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch {
-            const helper = new Helper("getChainInfo", chain, "call failed")
+            const helper = new Helper("getChainInfo", chain, "Call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
@@ -117,6 +127,22 @@ class Chain {
         await this.init()
         return await this.provider.getFeeData();
     }
+
+    async getReceipt(transactionHash) {
+        await this.init()
+        const txReceipt = await this.provider.getTransactionReceipt(transactionHash);
+        if (txReceipt && txReceipt.blockNumber) {
+            return txReceipt;
+        }
+    }
+
+    async addressIsContract(address) {
+        await this.init()
+        const addressCode = await this.provider.getCode(address)
+        return !(addressCode.length == 2)
+    }
+
+
 }
 
 

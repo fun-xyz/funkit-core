@@ -7,12 +7,14 @@ const { verifyValidParametersForLocation, validateClassInstance, } = require("..
 const { parseOptions } = require("../utils/chain")
 const { UserOp } = require("../data")
 const { Chain } = require("../chain/Chain")
+const { BigNumber } = require("ethers")
+const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
 const userOpDefaultOptionalParams = {
     callGasLimit: 500_0000,
-    verificationGasLimit: 5000_000,
+    verificationGasLimit: 150_000,
 }
 
 class FunWallet {
@@ -36,21 +38,21 @@ class FunWallet {
         const options = await parseOptions(txOptions, location)
         verifyValidParametersForLocation(location, options, executeExpectedKeys)
         const chain = await this._getFromCache(options.chain)
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const callData = this.abiManager.encodeCall(data)
         const sender = await this.getAddress(chain)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(auth, chain))
+        const initCode = (await chain.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(auth, chain))
 
         let partialOp = { ...userOpDefaultOptionalParams, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
-        const nonce = await auth.getNonce(partialOp)
+        const nonce = await this._getNonce(partialOp)
 
         const op = { ...partialOp, nonce }
         const userOp = new UserOp(op)
         await userOp.sign(auth, chain)
+        console.log(userOp.op)
         const ophash = await chain.sendOpToBundler(userOp)
-        const txid = await onChainDataManager.getTxId(ophash)
+        const txid = await chain.getTxId(ophash)
         return { ophash, txid }
     }
 
@@ -64,9 +66,15 @@ class FunWallet {
         return this.abiManager.getInitCode(initCodeParams)
     }
 
-    async getAddress(chain = global.chain) {
+    async getAddress(chain) {
         validateClassInstance(chain, "chain", Chain, "FunWallet.getAddress")
         return await (new WalletOnChainManager(chain, this.identifier)).getWalletAddress()
+    }
+
+    async _getNonce({ sender, callData }, timeout = 1000) {
+        const now = Date.now()
+        const time = now - now % timeout
+        return BigNumber.from(keccak256(toUtf8Bytes(`${sender}${callData}${time}`)));
     }
 
 }

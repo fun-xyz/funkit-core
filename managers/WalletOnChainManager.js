@@ -3,7 +3,6 @@ const { WalletIdentifier } = require("../data/WalletIdentifier")
 const { validateClassInstance } = require("../utils/data")
 
 const factoryAbi = require("../abis/FunWalletFactory.json")
-const entryPointAbi = require("../abis/EntryPoint.json")
 
 const { Contract } = require("ethers")
 
@@ -17,19 +16,11 @@ class WalletOnChainManager {
         this.walletIdentifier = walletIdentifier
     }
 
-
-
     async init() {
         if (!this.factory) {
             const factoryAddress = await this.chain.getAddress("factoryAddress")
             const provider = await this.chain.getProvider()
             this.factory = new Contract(factoryAddress, factoryAbi.abi, provider)
-        }
-
-        if (!this.entrypoint) {
-            const entryPointAddress = await this.chain.getAddress("entryPointAddress")
-            const provider = await this.chain.getProvider()
-            this.entrypoint = new Contract(entryPointAddress, entryPointAbi.abi, provider)
         }
     }
 
@@ -51,20 +42,6 @@ class WalletOnChainManager {
         }
         return null;
     }
-
-    async getReceipt(transactionHash) {
-        const provider = await this.chain.getProvider()
-        const txReceipt = await provider.getTransactionReceipt(transactionHash);
-        if (txReceipt && txReceipt.blockNumber) {
-            return txReceipt;
-        }
-    }
-
-    async addressIsContract(address) {
-        const provider = await this.chain.getProvider()
-        const addressCode = await provider.getCode(address)
-        return !(addressCode.length == 2)
-    }
 }
 
 
@@ -81,3 +58,4 @@ const main = async () => {
 
 
 module.exports = { WalletOnChainManager }
+
