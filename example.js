@@ -1,4 +1,4 @@
-const { EoaAuth } = require("./auth")
+const { Eoa } = require("./auth")
 const { configureEnvironment } = require("./managers")
 const { prefundWallet } = require("./utils")
 const { FunWallet } = require("./wallet")
@@ -22,13 +22,17 @@ const getbalance = async (chain, to) => {
 const main = async () => {
     await configureEnvironment(options)
 
-    const auth = new EoaAuth({ privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" })
+    const auth = new Eoa({ privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" })
+    // const auth = new Eoa({ privateKey: "0x01f3645a0c1b322e37fd6402253dd02c0b92e45b4dd072a9b6e76e4eb657345b" })
     const salt = await auth.getUniqueId()
 
     getbalance(global.chain, to)
 
     const wallet = new FunWallet()
-    wallet.init({ salt })
+
+    const indexRange = 100000
+    const randIndex = Math.round(Math.random() * indexRange)
+    wallet.init({ salt, index: randIndex })
 
     await prefundWallet(auth, wallet, 1)
     const opreceipt = await wallet.execute(auth, ethTransfer(to, value))

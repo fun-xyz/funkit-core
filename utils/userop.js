@@ -51,6 +51,30 @@ const getPromiseFromOp = async (op) => {
 }
 
 
+async function gasCalculation(txid, chain) {
+    try {
+        const provider = await chain.getProvider()
+        const currency = chain.currency
+        const txReceipt = await provider.getTransactionReceipt(txid)
+        const gasUsed = txReceipt.gasUsed.toNumber()
+        const gasPrice = txReceipt.effectiveGasPrice.toNumber() * 1e-18
+        const gasTotal = gasUsed * gasPrice
+        const chainPrice = await getPriceData(currency)
+        const gasUSD = gasTotal * chainPrice
+        return { gasUsed, gasUSD }
+    }
+    catch {
+        return { gasUsed: "Gas cannot be calculated", gasUSD: "Gas cannot be calculated" }
+    }
+}
+
+const PRICE_URL = "https://min-api.cryptocompare.com/data/price"
+
+async function getPriceData(chainCurrency) {
+    const data = await sendRequest(`${PRICE_URL}?fsym=${chainCurrency}&tsyms=USD`, "GET", "", "")
+    const price = await data.json()
+    return price.USD;
+}
 
 // Constants
 
@@ -149,4 +173,4 @@ const userOpTypeSig = {
 
 
 
-module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp };
+module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp, gasCalculation };

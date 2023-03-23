@@ -1,22 +1,25 @@
 const { WalletIdentifier } = require("../data/WalletIdentifier")
-const { WalletAbiManager, WalletOnChainManager, configureEnvironment } = require("../managers")
+const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 const { verifyValidParametersForLocation, validateClassInstance, } = require("../utils/data")
-const { parseOptions, prefundWallet } = require("../utils/chain")
+const { parseOptions } = require("../utils/chain")
 const { UserOp } = require("../data")
-const { constants } = require("ethers")
-const { EoaAuth } = require("../auth")
-const { parseEther } = require("ethers/lib/utils")
-const { Chain } = require("../chain/Chain")
+const { Chain } = require("../chain")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
-const userOpDefaultOptionalParams = {
-    callGasLimit: 500_0000,
-    verificationGasLimit: 5000_000,
+const userOpDefaultParams = {
+    callGasLimit: 40_000,
+    verificationGasLimit: 100_000,
 }
+
+const userOpInitParams = {
+    callGasLimit: 40_000,
+    verificationGasLimit: 600_000,
+}
+
 
 class FunWallet {
     objCache = {}
@@ -46,7 +49,9 @@ class FunWallet {
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
 
-        let partialOp = { ...userOpDefaultOptionalParams, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+        const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
+
+        let partialOp = { ...gasParams, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }

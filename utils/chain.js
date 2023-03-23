@@ -5,7 +5,7 @@ const { BigNumber, Wallet, providers } = require("ethers")
 const { orderParams, verifyValidParametersForLocation, validateClassInstance } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 const { Chain } = require("../chain/Chain")
-const { EoaAuth } = require("../auth")
+const { EoaAuth, Eoa } = require("../auth")
 
 const getFunctionParamOrderFromInterface = (interface, func) => {
     for (const field of interface.fragments) {
@@ -100,7 +100,7 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
 }
 
 const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
-    validateClassInstance(auth, "prefund auth", EoaAuth, "prefundWallet")
+    validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
     const to = await wallet.getAddress()
     const signer = await auth.getSigner()
     const provider = await chain.getProvider()

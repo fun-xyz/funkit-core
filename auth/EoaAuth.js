@@ -10,7 +10,7 @@ const { Auth } = require("./Auth");
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
 
 
-class EoaAuth extends Auth {
+class Eoa extends Auth {
     signer = false
 
     constructor(input) {
@@ -64,4 +64,4 @@ class EoaAuth extends Auth {
     }
 }
 
-module.exports = { EoaAuth };
+module.exports = { Eoa };

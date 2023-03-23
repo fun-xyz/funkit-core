@@ -1,6 +1,6 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
 const { DataServer, UserOp } = require("../data")
-const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnenectionError } = require("../errors")
+const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectionError } = require("../errors")
 const { Bundler } = require("../data/Bundler")
 
 const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
@@ -47,9 +47,10 @@ class Chain {
             try {
                 this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
                 await this.bundler.validateChainId()
-            } catch {
+            } catch (e) {
+                console.log(e)
                 const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
-                throw new NoServerConnenectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
+                throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
             }
         }
     }

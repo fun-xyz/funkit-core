@@ -14,11 +14,11 @@ class ServerMissingDataError extends ServerError {
 }
 
 
-class NoServerConnenectionError extends ServerError {
+class NoServerConnectionError extends ServerError {
     constructor(location, serverType, helper = "", isInternal = false) {
         super(`Server not found during ${serverType} call`, location, helper, isInternal);
     }
 }
 
 
-module.exports = { ServerError, ServerMissingDataError,NoServerConnenectionError };
+module.exports = { ServerError, ServerMissingDataError,NoServerConnectionError };
