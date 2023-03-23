@@ -1,7 +1,5 @@
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { JsonRpcProvider } = require("@ethersproject/providers")
-
-const { BigNumber, Wallet, providers } = require("ethers")
 const { orderParams, verifyValidParametersForLocation, validateClassInstance } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 const { Chain } = require("../chain/Chain")
@@ -99,7 +97,9 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
     return chain
 }
 
-const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
+const prefundWallet = async (auth, wallet, value, txOptions = global) => {
+    const options = await parseOptions(txOptions, "prefundWallet")
+    const chain = options.chain
     validateClassInstance(auth, "prefund auth", EoaAuth, "prefundWallet")
     const to = await wallet.getAddress()
     const signer = await auth.getSigner()
