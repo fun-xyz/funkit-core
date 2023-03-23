@@ -13,6 +13,7 @@ describe("TokenSwap", function () {
     const RPC_URL = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_RPC_URL : LOCAL_FORK_RPC_URL
 
     before(async function () {
+        this.timeout(30000)
         const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         eoa = new ethers.Wallet(PRIV_KEY, provider)
         const funder = new ethers.Wallet(PKEY, provider)
