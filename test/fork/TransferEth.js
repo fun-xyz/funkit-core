@@ -2,11 +2,12 @@ const { EoaAuth } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
 const { prefundWallet } = require("../../utils")
 const { FunWallet } = require("../../wallet")
-const { transfer } = require("../../actions")
+const { ethTransfer } = require("../../actions")
+const { TEST_API_KEY} = require("../TestUtils")
 
 const options = {
-    chain: 31337,
-    apiKey: "localtest"
+    chain: 5,
+    apiKey: "TEST_API_KEY"
 }
 
 const to = "0x3949c97925e5Aa13e34ddb18EAbf0B70ABB0C7d4"
@@ -30,10 +31,8 @@ const main = async () => {
     const wallet = new FunWallet()
     wallet.init({ salt })
 
-    wallet.transfer(to, amount)
-
     await prefundWallet(auth, wallet, 1)
-    const opreceipt = await wallet.execute(auth, transfer(to, value))
+    const opreceipt = await wallet.execute(auth, ethTransfer(to, value))
 
     console.log(opreceipt)
     getbalance(global.chain, to)

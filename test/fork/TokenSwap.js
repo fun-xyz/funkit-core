@@ -2,8 +2,8 @@ const { EoaAuth } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
 const { prefundWallet } = require("../../utils")
 const { FunWallet } = require("../../wallet")
-const { ethTransfer } = require("../../actions")
-
+const { TokenTransfer } = require("../../modules/TokenTransfer")
+const { DAI_ADDR } = require("../TestUtils")
 const options = {
     chain: 31337,
     apiKey: "localtest"
@@ -31,9 +31,15 @@ const main = async () => {
     wallet.init({ salt })
 
     await prefundWallet(auth, wallet, 1)
-    const opreceipt = await wallet.execute(auth, ethTransfer(to, value))
+    // const funderWalletErc20BalanceStart = await getAddrBalanceErc(eoa, DAI_ADDR, funder.address)
+
+    const tx = TokenTransfer.createTransferTx(auth.signer.address, 5, DAI_ADDR)
+    const opreceipt = await wallet.execute(auth, tx)
+    // const funderWalletErc20BalanceEnd = await getAddrBalanceErc(eoa, DAI_ADDR, funder.address)
 
     console.log(opreceipt)
+    // console.log(Math.floor(funderWalletErc20BalanceEnd - funderWalletErc20BalanceStart))
+
     getbalance(global.chain, to)
 }
 

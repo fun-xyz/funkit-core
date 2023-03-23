@@ -37,6 +37,7 @@ class FunWallet {
 
     async execute(auth, actionFunc, txOptions = global) {
         const { data, location, optionalParams } = await actionFunc(this)
+        console.log(data)
         const options = await parseOptions(txOptions, location)
         verifyValidParametersForLocation(location, options, executeExpectedKeys)
         const chain = await this._getFromCache(options.chain)
