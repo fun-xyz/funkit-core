@@ -53,7 +53,7 @@ class Chain {
             }
         }
     }
-
+    
     async loadChainData(chainId) {
         let chain;
         try {

@@ -133,5 +133,11 @@ const deepHexlify = (obj) => {
     return Object.keys(obj).reduce((set, key) => (Object.assign(Object.assign({}, set), { [key]: deepHexlify(obj[key]) })), {});
 }
 
+class Enum {
+    constructor(data) {
+        data.map((type, i) => { this[type] = i })
+    }
+}
 
-module.exports = { objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+
+module.exports = { Enum, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
