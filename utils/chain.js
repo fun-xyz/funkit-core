@@ -1,8 +1,7 @@
-const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
-const { JsonRpcProvider } = require("@ethersproject/providers")
-const { orderParams, verifyValidParametersForLocation, validateClassInstance } = require("./data")
-const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 const { Eoa } = require("../auth")
+const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
+const { orderParams, validateClassInstance } = require("./data")
+const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 
 const getFunctionParamOrderFromInterface = (interface, func) => {
     for (const field of interface.fragments) {
@@ -63,11 +62,7 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-const verifyBundlerUrl = async (url) => {
-    const provider = new JsonRpcProvider(url)
-    const data = await provider.send("web3_clientVersion", [])
-    return (data.indexOf("aa-bundler") + 1)
-}
+
 
 
 const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
@@ -82,8 +77,6 @@ const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
 }
 
 
-
-
 module.exports = {
-    verifyBundlerUrl, prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
+     prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
 };

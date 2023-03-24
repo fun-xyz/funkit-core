@@ -1,8 +1,7 @@
-const { Token } = require("../data")
+
 const { Chain } = require("../data/chain")
-const { ParameterFormatError, Helper } = require("../errors")
-const { TokenSponsor } = require("../sponsors")
-const { verifyBundlerUrl } = require("./chain")
+const { JsonRpcProvider } = require("@ethersproject/providers")
+
 
 const { verifyValidParametersForLocation } = require("./data")
 
@@ -12,15 +11,21 @@ const paymasterExpectedKeys = ["sponsorAddress", "token"]
 const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
 const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
 
+
 const getChainsFromList = async (chains) => {
     const out = chains.map(getChainFromUnlabeledData)
     return await Promise.all(out)
+}
+
+const verifyBundlerUrl = async (url) => {
+    const provider = new JsonRpcProvider(url)
+    const data = await provider.send("web3_clientVersion", [])
+    return (data.indexOf("aa-bundler") + 1)
 }
 const parseOptions = async (options, location) => {
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
-        gasSponsor = new TokenSponsor(gasSponsor)
     }
     chain = await getChainFromUnlabeledData(chain)
 

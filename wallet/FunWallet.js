@@ -6,6 +6,7 @@ const { verifyValidParametersForLocation, validateClassInstance, parseOptions, p
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 const { FirstClassActions } = require("../actions")
+const { TokenSponsor } = require("../sponsors")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
@@ -69,9 +70,17 @@ class FunWallet extends FirstClassActions {
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
 
-        const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
+        let paymasterAndData = ""
+        if (options.gasSponsor) {
+            const sponsor = new TokenSponsor(options)
+            paymasterAndData = await sponsor.getPaymasterAndData(options)
+        }
 
-        let partialOp = { ...gasParams, ...gasInfo, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+        const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
+        if (paymasterAndData) {
+            gasParams.verificationGasLimit += 50_000
+        }
+        let partialOp = { ...gasParams, ...gasInfo, callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }

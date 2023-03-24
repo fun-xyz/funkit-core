@@ -1,5 +1,6 @@
 const ethers = require("ethers")
-const { MissingParameterError } = require("../errors")
+const { parseUnits, formatUnits } = require("ethers/lib/utils")
+const { MissingParameterError, TransactionError, Helper } = require("../errors")
 const { DataServer } = require("../servers")
 const { parseOptions } = require("../utils/option")
 const erc20Abi = require("../abis/ERC20.json").abi
@@ -49,6 +50,9 @@ class Token {
 
 
     async getDecimals(options = global) {
+        if (this.isNative) {
+            return 18
+        }
         const parsedOptions = await parseOptions(options)
         const contract = await this.getContract(parsedOptions)
         return await contract.decimals()
@@ -57,41 +61,67 @@ class Token {
     async getBalance(address, options = global) {
         const parsedOptions = await parseOptions(options)
         const contract = await this.getContract(parsedOptions)
-        return await contract.balanceOf(address)
+        let amount;
+        if (this.isNative) {
+            const provider = await parsedOptions.chain.getProvider()
+            amount = await provider.getBalance(address)
+        } else {
+            amount = await contract.balanceOf(address)
+        }
+        const decimals = await this.getDecimals(parsedOptions)
+        return formatUnits(amount.toString(), decimals)
     }
 
     async getApproval(owner, spender, options = global) {
+        if (this.isNative) {
+            const helper = new Helper("approval", this, "Native token can not approve")
+            throw new TransactionError("Token.getApproval")
+        }
         const parsedOptions = await parseOptions(options)
         const contract = await this.getContract(parsedOptions)
         return await contract.allowance(owner, spender)
     }
 
-    static async getAddress(data, options = global) {
+    async getDecimalAmount(amount, options = global) {
+        const decimals = await this.getDecimals(options)
+        return parseUnits(`${amount}`, decimals)
+    }
+
+    async approve(spender, amount, options = global) {
         const parsedOptions = await parseOptions(options)
+        const contract = await this.getContract(parsedOptions)
+        const amountDec = await this.getDecimalAmount(amount)
+        const data = await contract.populateTransaction.approve(spender, amountDec)
+        return { ...data, chain: parsedOptions.chain }
+    }
+
+    static async getAddress(data, options = global) {
         const token = new Token(data)
-        return await token.getAddress(parsedOptions)
+        return await token.getAddress(options)
     }
 
     static async getDecimals(data, options = global) {
-        const parsedOptions = await parseOptions(options)
         const token = new Token(data)
-        return await token.getDecimals(parsedOptions)
+        return await token.getDecimals(options)
     }
 
     static async getBalance(data, address, options = global) {
-        const parsedOptions = await parseOptions(options)
         const token = new Token(data)
-        if (token.isNative) {
-            const provider = await parsedOptions.chain.getProvider()
-            return await provider.getBalance(address)
-        }
-        return await token.getBalance(address, parsedOptions)
+        return await token.getBalance(address, options)
     }
 
     static async getApproval(data, owner, spender, options = global) {
-        const parsedOptions = await parseOptions(options)
         const token = new Token(data)
-        return await token.getApproval(owner, spender, parsedOptions)
+        return await token.getApproval(owner, spender, options)
+    }
+    static async getDecimalAmount(data, amount, options = global) {
+        const token = new Token(data)
+        return await token.getDecimalAmount(amount, options)
+    }
+
+    static async approve(data, spender, amount, options = global) {
+        const token = new Token(data)
+        return await token.approve(spender, amount, options)
     }
 }
 

@@ -1,8 +1,9 @@
-const { constants, Signer, providers } = require("ethers");
+const { Signer, providers } = require("ethers");
 const { arrayify } = require("ethers/lib/utils");
 
 const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey, validateClassInstance, } = require("../utils/data")
 const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
+const { parseOptions } = require("../utils/option");
 
 const { Auth } = require("./Auth");
 
@@ -56,6 +57,22 @@ class Eoa extends Auth {
     async getSigner() {
         await this.init()
         return this.signer
+    }
+
+    async sendTx(txData) {
+        const { to, value, data, chain } = txData
+        const provider = await chain.getProvider()
+        const eoa = this.signer.connect(provider)
+        const tx = await eoa.sendTransaction({ to, value, data })
+        return await tx.wait()
+    }
+
+    async sendTxs(txs) {
+        const receipts = []
+        for (let tx of txs) {
+            receipts.push(await this.sendTx(tx))
+        }
+        return receipts
     }
 
     async getUniqueId() {
