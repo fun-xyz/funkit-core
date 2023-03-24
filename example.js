@@ -13,13 +13,13 @@ const options = {
 }
 
 const spender = "0x3949c97925e5Aa13e34ddb18EAbf0B70ABB0C7d4"
-const amount = 1
-const token = "weth"
+const amount = 10
+const token = "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60"
 
 const swapParams = {
-    in: "eth",
-    out: "usdc",
-    amount: 1,
+    in: "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60",
+    out: "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6",
+    amount: 100,
 }
 
 const main = async () => {
@@ -30,23 +30,25 @@ const main = async () => {
     // const auth = new Eoa({ privateKey: "0x01f3645a0c1b322e37fd6402253dd02c0b92e45b4dd072a9b6e76e4eb657345b" })
     const salt = await auth.getUniqueId()
 
-    const wallet = new FunWallet({ salt, index: 0 })
+    const wallet = new FunWallet({ salt, index: 235 })
     const address = await wallet.getAddress()
-    console.log(address)
+    // console.log(address)
     // console.log("start token end:", await getBal(address, swapParams.tokenOut))
     // console.log("start token in:", await getBal(address, swapParams.tokenIn))
 
     // await prefundWallet(auth, wallet, .2)
     // console.log("start token end:", await getBal(address, swapParams.tokenIn))
     // console.log("start token end:", await getBal(address, swapParams.out))
+    // console.log("token balance start:", await getBal(address, token))
+    console.log("token balance start:", await getBal(address, swapParams.out))
 
-    const op1receipt = await wallet.approve(auth, { spender, amount, token })
-    // const op2receipt = await wallet.swap(auth, swapParams)
+    // const op1receipt = await wallet.transfer(auth, { to: spender, amount, token })
+    const op2receipt = await wallet.swap(auth, swapParams)
     // console.log("end token:", await getBal(address, swapParams.out))
 
     // console.log("token balance start:", await getBal(address, swapParams.tokenOut))
 
-    console.log("token balance start:", await getApprove(token, address, spender))
+    console.log("token balance start:", await getBal(address, swapParams.out))
 
 
 }

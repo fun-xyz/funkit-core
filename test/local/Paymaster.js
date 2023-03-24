@@ -16,7 +16,7 @@ const testTokens = ["usdc", "dai"]
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
-describe("Swap", function () {
+describe("Paymaster", function () {
     this.timeout(30_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
@@ -42,7 +42,7 @@ describe("Swap", function () {
 
         await wallet.swap(auth, {
             in: "eth",
-            amount: .1,
+            amount: 10,
             out: "usdc",
             options: {
                 returnAddress: funderAddress
@@ -59,9 +59,7 @@ describe("Swap", function () {
         const gasSponsor = new TokenSponsor()
         await funder.sendTx(await gasSponsor.setBlacklistMode())
 
-
-
-        const ethstakeAmount = 1
+        const ethstakeAmount = 10
         const usdcStakeAmount = 100
         const depositInfoS = await gasSponsor.getDepositInfo(walletAddress)
         const depositInfo1S = await gasSponsor.getDepositInfo(funderAddress)

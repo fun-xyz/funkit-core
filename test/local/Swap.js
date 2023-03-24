@@ -44,7 +44,6 @@ describe("Swap", function () {
         for (let testToken of testTokens) {
             if (testToken != "usdc") {
                 const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
-                console.log(tokenBalanceBefore)
                 await wallet.swap(auth, {
                     in: "usdc",
                     amount: 1,
