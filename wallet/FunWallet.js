@@ -59,9 +59,13 @@ class FunWallet extends FirstClassActions {
         const sender = await this.getAddress({ chain })
 
         let tempCallData;
-        const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
-        if (data.initAndExec && !moduleIsInit) {
-            tempCallData = this.abiManager.encodeInitExecCall(data)
+        if (data.initAndExec) {
+            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
+            if (!moduleIsInit) {
+                tempCallData = this.abiManager.encodeInitExecCall(data)
+            } else {
+                tempCallData = this.abiManager.encodeCall(data)
+            }
         }
         else {
             tempCallData = this.abiManager.encodeCall(data)
@@ -101,7 +105,7 @@ class FunWallet extends FirstClassActions {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
         const verificationAddress = await chain.getAddress("verificationAddress")
-        const initCodeParams = { salt, owner, entryPointAddress, verificationAddress, factoryAddress}
+        const initCodeParams = { salt, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
     }
 
