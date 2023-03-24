@@ -5,11 +5,13 @@ const { verifyValidParametersForLocation, validateClassInstance, parseOptions, p
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
-const { FirstClassActions } = require("../actions")
+const { FirstClassActions, genCall } = require("../actions")
 const { TokenSponsor } = require("../sponsors")
+const { MissingParameterError, Helper } = require("../errors")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
+const callExpectedKeys = ["to", "data"]
 
 const userOpDefaultParams = {
     verificationGasLimit: 100_000,
@@ -87,9 +89,10 @@ class FunWallet extends FirstClassActions {
 
         const userOp = new UserOp(op)
         await userOp.sign(auth, chain)
-        const ophash = await chain.sendOpToBundler(userOp)
-        const txid = await onChainDataManager.getTxId(ophash)
-        return { ophash, txid }
+        if (options.sendTxLater) {
+            return userOp.op
+        }
+        return this.sendTx(userOp, options)
     }
 
     async _getThisInitCode(chain, auth) {
@@ -108,6 +111,48 @@ class FunWallet extends FirstClassActions {
             this.address = await (new WalletOnChainManager(parsedOptions.chain, this.identifier)).getWalletAddress()
         }
         return this.address
+    }
+
+    async sendTx({ auth, op }, txOptions = global) {
+        try {
+            const userOp = new UserOp(op)
+            return await this.sendUserOp(userOp, txOptions)
+        } catch (e) {
+            verifyValidParametersForLocation("Wallet.sendTx", op.calldata, callExpectedKeys)
+            if (!op.options) {
+                op.options = txOptions
+            }
+            if (!auth && !op.auth) {
+                const helper = new Helper("SendTx", op, "Auth paramater was not provided")
+                throw new MissingParameterError("Wallet.sendTx", helper)
+            }
+            if (!auth) {
+                auth = op.auth
+            }
+            op.options.sendTxLater = false
+            return await this.execute(auth, genCall(op.calldata), op.options)
+        }
+    }
+
+
+    async sendUserOp(userOp, txOptions = global) {
+        validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
+        const options = await parseOptions(txOptions, "Wallet.execute")
+        const chain = await this._getFromCache(options.chain)
+        const ophash = await chain.sendOpToBundler(userOp)
+        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+        const txid = await onChainDataManager.getTxId(ophash)
+        return { ophash, txid }
+    }
+
+    async sendTxs({ auth, ops }, txOptions = global) {
+        const options = await parseOptions(txOptions, "Wallet.execute")
+        const receipts = []
+        for (let op of ops) {
+            let receipt = await this.sendTx({ auth, op }, options)
+            receipts.push(receipt)
+        }
+        return receipts
     }
 }
 

@@ -90,7 +90,7 @@ const receipt4 = wallet.execute(withdrawFunction, options)
 
 // 8. Send stored Txs
 // 8.1 These require a signature
-wallet.sendTxs([(calldata, options), (calldata, options)])
+wallet.sendTxs(auth, [(calldata, options), (calldata, options)])
 // 8.2 These are already signed
 FunWallet.sendTxs([tx, tx1])
 

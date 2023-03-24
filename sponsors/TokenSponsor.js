@@ -93,12 +93,12 @@ class TokenSponsor {
         return await this.encode(data, options)
     }
 
-    async stakeEth(walletAddress, amount, options = global) {
+    async stake(walletAddress, amount, options = global) {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
         const data = this.interface.encodeFunctionData("addEthDepositForSponsor", [walletAddress, amountdec])
         return await this.encodeValue(data, amount, options)
     }
-    async unstakeEth(walletAddress, amount, options = global) {
+    async unstake(walletAddress, amount, options = global) {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
         const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
         return await this.encode(data, options)
@@ -109,14 +109,12 @@ class TokenSponsor {
         const data = this.interface.encodeFunctionData("addTokenDepositTo", [walletAddress, amountdec])
         return await this.encode(data, options)
     }
+
     async unstakeToken(walletAddress, amount, options = global) {
         const amountdec = await this.getTokenAmount(amount, options)
         const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [walletAddress, amountdec])
         return await this.encode(data, options)
     }
-
-
-
 }
 
 

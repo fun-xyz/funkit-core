@@ -13,6 +13,7 @@ const options = {
         sponsorAddress: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
         token: "usdc"
     },
+    sendTxLater: true
 }
 
 const spender = "0x3949c97925e5Aa13e34ddb18EAbf0B70ABB0C7d4"
@@ -47,17 +48,24 @@ const main = async () => {
     // const whitelist = await gasSponsor.setWhitelistMode()
     // await funder.sendTxs([whitelist])
 
+    const token = "dai"
+    const { to, data } = await Token.transfer(token, sponsorAddress, 10)
+    const calldata = { to, data }
     const auth = new Eoa({ privateKey: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" })
     const salt = await auth.getUniqueId()
     const wallet = new FunWallet({ salt, index: 0 })
-    prefundWallet(funder, wallet, 100)
 
     const walletAddress = await wallet.getAddress()
-    console.log((await Token.getBalance(swapParams.out, sponsorAddress)).toString())
-    const op1receipt = await wallet.swap(auth, swapParams)
+    console.log((await Token.getBalance(token, walletAddress)).toString())
 
-
-    console.log((await Token.getBalance(swapParams.out, sponsorAddress)).toString())
+    // const tx = await wallet.transfer(auth, { token: swapParams.out, to: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266', amount: 10 })
+    // await wallet.sendTx(tx)
+    const tx = {
+        calldata
+    }
+    const ops = [tx]
+    const receipts = await wallet.sendTxs({ auth, ops })
+    console.log((await Token.getBalance(token, walletAddress)).toString())
     // console.log((await Token.getBalance(swapParams.out, walletAddress)).toString())
     // console.log((await Token.getBalance('eth', walletAddress)).toString())
 

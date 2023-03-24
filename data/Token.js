@@ -95,6 +95,14 @@ class Token {
         return { ...data, chain: parsedOptions.chain }
     }
 
+    async transfer(spender, amount, options = global) {
+        const parsedOptions = await parseOptions(options)
+        const contract = await this.getContract(parsedOptions)
+        const amountDec = await this.getDecimalAmount(amount)
+        const data = await contract.populateTransaction.transfer(spender, amountDec)
+        return { ...data, chain: parsedOptions.chain }
+    }
+
     static async getAddress(data, options = global) {
         const token = new Token(data)
         return await token.getAddress(options)
@@ -122,6 +130,11 @@ class Token {
     static async approve(data, spender, amount, options = global) {
         const token = new Token(data)
         return await token.approve(spender, amount, options)
+    }
+
+    static async transfer(data, spender, amount, options = global) {
+        const token = new Token(data)
+        return await token.transfer(spender, amount, options)
     }
 }
 

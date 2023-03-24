@@ -28,6 +28,7 @@ class FirstClassActions {
 
         return await this.execute(auth, _swap(swapParams), options)
     }
+
 }
 
 module.exports = { FirstClassActions };
