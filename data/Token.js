@@ -60,6 +60,12 @@ class Token {
         return await contract.balanceOf(address)
     }
 
+    async getApproval(owner, spender, options = global) {
+        const parsedOptions = await parseOptions(options)
+        const contract = await this.getContract(parsedOptions)
+        return await contract.allowance(owner, spender)
+    }
+
     static async getAddress(data, options = global) {
         const parsedOptions = await parseOptions(options)
         const token = new Token(data)
@@ -80,6 +86,12 @@ class Token {
             return await provider.getBalance(address)
         }
         return await token.getBalance(address, parsedOptions)
+    }
+
+    static async getApproval(data, owner, spender, options = global) {
+        const parsedOptions = await parseOptions(options)
+        const token = new Token(data)
+        return await token.getApproval(owner, spender, parsedOptions)
     }
 }
 

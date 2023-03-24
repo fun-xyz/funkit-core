@@ -17,7 +17,14 @@ class WalletAbiManager {
     encodeCall(input, location = "WalletAbiManager.encodeCall") {
         verifyValidParametersForLocation(location, input, encodeCallExpectedKeys)
         let { to: dest, data, value } = input
-        value = value ? value : 0
+        if (Array.isArray(data)) {
+            data = data[1]
+        }
+        if (Array.isArray(value)) {
+            value = value[1]
+        } else {
+            value = value ? value : 0
+        }
         const encodeObj = { dest, data, value }
         return this.encodeWalletCall("execFromEntryPointOrOwner", encodeObj)
     }

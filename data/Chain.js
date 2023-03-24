@@ -47,7 +47,6 @@ class Chain {
                 this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
                 await this.bundler.validateChainId()
             } catch (e) {
-                console.log(e)
                 const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
                 throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
             }

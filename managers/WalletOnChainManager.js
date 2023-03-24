@@ -1,8 +1,9 @@
 const { WalletIdentifier, Chain } = require("../data")
 const { validateClassInstance } = require("../utils/data")
 
-const factoryAbi = require("../abis/FunWalletFactory.json")
-const entryPointAbi = require("../abis/EntryPoint.json")
+const factoryAbi = require("../abis/FunWalletFactory.json").abi
+const walletAbi = require("../abis/FunWallet.json").abi
+const entryPointAbi = require("../abis/EntryPoint.json").abi
 
 const { Contract } = require("ethers")
 
@@ -16,19 +17,17 @@ class WalletOnChainManager {
         this.walletIdentifier = walletIdentifier
     }
 
-
-
     async init() {
         if (!this.factory) {
             const factoryAddress = await this.chain.getAddress("factoryAddress")
             const provider = await this.chain.getProvider()
-            this.factory = new Contract(factoryAddress, factoryAbi.abi, provider)
+            this.factory = new Contract(factoryAddress, factoryAbi, provider)
         }
 
         if (!this.entrypoint) {
             const entryPointAddress = await this.chain.getAddress("entryPointAddress")
             const provider = await this.chain.getProvider()
-            this.entrypoint = new Contract(entryPointAddress, entryPointAbi.abi, provider)
+            this.entrypoint = new Contract(entryPointAddress, entryPointAbi, provider)
         }
     }
 
@@ -52,6 +51,7 @@ class WalletOnChainManager {
     }
 
     async getReceipt(transactionHash) {
+        await this.init()
         const provider = await this.chain.getProvider()
         const txReceipt = await provider.getTransactionReceipt(transactionHash);
         if (txReceipt && txReceipt.blockNumber) {
@@ -59,7 +59,16 @@ class WalletOnChainManager {
         }
     }
 
+    async getModuleIsInit(walletAddress, moduleAddress) {
+        await this.init()
+        const provider = await this.chain.getProvider()
+        const contract = new Contract(walletAddress, walletAbi, provider)
+        const data = contract.getModuleStateVal(moduleAddress)
+        return data != "0x"
+    }
+
     async addressIsContract(address) {
+        await this.init()
         const provider = await this.chain.getProvider()
         const addressCode = await provider.getCode(address)
         return !(addressCode.length == 2)

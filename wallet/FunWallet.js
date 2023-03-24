@@ -5,6 +5,7 @@ const { verifyValidParametersForLocation, validateClassInstance, parseOptions, p
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
+const { FirstClassActions } = require("../actions")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
@@ -18,9 +19,10 @@ const userOpInitParams = {
 }
 
 
-class FunWallet {
+class FunWallet extends FirstClassActions {
     objCache = {}
     constructor(params) {
+        super()
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
 
@@ -36,24 +38,26 @@ class FunWallet {
     }
 
     async execute(auth, actionFunc, txOptions = global) {
-        const options = await parseOptions(txOptions, "wallet.execute")
+        const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const actionData = {
             wallet: this,
             chain,
             options
         }
-
         const { data, gasInfo, errorData, optionalParams } = await actionFunc(actionData)
         verifyValidParametersForLocation(errorData.location, options, executeExpectedKeys)
 
         if (gasInfo) {
             verifyValidParametersForLocation(errorData.location, gasInfo, gasExpectedKeys)
         }
-
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+
+        const sender = await this.getAddress({ chain })
+
         let tempCallData;
-        if (data.initAndExec) {
+        const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, sender)
+        if (data.initAndExec && !moduleIsInit) {
             tempCallData = this.abiManager.encodeInitExecCall(data)
         }
         else {
@@ -61,7 +65,6 @@ class FunWallet {
         }
 
         const callData = tempCallData
-        const sender = await this.getAddress({ chain })
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))

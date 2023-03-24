@@ -10,23 +10,22 @@ const swapExpectedKeys = ["tokenIn", "tokenOut", "amountIn"]
 
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
-const swap = (params) => {
+
+const _swap = (params) => {
     return async (actionData) => {
         verifyValidParametersForLocation("actions.swap", params, swapExpectedKeys)
-
-        const { wallet, chain, options } = actionData
-
+        const { wallet, chain } = actionData
         let {
             tokenIn,
             tokenOut,
             amountIn,
             returnAddress,
-            percentDecimal,
             slippage,
             poolFee
         } = params
 
         const provider = await chain.getProvider()
+
 
         const {
             tokenSwapAddress,
@@ -38,8 +37,8 @@ const swap = (params) => {
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
 
         const tokenInObj = new Token(tokenIn)
-        const tokenInAddress = await tokenInObj.getAddress(options);
-        const tokenOutAddress = await Token.getAddress(tokenOut, options);
+        const tokenInAddress = await tokenInObj.getAddress({ chain });
+        const tokenOutAddress = await Token.getAddress(tokenOut, { chain });
 
         const uniswapAddrs = {
             univ3quoter,
@@ -47,12 +46,18 @@ const swap = (params) => {
             univ3router
         }
 
-        const walletAddress = await wallet.getAddress(options)
+        const walletAddress = await wallet.getAddress({ chain })
 
         returnAddress = returnAddress ? returnAddress : walletAddress
-        percentDecimal = percentDecimal ? percentDecimal : 100
-        slippage = slippage ? slippage : 5
+        slippage = slippage ? slippage : .52352
         poolFee = poolFee ? poolFee : "medium"
+
+        let percentDecimal = 100
+        while (slippage < 1 || Math.trunc(slippage) != slippage) {
+            percentDecimal *= 10
+            slippage *= 10;
+        }
+
 
         const swapParams = {
             tokenInAddress,
@@ -66,14 +71,14 @@ const swap = (params) => {
         }
 
         const { data, to, amount } = await swapExec(provider, uniswapAddrs, swapParams)
-
-        if (tokenIn.isNative) {
+        if (tokenInObj.isNative) {
             swapData = await actionContract.populateTransaction.executeSwapETH(to, amount, data)
         } else {
             swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, univ3router, amount, data)
         }
+
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
-        const gasInfo = { callGasLimit: 300_000 }
+        const gasInfo = { callGasLimit: 200_000 }
         const errorData = {
             location: "actions.swap"
         }
@@ -81,4 +86,4 @@ const swap = (params) => {
     }
 }
 
-module.exports = { swap };
+module.exports = { _swap };

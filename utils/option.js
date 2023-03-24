@@ -33,6 +33,7 @@ const parseOptions = async (options, location) => {
 
 const getChainFromUnlabeledData = async (chainIdentifier) => {
     let chain
+
     if (chainIdentifier instanceof Chain) {
         return chainIdentifier
     }
