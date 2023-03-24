@@ -3,5 +3,5 @@ const userOpUtils = require("./userop")
 const networkUtils = require("./network")
 const chainUtils = require("./chain.js")
 const optionUtils = require("./option.js")
-
-module.exports = { ...optionUtils, ...chainUtils, ...dataUtils, ...userOpUtils, ...networkUtils, };
+const testUtils = require("./test")
+module.exports = { ...optionUtils, ...chainUtils, ...dataUtils, ...userOpUtils, ...networkUtils, ...testUtils };

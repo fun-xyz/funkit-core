@@ -23,11 +23,14 @@ const verifyBundlerUrl = async (url) => {
     return (data.indexOf("aa-bundler") + 1)
 }
 const parseOptions = async (options, location) => {
+    
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
     }
-    chain = await getChainFromUnlabeledData(chain)
+    if (chain) {
+        chain = await getChainFromUnlabeledData(chain)
+    }
 
 
     return {

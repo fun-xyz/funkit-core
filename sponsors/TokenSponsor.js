@@ -85,18 +85,18 @@ class TokenSponsor {
     }
 
     async setWhitelistMode(options = global) {
-        const data = this.interface.encodeFunctionData("setWhitelistMode", [false])
+        const data = this.interface.encodeFunctionData("setWhitelistMode", [true])
         return await this.encode(data, options)
     }
     async setBlacklistMode(options = global) {
-        const data = this.interface.encodeFunctionData("setWhitelistMode", [true])
+        const data = this.interface.encodeFunctionData("setWhitelistMode", [false])
         return await this.encode(data, options)
     }
 
     async stake(walletAddress, amount, options = global) {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
         const data = this.interface.encodeFunctionData("addEthDepositForSponsor", [walletAddress, amountdec])
-        return await this.encodeValue(data, amount, options)
+        return await this.encodeValue(data, amountdec, options)
     }
     async unstake(walletAddress, amount, options = global) {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
@@ -114,6 +114,11 @@ class TokenSponsor {
         const amountdec = await this.getTokenAmount(amount, options)
         const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [walletAddress, amountdec])
         return await this.encode(data, options)
+    }
+
+    async approve(amount, options = global) {
+        const gasSponsorAddress = await this.getPaymasterAddress(options)
+        return await Token.approve(this.token, gasSponsorAddress, amount)
     }
 }
 

@@ -69,7 +69,6 @@ const _swap = (params) => {
             slippage,
             poolFee
         }
-
         const { data, to, amount } = await swapExec(provider, uniswapAddrs, swapParams)
         if (tokenInObj.isNative) {
             swapData = await actionContract.populateTransaction.executeSwapETH(to, amount, data)

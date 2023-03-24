@@ -4,10 +4,10 @@ const { parseOptions } = require("../utils")
 
 
 const configureEnvironment = async (envOptions) => {
-    const parsedOptions = await parseOptions(envOptions, "EnvironmentConfigError.configureEnvironment")
+    envOptions = { ...global, ...envOptions }
+    const parsedOptions = await parseOptions(envOptions, "EnviromentManager.configureEnvironment")
     global = { ...global, ...parsedOptions }
 }
-
 
 
 module.exports = { configureEnvironment, parseOptions }
