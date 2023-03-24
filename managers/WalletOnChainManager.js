@@ -63,8 +63,12 @@ class WalletOnChainManager {
         await this.init()
         const provider = await this.chain.getProvider()
         const contract = new Contract(walletAddress, walletAbi, provider)
-        const data = contract.getModuleStateVal(moduleAddress)
-        return data != "0x"
+        try {
+            const data = await contract.getModuleStateVal(moduleAddress)
+            return data != "0x"
+        } catch {
+            return false
+        }
     }
 
     async addressIsContract(address) {

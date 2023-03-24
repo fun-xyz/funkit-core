@@ -1,7 +1,7 @@
 const { ethers } = require("ethers");
 const { Chain } = require("../data");
 const { GOERLI_PRIVATE_KEY, TEST_PRIVATE_KEY } = require("./test");
-const walletObj = require("../abis/FunWalletFactory.json")
+const walletObj = require("../../bundler/localfork/abis/UserAuthentication.json")
 const { ContractFactory } = ethers
 
 const deploy = async (signer, obj, params = []) => {

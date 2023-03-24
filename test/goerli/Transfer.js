@@ -14,7 +14,7 @@ const options = {
 const testTokens = ["0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60"]
 
 describe("Transfer", function () {
-    this.timeout(30_000)
+    this.timeout(90_000)
     let auth
     let wallet
     const amount = 1

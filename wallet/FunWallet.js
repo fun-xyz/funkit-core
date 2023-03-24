@@ -14,11 +14,11 @@ const gasExpectedKeys = ["callGasLimit"]
 const callExpectedKeys = ["to", "data"]
 
 const userOpDefaultParams = {
-    verificationGasLimit: 200_000,
+    verificationGasLimit: 10_000_000,
 }
 
 const userOpInitParams = {
-    verificationGasLimit: 1_000_000,
+    verificationGasLimit: 10_000_000,
 }
 
 
@@ -59,7 +59,7 @@ class FunWallet extends FirstClassActions {
         const sender = await this.getAddress({ chain })
 
         let tempCallData;
-        const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, sender)
+        const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
         if (data.initAndExec && !moduleIsInit) {
             tempCallData = this.abiManager.encodeInitExecCall(data)
         }

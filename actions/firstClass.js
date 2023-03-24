@@ -31,4 +31,15 @@ class FirstClassActions {
 
 }
 
+const swapParams = {
+    in: "",
+    out: "",
+    amount: "",
+    options: {
+        returnAddress: "",
+        slippage: "",
+        poolFee: "",
+    }
+}
+
 module.exports = { FirstClassActions };
