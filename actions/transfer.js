@@ -50,7 +50,7 @@ const erc20Transfer = ({ to, amount, token }) => {
         }
 
         const gasInfo = { callGasLimit: 100_000 }
-        return { to: tokenAddress, gasInfo, data: transferData, errorData }
+        return { gasInfo, data: transferData, errorData }
     }
 }
 

@@ -17,7 +17,7 @@ const loadAbis = () => {
 const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
-    const newPath = `../abis/${fileName}`
+    const newPath = `./abis/${fileName}`
     const basePath = "../../fun-wallet-smart-contract/artifacts/contracts/"
     try {
         const data = require(basePath + path)

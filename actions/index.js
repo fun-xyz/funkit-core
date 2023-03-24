@@ -1,4 +1,4 @@
 const transfers = require("./transfer")
 
-
-module.exports = { ...transfers };
+const swap = require("./swap")
+module.exports = { ...transfers, ...swap };

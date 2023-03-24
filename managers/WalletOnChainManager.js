@@ -9,8 +9,8 @@ const { Contract } = require("ethers")
 class WalletOnChainManager {
     constructor(chain, walletIdentifier) {
         const currentLocation = "WalletOnChainManager constructor"
-        validateClassInstance(chain, "chain", Chain, currentLocation)
         validateClassInstance(walletIdentifier, "walletIdentifier", WalletIdentifier, currentLocation)
+        validateClassInstance(chain, "chain", Chain, currentLocation)
         this.chain = chain
         this.key = chain.key
         this.walletIdentifier = walletIdentifier

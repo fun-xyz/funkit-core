@@ -1,4 +1,5 @@
-const { Chain } = require("../data")
+const { Chain } = require("../data/chain")
+
 const { verifyValidParametersForLocation } = require("./data")
 
 const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
@@ -48,7 +49,6 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
     else {
         chain = new Chain({ chainName: chainIdentifier })
     }
-    await chain.init()
     return chain
 }
 

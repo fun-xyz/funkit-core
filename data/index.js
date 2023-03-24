@@ -1,6 +1,6 @@
-const token = require("./Token")
-const userOp = require("./UserOp")
-const walletIdentifier = require("./WalletIdentifier")
-const chain = require("./Chain")
+const chainObj = require("./Chain")
+const tokenObj = require("./Token")
+const userOpObj = require("./UserOp")
+const walletIdentifierObj = require("./WalletIdentifier")
 
-module.exports = { ...chain, ...userOp, ...token, ...walletIdentifier }
+module.exports = { ...chainObj, ...userOpObj, ...tokenObj, ...walletIdentifierObj }

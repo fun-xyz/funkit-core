@@ -1,5 +1,5 @@
 const { constants } = require("ethers")
-const { verifyValidParametersForLocation } = require("../utils/data")
+const { verifyValidParametersForLocation, validateType, verifyIsArray } = require("../utils/data")
 const { verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../utils/chain")
 const { hexConcat } = require("ethers/lib/utils")
 
@@ -14,17 +14,33 @@ class WalletAbiManager {
         this.factoryInterface = checkAbi(factoryAbi, "FunWalletFactory", errorLocation, true)
     }
 
-    encodeCall(input) {
-        verifyValidParametersForLocation("WalletAbiManager.encodeCall", input, encodeCallExpectedKeys)
+    encodeCall(input, location = "WalletAbiManager.encodeCall") {
+        verifyValidParametersForLocation(location, input, encodeCallExpectedKeys)
         let { to: dest, data, value } = input
         value = value ? value : 0
         const encodeObj = { dest, data, value }
         return this.encodeWalletCall("execFromEntryPointOrOwner", encodeObj)
     }
 
+    encodeInitExecCall(input, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
+        verifyValidParametersForLocation(location, input, encodeCallExpectedKeys)
+        let { to: dest, data, value } = input
+        verifyIsArray(data, location)
+        if (value) {
+            verifyIsArray(value, location)
+        }
+        else {
+            value = [0, 0]
+        }
+        const encodeObj = { dest, data, value }
+        return encodeContractCall(this.walletInterface, "initAndExec", encodeObj, location, isInternal)
+    }
+
     encodeWalletCall(encodeFunctionName, input, location = "WalletAbiManager.encodeWalletCall", isInternal = false) {
         return encodeContractCall(this.walletInterface, encodeFunctionName, input, location, isInternal)
     }
+
+
 
     encodeFactoryCall(encodeFunctionName, input, location = "WalletAbiManager.encodeFactoryCall", isInternal = false) {
         return encodeContractCall(this.factoryInterface, encodeFunctionName, input, location, isInternal)

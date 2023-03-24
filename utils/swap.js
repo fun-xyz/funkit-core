@@ -125,7 +125,6 @@ const fees = {
 }
 
 async function swapExec(provider, uniswapAddrs, swapParams) {
-    poolFee = fees[poolFee]
 
     const {
         univ3quoter,
@@ -142,6 +141,7 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
         slippage,
         poolFee
     } = swapParams
+    const _poolFee = fees[poolFee]
 
     const swapper = new SwapToken(provider, univ3quoter, univ3factory)
     const { chainId } = await provider.getNetwork()
@@ -151,7 +151,7 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
     const tokenIn = new Token(chainId, tokenInAddress, tokenInDecimal);
     const tokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimal);
 
-    const { uncheckedTrade, tokenInAmount } = await swapper.createTrade(amountIn, tokenIn, tokenOut, poolFee)
+    const { uncheckedTrade, tokenInAmount } = await swapper.createTrade(amountIn, tokenIn, tokenOut, _poolFee)
     const data = swapper.executeTrade(uncheckedTrade, univ3router, returnAddress, slippage, percentDecimal)
     return { ...data, amount: tokenInAmount }
 }

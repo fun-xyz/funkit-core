@@ -1,7 +1,7 @@
 const { Eoa } = require("./auth")
 const { configureEnvironment } = require("./managers")
 const { FunWallet } = require("./wallet")
-const { ethTransfer, erc20Transfer } = require("./actions")
+const { ethTransfer, erc20Transfer, swap } = require("./actions")
 const { Chain, Token } = require("./data")
 const { Contract } = require("ethers")
 const { prefundWallet } = require("./utils/chain")
@@ -21,7 +21,11 @@ const getbalance = async (chain, to) => {
     console.log(amount.toString())
 }
 
-
+const swapParams = {
+    tokenIn: "eth",
+    tokenOut: "dai",
+    amountIn: 1,
+}
 
 const main = async () => {
     await configureEnvironment(options)
@@ -32,24 +36,16 @@ const main = async () => {
 
     const wallet = new FunWallet({ salt, index: 0 })
     const address = await wallet.getAddress()
+    console.log("token balance start:", await getBal(address))
     await prefundWallet(auth, wallet, 1)
-    const opreceipt = await wallet.execute(auth, erc20Transfer({ to, amount, token }))
-    // const opreceipt = await wallet.execute(auth, ethTransfer(to, value))`
-    console.log("token balance to:", (await getTokenBalance(to)).toString())
-    console.log("token balance wallet:", (await getTokenBalance(address)).toString())
+    const opreceipt = await wallet.execute(auth, swap(swapParams))
+    console.log("token balance end:", await getBal(address))
     console.log(opreceipt)
-    getbalance(global.chain, to)
+}
 
+const getBal = async (address, token = swapParams.tokenIn) => {
+    return (await Token.getBalance(token, address)).toString()
 }
 
 main()
 
-
-const getTokenBalance = async (address, chainId = options.chain) => {
-    const chain = new Chain({ chainId })
-    const provider = await chain.getProvider()
-    const tokenAbi = require("./abis/ERC20.json").abi
-    const addr = await new Token(token).getAddress()
-    const tokenContract = new Contract(addr, tokenAbi, provider)
-    return tokenContract.balanceOf(address)
-}

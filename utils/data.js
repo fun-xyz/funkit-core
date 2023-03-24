@@ -28,7 +28,7 @@ const verifyValidParametersForLocation = (location, input, expected) => {
 }
 
 const validateClassInstance = (data, dataName, classObj, location = "", isInternal = false) => {
-    if (data instanceof classObj) {
+    if (data.constructor.toString() == classObj.toString() || data instanceof classObj) {
         return;
     }
     const helper = new Helper(dataName, data)
@@ -92,8 +92,16 @@ const verifyPrivateKey = (value, location = "", isInternal = false) => {
         const helper = new Helper("privateKey", value, helperMsg)
         throw new DataFormatError("privateKey", "{bytes32}", location, helper, isInternal)
     }
-
 }
+
+
+const verifyIsArray = (value, location = "", isInternal = false) => {
+    if (!Array.isArray(value)) {
+        const helper = new Helper("Data", value, helperMsg)
+        throw new DataFormatError("Data", "array", location, helper, isInternal)
+    }
+}
+
 
 const flattenObj = (obj) => {
     let out = {}
@@ -135,4 +143,4 @@ const deepHexlify = (obj) => {
 }
 
 
-module.exports = { objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+module.exports = { verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };

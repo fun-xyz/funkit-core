@@ -1,13 +1,14 @@
 
-const { UserOp, Chain, WalletIdentifier } = require("../data")
+const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet, parseOptions } = require("../utils")
+const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
+
 const userOpDefaultParams = {
     verificationGasLimit: 100_000,
 }
@@ -42,6 +43,7 @@ class FunWallet {
             chain,
             options
         }
+
         const { data, gasInfo, errorData, optionalParams } = await actionFunc(actionData)
         verifyValidParametersForLocation(errorData.location, options, executeExpectedKeys)
 
@@ -50,26 +52,27 @@ class FunWallet {
         }
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-        const callData = this.abiManager.encodeCall(data)
-        const sender = await this.getAddress(chain)
+        let tempCallData;
+        if (data.initAndExec) {
+            tempCallData = this.abiManager.encodeInitExecCall(data)
+        }
+        else {
+            tempCallData = this.abiManager.encodeCall(data)
+        }
+
+        const callData = tempCallData
+        const sender = await this.getAddress({ chain })
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
 
         const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
 
-
-
         let partialOp = { ...gasParams, ...gasInfo, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }
 
-        if (!op.callGasLimit) {
-            // op.signature = "0x"
-            // const gas = await chain.estimateOpGas({ ...op, callGasLimit: 10e6 })
-            // console.log(gas)
-        }
         const userOp = new UserOp(op)
         await userOp.sign(auth, chain)
         const ophash = await chain.sendOpToBundler(userOp)
@@ -88,10 +91,12 @@ class FunWallet {
     }
 
     async getAddress(options = global) {
-        const parseOptions = parseOptions(options)
-        return await (new WalletOnChainManager(parseOptions.chain, this.identifier)).getWalletAddress()
+        if (!this.address) {
+            const parsedOptions = await parseOptions(options, "Wallet.getAddress")
+            this.address = await (new WalletOnChainManager(parsedOptions.chain, this.identifier)).getWalletAddress()
+        }
+        return this.address
     }
-
 }
 
 

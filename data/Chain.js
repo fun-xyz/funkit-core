@@ -4,7 +4,6 @@ const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectio
 const { DataServer, Bundler } = require("../servers")
 
 const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
-
 const chainExpectedKeys = ["chainId", "chainName", "rpcUrl", "bundlerUrl"]
 
 class Chain {
@@ -154,7 +153,8 @@ const main = async () => {
         rpcUrl: "http://localhost:8545"
     }
     const chain = new Chain(chainParams)
-    await chain.getAddress("entryPointAddress")
 }
+
+main()
 
 module.exports = { Chain }

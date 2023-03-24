@@ -1,5 +1,5 @@
-const { Contract } = require("ethers")
-const { parseUnits } = require("ethers/src.ts/utils")
+const { Contract, constants } = require("ethers")
+const { parseUnits, Interface } = require("ethers/lib/utils")
 const { Token } = require("../data/Token")
 const { verifyValidParametersForLocation } = require("../utils/data")
 const { swapExec } = require("../utils/swap")
@@ -8,6 +8,8 @@ const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 
 const swapExpectedKeys = ["tokenIn", "tokenOut", "amountIn"]
 
+const approveAndSwapInterface = new Interface(approveAndSwapAbi)
+const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 const swap = (params) => {
     return async (actionData) => {
         verifyValidParametersForLocation("actions.swap", params, swapExpectedKeys)
@@ -68,10 +70,15 @@ const swap = (params) => {
         if (tokenIn.isNative) {
             swapData = await actionContract.populateTransaction.executeSwapETH(to, amount, data)
         } else {
-            swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, routerAddr, amount, data)
+            swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, univ3router, amount, data)
         }
-
+        const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
         const gasInfo = { callGasLimit: 300_000 }
-        return { to: tokenSwapAddress, gasInfo, data: swapData }
+        const errorData = {
+            location: "actions.swap"
+        }
+        return { gasInfo, data: txData, errorData }
     }
 }
+
+module.exports = { swap };
