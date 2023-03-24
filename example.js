@@ -28,7 +28,7 @@ const main = async () => {
     // const auth = new Eoa({ privateKey: "0x01f3645a0c1b322e37fd6402253dd02c0b92e45b4dd072a9b6e76e4eb657345b" })
     const salt = await auth.getUniqueId()
 
-    const wallet = new FunWallet({ salt, index: 0 })
+    const wallet = new FunWallet({ salt, index: 1 })
     const address = await wallet.getAddress()
     await prefundWallet(auth, wallet, 10)
     // console.log("start token end:", await getBal(address, swapParams.tokenOut))
@@ -39,9 +39,8 @@ const main = async () => {
     console.log("start token end:", await getBal(address, swapParams.out))
     console.log("start token end:", await getBal(address, swapParams.in))
 
-    // const op1receipt = await wallet.transfer(auth, { to, amount, token })
-    const op2receipt = await wallet.swap(auth, swapParams)
-    console.log(op2receipt)
+    const op1receipt = await wallet.transfer(auth, { to:spender, amount, token })
+    // const op2receipt = await wallet.swap(auth, swapParams)
     console.log("start token end:", await getBal(address, swapParams.out))
 
     // console.log("token balance start:", await getBal(address, swapParams.tokenOut))
