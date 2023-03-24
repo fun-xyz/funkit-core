@@ -85,5 +85,5 @@ const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
 
 
 module.exports = {
-    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
+    verifyBundlerUrl, prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
 };

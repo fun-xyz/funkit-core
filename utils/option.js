@@ -1,4 +1,8 @@
+const { Token } = require("../data")
 const { Chain } = require("../data/chain")
+const { ParameterFormatError, Helper } = require("../errors")
+const { TokenSponsor } = require("../sponsors")
+const { verifyBundlerUrl } = require("./chain")
 
 const { verifyValidParametersForLocation } = require("./data")
 
@@ -8,26 +12,21 @@ const paymasterExpectedKeys = ["sponsorAddress", "token"]
 const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
 const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
 
-
 const getChainsFromList = async (chains) => {
     const out = chains.map(getChainFromUnlabeledData)
     return await Promise.all(out)
 }
 const parseOptions = async (options, location) => {
-    const { paymaster, chain } = options
-    if (paymaster) {
+    let { gasSponsor, chain } = options
+    if (gasSponsor && typeof gasSponsor != "object") {
         verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
+        gasSponsor = new TokenSponsor(gasSponsor)
     }
+    chain = await getChainFromUnlabeledData(chain)
 
-    // if (chain) {
-    //     verifyValidParametersForLocation("EnvironmentConfigError.configureEnvironment", chain, [chainExpectedKeys])
-    // }
-
-    // const [key] = getUsedParametersFromOptions(chain, chainExpectedKeys[0])
-    // let chainInput = { [chainExpectedKeysToInput[chainExpectedKeys.indexOf(key)]]: chain[key] }
 
     return {
-        ...options, chain: await getChainFromUnlabeledData(chain)
+        ...options, chain, gasSponsor
     }
 }
 
