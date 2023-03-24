@@ -1,6 +1,6 @@
 const { Eoa } = require("../auth")
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
-const { orderParams, validateClassInstance } = require("./data")
+const { orderParams, validateClassInstance, formatMissingForError } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 
 const getFunctionParamOrderFromInterface = (interface, func) => {
@@ -78,5 +78,5 @@ const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
 
 
 module.exports = {
-     prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
+    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
 };

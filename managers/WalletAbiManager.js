@@ -63,6 +63,8 @@ class WalletAbiManager {
         }
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero
+        } else {
+            initCodeParams.implementation = implementation
         }
 
         verifyValidParamsFromAbi(this.walletInterface.fragments, "initialize", initCodeParams, "WalletAbiManager.getInitCode")
