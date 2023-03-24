@@ -1,5 +1,6 @@
-const { verifyValidParametersForLocation, } = require("../utils/data")
-const { objectValuesToBigNumber } = require("../utils/data")
+
+const { verifyValidParametersForLocation, objectValuesToBigNumber, } = require("../utils/data")
+
 const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
 
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]

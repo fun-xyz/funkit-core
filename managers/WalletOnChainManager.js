@@ -1,5 +1,4 @@
-const { Chain } = require("../chain/Chain")
-const { WalletIdentifier } = require("../data/WalletIdentifier")
+const { WalletIdentifier, Chain } = require("../data")
 const { validateClassInstance } = require("../utils/data")
 
 const factoryAbi = require("../abis/FunWalletFactory.json")
@@ -64,6 +63,11 @@ class WalletOnChainManager {
         const provider = await this.chain.getProvider()
         const addressCode = await provider.getCode(address)
         return !(addressCode.length == 2)
+    }
+
+    async getOpErrors() {
+        await this.init()
+
     }
 }
 

@@ -1,11 +1,8 @@
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { JsonRpcProvider } = require("@ethersproject/providers")
-
-const { BigNumber, Wallet, providers } = require("ethers")
 const { orderParams, verifyValidParametersForLocation, validateClassInstance } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
-const { Chain } = require("../chain/Chain")
-const { EoaAuth, Eoa } = require("../auth")
+const { Eoa } = require("../auth")
 
 const getFunctionParamOrderFromInterface = (interface, func) => {
     for (const field of interface.fragments) {
@@ -72,32 +69,6 @@ const verifyBundlerUrl = async (url) => {
     return (data.indexOf("aa-bundler") + 1)
 }
 
-const getChainsFromList = async (chains) => {
-    const out = chains.map(getChainFromUnlabeledData)
-    return await Promise.all(out)
-}
-
-const getChainFromUnlabeledData = async (chainIdentifier) => {
-    let chain
-    if (chainIdentifier instanceof Chain) {
-        return chainIdentifier
-    }
-    if (Number(chainIdentifier)) {
-        chain = new Chain({ chainId: chainIdentifier })
-    }
-    else if (chainIdentifier.indexOf("http") + 1) {
-        if (await verifyBundlerUrl(chainIdentifier)) {
-            chain = new Chain({ bundlerUrl: chainIdentifier })
-        } else {
-            chain = new Chain({ rpcUrl: chainIdentifier })
-        }
-    }
-    else {
-        chain = new Chain({ chainName: chainIdentifier })
-    }
-    await chain.init()
-    return chain
-}
 
 const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
     validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
@@ -112,33 +83,7 @@ const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
 
 
 
-const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
-
-const paymasterExpectedKeys = ["sponsorAddress", "token"]
-const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
-const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
-
-const parseOptions = async (options, location) => {
-    const { paymaster, chain } = options
-    if (paymaster) {
-        verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
-    }
-
-    // if (chain) {
-    //     verifyValidParametersForLocation("EnvironmentConfigError.configureEnvironment", chain, [chainExpectedKeys])
-    // }
-
-    // const [key] = getUsedParametersFromOptions(chain, chainExpectedKeys[0])
-    // let chainInput = { [chainExpectedKeysToInput[chainExpectedKeys.indexOf(key)]]: chain[key] }
-
-    return {
-        ...options, chain: await getChainFromUnlabeledData(chain)
-    }
-}
-
-defaultAbiCoder.encodeWith
-
 
 module.exports = {
-    parseOptions, prefundWallet, getChainsFromList, getChainFromUnlabeledData, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
+    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
 };

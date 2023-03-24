@@ -1,31 +1,28 @@
-const { WalletIdentifier } = require("../data/WalletIdentifier")
+
+const { UserOp, Chain, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
+const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet, parseOptions } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
-const { verifyValidParametersForLocation, validateClassInstance, } = require("../utils/data")
-const { parseOptions } = require("../utils/chain")
-const { UserOp } = require("../data")
-const { Chain } = require("../chain")
 
 const executeExpectedKeys = ["chain", "apiKey"]
-
+const gasExpectedKeys = ["callGasLimit"]
 const userOpDefaultParams = {
-    callGasLimit: 40_000,
     verificationGasLimit: 100_000,
 }
 
 const userOpInitParams = {
-    callGasLimit: 40_000,
     verificationGasLimit: 600_000,
 }
 
 
 class FunWallet {
     objCache = {}
-    async init(params) {
+    constructor(params) {
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
+
     }
 
     async _getFromCache(obj) {
@@ -38,10 +35,20 @@ class FunWallet {
     }
 
     async execute(auth, actionFunc, txOptions = global) {
-        const { data, location, optionalParams } = await actionFunc(this)
-        const options = await parseOptions(txOptions, location)
-        verifyValidParametersForLocation(location, options, executeExpectedKeys)
+        const options = await parseOptions(txOptions, "wallet.execute")
         const chain = await this._getFromCache(options.chain)
+        const actionData = {
+            wallet: this,
+            chain,
+            options
+        }
+        const { data, gasInfo, errorData, optionalParams } = await actionFunc(actionData)
+        verifyValidParametersForLocation(errorData.location, options, executeExpectedKeys)
+
+        if (gasInfo) {
+            verifyValidParametersForLocation(errorData.location, gasInfo, gasExpectedKeys)
+        }
+
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const callData = this.abiManager.encodeCall(data)
         const sender = await this.getAddress(chain)
@@ -51,10 +58,18 @@ class FunWallet {
 
         const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
 
-        let partialOp = { ...gasParams, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+
+
+        let partialOp = { ...gasParams, ...gasInfo, callData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }
+
+        if (!op.callGasLimit) {
+            // op.signature = "0x"
+            // const gas = await chain.estimateOpGas({ ...op, callGasLimit: 10e6 })
+            // console.log(gas)
+        }
         const userOp = new UserOp(op)
         await userOp.sign(auth, chain)
         const ophash = await chain.sendOpToBundler(userOp)
@@ -72,9 +87,9 @@ class FunWallet {
         return this.abiManager.getInitCode(initCodeParams)
     }
 
-    async getAddress(chain = global.chain) {
-        validateClassInstance(chain, "chain", Chain, "FunWallet.getAddress")
-        return await (new WalletOnChainManager(chain, this.identifier)).getWalletAddress()
+    async getAddress(options = global) {
+        const parseOptions = parseOptions(options)
+        return await (new WalletOnChainManager(parseOptions.chain, this.identifier)).getWalletAddress()
     }
 
 }
