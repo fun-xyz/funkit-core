@@ -14,11 +14,11 @@ const gasExpectedKeys = ["callGasLimit"]
 const callExpectedKeys = ["to", "data"]
 
 const userOpDefaultParams = {
-    verificationGasLimit: 100_000,
+    verificationGasLimit: 10_000_000,
 }
 
 const userOpInitParams = {
-    verificationGasLimit: 600_000,
+    verificationGasLimit: 10_000_000,
 }
 
 
@@ -59,9 +59,13 @@ class FunWallet extends FirstClassActions {
         const sender = await this.getAddress({ chain })
 
         let tempCallData;
-        const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, sender)
-        if (data.initAndExec && !moduleIsInit) {
-            tempCallData = this.abiManager.encodeInitExecCall(data)
+        if (data.initAndExec) {
+            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
+            if (!moduleIsInit) {
+                tempCallData = this.abiManager.encodeInitExecCall(data)
+            } else {
+                tempCallData = this.abiManager.encodeCall(data)
+            }
         }
         else {
             tempCallData = this.abiManager.encodeCall(data)
@@ -94,7 +98,7 @@ class FunWallet extends FirstClassActions {
         }
         return this.sendTx(userOp, options)
     }
-
+    // goerli implementation: 0xF30ca362C658BF50F9aFaAD0cbB95cfB6E50D901
     async _getThisInitCode(chain, auth) {
         const owner = await auth.getUniqueId()
         const salt = await this.identifier.getIdentifier()
@@ -118,6 +122,8 @@ class FunWallet extends FirstClassActions {
             const userOp = new UserOp(op)
             return await this.sendUserOp(userOp, txOptions)
         } catch (e) {
+            console.log(op)
+            console.log(e)
             verifyValidParametersForLocation("Wallet.sendTx", op.calldata, callExpectedKeys)
             if (!op.options) {
                 op.options = txOptions

@@ -91,7 +91,7 @@ class DataServer {
         symbol = symbol.toLowerCase()
         if (chain != LOCAL_FORK_CHAIN_ID) {
             if (symbol == "weth" && WETH_ADDR[chain]) {
-                return { contract_address: WETH_ADDR[chain][symbol] }
+                return WETH_ADDR[chain][symbol]
             }
             const body = {
                 symbol,
