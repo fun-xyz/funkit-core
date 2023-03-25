@@ -8,7 +8,7 @@ const { parseOptions } = require("../utils/option");
 const paymasterAbi = require("../abis/TokenPaymaster.json").abi
 
 
-const supportedTokens = ["usdc"]
+const supportedTokens = ["usdc", "dai"]
 
 class TokenSponsor {
     constructor(options = global) {

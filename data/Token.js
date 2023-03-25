@@ -35,7 +35,7 @@ class Token {
         } else if (this.symbol) {
             tokenInfo = await DataServer.getTokenInfo(this.symbol, chainId)
         }
-        return tokenInfo
+        return tokenInfo.contract_address ? tokenInfo.contract_address : tokenInfo
     }
 
     async getContract(options = global) {

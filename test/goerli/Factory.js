@@ -6,7 +6,7 @@ const { TEST_PRIVATE_KEY } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 const options = {
-    chain: 31337,
+    chain: 5,
     apiKey: "localtest",
 }
 
@@ -15,19 +15,19 @@ describe("Factory", function () {
     let wallet
     let salt
     this.timeout(50_000)
-    before(async function () {
 
+    before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = randomBytes(32).toString();
-        wallet = new FunWallet({ salt, index: 11450 })
+        wallet = new FunWallet({ salt, index: 0 })
     })
 
     it("wallet should have the same address with a salt-index combination", async () => {
-        const wallet1 = new FunWallet({ salt, index: 11450 })
+        let salt1 = randomBytes(32).toString();
+        const wallet1 = new FunWallet({ salt, index: 0 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
-        console.log(walletAddress, wallet1Address)
         expect(walletAddress).to.be.equal(wallet1Address)
     })
 
