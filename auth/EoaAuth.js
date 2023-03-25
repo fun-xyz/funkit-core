@@ -59,7 +59,10 @@ class Eoa extends Auth {
         return this.signer
     }
 
-    async sendTx(txData) {
+    async sendTx(txData, options = global) {
+        if (typeof txData == "function") {
+            txData = await txData(options)
+        }
         const { to, value, data, chain } = txData
         const provider = await chain.getProvider()
         const eoa = this.signer.connect(provider)
@@ -67,10 +70,10 @@ class Eoa extends Auth {
         return await tx.wait()
     }
 
-    async sendTxs(txs) {
+    async sendTxs(txs, options = global) {
         const receipts = []
         for (let tx of txs) {
-            receipts.push(await this.sendTx(tx))
+            receipts.push(await this.sendTx(tx, options))
         }
         return receipts
     }

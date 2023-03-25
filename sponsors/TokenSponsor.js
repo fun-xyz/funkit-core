@@ -61,64 +61,87 @@ class TokenSponsor {
     }
 
     async getTokenAmount(amount, options = global) {
-        return Token.getDecimalAmount(this.token, amount, options)
+        return await Token.getDecimalAmount(this.token, amount, options)
     }
 
     // interaction
 
-    async addWalletToWhitelist(walletAddress, options = global) {
-        const data = this.interface.encodeFunctionData("setSpenderWhiteListMode", [walletAddress, true])
-        return await this.encode(data, options)
-    }
-    async removeWalletFromWhitelist(walletAddress, options = global) {
-        const data = this.interface.encodeFunctionData("setSpenderWhiteListMode", [walletAddress, false])
-        return await this.encode(data, options)
+    async addWalletToWhitelist(walletAddress) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderWhiteListMode", [walletAddress, true])
+            return await this.encode(data, options)
+        }
     }
 
-    async addWalletToBlacklist(walletAddress, options = global) {
-        const data = this.interface.encodeFunctionData("setSpenderBlackListMode", [walletAddress, true])
-        return await this.encode(data, options)
-    }
-    async removeWalletFromBlacklist(walletAddress, options = global) {
-        const data = this.interface.encodeFunctionData("setSpenderBlackListMode", [walletAddress, false])
-        return await this.encode(data, options)
+    async removeWalletFromWhitelist(walletAddress) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderWhiteListMode", [walletAddress, false])
+            return await this.encode(data, options)
+        }
     }
 
-    async setWhitelistMode(options = global) {
-        const data = this.interface.encodeFunctionData("setWhitelistMode", [true])
-        return await this.encode(data, options)
+    async addWalletToBlacklist(walletAddress) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderBlackListMode", [walletAddress, true])
+            return await this.encode(data, options)
+        }
     }
-    async setBlacklistMode(options = global) {
-        const data = this.interface.encodeFunctionData("setWhitelistMode", [false])
-        return await this.encode(data, options)
-    }
-
-    async stake(walletAddress, amount, options = global) {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
-        const data = this.interface.encodeFunctionData("addEthDepositForSponsor", [walletAddress, amountdec])
-        return await this.encodeValue(data, amountdec, options)
-    }
-    async unstake(walletAddress, amount, options = global) {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
-        const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
-        return await this.encode(data, options)
+    async removeWalletFromBlacklist(walletAddress) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderBlackListMode", [walletAddress, false])
+            return await this.encode(data, options)
+        }
     }
 
-    async stakeToken(walletAddress, amount, options = global) {
-        const amountdec = await this.getTokenAmount(amount, options)
-        const data = this.interface.encodeFunctionData("addTokenDepositTo", [walletAddress, amountdec])
-        return await this.encode(data, options)
+    async setWhitelistMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setWhitelistMode", [true])
+            return await this.encode(data, options)
+        }
+    }
+    async setBlacklistMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setWhitelistMode", [false])
+            return await this.encode(data, options)
+        }
     }
 
-    async unstakeToken(walletAddress, amount, options = global) {
-        const amountdec = await this.getTokenAmount(amount, options)
-        const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [walletAddress, amountdec])
-        return await this.encode(data, options)
+    async stake(walletAddress, amount) {
+        return async (options = global) => {
+            const amountdec = await Token.getDecimalAmount("eth", amount, options)
+            const data = this.interface.encodeFunctionData("addEthDepositForSponsor", [walletAddress, amountdec])
+            return await this.encodeValue(data, amountdec, options)
+        }
+    }
+    async unstake(walletAddress, amount) {
+        return async (options = global) => {
+            const amountdec = await Token.getDecimalAmount("eth", amount, options)
+            const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
+            return await this.encode(data, options)
+        }
     }
 
-    async approve(amount, options = global) {
-        const gasSponsorAddress = await this.getPaymasterAddress(options)
-        return await Token.approve(this.token, gasSponsorAddress, amount)
+    async stakeToken(walletAddress, amount) {
+        return async (options = global) => {
+            const amountdec = await this.getTokenAmount(amount, options)
+            const data = this.interface.encodeFunctionData("addTokenDepositTo", [walletAddress, amountdec])
+            return await this.encode(data, options)
+        }
+    }
+
+    async unstakeToken(walletAddress, amount) {
+        return async (options = global) => {
+            const amountdec = await this.getTokenAmount(amount, options)
+            const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [walletAddress, amountdec])
+            return await this.encode(data, options)
+        }
+    }
+
+    async approve(amount) {
+        return async (options = global) => {
+            const gasSponsorAddress = await this.getPaymasterAddress(options)
+            return await Token.approve(this.token, gasSponsorAddress, amount)
+        }
     }
 }
 
