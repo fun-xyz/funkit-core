@@ -1,7 +1,9 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
 const { UserOp } = require("./UserOp")
 const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectionError } = require("../errors")
-const { DataServer, Bundler } = require("../servers")
+const { DataServer, } = require("../servers/DataServer")
+const { Bundler, } = require("../servers/Bundler")
+
 
 const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
 const chainExpectedKeys = ["chainId", "chainName", "rpcUrl", "bundlerUrl"]
@@ -64,7 +66,8 @@ class Chain {
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
-        } catch {
+        } catch (e) {
+            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 

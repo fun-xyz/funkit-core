@@ -2,20 +2,21 @@ const { expect } = require("chai")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY } = require("../../utils")
+const { TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL } = require("../../utils")
 const { FunWallet } = require("../../wallet")
-
-const options = {
-    chain: 31337,
-    apiKey: "localtest",
-}
 
 describe("Factory", function () {
     let auth
     let wallet
     let salt
-    before(async function () {
+    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
+    const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    const options = {
+        chain: FORK_CHAIN_ID,
+        apiKey: "localtest",
+    }
 
+    before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = randomBytes(32).toString();
@@ -26,7 +27,6 @@ describe("Factory", function () {
         const wallet1 = new FunWallet({ salt, index: 11450 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
-        console.log(walletAddress, wallet1Address)
         expect(walletAddress).to.be.equal(wallet1Address)
     })
 
