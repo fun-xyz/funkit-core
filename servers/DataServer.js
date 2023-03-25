@@ -2,11 +2,11 @@ const { ServerMissingDataError, Helper } = require('../errors')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
 
-const LOCAL_FORK_CHAIN_ID = 31337
+const LOCAL_FORK_CHAIN_ID = 1337
+const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
 const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
-const LOCAL_URL = "http://127.0.0.1:3000"
 const TEST_API_KEY = "localtest"
 
 const WETH_ADDR = {

@@ -14,7 +14,6 @@ describe("Factory", function () {
     let auth
     let wallet
     let salt
-    this.timeout(50_000)
     before(async function () {
 
         await configureEnvironment(options)
