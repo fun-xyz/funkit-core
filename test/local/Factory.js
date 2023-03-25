@@ -26,7 +26,6 @@ describe("Factory", function () {
         const wallet1 = new FunWallet({ salt, index: 11450 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
-        console.log(walletAddress, wallet1Address)
         expect(walletAddress).to.be.equal(wallet1Address)
     })
 
