@@ -32,17 +32,15 @@ describe("Paymaster", function () {
 
         salt = await auth.getUniqueId()
         wallet = new FunWallet({ salt, index: 0 })
-
-        await prefundWallet(auth, wallet, 1)
+        await prefundWallet(funder, wallet, 3)
         const walletAddress = await wallet.getAddress()
-        
+
         wallet1 = new FunWallet({ salt, index: 1 })
-        
-        await prefundWallet(auth, wallet1, 1)
+
+        await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()
-        
+
         const funderAddress = await funder.getUniqueId()
-        
         await wallet.swap(auth, {
             in: "eth",
             amount: 1,
@@ -51,7 +49,7 @@ describe("Paymaster", function () {
                 returnAddress: funderAddress
             }
         })
-        
+
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
@@ -61,12 +59,14 @@ describe("Paymaster", function () {
         const gasSponsor = new TokenSponsor()
         await funder.sendTx(await gasSponsor.setBlacklistMode())
 
-        
+
         const ethstakeAmount = 10
         const usdcStakeAmount = 100
 
         const depositInfoS = await gasSponsor.getDepositInfo(walletAddress)
         const depositInfo1S = await gasSponsor.getDepositInfo(funderAddress)
+
+
 
         const approve = await gasSponsor.approve(usdcStakeAmount * 2)
         const deposit = await gasSponsor.stakeToken(walletAddress, usdcStakeAmount)

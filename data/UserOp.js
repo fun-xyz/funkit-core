@@ -25,7 +25,7 @@ class UserOp {
     }
 
     async getOpHashData(chain) {
-        const chainId = await chain.getChainId()
+        const chainId = await chain.getActualChainId()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const hash = getOpHash(this.op, chainId, entryPointAddress)
         return hash

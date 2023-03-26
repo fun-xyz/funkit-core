@@ -11,6 +11,7 @@ describe("Factory", function () {
     let salt
     var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
     const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",

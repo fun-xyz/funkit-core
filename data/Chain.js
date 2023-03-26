@@ -118,6 +118,11 @@ class Chain {
         return await DataServer.getModuleInfo(name, this.id)
     }
 
+    async getActualChainId() {
+        await this.init()
+        const { chainId } = await this.provider.getNetwork()
+        return chainId
+    }
 
 
 

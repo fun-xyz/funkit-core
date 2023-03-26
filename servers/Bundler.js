@@ -18,7 +18,7 @@ class Bundler {
     async validateChainId() {
         // validate chainId is in sync with expected chainid
         const chain = await this.userOpJsonRpcProvider.send('eth_chainId', []);
-        if (parseInt(chain) != this.chainId) {
+        if (parseInt(chain) != this.chainId && this.chainId != 1337) {
             throw new Error(`bundler ${this.bundlerUrl} is on chainId ${chain}, but provider is on chainId ${this.chainId}`);
         }
     }

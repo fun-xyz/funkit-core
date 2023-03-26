@@ -18,6 +18,8 @@ describe("Swap", function () {
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",
+        gasSponsor: ""
+
     }
 
     const amount = 1

@@ -3,7 +3,7 @@ const { REMOTE_FORK_CHAIN_ID } = require('../utils/test')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
 
-const LOCAL_FORK_CHAIN_ID = 31337
+const LOCAL_FORK_CHAIN_ID = 1337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
@@ -90,29 +90,27 @@ class DataServer {
 
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
-        if (chain != LOCAL_FORK_CHAIN_ID && chain != REMOTE_FORK_CHAIN_ID) {
-            if (symbol == "weth" && WETH_ADDR[chain]) {
-                return WETH_ADDR[chain][symbol]
+        let body, tokenInfo;
+        if (chain == LOCAL_FORK_CHAIN_ID || chain == REMOTE_FORK_CHAIN_ID) {
+            const addr = localTokenAddrs[symbol]
+            if (addr) {
+                return addr
             }
-            const body = {
+            body = {
+                symbol,
+                chain: 1
+            }
+        } else {
+            body = {
                 symbol,
                 chain
             }
-            return await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {
-                return r.data
-            })
-
         }
-        const addr = localTokenAddrs[symbol]
-        if (addr) {
-            return addr
+        if (symbol == "weth" && WETH_ADDR[chain]) {
+            return WETH_ADDR[chain][symbol]
         }
 
-        const body = {
-            symbol,
-            chain: 1
-        }
-        const tokenInfo = await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {
+        tokenInfo = await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {
             return r.data
         })
         if (tokenInfo.contract_address) {
