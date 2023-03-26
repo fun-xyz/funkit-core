@@ -5,13 +5,10 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY } = require("../../utils")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
-const options = {
-    chain: 31337,
-    apiKey: "localtest",
-}
+
 const testTokens = ["usdc", "dai"]
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
@@ -20,6 +17,13 @@ describe("Paymaster", function () {
     this.timeout(30_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
+    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
+    const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    const options = {
+        chain: FORK_CHAIN_ID,
+        apiKey: "localtest",
+    }
+
     const amount = 1
     let wallet
     let wallet1
@@ -41,7 +45,7 @@ describe("Paymaster", function () {
         
         await wallet.swap(auth, {
             in: "eth",
-            amount: 10,
+            amount: 1,
             out: "usdc",
             options: {
                 returnAddress: funderAddress
@@ -56,9 +60,11 @@ describe("Paymaster", function () {
         })
         const gasSponsor = new TokenSponsor()
         await funder.sendTx(await gasSponsor.setBlacklistMode())
+
         
         const ethstakeAmount = 10
         const usdcStakeAmount = 100
+
         const depositInfoS = await gasSponsor.getDepositInfo(walletAddress)
         const depositInfo1S = await gasSponsor.getDepositInfo(funderAddress)
 
@@ -80,13 +86,15 @@ describe("Paymaster", function () {
     const runSwap = async (wallet, testToken = "dai") => {
         const walletAddress = await wallet.getAddress()
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
-        await wallet.swap(auth, {
-            in: "eth",
-            amount: .1,
-            out: "dai"
-        })
-        const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
-        assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        if (tokenBalanceBefore < .1) {
+            await wallet.swap(auth, {
+                in: "eth",
+                amount: .1,
+                out: testToken
+            })
+            const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        }
     }
 
     it("Blacklist Mode Approved", async () => {

@@ -3,7 +3,6 @@ const { arrayify } = require("ethers/lib/utils");
 
 const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey, validateClassInstance, } = require("../utils/data")
 const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
-const { parseOptions } = require("../utils/option");
 
 const { Auth } = require("./Auth");
 

@@ -1,4 +1,4 @@
-const { Eoa } = require("../auth")
+const { Eoa } = require("../auth/EoaAuth")
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { orderParams, validateClassInstance, formatMissingForError } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")

@@ -1,4 +1,5 @@
 const { ServerMissingDataError, Helper } = require('../errors')
+const { REMOTE_FORK_CHAIN_ID } = require('../utils/test')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
 
@@ -89,7 +90,7 @@ class DataServer {
 
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
-        if (chain != LOCAL_FORK_CHAIN_ID) {
+        if (chain != LOCAL_FORK_CHAIN_ID && chain != REMOTE_FORK_CHAIN_ID) {
             if (symbol == "weth" && WETH_ADDR[chain]) {
                 return WETH_ADDR[chain][symbol]
             }
@@ -139,6 +140,7 @@ class DataServer {
             return await this.getChainFromName(chain)
         }
         const body = { chain }
+
         if (Number(chain) == LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
@@ -167,6 +169,7 @@ class DataServer {
             module: moduleName,
             chain: chainId.toString()
         }
+
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data

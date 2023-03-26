@@ -1,4 +1,4 @@
-const { parseOptions } = require("../utils")
+const { parseOptions } = require("../utils/option")
 // const { verifyValidParametersForLocation, getChainsFromList, getUsedParametersFromOptions, getChainFromUnlabeledData } = require("../utils")
 
 
