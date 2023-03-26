@@ -16,7 +16,7 @@ const testTokens = ["usdc", "dai"]
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
-describe("Swap", function () {
+describe("Paymaster", function () {
     this.timeout(30_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
@@ -31,25 +31,23 @@ describe("Swap", function () {
 
         await prefundWallet(auth, wallet, 1)
         const walletAddress = await wallet.getAddress()
-
-        salt = await auth.getUniqueId()
+        
         wallet1 = new FunWallet({ salt, index: 1 })
-
+        
         await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
-
+        
         const funderAddress = await funder.getUniqueId()
-
+        
         await wallet.swap(auth, {
             in: "eth",
-            amount: .1,
+            amount: 10,
             out: "usdc",
             options: {
                 returnAddress: funderAddress
             }
         })
-
-
+        
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
@@ -58,14 +56,11 @@ describe("Swap", function () {
         })
         const gasSponsor = new TokenSponsor()
         await funder.sendTx(await gasSponsor.setBlacklistMode())
-
-
-
-        const ethstakeAmount = 1
+        
+        const ethstakeAmount = 10
         const usdcStakeAmount = 100
         const depositInfoS = await gasSponsor.getDepositInfo(walletAddress)
         const depositInfo1S = await gasSponsor.getDepositInfo(funderAddress)
-
 
         const approve = await gasSponsor.approve(usdcStakeAmount * 2)
         const deposit = await gasSponsor.stakeToken(walletAddress, usdcStakeAmount)
@@ -111,7 +106,7 @@ describe("Swap", function () {
             await runSwap(wallet1)
             throw new Error("Wallet is not whitelisted but transaction passed")
         } catch (e) {
-            assert(e.message.includes("properties of undefine"),"Error but not AA33")
+            assert(e.message.includes("properties of undefine"), "Error but not AA33")
         }
     })
 

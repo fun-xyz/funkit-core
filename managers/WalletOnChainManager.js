@@ -66,7 +66,8 @@ class WalletOnChainManager {
         try {
             const data = await contract.getModuleStateVal(moduleAddress)
             return data != "0x"
-        } catch (e){
+        }
+        catch (e) {
             return false
         }
     }

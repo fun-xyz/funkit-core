@@ -14,17 +14,16 @@ describe("Factory", function () {
     let auth
     let wallet
     let salt
-
     before(async function () {
+
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = randomBytes(32).toString();
-        wallet = new FunWallet({ salt, index: 0 })
+        wallet = new FunWallet({ salt, index: 11450 })
     })
 
     it("wallet should have the same address with a salt-index combination", async () => {
-        let salt1 = randomBytes(32).toString();
-        const wallet1 = new FunWallet({ salt, index: 0 })
+        const wallet1 = new FunWallet({ salt, index: 11450 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
         expect(walletAddress).to.be.equal(wallet1Address)

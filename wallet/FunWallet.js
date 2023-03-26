@@ -14,11 +14,11 @@ const gasExpectedKeys = ["callGasLimit"]
 const callExpectedKeys = ["to", "data"]
 
 const userOpDefaultParams = {
-    verificationGasLimit: 10_000_000,
+    verificationGasLimit: 200_000,
 }
 
 const userOpInitParams = {
-    verificationGasLimit: 10_000_000,
+    verificationGasLimit: 700_000,
 }
 
 
