@@ -4,11 +4,7 @@ const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
-<<<<<<< HEAD
-const { GOERLI_PRIVATE_KEY, prefundWallet } = require("../../utils")
-=======
 const { TEST_PRIVATE_KEY, prefundWallet, GOERLI_PRIVATE_KEY } = require("../../utils")
->>>>>>> fuckGOERLI
 const { FunWallet } = require("../../wallet")
 
 const options = {
