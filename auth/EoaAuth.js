@@ -51,7 +51,8 @@ class Eoa extends Auth {
 
     async signHash(hash) {
         await this.init()
-        return await this.signer.signMessage(arrayify(hash))
+        const sig = await this.signer.signMessage(arrayify(hash))
+        return sig
     }
 
     async getSigner() {

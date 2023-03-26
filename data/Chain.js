@@ -70,6 +70,7 @@ class Chain {
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
         }
+        // this.bundlerUrl = "http://localhost:3000/rpc"
     }
 
     async getData(key) {
@@ -157,3 +158,5 @@ const main = async () => {
 main()
 
 module.exports = { Chain }
+
+

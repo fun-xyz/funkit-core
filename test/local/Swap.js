@@ -23,18 +23,19 @@ describe("Swap", function () {
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = await auth.getUniqueId()
         wallet = new FunWallet({ salt, index: 0 })
-        await prefundWallet(auth, wallet, .4)
+        await prefundWallet(auth, wallet, 10)
     })
 
     it("ETH => ERC20", async () => {
         const walletAddress = await wallet.getAddress()
         for (let testToken of testTokens) {
             const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
-            await wallet.swap(auth, {
+            const receipt = await wallet.swap(auth, {
                 in: "eth",
                 amount: .1,
                 out: testToken
             })
+
             const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }

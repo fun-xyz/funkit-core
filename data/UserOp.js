@@ -7,7 +7,7 @@ const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxP
 
 class UserOp {
     opHashData = {}
-    
+
     constructor(input) {
         verifyValidParametersForLocation("UserOp constructor", input, userOpExpectedKeys)
         input = objectValuesToBigNumber(input)
@@ -21,22 +21,14 @@ class UserOp {
 
     async sign(auth, chain) {
         const opHash = await this.getOpHashData(chain)
-        this.op.signature = await auth.signHash(opHash.hash)
+        this.op.signature = await auth.signHash(opHash)
     }
 
     async getOpHashData(chain) {
         const chainId = await chain.getChainId()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-
-        const { chainId: prevChainId, entryPointAddress: prevEntryPointAddress } = this.opHashData
-
-        if (chainId == prevChainId && entryPointAddress == prevEntryPointAddress) {
-            return this.opHashData
-        }
-
         const hash = getOpHash(this.op, chainId, entryPointAddress)
-        this.opHashData = { chainId, entryPointAddress, hash }
-        return this.opHashData
+        return hash
     }
 }
 

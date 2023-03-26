@@ -143,4 +143,4 @@ const deepHexlify = (obj) => {
 }
 
 
-module.exports = { verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
