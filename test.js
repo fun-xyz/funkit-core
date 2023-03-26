@@ -30,10 +30,6 @@ const main = async () => {
     // )
     // const opHash = await userOp.getOpHashData(chain)
     // const hash = "0x81915e106760b1a8ed15ad9513ea4e36e51f775e34680d92a0e29f62f7d9de0c"
-    // console.log(opHash.hash)
-    // console.log(hash)
-    // const userId = await contract.getUserId(userOp.op, hash)
-    // console.log(userId)
 
 }
 main()

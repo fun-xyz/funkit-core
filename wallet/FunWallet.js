@@ -122,6 +122,8 @@ class FunWallet extends FirstClassActions {
             const userOp = new UserOp(op)
             return await this.sendUserOp(userOp, txOptions)
         } catch (e) {
+            // console.log(op)
+            // console.log(e)
             verifyValidParametersForLocation("Wallet.sendTx", op.calldata, callExpectedKeys)
             if (!op.options) {
                 op.options = txOptions

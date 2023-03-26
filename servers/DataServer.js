@@ -3,7 +3,7 @@ const { REMOTE_FORK_CHAIN_ID } = require('../utils/test')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
 
-const LOCAL_FORK_CHAIN_ID = 1337
+const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'

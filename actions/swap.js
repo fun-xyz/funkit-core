@@ -26,14 +26,10 @@ const _swap = (params) => {
 
         const provider = await chain.getProvider()
 
-
-        const {
-            tokenSwapAddress,
-            univ3quoter,
-            univ3factory,
-            univ3router
-        } = await chain.getModuleAddresses("tokenSwap")
-
+        const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
+        const univ3quoter = await chain.getAddress("univ3quoter")
+        const univ3factory = await chain.getAddress("univ3factory")
+        const univ3router = await chain.getAddress("univ3router")
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
 
         const tokenInObj = new Token(tokenIn)

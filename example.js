@@ -32,24 +32,11 @@ const main = async () => {
 
     const wallet = new FunWallet({ salt, index: 235 })
     const address = await wallet.getAddress()
-    // console.log(address)
-    // console.log("start token end:", await getBal(address, swapParams.tokenOut))
-    // console.log("start token in:", await getBal(address, swapParams.tokenIn))
 
-    // await prefundWallet(auth, wallet, .2)
-    // console.log("start token end:", await getBal(address, swapParams.tokenIn))
-    // console.log("start token end:", await getBal(address, swapParams.out))
-    // console.log("token balance start:", await getBal(address, token))
-    console.log("token balance start:", await getBal(address, swapParams.out))
+
 
     // const op1receipt = await wallet.transfer(auth, { to: spender, amount, token })
     const op2receipt = await wallet.swap(auth, swapParams)
-    // console.log("end token:", await getBal(address, swapParams.out))
-
-    // console.log("token balance start:", await getBal(address, swapParams.tokenOut))
-
-    console.log("token balance start:", await getBal(address, swapParams.out))
-
 
 }
 
