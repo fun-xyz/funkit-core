@@ -28,7 +28,7 @@ const verifyValidParametersForLocation = (location, input, expected) => {
 }
 
 const validateClassInstance = (data, dataName, classObj, location = "", isInternal = false) => {
-    if (data.constructor.toString() == classObj.toString() || data instanceof classObj) {
+    if (data instanceof classObj || data.constructor.toString() == classObj.toString()) {
         return;
     }
     const helper = new Helper(dataName, data)

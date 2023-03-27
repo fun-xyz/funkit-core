@@ -6,3 +6,10 @@ const { Token } = require("./data")
 const { configureEnvironment } = require("./managers")
 const { TEST_PRIVATE_KEY, prefundWallet, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID } = require("./utils")
 const { FunWallet } = require("./wallet")
+
+
+const signer = new Wallet(TEST_PRIVATE_KEY)
+
+const eoa = new Eoa({ signer })
+
+console.log(eoa)

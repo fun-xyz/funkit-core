@@ -7,6 +7,10 @@ const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
+
+const DEFAULT_SLIPPAGE = .5 // .5%
+const DEFAULT_FEE = "medium"
+
 const _swap = (params) => {
     return async (actionData) => {
         const { wallet, chain } = actionData
@@ -41,9 +45,9 @@ const _swap = (params) => {
             const walletAddress = await wallet.getAddress({ chain })
             returnAddress = walletAddress
         }
-        
-        slippage = slippage ? slippage : .5
-        poolFee = poolFee ? poolFee : "medium"
+
+        slippage = slippage ? slippage : DEFAULT_SLIPPAGE
+        poolFee = poolFee ? poolFee : DEFAULT_FEE
 
         let percentDecimal = 100
         while (slippage < 1 || Math.trunc(slippage) != slippage) {
@@ -70,7 +74,7 @@ const _swap = (params) => {
         }
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
-        const gasInfo = { callGasLimit: 400_000 }
+        const gasInfo = { callGasLimit: 200_000 }
         const errorData = {
             location: "actions.swap"
         }

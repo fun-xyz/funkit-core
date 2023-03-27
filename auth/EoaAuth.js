@@ -24,10 +24,10 @@ class Eoa extends Auth {
                 verifyPrivateKey(input[key], currentLocation)
                 break;
             case "signer":
-                validateClassInstance(input[key], key, Signer, currentLocation)
+                // validateClassInstance(input[key], key, Signer, currentLocation)
                 break;
             case "provider":
-                validateClassInstance(input[key], key, providers.Provider, currentLocation)
+                // validateClassInstance(input[key], key, providers.Provider, currentLocation)
                 break;
         }
         this[key] = input[key]
