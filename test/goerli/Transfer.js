@@ -10,6 +10,8 @@ const { FunWallet } = require("../../wallet")
 const options = {
     chain: 5,
     apiKey: "localtest",
+    gasSponsor: ""
+
 }
 const testToken = "dai"
 

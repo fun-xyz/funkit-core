@@ -58,7 +58,7 @@ describe("Paymaster", function () {
         const gasSponsor = new TokenSponsor()
 
 
-        const ethstakeAmount = .01
+        const ethstakeAmount = .1
         const usdcStakeAmount = 20
         const depositInfoS = await gasSponsor.getDepositInfo(walletAddress)
         const depositInfo1S = await gasSponsor.getDepositInfo(funderAddress)
