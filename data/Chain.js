@@ -45,13 +45,8 @@ class Chain {
 
     async loadBundler() {
         if (!this.bundler) {
-            try {
-                this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
-                await this.bundler.validateChainId()
-            } catch (e) {
-                const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
-                throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
-            }
+            this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
+            await this.bundler.validateChainId()
         }
     }
 
@@ -67,13 +62,12 @@ class Chain {
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
-            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
         }
-        // this.bundlerUrl = "http://localhost:3000/rpc"
+        this.bundlerUrl = "http://127.0.0.1:3000/"
     }
 
     async getData(key) {

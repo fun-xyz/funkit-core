@@ -2,6 +2,7 @@
 const { resolveProperties } = require("ethers/lib/utils");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { deepHexlify, verifyValidParametersForLocation } = require("../utils/data");
+const { Helper, NoServerConnectionError, ServerError, ParameterFormatError } = require("../errors");
 
 
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
@@ -17,9 +18,19 @@ class Bundler {
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid
-        const chain = await this.userOpJsonRpcProvider.send('eth_chainId', []);
+        let chain;
+        try {
+
+            chain = await this.userOpJsonRpcProvider.send('eth_chainId', []);
+
+        } catch (e) {
+            const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
+            throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
+        }
+
         if (parseInt(chain) != this.chainId && this.chainId != 1337) {
-            throw new Error(`bundler ${this.bundlerUrl} is on chainId ${chain}, but provider is on chainId ${this.chainId}`);
+            const helper = new Helper("Chain Id: ", this.chainId, `Bundler ${ this.bundlerUrl } is on chainId ${ chain }, but provider is on chainId ${ this.chainId }`)
+            throw new ParameterFormatError("Chain.loadBundler", helper)
         }
     }
 
