@@ -67,7 +67,7 @@ class Chain {
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
         }
-        this.bundlerUrl = "http://127.0.0.1:3000/"
+        // this.bundlerUrl = "http://127.0.0.1:3000/"
     }
 
     async getData(key) {
