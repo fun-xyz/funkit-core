@@ -91,6 +91,11 @@ class DataServer {
     static async getTokenInfo(symbol, chain) {
         symbol = symbol.toLowerCase()
         let body, tokenInfo;
+
+        body = {
+            symbol,
+            chain
+        }
         if (chain == LOCAL_FORK_CHAIN_ID || chain == REMOTE_FORK_CHAIN_ID) {
             const addr = localTokenAddrs[symbol]
             if (addr) {
@@ -99,11 +104,6 @@ class DataServer {
             body = {
                 symbol,
                 chain: 1
-            }
-        } else {
-            body = {
-                symbol,
-                chain
             }
         }
         if (symbol == "weth" && WETH_ADDR[chain]) {

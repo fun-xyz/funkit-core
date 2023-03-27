@@ -86,16 +86,4 @@ class WalletOnChainManager {
 }
 
 
-const chain = new Chain({ chainId: 5 })
-const identifier = new WalletIdentifier({ salt: "sdfa" })
-
-const main = async () => {
-    const onchain = new WalletOnChainManager(chain, identifier)
-    await onchain.getReceipt("0x6d970b07efab0d65ea70df7c3db62ef9736fd5fa7b0e7211ac340f3a1734bd27")
-}
-
-
-// main()
-
-
 module.exports = { WalletOnChainManager }

@@ -76,26 +76,4 @@ class WalletAbiManager {
 }
 
 
-
-const walletAbi = require("../abis/FunWallet.json").abi
-const factoryAbi = require("../abis/FunWalletFactory.json").abi
-const manager = new WalletAbiManager(walletAbi, factoryAbi)
-
-const initcodeParams = {
-    salt: constants.HashZero,
-    entryPointAddress: constants.AddressZero,
-    verificationAddress: constants.AddressZero,
-    owner: constants.AddressZero
-}
-
-const encodeCallParams = {
-    to: constants.AddressZero,
-    calldata: "0x",
-}
-
-
-// manager.getInitCode(initcodeParams), "\n")
-// manager.encodeCall(encodeCallParams)
-
-
 module.exports = { WalletAbiManager }

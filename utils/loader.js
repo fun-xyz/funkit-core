@@ -1,6 +1,6 @@
 
 const fs = require("fs");
-// -l
+
 const loadAbis = () => {
     const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
     const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"

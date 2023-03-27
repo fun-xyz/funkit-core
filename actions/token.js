@@ -17,22 +17,13 @@ const ethTransfer = ({ to, amount }) => {
 const erc20Transfer = ({ to, amount, token }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
-        const provider = await chain.getProvider()
         token = new Token(token)
-        tokenAddress = await token.getAddress()
-        const ERC20Contract = new ethers.Contract(tokenAddress, ERC20.abi, provider)
-        const decimals = await ERC20Contract.decimals()
-
-        amount = parseUnits(`${amount}`, decimals)
-
-
-        const transferData = await ERC20Contract.populateTransaction.transfer(to, amount)
-
+        const transferData = await token.transfer(to, amount, { chain })
 
         const txDetails = {
             method: "transfer",
             params: [to, amount.toString()],
-            contractAddress: tokenAddress,
+            contractAddress: transferData.to,
             chainId: chain.id,
         }
 

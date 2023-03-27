@@ -1,19 +1,14 @@
 const { Contract, constants } = require("ethers")
-const { parseUnits, Interface } = require("ethers/lib/utils")
+const { Interface } = require("ethers/lib/utils")
 const { Token } = require("../data/Token")
-const { verifyValidParametersForLocation } = require("../utils/data")
 const { swapExec } = require("../utils/swap")
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
-
-
-const swapExpectedKeys = ["tokenIn", "tokenOut", "amountIn"]
 
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
 const _swap = (params) => {
     return async (actionData) => {
-        verifyValidParametersForLocation("actions.swap", params, swapExpectedKeys)
         const { wallet, chain } = actionData
         let {
             tokenIn,
@@ -42,10 +37,12 @@ const _swap = (params) => {
             univ3router
         }
 
-        const walletAddress = await wallet.getAddress({ chain })
-
-        returnAddress = returnAddress ? returnAddress : walletAddress
-        slippage = slippage ? slippage : .52352
+        if (!returnAddress) {
+            const walletAddress = await wallet.getAddress({ chain })
+            returnAddress = walletAddress
+        }
+        
+        slippage = slippage ? slippage : .5
         poolFee = poolFee ? poolFee : "medium"
 
         let percentDecimal = 100

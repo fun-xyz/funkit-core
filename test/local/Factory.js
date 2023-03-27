@@ -1,4 +1,5 @@
 const { expect } = require("chai")
+const { ethers } = require("ethers")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
@@ -11,7 +12,7 @@ describe("Factory", function () {
     let salt
     var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
     const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-    
+
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",
@@ -19,7 +20,8 @@ describe("Factory", function () {
 
     before(async function () {
         await configureEnvironment(options)
-        auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
+        const signer = new ethers.Wallet(TEST_PRIVATE_KEY)
+        auth = new Eoa({ signer: signer })
         salt = randomBytes(32).toString();
         wallet = new FunWallet({ salt, index: 11450 })
     })

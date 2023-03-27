@@ -1,6 +1,5 @@
 const { Wallet } = require("ethers")
 
-
 const getSignerFromPrivateKey = (key) => {
     return new Wallet(key)
 }

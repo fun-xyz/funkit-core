@@ -1,6 +1,4 @@
 const { parseOptions } = require("../utils/option")
-// const { verifyValidParametersForLocation, getChainsFromList, getUsedParametersFromOptions, getChainFromUnlabeledData } = require("../utils")
-
 
 
 const configureEnvironment = async (envOptions) => {
