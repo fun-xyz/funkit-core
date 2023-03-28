@@ -1,5 +1,5 @@
 
-const { Chain } = require("../data/chain")
+const { Chain } = require("../data/Chain")
 const { JsonRpcProvider } = require("@ethersproject/providers")
 
 
