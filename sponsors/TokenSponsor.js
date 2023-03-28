@@ -12,7 +12,7 @@ const supportedTokens = ["usdc", "dai"]
 
 class TokenSponsor {
     constructor(options = global) {
-        this.sponsorAddress = options.gasSponsor.sponsorAddress
+        this.sponsorAddress = options.gasSponsor.sponsorAddress.toLowerCase()
         this.token = options.gasSponsor.token
         if (!supportedTokens.includes(this.token)) {
             const helper = new Helper("GasSponsor: ", gasSponsor.token, "Token is not Supported")
