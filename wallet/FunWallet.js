@@ -49,7 +49,10 @@ class FunWallet extends FirstClassActions {
             options
         }
         const { data, gasInfo, errorData, optionalParams } = await actionFunc(actionData)
-        verifyValidParametersForLocation(errorData.location, options, executeExpectedKeys)
+        {
+            const { chain, apiKey } = options
+            verifyValidParametersForLocation(errorData.location, { chain, apiKey }, executeExpectedKeys)
+        }
 
         if (gasInfo) {
             verifyValidParametersForLocation(errorData.location, gasInfo, gasExpectedKeys)
@@ -118,9 +121,9 @@ class FunWallet extends FirstClassActions {
     }
 
     async sendTx({ auth, op }, txOptions = global) {
+        let userOp
         try {
-            const userOp = new UserOp(op)
-            return await this.sendUserOp(userOp, txOptions)
+            userOp = new UserOp(op)
         } catch (e) {
             verifyValidParametersForLocation("Wallet.sendTx", op.calldata, callExpectedKeys)
             if (!op.options) {
@@ -136,6 +139,7 @@ class FunWallet extends FirstClassActions {
             op.options.sendTxLater = false
             return await this.execute(auth, genCall(op.calldata), op.options)
         }
+        return await this.sendUserOp(userOp, txOptions)
     }
 
 

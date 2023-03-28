@@ -45,21 +45,21 @@ describe("Swap", function () {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
     })
-    // it("ERC20 => ERC20", async () => {
-    //     this.timeout(100_000)
-    //     const walletAddress = await wallet.getAddress()
-    //     for (let testToken of testTokens) {
-    //         if (testToken != "usdc") {
-    //             const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
-    //             await wallet.swap(auth, {
-    //                 in: "usdc",
-    //                 amount: 1,
-    //                 out: testToken
-    //             })
-    //             const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
-    //             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-    //         }
-    //     }
-    // })
+    it("ERC20 => ERC20", async () => {
+        this.timeout(100_000)
+        const walletAddress = await wallet.getAddress()
+        for (let testToken of testTokens) {
+            if (testToken != "usdc") {
+                const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
+                await wallet.swap(auth, {
+                    in: "usdc",
+                    amount: 1,
+                    out: testToken
+                })
+                const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
+                assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+            }
+        }
+    })
 
 })

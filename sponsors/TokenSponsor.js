@@ -109,7 +109,7 @@ class TokenSponsor {
     async stake(walletAddress, amount) {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
-            const data = this.interface.encodeFunctionData("addEthDepositForSponsor", [walletAddress, amountdec])
+            const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
             return await this.encodeValue(data, amountdec, options)
         }
     }

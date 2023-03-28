@@ -47,8 +47,6 @@ class WalletAbiManager {
         return encodeContractCall(this.walletInterface, encodeFunctionName, input, location, isInternal)
     }
 
-
-
     encodeFactoryCall(encodeFunctionName, input, location = "WalletAbiManager.encodeFactoryCall", isInternal = false) {
         return encodeContractCall(this.factoryInterface, encodeFunctionName, input, location, isInternal)
     }
