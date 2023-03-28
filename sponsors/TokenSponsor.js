@@ -12,8 +12,8 @@ const supportedTokens = ["usdc", "dai"]
 
 class TokenSponsor {
     constructor(options = global) {
-        this.sponsorAddress = options.gasSponsor.sponsorAddress.toLowerCase()
-        this.token = options.gasSponsor.token
+        this.sponsorAddress = options.gasSponsor.sponsorAddress
+        this.token = options.gasSponsor.token.toLowerCase()
         if (!supportedTokens.includes(this.token)) {
             const helper = new Helper("GasSponsor: ", gasSponsor.token, "Token is not Supported")
             throw new ParameterFormatError(location, helper)
