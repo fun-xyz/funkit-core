@@ -17,8 +17,7 @@ const ethTransfer = ({ to, amount }) => {
 const erc20Transfer = ({ to, amount, token }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
-        token = new Token(token)
-        const transferData = await token.transfer(to, amount, { chain })
+        const transferData = await Token.transfer(token, to, amount, { chain })
 
         const txDetails = {
             method: "transfer",
@@ -43,7 +42,6 @@ const erc20Transfer = ({ to, amount, token }) => {
             }
         }
 
-
         const gasInfo = { callGasLimit: 200_000 }
         return { gasInfo, data: transferData, errorData }
     }
@@ -52,16 +50,8 @@ const erc20Transfer = ({ to, amount, token }) => {
 const _approve = ({ spender, amount, token }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
-        const provider = await chain.getProvider()
         token = new Token(token)
-        tokenAddress = await token.getAddress()
-        const ERC20Contract = new ethers.Contract(tokenAddress, ERC20.abi, provider)
-        const decimals = await ERC20Contract.decimals()
-
-        amount = parseUnits(`${amount}`, decimals)
-
-        const approveData = await ERC20Contract.populateTransaction.approve(spender, amount)
-
+        const approveData = await token.approve(to, amount, { chain })
 
         const txDetails = {
             method: "approve",

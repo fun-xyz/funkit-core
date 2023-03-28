@@ -1,14 +1,9 @@
-const { Signer, providers } = require("ethers");
 const { arrayify } = require("ethers/lib/utils");
-
-const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey, validateClassInstance, } = require("../utils/data")
+const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey } = require("../utils/data")
 const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
-
 const { Auth } = require("./Auth");
 
-
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
-
 
 class Eoa extends Auth {
     signer = false

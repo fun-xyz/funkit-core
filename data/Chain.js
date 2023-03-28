@@ -6,7 +6,7 @@ const { Bundler, } = require("../servers/Bundler")
 
 
 const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
-const chainExpectedKeys = ["chainId", "chainName", "rpcUrl", "bundlerUrl"]
+const chainExpectedKeys = ["chainId", "rpcUrl", "chainName", "bundlerUrl"]
 
 class Chain {
     constructor(input) {
@@ -16,7 +16,6 @@ class Chain {
         this[key] = input[key]
         this.key = key
     }
-
 
     async init() {
         if (this.key == "chainId" || this.key == "chainName") {
@@ -67,7 +66,6 @@ class Chain {
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
         }
-        // this.bundlerUrl = "http://127.0.0.1:3000/"
     }
 
     async getData(key) {
@@ -118,8 +116,6 @@ class Chain {
         return chainId
     }
 
-
-
     async getChainId() {
         await this.init()
         return this.id
@@ -149,16 +145,4 @@ class Chain {
     }
 }
 
-
-const main = async () => {
-    const chainParams = {
-        rpcUrl: "http://localhost:8545"
-    }
-    const chain = new Chain(chainParams)
-}
-
-main()
-
 module.exports = { Chain }
-
-

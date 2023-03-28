@@ -6,8 +6,6 @@ const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
 
 class UserOp {
-    opHashData = {}
-
     constructor(input) {
         verifyValidParametersForLocation("UserOp constructor", input, userOpExpectedKeys)
         input = objectValuesToBigNumber(input)
