@@ -1,12 +1,13 @@
 const { ethers, Wallet } = require("ethers")
 const { ContractFactory } = ethers
 const fs = require("fs")
-const oracleAbi = require("../fun-wallet-smart-contract/artifacts/contracts/paymaster/TokenPriceOracle.sol/TokenPriceOracle.json")
-const paymasterAbi = require("../fun-wallet-smart-contract/artifacts/contracts/paymaster/MultiTokenPaymaster.sol/MultiTokenPaymaster.json")
-const { TEST_PRIVATE_KEY } = require("./utils/test")
+const oracleAbi = require("./abis/TokenPriceOracle.json")
+const paymasterAbi = require("./abis/TokenPaymaster.json")
+const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("./utils/test")
+const { Chain } = require("./data")
 
 
-const ENTRY_POINT_ADDRESS = "0x4ea0Be853219be8C9cE27200Bdeee36881612FF2"
+
 
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
@@ -18,17 +19,21 @@ const deployOracle = async (signer) => {
     return await deploy(signer, oracleAbi)
 }
 
-const deployPaymaster = async (signer, entryPointAddr = ENTRY_POINT_ADDRESS) => {
+const deployPaymaster = async (signer, entryPointAddr) => {
     return await deploy(signer, paymasterAbi, [entryPointAddr])
 }
 
 const main = async () => {
-    const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545")
-    const signer = new Wallet(TEST_PRIVATE_KEY, provider)
-    
+
+    const chain = new Chain({ chainId: 5 })
+    const provider = await chain.getProvider()
+
+    const entryPointAddr = await chain.getAddress("entryPointAddress")
+    const signer = new Wallet(GOERLI_PRIVATE_KEY, provider)
+
     const oracle = await deployOracle(signer)
-    const paymaster = await deployPaymaster(signer)
-    
+    const paymaster = await deployPaymaster(signer, entryPointAddr)
+
     const paymasterdata = { oracle, paymaster }
 
     fs.writeFileSync("paymaster.json", JSON.stringify(paymasterdata))

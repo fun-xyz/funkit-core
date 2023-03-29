@@ -81,10 +81,7 @@ class FunWallet extends FirstClassActions {
 
         let paymasterAndData = ""
         if (options.gasSponsor) {
-            // const sponsor = new TokenSponsor(options)
-            // paymasterAndData = await sponsor.getPaymasterAndData(options)
-            
-            const sponsor = new MultiTokenSponsor(options)
+            const sponsor = new TokenSponsor(options)
             paymasterAndData = await sponsor.getPaymasterAndData(options)
         }
 

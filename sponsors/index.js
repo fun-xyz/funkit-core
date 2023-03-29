@@ -1,4 +1,4 @@
 const tokenSponsor = require("./TokenSponsor");
-const multiTokenSponsor = require("./MultiTokenSponsor")
+const multiTokenSponsor = require("./TokenSponsor")
 
 module.exports = { ...tokenSponsor, ...multiTokenSponsor };

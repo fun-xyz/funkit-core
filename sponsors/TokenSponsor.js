@@ -1,4 +1,4 @@
-const { Contract } = require("ethers");
+const { Contract, constants } = require("ethers");
 const { Interface } = require("ethers/lib/utils");
 const { Token } = require("../data");
 const { ParameterFormatError, Helper } = require("../errors");
@@ -6,9 +6,9 @@ const { DataServer } = require("../servers");
 const { parseOptions } = require("../utils/option");
 
 const paymasterAbi = require("../abis/TokenPaymaster.json").abi
-
-
 const supportedTokens = ["usdc", "dai"]
+
+const PAYMASTER_ADDR = require("../paymaster.json").paymaster
 
 class TokenSponsor {
     constructor(options = global) {
@@ -18,14 +18,11 @@ class TokenSponsor {
             const helper = new Helper("GasSponsor: ", gasSponsor.token, "Token is not Supported")
             throw new ParameterFormatError(location, helper)
         }
-
         this.interface = new Interface(paymasterAbi)
-
     }
 
     async getPaymasterAddress(options = global) {
         const parsedOptions = await parseOptions(options)
-
         const chainId = await parsedOptions.chain.getChainId()
         if (!this.paymasterAddress && chainId != this.chainId) {
             this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
@@ -35,11 +32,36 @@ class TokenSponsor {
     }
 
     async getPaymasterAndData(options = global) {
-        return await this.getPaymasterAddress(options) + this.sponsorAddress.slice(2);
+        const tokenAddress = await Token.getAddress(this.token, options)
+        return await this.getPaymasterAddress(options) + this.sponsorAddress.slice(2) + tokenAddress.slice(2);
     }
 
-    async changeSponsor(sponsorAddress) {
-        this.sponsorAddress = sponsorAddress
+    async getTokenInfo(token, options = global) {
+        const contract = await this.getContract(options)
+        const tokenAddress = await Token.getAddress(token, options)
+        return await contract.getToken(tokenAddress)
+    }
+
+    async getTokenBalance(token, spender, options = global) {
+        const contract = await this.getContract(options)
+        const tokenData = new Token(token)
+        let tokenAddress;
+        if (tokenData.isNative) {
+            tokenAddress = constants.AddressZero
+        } else {
+            tokenAddress = await tokenData.getAddress(options)
+        }
+        return await contract.getTokenBalance(tokenAddress, spender)
+    }
+
+    async getContract(options = global) {
+        if (!this.contract) {
+            const parsedOptions = await parseOptions(options)
+            const provider = await parsedOptions.chain.getProvider()
+            const paymasterAddress = await this.getPaymasterAddress(parsedOptions)
+            this.contract = new Contract(paymasterAddress, paymasterAbi, provider)
+        }
+        return this.contract
     }
 
     async encode(data, options = global) {
@@ -52,57 +74,13 @@ class TokenSponsor {
         return { to, value, data, chain: options.chain }
     }
 
-    async getDepositInfo(address, options = global) {
-        const parsedOptions = await parseOptions(options)
-        const provider = await parsedOptions.chain.getProvider()
-        const paymasterAddress = await this.getPaymasterAddress(parsedOptions)
-        const contract = new Contract(paymasterAddress, paymasterAbi, provider)
-        return contract.depositInfo(address)
-    }
-
-    async getTokenAmount(amount, options = global) {
-        return await Token.getDecimalAmount(this.token, amount, options)
-    }
-
-    // interaction
-
-    async addWalletToWhitelist(walletAddress) {
+    async addUsableToken(oracle, token, aggregator) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderWhiteListMode", [walletAddress, true])
-            return await this.encode(data, options)
-        }
-    }
-
-    async removeWalletFromWhitelist(walletAddress) {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderWhiteListMode", [walletAddress, false])
-            return await this.encode(data, options)
-        }
-    }
-
-    async addWalletToBlacklist(walletAddress) {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderBlackListMode", [walletAddress, true])
-            return await this.encode(data, options)
-        }
-    }
-    async removeWalletFromBlacklist(walletAddress) {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderBlackListMode", [walletAddress, false])
-            return await this.encode(data, options)
-        }
-    }
-
-    async setWhitelistMode() {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setWhitelistMode", [true])
-            return await this.encode(data, options)
-        }
-    }
-    async setBlacklistMode() {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setWhitelistMode", [false])
-            return await this.encode(data, options)
+            const decimals = await Token.getDecimals(token, options)
+            const tokenAddress = await Token.getAddress(token, options)
+            const data = [oracle, tokenAddress, decimals, aggregator]
+            const calldata = this.interface.encodeFunctionData("setTokenData", [data])
+            return await this.encode(calldata, options)
         }
     }
 
@@ -113,6 +91,7 @@ class TokenSponsor {
             return await this.encodeValue(data, amountdec, options)
         }
     }
+
     async unstake(walletAddress, amount) {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
@@ -121,29 +100,78 @@ class TokenSponsor {
         }
     }
 
-    async stakeToken(walletAddress, amount) {
+    async stakeToken(token, walletAddress, amount) {
         return async (options = global) => {
-            const amountdec = await this.getTokenAmount(amount, options)
-            const data = this.interface.encodeFunctionData("addTokenDepositTo", [walletAddress, amountdec])
+            const tokenObj = new Token(token)
+
+            const tokenAddress = await tokenObj.getAddress(options)
+            const amountdec = await tokenObj.getDecimalAmount(amount, options)
+
+            const data = this.interface.encodeFunctionData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)
         }
     }
 
-    async unstakeToken(walletAddress, amount) {
+    async unstakeToken(token, walletAddress, amount) {
         return async (options = global) => {
-            const amountdec = await this.getTokenAmount(amount, options)
-            const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [walletAddress, amountdec])
+            const tokenObj = new Token(token)
+
+            const tokenAddress = await tokenObj.getAddress(options)
+            const amountdec = await tokenObj.getDecimalAmount(amount, options)
+
+            const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)
         }
     }
 
-    async approve(amount) {
+    async setGlobalToBlacklistMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [true])
+            return await this.encode(data, options)
+        }
+    }
+
+    async setGlobalToWhitelistMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [false])
+            return await this.encode(data, options)
+        }
+    }
+
+
+    async addSpenderToGlobalWhiteList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+    async removeSpenderFromGlobalWhiteList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, false])
+            return await this.encode(data, options)
+        }
+    }
+
+    async addSpenderToGlobalBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+    async removeSpenderFromGlobalBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, false])
+            return await this.encode(data, options)
+        }
+    }
+
+    async approve(token, amount) {
         return async (options = global) => {
             const gasSponsorAddress = await this.getPaymasterAddress(options)
-            return await Token.approve(this.token, gasSponsorAddress, amount)
+            return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
-}
 
+}
 
 module.exports = { TokenSponsor };
