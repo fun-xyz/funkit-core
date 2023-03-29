@@ -27,7 +27,7 @@ describe("Swap", function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 0 })
+        wallet = new FunWallet({ salt, index: 23420 })
         await prefundWallet(auth, wallet, 10)
     })
 

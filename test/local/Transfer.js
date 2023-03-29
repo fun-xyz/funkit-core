@@ -29,8 +29,8 @@ describe("Transfer", function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 0 })
-        await prefundWallet(auth, wallet, 1)
+        wallet = new FunWallet({ salt, index: 253840 })
+        await prefundWallet(auth, wallet, 10)
         const walletAddress = await wallet.getAddress()
 
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
