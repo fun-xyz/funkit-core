@@ -3,15 +3,15 @@ const { ethers } = require("ethers")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL } = require("../../utils/test")
+const { TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL } = require("../../utils/test")
 const { FunWallet } = require("../../wallet")
 
 describe("Factory", function () {
     let auth
     let wallet
     let salt
-    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
-    const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    var REMOTE_TEST = process.env.REMOTE_TEST;
+    const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
 
     const options = {
         chain: FORK_CHAIN_ID,
