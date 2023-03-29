@@ -1,4 +1,4 @@
-const { Contract } = require("ethers");
+const { Contract, BigNumber } = require("ethers");
 const { parseUnits, formatUnits } = require("ethers/lib/utils");
 const { Eoa } = require("./auth");
 const { Token } = require("./data");
@@ -32,7 +32,7 @@ const main = async () => {
     console.log(walletAddress)
 
     console.log("wallet eth balance:", await Token.getBalance("eth", walletAddress))
-
+    console.log(funderAddress)
     const provider = await global.chain.getProvider()
     const entrypointaddr = "0x0576a174d229e3cfa37253523e645a78a0c91b57"
     const entrypoint = new Contract(entrypointaddr, entrypointAbi, provider)
@@ -62,10 +62,10 @@ const main = async () => {
 
     await logTokenBalanceSponsor(sponsor, token, walletAddress)
     await logTokenBalanceSponsor(sponsor, "eth", funderAddress)
-    // const ethstakeAmount = .2
+    const ethstakeAmount = 3
     // const usdcStakeAmount = 15
-    // const stake = await sponsor.stake(funderAddress, ethstakeAmount)
-    // await funder.sendTx(stake)
+    const stake = await sponsor.stake(funderAddress, ethstakeAmount)
+    await funder.sendTx(stake)
     // const approve = await sponsor.approve(token, usdcStakeAmount)
     // const stakeToken = await sponsor.stakeToken(token, walletAddress, usdcStakeAmount)
     // await funder.sendTx(approve)
@@ -110,4 +110,13 @@ const logTokenBalance = async (token, address) => {
     console.log(funderTokenAmount)
 }
 
-main()
+// main()
+
+console.log(formatUnits(BigNumber.from("307898050603977589600"), 18)
+)
+
+
+
+
+
+
