@@ -45,7 +45,7 @@ class MultiTokenSponsor {
         if (tokenData.isNative) {
             tokenAddress = constants.AddressZero
         } else {
-            tokenAddress = await tokenData.getAddress(parsedOptions)
+            tokenAddress = await tokenData.getAddress(options)
         }
         return await contract.getTokenBalance(tokenAddress, spender)
 
@@ -123,6 +123,57 @@ class MultiTokenSponsor {
 
             const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)
+        }
+    }
+
+    async setGlobalToBlacklistMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [true])
+            return await this.encode(data, options)
+        }
+    }
+
+    async setGlobalToWhitelistMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [false])
+            return await this.encode(data, options)
+        }
+    }
+
+
+    async addSpenderToGlobalWhiteList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+    async removeSpenderFromGlobalWhiteList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, false])
+            return await this.encode(data, options)
+        }
+    }
+
+
+    async addSpenderToGlobalBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+    async removeSpenderFromGlobalBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, false])
+            return await this.encode(data, options)
+        }
+    }
+
+
+
+    async approve(token, amount) {
+        return async (options = global) => {
+            const gasSponsorAddress = await this.getPaymasterAddress(options)
+            return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
 

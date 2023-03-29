@@ -6,7 +6,7 @@ const paymasterAbi = require("../fun-wallet-smart-contract/artifacts/contracts/p
 const { TEST_PRIVATE_KEY } = require("./utils/test")
 
 
-const ENTRY_POINT_ADDRESS = "0x21915b79E1d334499272521a3508061354D13FF0"
+const ENTRY_POINT_ADDRESS = "0x4ea0Be853219be8C9cE27200Bdeee36881612FF2"
 
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);

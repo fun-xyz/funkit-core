@@ -1,9 +1,12 @@
+const { Contract } = require("ethers");
 const { Eoa } = require("./auth");
 const { Token } = require("./data");
-const { configureEnvironment } = require("./managers");
+const { configureEnvironment, parseOptions } = require("./managers");
 const { MultiTokenSponsor } = require("./sponsors/MultiTokenSponsor");
 const { TEST_PRIVATE_KEY, prefundWallet } = require("./utils");
 const { FunWallet } = require("./wallet");
+
+const entrypointAbi = require("./abis/EntryPoint.json").abi
 
 // FORK MAINNET
 const oracleAddress = require("./paymaster.json").oracle
@@ -26,16 +29,21 @@ const main = async () => {
     const wallet = new FunWallet({ salt, index: 0 })
     const walletAddress = await wallet.getAddress()
 
-    await prefundWallet(funder, wallet, 10)
+    const chain = global.chain
+    const provider = await chain.getProvider()
+    const entryPointAddr = await chain.getAddress("entryPointAddress")
 
+    const entryPointContract = new Contract(entryPointAddr, entrypointAbi, provider)
+
+    await prefundWallet(funder, wallet, 10)
     await wallet.swap(funder, {
         in: "eth",
         amount: 1,
         out: token,
+        options: {
+            returnAddress: funderAddress
+        }
     })
-
-    await logTokenBalance("weth", walletAddress)
-
 
     const sponsor = new MultiTokenSponsor({
         gasSponsor: {
@@ -46,22 +54,37 @@ const main = async () => {
 
     const setToken = await sponsor.addUsableToken(oracleAddress, token, aggregator)
     await funder.sendTx(setToken)
-
-    const tokenData = await sponsor.getToken(token)
-    console.log(tokenData)
-
     const ethstakeAmount = 10
+    const usdcStakeAmount = 100
     const stake = await sponsor.stake(funderAddress, ethstakeAmount)
     await funder.sendTx(stake)
-    await logTokenBalanceSponsor(sponsor, "eth", funderAddress)
-
-
-
-    const usdcStakeAmount = 100
+    const approve = await sponsor.approve(token, usdcStakeAmount)
     const stakeToken = await sponsor.stakeToken(token, walletAddress, usdcStakeAmount)
+    await funder.sendTx(approve)
     await funder.sendTx(stakeToken)
+    const globalMode = await sponsor.setGlobalToBlacklistMode()
+    await funder.sendTx(globalMode)
+    
+    const listmode = await sponsor.removeSpenderFromGlobalBlackList(walletAddress)
+    await funder.sendTx(listmode)
 
-    await logTokenBalanceSponsor(sponsor, token, walletAddress)
+    await configureEnvironment({
+        gasSponsor: {
+            sponsorAddress: funderAddress,
+            token
+        }
+    })
+
+    console.log("PRE: ")
+    await logTokenBalance(token, walletAddress)
+    await wallet.swap(funder, {
+        in: "eth",
+        amount: 1,
+        out: token,
+    })
+    console.log("POST: ")
+
+    await logTokenBalance(token, walletAddress)
 
 }
 
