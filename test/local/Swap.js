@@ -27,8 +27,8 @@ describe("Swap", function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 0 })
-        await prefundWallet(auth, wallet, 10)
+        wallet = new FunWallet({ salt, index: 15 })
+        await prefundWallet(auth, wallet, 1)
     })
 
     it("ETH => ERC20", async () => {
