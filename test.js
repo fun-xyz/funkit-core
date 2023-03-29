@@ -1,7 +1,7 @@
 const { Contract } = require("ethers");
 const { Eoa } = require("./auth");
 const { Token } = require("./data");
-const { configureEnvironment, parseOptions } = require("./managers");
+const { configureEnvironment } = require("./managers");
 const { MultiTokenSponsor } = require("./sponsors/MultiTokenSponsor");
 const { TEST_PRIVATE_KEY, prefundWallet } = require("./utils");
 const { FunWallet } = require("./wallet");
@@ -64,7 +64,7 @@ const main = async () => {
     await funder.sendTx(stakeToken)
     const globalMode = await sponsor.setGlobalToBlacklistMode()
     await funder.sendTx(globalMode)
-    
+
     const listmode = await sponsor.removeSpenderFromGlobalBlackList(walletAddress)
     await funder.sendTx(listmode)
 
