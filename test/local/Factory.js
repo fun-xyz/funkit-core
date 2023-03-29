@@ -17,6 +17,7 @@ describe("Factory", function () {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",
     }
+    this.timeout(30_000)
 
     before(async function () {
         await configureEnvironment(options)

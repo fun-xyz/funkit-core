@@ -80,6 +80,7 @@ const _swap = (params) => {
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
         const gasInfo = { callGasLimit: 400_000 }
+
         const errorData = {
             location: "actions.swap"
         }

@@ -45,6 +45,7 @@ describe("Swap", function () {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
     })
+
     it("ERC20 => ERC20", async () => {
         this.timeout(100_000)
         const walletAddress = await wallet.getAddress()
