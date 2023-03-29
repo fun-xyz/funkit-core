@@ -112,11 +112,4 @@ const logTokenBalance = async (token, address) => {
 
 // main()
 
-console.log(formatUnits(BigNumber.from("307898050603977589600"), 18)
-)
-
-
-
-
-
-
+// (250000 + 250000 * 3 + 58960)*0x59682f00
