@@ -1,6 +1,4 @@
 const { expect, assert } = require("chai")
-const { Wallet } = require("ethers")
-const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
@@ -24,7 +22,6 @@ describe("Paymaster", function () {
     let wallet1
     before(async function () {
         await configureEnvironment(options)
-
         salt = await auth.getUniqueId()
         wallet = new FunWallet({ salt, index: 3543 })
         wallet1 = new FunWallet({ salt, index: 23420 })
@@ -59,26 +56,24 @@ describe("Paymaster", function () {
 
 
         const ethstakeAmount = .1
-        const usdcStakeAmount = 20
-        const depositInfoS = await gasSponsor.getDepositInfo(walletAddress)
-        const depositInfo1S = await gasSponsor.getDepositInfo(funderAddress)
+        const tokenStakeAmt = 100
+
+        const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
 
 
-        const approve = await gasSponsor.approve(usdcStakeAmount * 2)
-        const deposit = await gasSponsor.stakeToken(walletAddress, usdcStakeAmount)
-        const deposit1 = await gasSponsor.stakeToken(walletAddress1, usdcStakeAmount)
+        const approve = await gasSponsor.approve(paymasterToken, tokenStakeAmt * 2)
+        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, tokenStakeAmt)
+        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, tokenStakeAmt)
         const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
 
-        await funder.sendTx(approve)
-        await funder.sendTx(deposit)
-        await funder.sendTx(deposit1)
-        await funder.sendTx(data)
+        await funder.sendTxs([approve, deposit, deposit1, data])
 
-        const depositInfoE = await gasSponsor.getDepositInfo(walletAddress)
-        const depositInfo1E = await gasSponsor.getDepositInfo(funderAddress)
+        const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-        assert(depositInfo1E.sponsorAmount.gt(depositInfo1S.sponsorAmount), "Eth Stake Failed")
-        assert(depositInfoE.tokenAmount.gt(depositInfoS.tokenAmount), "Token Stake Failed")
+        assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
+        assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
 
     })
 
@@ -96,21 +91,20 @@ describe("Paymaster", function () {
 
     it("Blacklist Mode Approved", async () => {
         const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setBlacklistMode())
+        await funder.sendTx(await gasSponsor.setGlobalToBlacklistMode())
         await runSwap(wallet)
     })
 
     it("Only User Whitelisted", async () => {
         const walletAddress1 = await wallet1.getAddress()
         const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setWhitelistMode())
-        await funder.sendTx(await gasSponsor.removeWalletFromWhitelist(walletAddress1))
-
+        await funder.sendTx(await gasSponsor.setGlobalToWhitelistMode())
+        await funder.sendTx(await gasSponsor.removeSpenderFromGlobalWhiteList(walletAddress1))
         try {
             await runSwap(wallet1)
             throw new Error("Wallet is not whitelisted but transaction passed")
         } catch (e) {
-
+            assert(e.message.includes("AA33"), "Error but not AA33")
         }
     })
 

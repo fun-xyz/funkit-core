@@ -3,7 +3,7 @@ const { ethers } = require("ethers")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL } = require("../../utils")
+const { TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL } = require("../../utils/test")
 const { FunWallet } = require("../../wallet")
 
 describe("Factory", function () {

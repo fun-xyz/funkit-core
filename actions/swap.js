@@ -7,7 +7,6 @@ const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
-
 const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
@@ -29,11 +28,16 @@ const _swap = (params) => {
         const univ3quoter = await chain.getAddress("univ3quoter")
         const univ3factory = await chain.getAddress("univ3factory")
         const univ3router = await chain.getAddress("univ3router")
+
+
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
 
         const tokenInObj = new Token(tokenIn)
+        const tokenOutObj = new Token(tokenOut)
+
         const tokenInAddress = await tokenInObj.getAddress({ chain });
-        const tokenOutAddress = await Token.getAddress(tokenOut, { chain });
+        const tokenOutAddress = await tokenOutObj.getAddress({ chain });
+
 
         const uniswapAddrs = {
             univ3quoter,
@@ -60,7 +64,8 @@ const _swap = (params) => {
             tokenInAddress,
             tokenOutAddress,
             amountIn,
-            //optional
+            
+            // optional
             returnAddress,
             percentDecimal,
             slippage,
@@ -74,10 +79,12 @@ const _swap = (params) => {
         }
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
-        const gasInfo = { callGasLimit: 280_000 }
+        const gasInfo = { callGasLimit: 400_000 }
+
         const errorData = {
             location: "actions.swap"
         }
+
         return { gasInfo, data: txData, errorData }
     }
 }

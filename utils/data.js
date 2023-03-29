@@ -43,7 +43,6 @@ const validateType = (data, dataName, type, location = "", isInternal = false) =
     throw new DataFormatError(dataName, type, location, helper, isInternal);
 }
 
-
 const formatMissingForError = (missing) => {
     let out = ""
     for (let term of missing) {

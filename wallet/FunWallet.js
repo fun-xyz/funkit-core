@@ -6,7 +6,7 @@ const { verifyValidParametersForLocation, validateClassInstance, parseOptions, p
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 const { FirstClassActions, genCall } = require("../actions")
-const { TokenSponsor } = require("../sponsors")
+const { TokenSponsor, MultiTokenSponsor } = require("../sponsors")
 const { MissingParameterError, Helper } = require("../errors")
 
 const executeExpectedKeys = ["chain", "apiKey"]
@@ -49,7 +49,10 @@ class FunWallet extends FirstClassActions {
             options
         }
         const { data, gasInfo, errorData, optionalParams } = await actionFunc(actionData)
-        verifyValidParametersForLocation(errorData.location, options, executeExpectedKeys)
+        {
+            const { chain, apiKey } = options
+            verifyValidParametersForLocation(errorData.location, { chain, apiKey }, executeExpectedKeys)
+        }
 
         if (gasInfo) {
             verifyValidParametersForLocation(errorData.location, gasInfo, gasExpectedKeys)
@@ -83,7 +86,7 @@ class FunWallet extends FirstClassActions {
 
         const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
         if (paymasterAndData) {
-            gasParams.verificationGasLimit += 50_000
+            gasParams.verificationGasLimit += 100_000
         }
         let partialOp = { ...gasParams, ...gasInfo, callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
@@ -117,9 +120,9 @@ class FunWallet extends FirstClassActions {
     }
 
     async sendTx({ auth, op }, txOptions = global) {
+        let userOp
         try {
-            const userOp = new UserOp(op)
-            return await this.sendUserOp(userOp, txOptions)
+            userOp = new UserOp(op)
         } catch (e) {
             verifyValidParametersForLocation("Wallet.sendTx", op.calldata, callExpectedKeys)
             if (!op.options) {
@@ -135,6 +138,7 @@ class FunWallet extends FirstClassActions {
             op.options.sendTxLater = false
             return await this.execute(auth, genCall(op.calldata), op.options)
         }
+        return await this.sendUserOp(userOp, txOptions)
     }
 
 

@@ -27,8 +27,8 @@ describe("Swap", function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 15 })
-        await prefundWallet(auth, wallet, 1)
+        wallet = new FunWallet({ salt, index: 23420 })
+        await prefundWallet(auth, wallet, 10)
     })
 
     it("ETH => ERC20", async () => {
@@ -45,7 +45,7 @@ describe("Swap", function () {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
     })
-    
+
     it("ERC20 => ERC20", async () => {
         this.timeout(100_000)
         const walletAddress = await wallet.getAddress()
