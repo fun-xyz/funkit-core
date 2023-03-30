@@ -6,9 +6,6 @@ const paymasterAbi = require("../abis/TokenPaymaster.json")
 const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../utils/test")
 const { Chain } = require("../data")
 
-
-
-
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
     const contract = await factory.deploy(...params);
