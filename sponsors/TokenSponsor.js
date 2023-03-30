@@ -14,10 +14,10 @@ class TokenSponsor {
     constructor(options = global) {
         this.sponsorAddress = options.gasSponsor.sponsorAddress
         this.token = options.gasSponsor.token.toLowerCase()
-        if (!supportedTokens.includes(this.token)) {
-            const helper = new Helper("GasSponsor: ", gasSponsor.token, "Token is not Supported")
-            throw new ParameterFormatError(location, helper)
-        }
+        // if (!supportedTokens.includes(this.token)) {
+        //     const helper = new Helper("GasSponsor: ", options.gasSponsor.token, "Token is not Supported")
+        //     throw new ParameterFormatError(location, helper)
+        // }
         this.interface = new Interface(paymasterAbi)
     }
 
@@ -76,7 +76,7 @@ class TokenSponsor {
 
     async addUsableToken(oracle, token, aggregator) {
         return async (options = global) => {
-            const decimals = await Token.getDecimals(token, options)
+            const decimals = 4
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.interface.encodeFunctionData("setTokenData", [data])
@@ -106,6 +106,8 @@ class TokenSponsor {
 
             const tokenAddress = await tokenObj.getAddress(options)
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
+
+            console.log(tokenAddress)
 
             const data = this.interface.encodeFunctionData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)

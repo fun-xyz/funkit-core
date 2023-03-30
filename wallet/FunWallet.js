@@ -86,7 +86,7 @@ class FunWallet extends FirstClassActions {
 
         const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
         if (paymasterAndData) {
-            gasParams.verificationGasLimit += 100_000
+            gasParams.verificationGasLimit += 50_000
         }
         let partialOp = { ...gasParams, ...gasInfo, callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)

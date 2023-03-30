@@ -60,7 +60,10 @@ class Eoa extends Auth {
         }
         const { to, value, data, chain } = txData
         const provider = await chain.getProvider()
-        const eoa = this.signer.connect(provider)
+        let eoa= this.signer;
+        if (!eoa.provider) {
+            eoa = this.signer.connect(provider)
+        }
         const tx = await eoa.sendTransaction({ to, value, data })
         return await tx.wait()
     }

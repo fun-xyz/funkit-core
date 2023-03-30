@@ -13,8 +13,13 @@ describe("Swap", function () {
     this.timeout(100_000)
     let auth
     let wallet
+<<<<<<< HEAD:test/fork/Swap.js
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+=======
+    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
+    const FORK_CHAIN_ID = 36864
+>>>>>>> fuckGOERLI:test/local/Swap.js
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",
