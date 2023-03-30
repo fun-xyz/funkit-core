@@ -1,4 +1,3 @@
-
 const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
@@ -20,7 +19,6 @@ const userOpDefaultParams = {
 const userOpInitParams = {
     verificationGasLimit: 700_000,
 }
-
 
 class FunWallet extends FirstClassActions {
     objCache = {}
@@ -154,6 +152,5 @@ class FunWallet extends FirstClassActions {
         return receipts
     }
 }
-
 
 module.exports = { FunWallet }
