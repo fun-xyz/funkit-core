@@ -172,19 +172,16 @@ class DataServer {
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
             })
-        }
-        else {
+        } else {
             return await this.sendPostRequest(LOCAL_URL, "get-module-info", body).then((r) => {
                 return r
             })
-
         }
     }
 
     static async getPaymasterAddress(chainId) {
         const { moduleAddresses: { paymaster: { paymasterAddress } } } = await this.getChainInfo(chainId)
         return paymasterAddress
-
     }
 }
 

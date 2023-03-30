@@ -1,10 +1,10 @@
 const { ethers, Wallet } = require("ethers")
 const { ContractFactory } = ethers
 const fs = require("fs")
-const oracleAbi = require("./abis/TokenPriceOracle.json")
-const paymasterAbi = require("./abis/TokenPaymaster.json")
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("./utils/test")
-const { Chain } = require("./data")
+const oracleAbi = require("../abis/TokenPriceOracle.json")
+const paymasterAbi = require("../abis/TokenPaymaster.json")
+const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../utils/test")
+const { Chain } = require("../data")
 
 
 

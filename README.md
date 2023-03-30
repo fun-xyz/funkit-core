@@ -211,6 +211,7 @@ const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 
 ## <a id="testwithremotebundler"></a> **1. [Easy] Testing with remote bundler**
 
+<<<<<<< HEAD
 You can run any file inside of the test/fork folder and see the result. By default, the tests will run with Fun managed bundler and on the Fun testnet, which is a fork from ethereum mainnet.
 
 Starting point: `/fun-wallet-sdk`
@@ -220,6 +221,17 @@ npm run test-funtestnet
 or
 ```
 env REMOTE_TEST=true npx mocha test/fork/Swap.js
+=======
+You can run any file inside of the test/fork folder and see the result. By default, the tests will use the Fun managed bundler running on localfork
+
+Starting point: `/fun-wallet-sdk`
+```
+npm run test-remotefork
+```
+or
+```
+env REMOTE_FORK_TEST=true npx mocha test/fork/TokenSwap.js
+>>>>>>> staging
 ```
 
 ## <a id="testwithlocalbundler"></a> **2. [Pro] Testing with local bundler**
@@ -264,7 +276,10 @@ or
 ```
 npx mocha test/goerli/Swap.js
 ```
-
+or 
+```
+npx mocha test/goerli/TokenSwap
+```
 ## More Documentation
 
 For more detailed information on how to use the FunWallet SDK, please refer to the [FunWallet Documentation](http://docs.fun.xyz).
