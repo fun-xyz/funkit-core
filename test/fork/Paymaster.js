@@ -1,143 +1,122 @@
-const { FunWallet, FunWalletConfig } = require("../../index")
-const { TokenSwap, TokenTransfer } = require("../../src/modules")
-const { expect } = require("chai")
-const ethers = require('ethers')
-const { transferAmt, getUserBalanceErc, USDC_ADDR, REMOTE_FORK_CHAIN_ID, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, REMOTE_FORK_RPC_URL, LOCAL_FORK_RPC_URL, PRIV_KEY, PKEY, DAI_ADDR, TEST_API_KEY } = require("../TestUtils")
-const { DataServer } = require('../../utils/DataServer')
-const paymasterdata = require("../../utils/abis/TokenPaymaster.json")
-const { PaymasterSponsor } = require("../../src/paymasters/PaymasterSponsor")
-const { TokenPaymaster } = require("../../src/paymasters")
+const { assert } = require("chai")
+const { Eoa } = require("../../auth")
+const { Token } = require("../../data")
+const { configureEnvironment } = require("../../managers")
+const { TokenSponsor } = require("../../sponsors")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../../utils")
+const { FunWallet } = require("../../wallet")
 
+
+const testTokens = ["usdc", "dai"]
+const paymasterToken = "usdc"
+const timeout = (ms) => {
+    return new Promise(resolve => { setTimeout(resolve, ms) })
+}
 describe("Paymaster", function () {
-    let eoa
-    let funder
-    let provider
-    let paymasterAddress
-    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
-    const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-    const FORK_CHAIN_KEY = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_KEY : LOCAL_FORK_CHAIN_KEY
-    const RPC_URL = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_RPC_URL : LOCAL_FORK_RPC_URL
-
-    const PREFUND_AMT = 0.3
-    const AMOUNT = 60
-
-    const USDCETHAMT = ethers.utils.parseUnits((1400 * AMOUNT).toString(), 6)
-
-    function loadPaymaster(address, provider) {
-        return new ethers.Contract(address, paymasterdata.abi, provider)
+    this.timeout(30_000)
+    let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
+    let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
+    var REMOTE_TEST = process.env.REMOTE_TEST;
+    const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    const options = {
+        chain: FORK_CHAIN_ID,
+        apiKey: "localtest",
     }
 
-    async function getUsdcForWallet(wallet, amount) {
-        const swapModule = new TokenSwap()
-        await wallet.addModule(swapModule)
-        await wallet.deploy()
-
-        await transferAmt(funder, wallet.address, amount)
-
-        const startWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
-
-        const tx = await swapModule.createSwapTx("eth", USDC_ADDR, amount, wallet.address)
-        await FunWallet.deployTx(tx, wallet.config.chain_id, TEST_API_KEY)
-        const endWalletUSDC = await getUserBalanceErc(wallet, USDC_ADDR)
-
-        expect(parseFloat(endWalletUSDC) - parseFloat(startWalletUSDC)).to.be.greaterThan(0)
-    }
-
-    async function walletTransferERC(wallet, to, amount, tokenAddr) {
-        const transfer = new TokenTransfer()
-        await wallet.addModule(transfer)
-        const transferActionTx = await transfer.createTransferTx(to, amount, tokenAddr)
-        await wallet.deployTx(transferActionTx)
-    }
-
-    async function getPaymasterBalance(paymasterObj, wallet) {
-        const paymaster = paymasterObj instanceof ethers.Contract ? paymasterObj : loadPaymaster(paymasterObj.paymasterAddr, wallet.provider ? wallet.provider : wallet.eoa.provider)
-        return await paymaster.depositInfo(wallet.address)
-    }
-
-    async function fundUserUSDCPaymaster(eoa, paymasterAddr, wallet) {
-        const paymasterInterface = new PaymasterSponsor(eoa)
-        await paymasterInterface.init()
-        await paymasterInterface.addTokenDepositTo(wallet.address, USDCETHAMT)
-        await paymasterInterface.deploy()
-        const paymasterContract = loadPaymaster(paymasterAddr, eoa)
-
-        const data = await getPaymasterBalance(paymasterContract, wallet)
-
-        expect(data.tokenAmount.toNumber()).to.be.greaterThanOrEqual(USDCETHAMT.toNumber())
-    }
-
-    async function fundPaymasterEth(eoa, value) {
-        const paymasterInterface = new PaymasterSponsor(eoa)
-        await paymasterInterface.init()
-
-        await paymasterInterface.stakeEth(eoa.address, value)
-        await paymasterInterface.lockTokenDeposit()
-        await paymasterInterface.setWhitelistMode()
-        await paymasterInterface.deploy()
-    }
-
-    async function testEthSwap(wallet, swapModule, eoa) {
-        await transferAmt(eoa, wallet.address, AMOUNT)
-        const startWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
-        
-        const tx = await swapModule.createSwapTx("eth", DAI_ADDR, AMOUNT, wallet.address, 5, 100)
-        await wallet.deployTx(tx)
-
-        const endWalletDAI = await getUserBalanceErc(wallet, DAI_ADDR)
-        expect(parseFloat(endWalletDAI) - parseFloat(startWalletDAI)).to.be.greaterThan(0)
-    }
-
+    const amount = 1
+    let wallet
+    let wallet1
     before(async function () {
-        this.timeout(100000)
-        provider = new ethers.providers.JsonRpcProvider(RPC_URL)
-        eoa = new ethers.Wallet(PRIV_KEY, provider)
-        funder = new ethers.Wallet(PKEY, provider)
+        await configureEnvironment(options)
 
-        const getData = await DataServer.getChainInfo(FORK_CHAIN_ID)
-        paymasterAddress = getData.moduleAddresses.paymaster.paymasterAddress
-        entryPointAddress = getData.aaData.entryPointAddress
+        salt = await auth.getUniqueId()
+        wallet = new FunWallet({ salt, index: 0 })
+        await prefundWallet(funder, wallet, 3)
+        const walletAddress = await wallet.getAddress()
 
-        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT)
-        const wallet = new FunWallet(walletConfig, TEST_API_KEY)
-        await wallet.init()
+        wallet1 = new FunWallet({ salt, index: 1 })
 
-        await getUsdcForWallet(wallet, AMOUNT)
-        await walletTransferERC(wallet, funder.address, USDCETHAMT, USDC_ADDR)
-        await fundUserUSDCPaymaster(funder, paymasterAddress, wallet)
-        await fundPaymasterEth(funder, AMOUNT)
+        await prefundWallet(auth, wallet1, 3)
+        const walletAddress1 = await wallet1.getAddress()
+
+        const funderAddress = await funder.getUniqueId()
+        await wallet.swap(auth, {
+            in: "eth",
+            amount: 1,
+            out: "usdc",
+            options: {
+                returnAddress: funderAddress
+            }
+        })
+
+        await configureEnvironment({
+            gasSponsor: {
+                sponsorAddress: funderAddress,
+                token: paymasterToken
+            }
+        })
+
+        const gasSponsor = new TokenSponsor()
+
+
+        const ethstakeAmount = 1
+        const usdcStakeAmount = 100
+
+        const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+
+
+        const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
+        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
+        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
+        const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+
+        await funder.sendTxs([approve, deposit, deposit1, data])
+
+        const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+
+        assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
+        assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+
     })
 
-    it("succeed case", async function () {
-        this.timeout(100000)
-        const paymasterInterface = new PaymasterSponsor(funder)
-        await paymasterInterface.init()
+    const runSwap = async (wallet, testToken = "dai") => {
+        const walletAddress = await wallet.getAddress()
+        const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
+        if (tokenBalanceBefore < .1) {
+            await wallet.swap(auth, {
+                in: "eth",
+                amount: .1,
+                out: testToken
+            })
+            const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        }
+    }
 
-        await transferAmt(funder, eoa.address, AMOUNT + 1)
-
-        const paymaster = new TokenPaymaster(funder.address, FORK_CHAIN_ID)
-        const walletConfig = new FunWalletConfig(eoa, FORK_CHAIN_KEY, PREFUND_AMT, "", paymaster)
-        const wallet = new FunWallet(walletConfig, TEST_API_KEY)
-        await wallet.init()
-
-        const startWalletPaymasterUSDC = (await paymasterInterface.depositInfo(wallet.address)).tokenAmount
-        const startFunderPaymasterUSDC = (await paymasterInterface.depositInfo(funder.address)).tokenAmount
-        const startFunderPaymasterETH = (await paymasterInterface.depositInfo(funder.address)).sponsorAmount
-
-        // execute a transaction
-        const swapModule = new TokenSwap()
-        await wallet.addModule(swapModule)
-        await wallet.deploy()
-
-        await testEthSwap(wallet, swapModule, eoa)
-
-        // verify paymaster works
-        const endWalletPaymasterUSDC = (await paymasterInterface.depositInfo(wallet.address)).tokenAmount
-        const endFunderPaymasterUSDC = (await paymasterInterface.depositInfo(funder.address)).tokenAmount
-        const endFunderPaymasterETH = (await paymasterInterface.depositInfo(funder.address)).sponsorAmount
-
-        expect((startWalletPaymasterUSDC.sub(endWalletPaymasterUSDC)).toNumber()).to.be.greaterThan(0)
-        expect((endFunderPaymasterUSDC.sub(startFunderPaymasterUSDC)).toNumber()).to.be.greaterThan(0)
-        expect((startFunderPaymasterETH.sub(endFunderPaymasterETH)).toNumber()).to.be.greaterThan(0)
+    it("Blacklist Mode Approved", async () => {
+        const gasSponsor = new TokenSponsor()
+        await funder.sendTx(await gasSponsor.setGlobalToBlacklistMode())
+        await runSwap(wallet)
     })
+
+    it("Only User Whitelisted", async () => {
+        const walletAddress = await wallet.getAddress()
+        const walletAddress1 = await wallet1.getAddress()
+
+        const gasSponsor = new TokenSponsor()
+        await funder.sendTx(await gasSponsor.setGlobalToWhitelistMode())
+        await funder.sendTx(await gasSponsor.addSpenderToGlobalWhiteList(walletAddress))
+        await funder.sendTx(await gasSponsor.removeSpenderFromGlobalWhiteList(walletAddress1))
+        await runSwap(wallet)
+        try {
+            await runSwap(wallet1)
+            throw new Error("Wallet is not whitelisted but transaction passed")
+        } catch (e) {
+            assert(e.message.includes("AA33"), "Error but not AA33")
+        }
+    })
+
+
 })

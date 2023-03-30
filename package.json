@@ -4,35 +4,25 @@
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
   "scripts": {
-    "test": "env REMOTE_FORK_TEST=true mocha test/fork",
-    "test-remotefork": "env REMOTE_FORK_TEST=true mocha test/fork",
-    "test-localfork": "env REMOTE_FORK_TEST=false mocha test/fork",
-    "test-goerli": "mocha test/goerli"
+    "test": "env  REMOTE_TEST=true mocha test/fork",
+    "test-goerli": "mocha test/goerli",
+    "test-localfork": "env REMOTE_TEST=false mocha test/fork",
+    "test-funtestnet": "env REMOTE_TEST=true mocha test/fork"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@account-abstraction/contracts": "^0.4.0",
     "@account-abstraction/sdk": "^0.4.0",
     "@lifeomic/attempt": "^3.0.3",
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
-    "@nomiclabs/hardhat-ethers": "^2.2.2",
-    "@nomiclabs/hardhat-waffle": "^2.0.5",
     "@uniswap/sdk": "^3.0.3",
-    "@uniswap/smart-order-router": "^3.5.0",
-    "config": "^3.3.9",
-    "crypto-js": "^4.1.1",
-    "eslint": "^8.34.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "ethers": "^5.7.2",
-    "hardhat-ethernal": "^3.1.0",
-    "jsbi": "^3.1.4",
-    "node-fetch": "^2.0.0",
-    "prettier": "^2.8.4"
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-sdk": "^3.9.0",
+    "ethers": "5.7.2",
+    "node-fetch": "2.0.0"
   },
   "devDependencies": {
     "chai": "^4.3.7",
-    "hardhat": "^2.12.4",
+    "hardhat": "^2.13.0",
     "mocha": "^10.2.0"
   },
   "repository": {

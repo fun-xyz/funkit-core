@@ -1,96 +1,112 @@
 const { expect, assert } = require("chai")
-const ethers = require('ethers')
-const { EoaAaveWithdrawal } = require("../../src/modules/index")
+const { Eoa } = require("../../auth")
+const { Token } = require("../../data")
+const { configureEnvironment } = require("../../managers")
+const { TokenSponsor } = require("../../sponsors")
+const { prefundWallet, GOERLI_FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
+const { FunWallet } = require("../../wallet")
 
-const { FunWallet, FunWalletConfig } = require('../../index')
-const { TEST_API_KEY, getAddrBalanceErc, PKEY} = require('../TestUtils')
-const { ETHEREUM } = require('../TestnetConfig')
-const { TokenPaymaster, PaymasterSponsor } = require("../../src/paymasters")
+const options = {
+    chain: 5,
+    apiKey: "localtest",
+}
 
-const WITHDRAW_AMOUNT = "1000000000000000000"
+const paymasterToken = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
 
-//PLEASE READ 
-//Steps to take before running this test
-//1. Ensure your wallet has enough goerliEth to meet the prefund amount
-//2. Ensure that an AAVE Dai position has been declared 
-
-describe("Paymaster - Aave Withdraw", function () {
-    let eoa, wallet
+describe("Paymaster", function () {
+    this.timeout(600_000)
+    let auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
+    let funder = new Eoa({ privateKey: GOERLI_FUNDER_PRIVATE_KEY })
+    const amount = 1
+    let wallet
+    let wallet1
     before(async function () {
-        this.timeout(90000)
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        const provider = new ethers.providers.JsonRpcProvider(ETHEREUM.GOERLI.RPC)
-        eoa = new ethers.Wallet(ETHEREUM.GOERLI.PRIVKEY, provider)
-        console.log(`Eoa Address: ${eoa.address}`)
+        await configureEnvironment(options)
+        salt = await auth.getUniqueId()
+        wallet = new FunWallet({ salt, index: 3543 })
+        wallet1 = new FunWallet({ salt, index: 23420 })
 
-        const balance = await provider.getBalance(eoa.address)
-        const balanceInEth = parseFloat(ethers.utils.formatEther(balance))
-        console.log(`Balance of Wallet: ${balanceInEth}eth`)
-        assert.isBelow(ETHEREUM.GOERLI.PREFUNDAMT, balanceInEth, `Balance of wallet is less than ${ETHEREUM.GOERLI.PREFUNDAMT}, please load up with GoerliEth in a faucet.`)
-        const paymaster = new TokenPaymaster(ETHEREUM.GOERLI.FUNDERADDRESS, ETHEREUM.GOERLI.CHAIN)
+        const walletAddress = await wallet.getAddress()
+        const walletAddress1 = await wallet1.getAddress()
+        const funderAddress = await funder.getUniqueId()
 
-        const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT, "", paymaster)
-        wallet = new FunWallet(config, TEST_API_KEY);
-        await wallet.init()
-        console.log(`FunWallet Address: ${wallet.address}`)
+        await prefundWallet(auth, wallet, .05)
+        const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))
+        if (tokenBalanceBefore < 2000) {
+            await wallet.swap(auth, {
+                in: "eth",
+                amount: .01,
+                out: paymasterToken,
+                options: {
+                    returnAddress: funderAddress
+                }
+            })
+            const tokenBalanceAfter = (await Token.getBalance(paymasterToken, funderAddress))
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        }
+
+
+        await configureEnvironment({
+            gasSponsor: {
+                sponsorAddress: funderAddress,
+                token: paymasterToken
+            }
+        })
+        const gasSponsor = new TokenSponsor()
+
+
+        const ethstakeAmount = .1
+        const tokenStakeAmt = 10
+
+        const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+
+
+        const approve = await gasSponsor.approve(paymasterToken, tokenStakeAmt * 2)
+        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, tokenStakeAmt)
+        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, tokenStakeAmt)
+        const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+
+        await funder.sendTxs([approve, deposit, deposit1, data])
+
+        const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+
+        assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
+        assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+
     })
 
-    it("Success case", async function () {
-        //TODO: add faucet docs
-        this.timeout(120000)
+    const runSwap = async (wallet, testToken = "dai") => {
+        const walletAddress = await wallet.getAddress()
+        const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
+        await wallet.swap(auth, {
+            in: "eth",
+            amount: .01,
+            out: testToken
+        })
+        const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
+        assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+    }
 
-        const eoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
-        expect(eoaATokenBalance).to.not.equal("0.0", "Position not declared. Please supply an AAVE DAI position.")
-
-        const module = new EoaAaveWithdrawal()
-        await wallet.addModule(module)
-
-        const modulePreExecTxs = await module.getPreExecTxs(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
-        await wallet.deployTxs(modulePreExecTxs)
-        await module.verifyRequirements(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
-        await wallet.deploy()
-
-        const aaveActionTx = await module.createWithdrawTx(ETHEREUM.GOERLI.ADAIADDRESS, eoa.address, WITHDRAW_AMOUNT)
-        const receipt = await wallet.deployTx(aaveActionTx)
-
-        console.log(receipt)
-        const endEoaATokenBalance = await getAddrBalanceErc(eoa, ETHEREUM.GOERLI.ADAIADDRESS, eoa.address)
-
-        expect(eoaATokenBalance - endEoaATokenBalance).to.be.greaterThan(0)
+    it("Blacklist Mode Approved", async () => {
+        const gasSponsor = new TokenSponsor()
+        await funder.sendTx(await gasSponsor.setGlobalToBlacklistMode())
+        await runSwap(wallet)
     })
+
+    it("Only User Whitelisted", async () => {
+        const walletAddress1 = await wallet1.getAddress()
+        const gasSponsor = new TokenSponsor()
+        await funder.sendTx(await gasSponsor.setGlobalToWhitelistMode())
+        await funder.sendTx(await gasSponsor.removeSpenderFromGlobalWhiteList(walletAddress1))
+        try {
+            await runSwap(wallet1)
+            throw new Error("Wallet is not whitelisted but transaction passed")
+        } catch (e) {
+            assert(e.message.includes("AA33"), "Error but not AA33")
+        }
+    })
+
 
 })
-
-
-const main = async () => {
-    const paymaster = new TokenPaymaster(ETHEREUM.GOERLI.FUNDERADDRESS, "5")
-    const config = new FunWalletConfig(eoa, ETHEREUM.GOERLI.CHAIN, ETHEREUM.GOERLI.PREFUNDAMT, "", paymaster)
-    const wallet = new FunWallet(config, TEST_API_KEY);
-    await wallet.init()
-    console.log(`FunWallet Address: ${wallet.address}`)
-    const module = new EoaAaveWithdrawal()
-    await wallet.addModule(module)
-
-    const modulePreExecTxs = await module.getPreExecTxs(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
-    await wallet.deployTxs(modulePreExecTxs)
-    await module.verifyRequirements(ETHEREUM.GOERLI.ADAIADDRESS, WITHDRAW_AMOUNT)
-    await wallet.deploy()
-
-    const aaveActionTx = await module.createWithdrawTx(ETHEREUM.GOERLI.ADAIADDRESS, eoa.address, WITHDRAW_AMOUNT)
-    const receipt = await wallet.deployTx(aaveActionTx)
-
-    console.log(receipt)
-}
-
-
-// TOKEN: 0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60 must have balance
-// Must have aave v3 position set up
-const paymasterSetup = async (signer) => {
-    const paymasterSponsor = new PaymasterSponsor(signer)
-    await paymasterSponsor.init()
-    await paymasterSponsor.stakeEth(signer.address, ".1")
-    await paymasterSponsor.addTokenDepositTo(walletAddress, "10")
-    await paymasterSponsor.lockTokenDeposit()
-    await paymasterSponsor.setWhitelistMode()
-    await paymasterSponsor.deploy()
-}

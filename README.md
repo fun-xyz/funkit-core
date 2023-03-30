@@ -211,6 +211,17 @@ const tokenTransferReceipt = await wallet.deployTx(tokenTransferTx);
 
 ## <a id="testwithremotebundler"></a> **1. [Easy] Testing with remote bundler**
 
+<<<<<<< HEAD
+You can run any file inside of the test/fork folder and see the result. By default, the tests will run with Fun managed bundler and on the Fun testnet, which is a fork from ethereum mainnet.
+
+Starting point: `/fun-wallet-sdk`
+```
+npm run test-funtestnet
+```
+or
+```
+env REMOTE_TEST=true npx mocha test/fork/Swap.js
+=======
 You can run any file inside of the test/fork folder and see the result. By default, the tests will use the Fun managed bundler running on localfork
 
 Starting point: `/fun-wallet-sdk`
@@ -220,6 +231,7 @@ npm run test-remotefork
 or
 ```
 env REMOTE_FORK_TEST=true npx mocha test/fork/TokenSwap.js
+>>>>>>> staging
 ```
 
 ## <a id="testwithlocalbundler"></a> **2. [Pro] Testing with local bundler**
@@ -248,19 +260,21 @@ npm run test-localfork
 ```
 or 
 ```
-env REMOTE_FORK_TEST=false npx mocha test/fork/TokenSwap.js
+env REMOTE_TEST=false npx mocha test/fork/Swap.js
 ```
 
 # **Testing With a Goerli Environment**
 
-You can run any file inside of the test/goerli folder and see the result. To test Aave Withdraw, you may need to pre-supply some token to the wallet otherwise the test will fail.
-
-Please retry if you identify "invalid hash" failure as goerli testing environemnt is not very stable.
+You can run any file inside of the test/goerli folder and see the result.
 
 Starting point: `/fun-wallet-sdk`
 
 ```
 npm run test-goerli
+```
+or 
+```
+npx mocha test/goerli/Swap.js
 ```
 or 
 ```
