@@ -94,7 +94,6 @@ class FunWallet extends FirstClassActions {
         const op = { ...partialOp, nonce }
 
         const userOp = new UserOp(op)
-        console.log(userOp)
         await userOp.sign(auth, chain)
         if (options.sendTxLater) {
             return userOp.op
