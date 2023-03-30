@@ -62,9 +62,6 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-
-
-
 const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
     validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
     const to = await wallet.getAddress()
@@ -75,7 +72,6 @@ const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
     const tx = await txSigner.sendTransaction(txData)
     return await tx.wait()
 }
-
 
 module.exports = {
     prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
