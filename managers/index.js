@@ -7,5 +7,3 @@ module.exports = {
     ...WalletOnChainManager,
     ...WalletAbiManager,
 }
-
-
