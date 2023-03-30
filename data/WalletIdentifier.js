@@ -48,6 +48,4 @@ class WalletIdentifier {
 
 }
 
-
-
 module.exports = { WalletIdentifier };
