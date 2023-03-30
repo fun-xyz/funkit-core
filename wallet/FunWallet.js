@@ -119,24 +119,16 @@ class FunWallet extends FirstClassActions {
         return this.address
     }
 
-    async sendTx({ auth, op }, txOptions = global) {
+    async sendTx({ auth, op, call }, txOptions = global) {
         let userOp
         try {
             userOp = new UserOp(op)
         } catch (e) {
-            verifyValidParametersForLocation("Wallet.sendTx", op.calldata, callExpectedKeys)
-            if (!op.options) {
-                op.options = txOptions
+            if (typeof call == "function") {
+                call = await call(options)
             }
-            if (!auth && !op.auth) {
-                const helper = new Helper("SendTx", op, "Auth paramater was not provided")
-                throw new MissingParameterError("Wallet.sendTx", helper)
-            }
-            if (!auth) {
-                auth = op.auth
-            }
-            op.options.sendTxLater = false
-            return await this.execute(auth, genCall(op.calldata), op.options)
+            const { to, value, data } = call
+            return await this.execute(auth, genCall({ to, value, data }), txOptions)
         }
         return await this.sendUserOp(userOp, txOptions)
     }
