@@ -100,8 +100,6 @@ class TokenSponsor {
             const tokenAddress = await tokenObj.getAddress(options)
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
 
-            console.log(tokenAddress)
-
             const data = this.interface.encodeFunctionData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)
         }

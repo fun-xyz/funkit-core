@@ -11,7 +11,7 @@ const options = {
     apiKey: "localtest",
 }
 
-const paymasterToken = "dai"
+const paymasterToken = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
 
 describe("Paymaster", function () {
     this.timeout(600_000)
@@ -30,7 +30,7 @@ describe("Paymaster", function () {
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
 
-        // await prefundWallet(auth, wallet, .1)
+        await prefundWallet(auth, wallet, .05)
         const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))
         if (tokenBalanceBefore < 2000) {
             await wallet.swap(auth, {
@@ -56,7 +56,7 @@ describe("Paymaster", function () {
 
 
         const ethstakeAmount = .1
-        const tokenStakeAmt = 100
+        const tokenStakeAmt = 10
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)

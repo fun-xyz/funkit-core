@@ -46,7 +46,7 @@ describe("Swap", function () {
         await wallet.swap(auth, {
             in: testToken,
             amount: 1,
-            out: "usdc"
+            out: "weth"
         })
         const tokenBalanceAfter = (await Token.getBalance(weth, walletAddress))
         assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
