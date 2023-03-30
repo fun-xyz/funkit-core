@@ -16,11 +16,10 @@ const main = async () => {
     const walletAddress = await wallet.getAddress()
     await prefundWallet(auth, wallet, 10)
     const token = new Token("usdc")
-    const approve = await token.approve(salt, 10)
-    await wallet.sendTx({ auth, call: approve })
+    await wallet.approve(auth,{spender:salt,token:"usdc",amount:12400})
 
     const contract = await token.getContract()
-    console.log(await contract.allowance(walletAddress, salt))
+    console.log((await contract.allowance(walletAddress, salt)).toString())
 
 }
 

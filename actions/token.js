@@ -52,7 +52,7 @@ const _approve = ({ spender, amount, token }) => {
         const { wallet, chain, options } = actionData
         token = new Token(token)
         const approveData = await token.approve(spender, amount, { chain })
-
+        const tokenAddress = await token.getAddress()
         const txDetails = {
             method: "approve",
             params: [spender, amount.toString()],
