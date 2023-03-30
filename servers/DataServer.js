@@ -1,5 +1,5 @@
 const { ServerMissingDataError, Helper } = require('../errors')
-const { FUN_TESTNET_CHAIN_ID } = require('../utils/test')
+const { FUN_TESTNET_CHAIN_ID } = require('../test/testUtils')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
 

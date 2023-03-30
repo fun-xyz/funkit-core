@@ -2,7 +2,7 @@ const { expect } = require("chai")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY } = require("../../utils")
+const { TEST_PRIVATE_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
 
 const options = {

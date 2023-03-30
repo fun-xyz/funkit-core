@@ -30,7 +30,7 @@ describe("Paymaster", function () {
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
 
-        await prefundWallet(auth, wallet, .05)
+        // await prefundWallet(auth, wallet, .5)
         const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))
         if (tokenBalanceBefore < 2000) {
             await wallet.swap(auth, {
@@ -55,7 +55,7 @@ describe("Paymaster", function () {
         const gasSponsor = new TokenSponsor()
 
 
-        const ethstakeAmount = .1
+        const ethstakeAmount = .05
         const tokenStakeAmt = 10
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
