@@ -1,9 +1,7 @@
-
 const { resolveProperties } = require("ethers/lib/utils");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { deepHexlify, verifyValidParametersForLocation } = require("../utils/data");
 const { Helper, NoServerConnectionError, ServerError, ParameterFormatError } = require("../errors");
-
 
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
 
