@@ -51,7 +51,7 @@ const _approve = ({ spender, amount, token }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
         token = new Token(token)
-        const approveData = await token.approve(to, amount, { chain })
+        const approveData = await token.approve(spender, amount, { chain })
 
         const txDetails = {
             method: "approve",
