@@ -4,7 +4,6 @@ const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectio
 const { DataServer, } = require("../servers/DataServer")
 const { Bundler, } = require("../servers/Bundler")
 
-
 const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
 const chainExpectedKeys = ["chainId", "rpcUrl", "chainName", "bundlerUrl"]
 
@@ -105,6 +104,7 @@ class Chain {
         }
         return out
     }
+    
     async getModuleAddresses(name) {
         await this.init()
         return await DataServer.getModuleInfo(name, this.id)
@@ -125,6 +125,7 @@ class Chain {
         await this.init()
         return this.provider
     }
+    
     setAddress(name, address) {
         this.addresses[name] = address
     }
@@ -134,6 +135,7 @@ class Chain {
         await this.init()
         return await this.bundler.sendUserOpToBundler(userOp.op)
     }
+    
     async getFeeData() {
         await this.init()
         return await this.provider.getFeeData();
