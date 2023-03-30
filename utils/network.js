@@ -1,12 +1,9 @@
 const fetch = require("node-fetch")
 const retryLib = require('@lifeomic/attempt').retry;
 
-
-
 const retry = async (func, options) => {
     return await retryLib(func, options);
 }
-
 
 const sendRequest = async (uri, method, apiKey, body) => {
     try {
@@ -43,6 +40,5 @@ const DEFAULT_RETRY_OPTIONS = {
     beforeAttempt: null,
     calculateDelay: null
 }
-
 
 module.exports = { sendRequest, DEFAULT_RETRY_OPTIONS };
