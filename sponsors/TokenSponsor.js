@@ -6,18 +6,11 @@ const { DataServer } = require("../servers");
 const { parseOptions } = require("../utils/option");
 
 const paymasterAbi = require("../abis/TokenPaymaster.json").abi
-const supportedTokens = ["usdc", "dai"]
-
-const PAYMASTER_ADDR = require("../paymaster.json").paymaster
 
 class TokenSponsor {
     constructor(options = global) {
         this.sponsorAddress = options.gasSponsor.sponsorAddress
         this.token = options.gasSponsor.token.toLowerCase()
-        // if (!supportedTokens.includes(this.token)) {
-        //     const helper = new Helper("GasSponsor: ", options.gasSponsor.token, "Token is not Supported")
-        //     throw new ParameterFormatError(location, helper)
-        // }
         this.interface = new Interface(paymasterAbi)
     }
 
