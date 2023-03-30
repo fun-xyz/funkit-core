@@ -31,6 +31,4 @@ class FirstClassActions {
 
 }
 
-
-
 module.exports = { FirstClassActions };
