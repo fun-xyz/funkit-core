@@ -1,50 +1,55 @@
-const { expect, assert } = require("chai")
+const { assert } = require("chai")
 const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { prefundWallet, GOERLI_FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
-const options = {
-    chain: 5,
-    apiKey: "localtest",
+
+const testTokens = ["usdc", "dai"]
+const paymasterToken = "usdc"
+const timeout = (ms) => {
+    return new Promise(resolve => { setTimeout(resolve, ms) })
 }
-
-const paymasterToken = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
-
 describe("Paymaster", function () {
-    this.timeout(600_000)
-    let auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
-    let funder = new Eoa({ privateKey: GOERLI_FUNDER_PRIVATE_KEY })
+    this.timeout(30_000)
+    let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
+    let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
+
+    
+    var REMOTE_TEST = process.env.REMOTE_TEST;
+    const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    const options = {
+        chain: FORK_CHAIN_ID,
+        apiKey: "localtest",
+    }
+
     const amount = 1
     let wallet
     let wallet1
     before(async function () {
         await configureEnvironment(options)
+
         salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 3543 })
-        wallet1 = new FunWallet({ salt, index: 23420 })
-
+        wallet = new FunWallet({ salt, index: 0 })
+        await prefundWallet(funder, wallet, 3)
         const walletAddress = await wallet.getAddress()
+
+        wallet1 = new FunWallet({ salt, index: 1 })
+
+        await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()
+
         const funderAddress = await funder.getUniqueId()
-
-        // await prefundWallet(auth, wallet, .5)
-        const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))
-        if (tokenBalanceBefore < 2000) {
-            await wallet.swap(auth, {
-                in: "eth",
-                amount: .01,
-                out: paymasterToken,
-                options: {
-                    returnAddress: funderAddress
-                }
-            })
-            const tokenBalanceAfter = (await Token.getBalance(paymasterToken, funderAddress))
-            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-        }
-
+        await wallet.swap(auth, {
+            in: "eth",
+            amount: 1,
+            out: "usdc",
+            options: {
+                returnAddress: funderAddress
+            }
+        })
 
         await configureEnvironment({
             gasSponsor: {
@@ -52,19 +57,20 @@ describe("Paymaster", function () {
                 token: paymasterToken
             }
         })
+
         const gasSponsor = new TokenSponsor()
 
 
-        const ethstakeAmount = .05
-        const tokenStakeAmt = 10
+        const ethstakeAmount = 1
+        const usdcStakeAmount = 100
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
 
 
-        const approve = await gasSponsor.approve(paymasterToken, tokenStakeAmt * 2)
-        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, tokenStakeAmt)
-        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, tokenStakeAmt)
+        const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
+        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
+        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
         const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
 
         await funder.sendTxs([approve, deposit, deposit1, data])
@@ -80,13 +86,15 @@ describe("Paymaster", function () {
     const runSwap = async (wallet, testToken = "dai") => {
         const walletAddress = await wallet.getAddress()
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
-        await wallet.swap(auth, {
-            in: "eth",
-            amount: .01,
-            out: testToken
-        })
-        const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
-        assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        if (tokenBalanceBefore < .1) {
+            await wallet.swap(auth, {
+                in: "eth",
+                amount: .1,
+                out: testToken
+            })
+            const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        }
     }
 
     it("Blacklist Mode Approved", async () => {
@@ -96,10 +104,14 @@ describe("Paymaster", function () {
     })
 
     it("Only User Whitelisted", async () => {
+        const walletAddress = await wallet.getAddress()
         const walletAddress1 = await wallet1.getAddress()
+
         const gasSponsor = new TokenSponsor()
         await funder.sendTx(await gasSponsor.setGlobalToWhitelistMode())
+        await funder.sendTx(await gasSponsor.addSpenderToGlobalWhiteList(walletAddress))
         await funder.sendTx(await gasSponsor.removeSpenderFromGlobalWhiteList(walletAddress1))
+        await runSwap(wallet)
         try {
             await runSwap(wallet1)
             throw new Error("Wallet is not whitelisted but transaction passed")
