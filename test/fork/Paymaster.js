@@ -16,6 +16,8 @@ describe("Paymaster", function () {
     this.timeout(30_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
+
+    
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
     const options = {

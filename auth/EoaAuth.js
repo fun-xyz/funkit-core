@@ -55,6 +55,7 @@ class Eoa extends Auth {
     }
 
     async sendTx(txData, options = global) {
+        await this.init()
         if (typeof txData == "function") {
             txData = await txData(options)
         }
