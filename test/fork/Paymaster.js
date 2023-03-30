@@ -3,7 +3,7 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, REMOTE_FORK_CHAIN_ID } = require("../../utils")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 
@@ -16,8 +16,8 @@ describe("Paymaster", function () {
     this.timeout(30_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
-    var REMOTE_FORK_TEST = process.env.REMOTE_FORK_TEST;
-    const FORK_CHAIN_ID = REMOTE_FORK_TEST === 'true' ? REMOTE_FORK_CHAIN_ID : LOCAL_FORK_CHAIN_ID
+    var REMOTE_TEST = process.env.REMOTE_TEST;
+    const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",

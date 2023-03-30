@@ -25,7 +25,7 @@ describe("Swap", function () {
         auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
         salt = await auth.getUniqueId()
         wallet = new FunWallet({ salt, index: 236725 })
-        await prefundWallet(auth, wallet, .5)
+        // await prefundWallet(auth, wallet, .5)
     })
 
     it("ETH => ERC20", async () => {
