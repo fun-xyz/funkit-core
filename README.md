@@ -152,12 +152,6 @@ wallet.transfer(auth, { TO_ADDR, 0.1, "ETH" } )
 console.log(sponsor.getTokenBalance("USDC", wallet.getAddress()))
 ```
 
-
-
-
-
-
-
 # **Testing With a Fork Environment**
 
 ## <a id="testwithremotebundler"></a> **1. [Easy] Testing with remote bundler**
@@ -170,17 +164,8 @@ npm run test-funtestnet
 ```
 or
 
-```env REMOTE_TEST=true npx mocha test/fork/Swap.js```
-
-You can run any file inside of the test/fork folder and see the result. By default, the tests will use the Fun managed bundler running on localfork
-
-Starting point: `/fun-wallet-sdk`
 ```
-npm run test-remotefork
-```
-or
-```
-env REMOTE_FORK_TEST=true npx mocha test/fork/TokenSwap.js
+env REMOTE_TEST=true npx mocha test/fork/Swap.js
 ```
 
 ## <a id="testwithlocalbundler"></a> **2. [Pro] Testing with local bundler**
