@@ -3,8 +3,8 @@ const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { orderParams, validateClassInstance, formatMissingForError } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
 
-const getFunctionParamOrderFromInterface = (interface, func) => {
-    for (const field of interface.fragments) {
+const getFunctionParamOrderFromInterface = (interf, func) => {
+    for (const field of interf.fragments) {
         if (field.name == func && field.type == "function") {
             return field.inputs.map(input => (input.name))
         }
@@ -45,11 +45,11 @@ const verifyValidParamsFromAbi = (abi, func, params, location, isInternal = fals
     }
 }
 
-const encodeContractCall = (interface, encodeFunctionName, input, location, isInternal = false) => {
-    verifyValidParamsFromAbi(interface.fragments, encodeFunctionName, input, location, isInternal)
-    const paramOrder = getFunctionParamOrderFromInterface(interface, encodeFunctionName)
+const encodeContractCall = (interf, encodeFunctionName, input, location, isInternal = false) => {
+    verifyValidParamsFromAbi(interf.fragments, encodeFunctionName, input, location, isInternal)
+    const paramOrder = getFunctionParamOrderFromInterface(interf, encodeFunctionName)
     const paramsInOrder = orderParams(paramOrder, input)
-    return interface.encodeFunctionData(encodeFunctionName, paramsInOrder)
+    return interf.encodeFunctionData(encodeFunctionName, paramsInOrder)
 }
 
 const verifyParamIsSolidityType = (param, location, isInternal = false) => {
