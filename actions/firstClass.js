@@ -1,6 +1,8 @@
+// const { genCall } = require(".")
 const { verifyValidParametersForLocation } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
+const { isContract } = require('../utils')
 
 const transferExpected = ["to", "amount"]
 const approveExpected = ["spender", "amount", "token"]
@@ -29,6 +31,23 @@ class FirstClassActions {
         return await this.execute(auth, _swap(swapParams), options)
     }
 
+    async create(auth, options = global) {
+        const address = await this.getAddress()
+        if (await isContract(address)) {
+            throw new Error("Wallet already exists as contract.")
+            return
+        }
+        else {            
+            return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
+        }
+    }
 }
 
-module.exports = { FirstClassActions };
+const genCall = (data, callGasLimit = 100_000) => {
+    return async () => {
+        const gasInfo = { callGasLimit }
+        return { gasInfo, data, errorData: { location: "action.genCall" } }
+    }
+}
+
+module.exports = { FirstClassActions, genCall };

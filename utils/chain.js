@@ -73,6 +73,17 @@ const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
     return await tx.wait()
 }
 
+const isContract = async (address, chain = global.chain) => {
+    const provider = await chain.getProvider()
+    try {
+        const code = await provider.getCode(address);
+        if (code != '0x') return true;
+    } catch (error) {
+        return false
+    }
+    return false
+}
+
 module.exports = {
-    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
+    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi, isContract
 };
