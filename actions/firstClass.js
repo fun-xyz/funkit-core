@@ -1,4 +1,3 @@
-// const { genCall } = require(".")
 const { verifyValidParametersForLocation } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
@@ -37,7 +36,7 @@ class FirstClassActions {
             throw new Error("Wallet already exists as contract.")
             return
         }
-        else {            
+        else {
             return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
         }
     }

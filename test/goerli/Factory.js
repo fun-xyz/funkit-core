@@ -2,10 +2,8 @@ const { expect } = require("chai")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
-const { isContract } = require("../../utils")
-const { prefundWallet } = require("../../utils")
+const { isContract, prefundWallet, TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
 
 const options = {
     chain: 5,
@@ -22,7 +20,7 @@ describe("Factory", function () {
     before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
-        funder = new Eoa({ privateKey: GOERLI_PRIVATE_KEY})
+        funder = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
         salt = randomBytes(32).toString();
         wallet = new FunWallet({ salt, index: 0 })
     })
@@ -41,7 +39,7 @@ describe("Factory", function () {
         const walletAddress = await wallet1.getAddress()
         let iscontract = await isContract(walletAddress)
         expect(iscontract).to.be.false
-        await prefundWallet(funder, wallet1, .1)
+        await prefundWallet(funder, wallet1, .3)
         await wallet1.create(auth)
         iscontract = await isContract(walletAddress)
         expect(iscontract).to.be.true
