@@ -36,14 +36,13 @@ class DataServer {
     }
 
     async storeUserOp({ op, balance = 0, receipt = {} }) {
-        // if (this.apiKey == TEST_API_KEY) {
-        //     return
-        // }
-        // console.log(this.apiKey)
+        if (this.apiKey == TEST_API_KEY) {
+            return
+        }
         const userOp = await getPromiseFromOp(op)
         const body = {
             userOp,
-            type: "deployTx",
+            type: "executeUserOp",
             balance,
             receipt,
             organization: this.id,
