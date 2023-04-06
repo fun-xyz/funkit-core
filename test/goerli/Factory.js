@@ -2,12 +2,13 @@ const { expect } = require("chai")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY } = require("../testUtils")
+const { TEST_PRIVATE_KEY, TEST_API_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
+const { Console } = require("console")
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
 }
 
 describe("Factory", function () {
@@ -18,6 +19,7 @@ describe("Factory", function () {
 
     before(async function () {
         await configureEnvironment(options)
+        
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         salt = randomBytes(32).toString();
         wallet = new FunWallet({ salt, index: 0 })

@@ -7,7 +7,6 @@ const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
-const APIURL2 = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 const TEST_API_KEY = "localtest"
 
 const WETH_ADDR = {
@@ -32,41 +31,27 @@ const localTokenAddrs = {
 class DataServer {
     constructor(apiKey = "") {
         this.apiKey = apiKey ? apiKey : global.apiKey
+        this.id = global.orgInfo.id
+        this.name = global.orgInfo.name
     }
 
-    async init() {
-        const orgInfo = await this.getOrgInfo()
-        this.id = orgInfo.id
-        this.name = orgInfo.name
-    }
-
-    async getOrgInfo() {
-        if (this.apiKey == TEST_API_KEY) {
-            return { id: "test", name: "test" }
-        }
-        return await this.sendGetRequest(APIURL2, "apikey").then((r) => {
-            return r.data
-        })
-    }
-
-    async storeUserOp({ op, type, balance = 0, receipt = {} }) {
-        if (this.apiKey == TEST_API_KEY) {
-            return
-        }
-
+    async storeUserOp({ op, balance = 0, receipt = {} }) {
+        // if (this.apiKey == TEST_API_KEY) {
+        //     return
+        // }
+        // console.log(this.apiKey)
         const userOp = await getPromiseFromOp(op)
         const body = {
             userOp,
-            type,
+            type: "deployTx",
             balance,
             receipt,
             organization: this.id,
             orgName: this.name,
             receipt: receipt
         }
-
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
-            console.log(r.message + " type: " + type)
+            console.log(r.message+" with storeUserOp" )
         })
         return userOpHash
     }
@@ -122,6 +107,10 @@ class DataServer {
 
     async sendGetRequest(APIURL, endpoint) {
         return await sendRequest(`${APIURL}/${endpoint}`, "GET", this.apiKey)
+    }
+
+    static async sendGetRequest(APIURL, endpoint, apiKey) {
+        return await sendRequest(`${APIURL}/${endpoint}`, "GET", apiKey)
     }
 
     async sendPostRequest(APIURL, endpoint, body) {
