@@ -34,7 +34,6 @@ class FirstClassActions {
         const address = await this.getAddress()
         if (await isContract(address)) {
             throw new Error("Wallet already exists as contract.")
-            return
         }
         else {
             return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
