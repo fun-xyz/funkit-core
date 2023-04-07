@@ -7,7 +7,6 @@ const factory = require("../abis/FunWalletFactory.json")
 const { FirstClassActions, genCall } = require("../actions")
 const { TokenSponsor, MultiTokenSponsor } = require("../sponsors")
 const { MissingParameterError, Helper } = require("../errors")
-const { isContract } = require('../utils')
 const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
 const callExpectedKeys = ["to", "data"]
