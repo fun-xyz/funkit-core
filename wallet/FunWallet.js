@@ -7,7 +7,6 @@ const factory = require("../abis/FunWalletFactory.json")
 const { FirstClassActions, genCall } = require("../actions")
 const { TokenSponsor, MultiTokenSponsor } = require("../sponsors")
 const { MissingParameterError, Helper } = require("../errors")
-
 const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
 const callExpectedKeys = ["to", "data"]
@@ -26,7 +25,6 @@ class FunWallet extends FirstClassActions {
         super()
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
-
     }
 
     async _getFromCache(obj) {
@@ -90,7 +88,7 @@ class FunWallet extends FirstClassActions {
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }
-
+    
         const userOp = new UserOp(op)
         await userOp.sign(auth, chain)
         if (options.sendTxLater) {
