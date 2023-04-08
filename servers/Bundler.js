@@ -1,7 +1,7 @@
 const { resolveProperties } = require("ethers/lib/utils");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { deepHexlify, verifyValidParametersForLocation } = require("../utils/data");
-const { Helper, NoServerConnectionError, ServerError, ParameterFormatError } = require("../errors");
+const { Helper, NoServerConnectionError } = require("../errors");
 const { DataServer } = require('./DataServer');
 
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
@@ -16,7 +16,13 @@ class Bundler {
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid
-        return await DataServer.validateChainId(this.chainId);
+        let response;
+        try {
+            response = await DataServer.validateChainId(this.chainId);
+        } catch (e) {
+            const helper = new Helper("Chain ID", this.chainId, "Cannot connect to bundler.");
+            throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl");
+        }
     }
 
     async sendUserOpToBundler(userOp1) {
