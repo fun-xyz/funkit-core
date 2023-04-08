@@ -13,11 +13,10 @@ class Bundler {
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;
-        this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl);
     }
-    async validateChainId(chainId) {
+    async validateChainId() {
         // validate chainId is in sync with expected chainid
-        return await DataServer.validateChainId(chainId);
+        return await DataServer.validateChainId(this.chainId);
     }
 
     async sendUserOpToBundler(userOp1) {
