@@ -29,13 +29,7 @@ const localTokenAddrs = {
 }
 
 class DataServer {
-    constructor(apiKey = "") {
-        this.apiKey = apiKey ? apiKey : global.apiKey
-        this.id = global.orgInfo.id
-        this.name = global.orgInfo.name
-    }
-
-    async storeUserOp({ op, balance = 0, receipt = {} }) {
+    static async storeUserOp({ op, balance = 0, receipt = {} }) {
         if (this.apiKey == TEST_API_KEY) {
             return
         }
@@ -45,17 +39,17 @@ class DataServer {
             type: "executeUserOp",
             balance,
             receipt,
-            organization: this.id,
-            orgName: this.name,
+            organization: global.orgInfo?.id,
+            orgName: global.orgInfo?.name,
             receipt: receipt
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
-            console.log(r.message+" with storeUserOp" )
+            console.log(r.message + " with storeUserOp")
         })
         return userOpHash
     }
 
-    async storeEVMCall(receipt) {
+    static async storeEVMCall(receipt) {
         if (this.apiKey == TEST_API_KEY) {
             return
         }
@@ -63,8 +57,8 @@ class DataServer {
         const body = {
             receipt,
             txHash: receipt.transactionHash,
-            organization: this.id,
-            orgName: this.name
+            organization: global.orgInfo?.id,
+            orgName: global.orgInfo?.name
         }
         return await this.sendPostRequest(APIURL, "save-evm-receipt", body).then(r => {
             console.log(r.message + " type: evm_receipt")
@@ -104,16 +98,8 @@ class DataServer {
         throw new ServerMissingDataError("Token.getAddress", "DataServer", helper)
     }
 
-    async sendGetRequest(APIURL, endpoint) {
-        return await sendRequest(`${APIURL}/${endpoint}`, "GET", this.apiKey)
-    }
-
     static async sendGetRequest(APIURL, endpoint, apiKey) {
         return await sendRequest(`${APIURL}/${endpoint}`, "GET", apiKey)
-    }
-
-    async sendPostRequest(APIURL, endpoint, body) {
-        return await sendRequest(`${APIURL}/${endpoint}`, "POST", this.apiKey, body)
     }
 
     static async sendPostRequest(APIURL, endpoint, body) {
@@ -155,7 +141,7 @@ class DataServer {
             module: moduleName,
             chain: chainId.toString()
         }
-
+        
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
