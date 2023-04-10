@@ -2,7 +2,7 @@ const { ethers, Wallet } = require("ethers")
 const { ContractFactory } = ethers
 const fs = require("fs")
 const oracleAbi = require("../abis/TokenPriceOracle.json")
-const paymasterAbi = require("../abis/TokenPaymaster.json")
+const paymasterAbi = require("../abis/FeelessPaymaster.json")
 const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("./testUtils")
 const { Chain } = require("../data")
 
@@ -22,16 +22,18 @@ const deployPaymaster = async (signer, entryPointAddr) => {
 
 const main = async () => {
 
-    const chain = new Chain({ chainId: 36864 })
+    const chain = new Chain({ chainId: 31337 })
     const provider = await chain.getProvider()
 
     const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(TEST_PRIVATE_KEY, provider)
 
-    const oracle = await deployOracle(signer)
+    // const oracle = await deployOracle(signer)
     const paymaster = await deployPaymaster(signer, entryPointAddr)
 
-    const paymasterdata = { oracle, paymaster }
+    const paymasterdata = {
+        paymaster
+    }
 
     fs.writeFileSync("paymaster.json", JSON.stringify(paymasterdata))
 }

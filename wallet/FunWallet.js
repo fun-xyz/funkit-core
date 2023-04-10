@@ -5,7 +5,7 @@ const { verifyValidParametersForLocation, validateClassInstance, parseOptions, p
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 const { FirstClassActions, genCall } = require("../actions")
-const { TokenSponsor, MultiTokenSponsor } = require("../sponsors")
+const { TokenSponsor, MultiTokenSponsor, FeelessSponsor } = require("../sponsors")
 const { MissingParameterError, Helper } = require("../errors")
 
 const executeExpectedKeys = ["chain", "apiKey"]
@@ -78,7 +78,7 @@ class FunWallet extends FirstClassActions {
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
         let paymasterAndData = ""
         if (options.gasSponsor) {
-            const sponsor = new TokenSponsor(options)
+            const sponsor = new FeelessSponsor(options)
             paymasterAndData = await sponsor.getPaymasterAndData(options)
         }
 

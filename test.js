@@ -1,26 +1,31 @@
 const { Eoa } = require("./auth")
 const { Token } = require("./data")
 const { configureEnvironment } = require("./managers")
-const { TokenSponsor } = require("./sponsors")
-const { GOERLI_PRIVATE_KEY } = require("./utils")
+const { FeelessSponsor } = require("./sponsors")
+const { GOERLI_PRIVATE_KEY, TEST_PRIVATE_KEY } = require("./utils")
 
 
 const options = {
-    chain: 5,
+    chain: 31337,
     apiKey: "localtest",
 }
 const main = async () => {
     await configureEnvironment(options)
-    let auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
-
-    const sponsor = new TokenSponsor({
+    const auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
+    const sponsorAddress = await auth.getUniqueId()
+    const sponsor = new FeelessSponsor({
         gasSponsor: {
             sponsorAddress: "",
-            token: ""
         }
     })
-
-    await auth.sendTx(await sponsor.stake("0x175C5611402815Eba550Dad16abd2ac366a63329", 4.2))
+    console.log(sponsorAddress)
+    const log = async () => {
+        sponsor.getBalance(sponsorAddress).then((val) => { console.log(val.toString()) })
+    }
+    await log()
+    const stake = await sponsor.setToBlacklistMode()
+    await auth.sendTx(stake)
+    await log()
 }
 
 main()

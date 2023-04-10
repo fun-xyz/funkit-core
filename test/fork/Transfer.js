@@ -44,7 +44,11 @@ describe("Transfer", function () {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-
+        await configureEnvironment({
+            gasSponsor: {
+                sponsorAddress: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            }
+        })
     })
 
     it("wallet should have lower balance of specified token", async () => {
