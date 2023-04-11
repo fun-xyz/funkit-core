@@ -11,13 +11,6 @@ const executeExpectedKeys = ["chain", "apiKey"]
 const gasExpectedKeys = ["callGasLimit"]
 const callExpectedKeys = ["to", "data"]
 
-const userOpDefaultParams = {
-    verificationGasLimit: 200_000,
-}
-
-const userOpInitParams = {
-    verificationGasLimit: 700_000,
-}
 
 class FunWallet extends FirstClassActions {
     objCache = {}
@@ -93,14 +86,13 @@ class FunWallet extends FirstClassActions {
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             verificationGasLimit: 10e6
-            
+
 
         })
         let { preVerificationGas, verificationGas, callGasLimit } = res
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
-        verificationGas = Math.ceil(parseInt(verificationGas) * 1.45)
+        verificationGas = Math.ceil(parseInt(verificationGas) * (paymasterAndData == "0x" ? 1.45 : 1.5))
         callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.4)
-        console.log(callGasLimit)
         const userOp = new UserOp({ ...op, preVerificationGas, verificationGasLimit: verificationGas, callGasLimit })
         await userOp.sign(auth, chain)
         if (options.sendTxLater) {

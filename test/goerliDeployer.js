@@ -4,6 +4,7 @@ const fs = require("fs")
 const oracleAbi = require("../abis/TokenPriceOracle.json")
 const paymasterAbi = require("../abis/TokenPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
+const factoryAbi = require("../abis/FunWalletFactory.json")
 const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("./testUtils")
 const { Chain } = require("../data")
 
@@ -21,6 +22,11 @@ const deployPaymaster = async (signer, entryPointAddr) => {
     return await deploy(signer, paymasterAbi, [entryPointAddr])
 }
 
+const deployFactory = async (signer) => {
+    return await deploy(signer, factoryAbi)
+}
+
+
 
 const deployUserAuth = async (signer) => {
     return await deploy(signer, authAbi)
@@ -28,13 +34,14 @@ const deployUserAuth = async (signer) => {
 
 const main = async () => {
 
-    const chain = new Chain({ chainId: 5 })
+    const chain = new Chain({ chainId: 36864 })
     const provider = await chain.getProvider()
 
     // const entryPointAddr = await chain.getAddress("entryPointAddress")
-    const signer = new Wallet(GOERLI_PRIVATE_KEY, provider)
+    // const signer = new Wallet(GOERLI_PRIVATE_KEY, provider)
+    const signer = new Wallet(TEST_PRIVATE_KEY, provider)
 
-    const auth = await deployUserAuth(signer)
+    const auth = await deployFactory(signer)
     // const paymaster = await deployPaymaster(signer, entryPointAddr)
 
     fs.writeFileSync("contracts.json", JSON.stringify({ auth }))
