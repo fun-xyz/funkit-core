@@ -64,7 +64,7 @@ const _swap = (params) => {
             tokenInAddress,
             tokenOutAddress,
             amountIn,
-            
+
             // optional
             returnAddress,
             percentDecimal,
@@ -79,13 +79,12 @@ const _swap = (params) => {
         }
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
-        const gasInfo = { callGasLimit: 400_000 }
 
         const errorData = {
             location: "actions.swap"
         }
 
-        return { gasInfo, data: txData, errorData }
+        return { data: txData, errorData }
     }
 }
 

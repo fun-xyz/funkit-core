@@ -37,15 +37,13 @@ class FunWallet extends FirstClassActions {
             chain,
             options
         }
-        const { data, gasInfo, errorData, optionalParams } = await actionFunc(actionData)
+        const { data, errorData, optionalParams } = await actionFunc(actionData)
         {
             const { chain, apiKey } = options
             verifyValidParametersForLocation(errorData.location, { chain, apiKey }, executeExpectedKeys)
         }
 
-        if (gasInfo) {
-            verifyValidParametersForLocation(errorData.location, gasInfo, gasExpectedKeys)
-        }
+
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
@@ -73,7 +71,7 @@ class FunWallet extends FirstClassActions {
             paymasterAndData = await sponsor.getPaymasterAndData(options)
         }
 
-        let partialOp = { ...gasInfo, callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+        let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }
@@ -82,6 +80,7 @@ class FunWallet extends FirstClassActions {
         const res = await chain.estimateOpGas({
             ...op, signature: id,
             paymasterAndData: '0x',
+            callGasLimit: 10e6,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,

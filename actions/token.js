@@ -6,11 +6,10 @@ const { Token } = require("../data")
 const ethTransfer = ({ to, amount }) => {
     return () => {
         const data = { to, data: "0x", value: parseEther(`${amount}`) }
-        const gasInfo = { callGasLimit: 30_000 }
         const errorData = {
             location: "action.transfer.eth",
         }
-        return { data, gasInfo, errorData }
+        return { data, errorData }
     }
 }
 
@@ -42,8 +41,8 @@ const erc20Transfer = ({ to, amount, token }) => {
             }
         }
 
-        const gasInfo = { callGasLimit: 200_000 }
-        return { gasInfo, data: transferData, errorData }
+
+        return { data: transferData, errorData }
     }
 }
 
@@ -74,8 +73,7 @@ const _approve = ({ spender, amount, token }) => {
             }
         }
 
-        const gasInfo = { callGasLimit: 100_000 }
-        return { gasInfo, data: approveData, errorData }
+        return { data: approveData, errorData }
     }
 }
 
