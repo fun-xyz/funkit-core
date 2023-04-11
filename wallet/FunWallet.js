@@ -80,16 +80,28 @@ class FunWallet extends FirstClassActions {
             paymasterAndData = await sponsor.getPaymasterAndData(options)
         }
 
-        const gasParams = initCode == "0x" ? userOpDefaultParams : userOpInitParams
-        if (paymasterAndData) {
-            gasParams.verificationGasLimit += 50_000
-        }
-        let partialOp = { ...gasParams, ...gasInfo, callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+        let partialOp = { ...gasInfo, callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
 
         const op = { ...partialOp, nonce }
-    
-        const userOp = new UserOp(op)
+        const id = await auth.getUniqueId()
+
+        const res = await chain.estimateOpGas({
+            ...op, signature: id,
+            paymasterAndData: '0x',
+            maxFeePerGas: 0,
+            maxPriorityFeePerGas: 0,
+            preVerificationGas: 0,
+            verificationGasLimit: 10e6
+            
+
+        })
+        let { preVerificationGas, verificationGas, callGasLimit } = res
+        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
+        verificationGas = Math.ceil(parseInt(verificationGas) * 1.45)
+        callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.4)
+        console.log(callGasLimit)
+        const userOp = new UserOp({ ...op, preVerificationGas, verificationGasLimit: verificationGas, callGasLimit })
         await userOp.sign(auth, chain)
         if (options.sendTxLater) {
             return userOp.op

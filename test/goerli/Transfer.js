@@ -25,8 +25,9 @@ describe("Transfer", function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
         salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 23420 })
+        wallet = new FunWallet({ salt, index: 23421 })
         // await prefundWallet(auth, wallet, .3)
+
     })
 
     it("wallet should have lower balance of specified token", async () => {
@@ -36,9 +37,11 @@ describe("Transfer", function () {
 
         let b1 = Token.getBalance(testToken, randomAddress)
         let b2 = Token.getBalance(testToken, walletAddress)
-        await wallet.transfer(auth, { to: randomAddress, amount, token: testToken })
+        const receipt = await wallet.transfer(auth, { to: randomAddress, amount, token: testToken })
         let b3 = Token.getBalance(testToken, randomAddress)
         let b4 = Token.getBalance(testToken, walletAddress)
+
+        console.log(receipt)
 
         let [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] = await Promise.all([b1, b2, b3, b4])
         assert(randomTokenBalanceAfter - randomTokenBalanceBefore == amount, "Transfer failed")
