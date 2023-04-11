@@ -53,8 +53,8 @@ describe("Paymaster", function () {
 
         await configureEnvironment({
             gasSponsor: {
-                sponsorAddress: funderAddress,
-                token: paymasterToken
+                sponsorAddress: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+                // token: paymasterToken
             }
         })
 

@@ -32,7 +32,6 @@ describe("Transfer", function () {
         wallet = new FunWallet({ salt, index: 253840 })
         await prefundWallet(auth, wallet, 10)
         const walletAddress = await wallet.getAddress()
-
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
         if (tokenBalanceBefore < amount) {
             await wallet.swap(auth, {
