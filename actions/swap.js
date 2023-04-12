@@ -12,15 +12,13 @@ const DEFAULT_FEE = "medium"
 
 const _swap = (params) => {
     return async (actionData) => {
+        const { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} } = params
         const { wallet, chain } = actionData
         let {
-            tokenIn,
-            tokenOut,
-            amountIn,
             returnAddress,
             slippage,
             poolFee
-        } = params
+        } = swapOptions
 
         const provider = await chain.getProvider()
 

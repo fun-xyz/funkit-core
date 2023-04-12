@@ -29,7 +29,7 @@ class FunWallet extends FirstClassActions {
         return this.objCache[storekey]
     }
 
-    async execute(auth, actionFunc, txOptions = global) {
+    async _generatePartialUserOp(auth, actionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const actionData = {
@@ -42,7 +42,6 @@ class FunWallet extends FirstClassActions {
             const { chain, apiKey } = options
             verifyValidParametersForLocation(errorData.location, { chain, apiKey }, executeExpectedKeys)
         }
-
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
@@ -73,31 +72,36 @@ class FunWallet extends FirstClassActions {
 
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
-
-        const op = { ...partialOp, nonce }
-        const id = await auth.getUniqueId()
-
+        return { ...partialOp, nonce }
+    }
+    async estimateGas(auth, actionFunc, txOptions = global) {
+        const partialOp = await this._generatePartialUserOp(auth, actionFunc, txOptions)
         const res = await chain.estimateOpGas({
-            ...op, signature: id,
+            ...partialOp, signature: id,
             paymasterAndData: '0x',
             callGasLimit: 10e6,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             verificationGasLimit: 10e6
-
-
         })
         let { preVerificationGas, verificationGas, callGasLimit } = res
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
         verificationGas = Math.ceil(parseInt(verificationGas) * (paymasterAndData == "0x" ? 1.45 : 1.5))
         callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.4)
-        const userOp = new UserOp({ ...op, preVerificationGas, verificationGasLimit: verificationGas, callGasLimit })
-        await userOp.sign(auth, chain)
-        if (options.sendTxLater) {
-            return userOp.op
+        return new UserOp({ ...op, preVerificationGas, verificationGasLimit: verificationGas, callGasLimit })
+    }
+
+    async execute(auth, actionFunc, txOptions = global, estimateGas = false) {
+        const estimatedOp = await this.estimateGas(auth, actionFunc, txOptions)
+        if (estimateGas) {
+            return estimatedOp
         }
-        return this.sendTx(userOp, options)
+        await estimatedOp.sign(auth, chain)
+        if (options.sendTxLater) {
+            return estimatedOp.op
+        }
+        return this.sendTx(estimatedOp, options)
     }
     // goerli implementation: 0xF30ca362C658BF50F9aFaAD0cbB95cfB6E50D901
     async _getThisInitCode(chain, auth) {
