@@ -136,6 +136,7 @@ class TokenSponsor {
             return await this.encode(data, options)
         }
     }
+
     async removeWhitelistTokens(tokens) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("removeTokens", [tokens])
@@ -163,6 +164,7 @@ class TokenSponsor {
             return await this.encode(data, options)
         }
     }
+
     async removeSpenderFromBlackList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])

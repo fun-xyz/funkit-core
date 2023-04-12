@@ -21,7 +21,7 @@ const main = async () => {
             sponsorAddress: "",
         }
     })
-    console.log(sponsorAddress)
+
     const log = async () => {
         sponsor.getBalance(sponsorAddress).then((val) => { console.log(val.toString()) })
     }
