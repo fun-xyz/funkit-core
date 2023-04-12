@@ -116,43 +116,56 @@ class TokenSponsor {
         }
     }
 
-    async setGlobalToBlacklistMode() {
+    async setToBlacklistMode() {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [true])
+            const data = this.interface.encodeFunctionData("setListMode", [true])
             return await this.encode(data, options)
         }
     }
 
-    async setGlobalToWhitelistMode() {
+    async setToWhitelistMode() {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [false])
+            const data = this.interface.encodeFunctionData("setListMode", [false])
             return await this.encode(data, options)
         }
     }
 
+    async addWhitelistTokens(tokens) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("useTokens", [tokens])
+            return await this.encode(data, options)
+        }
+    }
+    async removeWhitelistTokens(tokens) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("removeTokens", [tokens])
+            return await this.encode(data, options)
+        }
+    }
 
-    async addSpenderToGlobalWhiteList(spender) {
+    async addSpenderToWhiteList(spender) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, true])
-            return await this.encode(data, options)
-        }
-    }
-    async removeSpenderFromGlobalWhiteList(spender) {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, false])
+            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
-    async addSpenderToGlobalBlackList(spender) {
+    async removeSpenderFromWhiteList(spender) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, true])
+            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
             return await this.encode(data, options)
         }
     }
-    async removeSpenderFromGlobalBlackList(spender) {
+
+    async addSpenderToBlackList(spender) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, false])
+            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+    async removeSpenderFromBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
             return await this.encode(data, options)
         }
     }
