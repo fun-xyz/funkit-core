@@ -1,0 +1,123 @@
+const Web3 = require('web3');
+const fetch = require('node-fetch');
+const erc20 = require('./abis/ERC20.json')
+const ethers = require('ethers')
+const chainId = 1;
+const web3RpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/demo';
+// const web3RpcUrl = "http://localhost:8545"
+
+const walletAddress = '0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9';
+const privateKey = '8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38';
+const swapParams = {
+    fromTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+    toTokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
+    amount: '1000000',
+    fromAddress: walletAddress,
+    slippage: 1,
+    disableEstimate: false,
+    allowPartialFill: false,
+};
+
+const broadcastApiUrl = 'https://tx-gateway.1inch.io/v1.1/' + chainId + '/broadcast';
+const apiBaseUrl = 'https://api.1inch.io/v5.0/' + chainId;
+const web3 = new Web3(web3RpcUrl);
+const provider = new ethers.providers.JsonRpcProvider(web3RpcUrl);
+
+function apiRequestUrl(methodName, queryParams) {
+    return apiBaseUrl + methodName + '?' + (new URLSearchParams(queryParams)).toString();
+}
+
+async function broadCastRawTransaction(rawTransaction) {
+    return fetch(broadcastApiUrl, {
+        method: 'post',
+        body: JSON.stringify({ rawTransaction }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+        .then(res => res.json())
+        .then(res => {
+            return res.transactionHash;
+        });
+}
+async function buildTxForApproveTradeWithRouter(tokenAddress, amount) {
+    const url = apiRequestUrl(
+        '/approve/transaction',
+        amount ? { tokenAddress, amount } : { tokenAddress }
+    );
+
+    const transaction = await fetch(url).then(res => res.json());
+
+    // const gasLimit = await web3.eth.estimateGas({
+    //     ...transaction,
+    //     from: walletAddress
+    // });
+    // // const gasPrice = await provider.estimateGas().bar()
+    // console.log(gasLimit)
+    // console.log(gasPrice)
+
+    return {
+        ...transaction,
+        gas:  40000
+    };
+}
+
+async function signAndSendTransaction(transaction) {
+    const wallet = new ethers.Wallet(privateKey, provider)
+    const tx= await wallet.sendTransaction(transaction)
+    // const { rawTransaction } = await web3.eth.accounts.signTransaction(transaction, privateKey);
+
+    // return await broadCastRawTransaction(rawTransaction);
+    return tx
+}
+
+async function buildTxForSwap(swapParams) {
+    const url = apiRequestUrl('/swap', swapParams);
+
+    return fetch(url).then(res => res.json()).then(res => res.tx);
+}
+function checkAllowance(tokenAddress, walletAddress) {
+    return fetch(apiRequestUrl('/approve/allowance', { tokenAddress, walletAddress }))
+        .then(res => res.json())
+        .then(res => res.allowance);
+}
+
+const main = async () => {
+
+    const allowance = await checkAllowance(swapParams.fromTokenAddress, walletAddress);
+    console.log('Allowance: ', allowance);
+
+    const transactionForSign = await buildTxForApproveTradeWithRouter(swapParams.fromTokenAddress);
+    console.log('Transaction for approve: ', transactionForSign);
+    const approveTxHash = await signAndSendTransaction(transactionForSign);
+    console.log('Approve tx hash: ', approveTxHash);
+
+    const swapTransaction = await buildTxForSwap(swapParams);
+    console.log('Transaction for swap: ', swapTransaction);
+
+    const erc20Contract = new ethers.Contract("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", erc20.abi, provider);
+    const balance = await erc20Contract.balanceOf(walletAddress);
+    console.log('balance before ', balance)
+    // await PromiseTimeout(20000);
+    // await approveTxHash.wait()
+
+    // const swapTxHash = await signAndSendTransaction(swapTransaction);
+    console.log('Swap transaction hash: ', swapTxHash);
+    const balance2 = await erc20Contract.balanceOf(walletAddress);
+    console.log('balance after ', balance2)
+
+    // const tx = {
+    //     from: '0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9',
+    //     to: '0x1111111254eeb25477b68fb85ed929f73a960582',
+    //     data: '0x0502b1c5000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000f42400000000000000000000000000000000000000000000000000db476b9c6802e170000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000180000000000000003b6d0340aaf5110db6e744ff70fb339de037b990a20bdacecfee7c08',
+    //     value: '0',
+    //     gas: 148608,
+    //     gasPrice: '21265858368'
+    //   }
+    // const swapTxHash = await signAndSendTransaction(tx);
+    // console.log('Swap transaction hash: ', swapTxHash);
+}
+function PromiseTimeout(delayms) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(resolve, delayms);
+    });
+}
+main()
