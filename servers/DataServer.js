@@ -30,7 +30,7 @@ const localTokenAddrs = {
 
 class DataServer {
     static async storeUserOp({ op, balance = 0, receipt = {} }) {
-        if (this.apiKey == TEST_API_KEY) {
+        if (global.apiKey == TEST_API_KEY) {
             return
         }
         const userOp = await getPromiseFromOp(op)
@@ -50,7 +50,7 @@ class DataServer {
     }
 
     static async storeEVMCall(receipt) {
-        if (this.apiKey == TEST_API_KEY) {
+        if (global.apiKey == TEST_API_KEY) {
             return
         }
 
@@ -103,7 +103,7 @@ class DataServer {
     }
 
     static async sendPostRequest(APIURL, endpoint, body) {
-        return await sendRequest(`${APIURL}/${endpoint}`, "POST", "", body)
+        return await sendRequest(`${APIURL}/${endpoint}`, "POST", global.apiKey, body)
     }
 
     static async getChainInfo(chain) {

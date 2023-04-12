@@ -28,7 +28,6 @@ class FunWallet extends FirstClassActions {
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
         this.dataServer = new DataServer()
-
     }
 
     async _getFromCache(obj) {
@@ -144,7 +143,7 @@ class FunWallet extends FirstClassActions {
         const gas = await gasCalculation(txid, chain)
         const receipt = { ophash, txid , ...gas}
         // console.log(receipt)
-        this.dataServer.storeUserOp(userOp, 0, receipt)
+        DataServer.storeUserOp(userOp, 0, receipt)
 
         return receipt
     }

@@ -4,7 +4,7 @@ const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
 const { TEST_PRIVATE_KEY, TEST_API_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
-const { isContract, prefundWallet, TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
+const { isContract, prefundWallet, GOERLI_PRIVATE_KEY } = require("../../utils")
 
 const options = {
     chain: 5,
