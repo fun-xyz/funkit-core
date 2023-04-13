@@ -2,8 +2,6 @@ const { verifyValidParametersForLocation } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
 const { isContract } = require('../utils')
-const util = require('util')
-
 
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
@@ -56,7 +54,5 @@ const genCall = (data, callGasLimit = 100_000) => {
         return { gasInfo, data, errorData: { location: "action.genCall" } }
     }
 }
-
-
 
 module.exports = { FirstClassActions, genCall };

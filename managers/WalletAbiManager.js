@@ -3,7 +3,6 @@ const { verifyValidParametersForLocation, validateType, verifyIsArray } = requir
 const { verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../utils/chain")
 const { hexConcat } = require("ethers/lib/utils")
 
-
 const encodeCallExpectedKeys = ["to", "data"]
 const initCodeExpectedKeys = ["salt", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
 

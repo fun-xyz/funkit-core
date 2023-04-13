@@ -3,9 +3,7 @@ const logHelper = (tabwith, logData) => {
         return `${"\t".repeat(tabwith)}${logData}`
     }
     if (Array.isArray(logData)) {
-
         return logData.map(log => (`${"\t".repeat(tabwith)}${log}`)).join("\n")
-
     }
 }
 
@@ -37,6 +35,6 @@ class Helper {
         msg += seperator + reasons
         this.pushMessage(msg)
     }
-
 }
+
 module.exports = { Helper };

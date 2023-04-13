@@ -1,6 +1,4 @@
-const { parseEther, parseUnits } = require("ethers/lib/utils")
-const ERC20 = require('../abis/ERC20.json')
-const ethers = require("ethers")
+const { parseEther } = require("ethers/lib/utils")
 const { Token } = require("../data")
 
 const ethTransfer = ({ to, amount }) => {
@@ -40,8 +38,6 @@ const erc20Transfer = ({ to, amount, token }) => {
                 txDetails, reasonData
             }
         }
-
-
         return { data: transferData, errorData }
     }
 }

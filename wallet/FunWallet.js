@@ -1,19 +1,14 @@
 const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
+const { FirstClassActions, genCall } = require("../actions")
+const { TokenSponsor } = require("../sponsors")
+const { ParameterFormatError } = require("../errors/ParameterError")
+const { Helper } = require("../errors/Helper")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
-const { FirstClassActions, genCall } = require("../actions")
-const { TokenSponsor, MultiTokenSponsor } = require("../sponsors")
-const { Helper } = require("../errors/Helper")
-const { ParameterFormatError } = require("../errors/ParameterError")
 const executeExpectedKeys = ["chain", "apiKey"]
-const gasExpectedKeys = ["callGasLimit"]
-const callExpectedKeys = ["to", "data"]
-
-
-
 
 class FunWallet extends FirstClassActions {
     objCache = {}
@@ -189,10 +184,8 @@ const modifiedActions = () => {
                 const helper = new Helper("Invalid number of parameters", args, "Invalid number of parameters")
                 throw new ParameterFormatError("Wallet.estimateGas", helper)
             }
-
         }
         Object.assign(bindedEstimateGas, { [func]: callfunc })
-
         old[func] = FirstClassActions.prototype[func]
     }
 

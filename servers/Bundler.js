@@ -14,12 +14,10 @@ class Bundler {
         this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl);
     }
     async validateChainId() {
-        // validate chainId is in sync with expected chainid
         let chain;
+
         try {
-
             chain = await this.userOpJsonRpcProvider.send('eth_chainId', []);
-
         } catch (e) {
             const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
             throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
@@ -33,13 +31,13 @@ class Bundler {
 
     async sendUserOpToBundler(userOp1) {
         const { UserOp } = require("../data/UserOp")
-
         validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
+
         await this.validateChainId();
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp1));
-        return await this.userOpJsonRpcProvider
-            .send('eth_sendUserOperation', [hexifiedUserOp, this.entryPointAddress]);
+        return await this.userOpJsonRpcProvider.send('eth_sendUserOperation', [hexifiedUserOp, this.entryPointAddress]);
     }
+
     async estimateUserOpGas(userOp1) {
         await this.validateChainId();
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp1));

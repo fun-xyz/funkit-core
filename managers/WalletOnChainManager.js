@@ -1,3 +1,4 @@
+const { Contract } = require("ethers")
 const { WalletIdentifier, Chain } = require("../data")
 const { validateClassInstance } = require("../utils/data")
 
@@ -5,7 +6,6 @@ const factoryAbi = require("../abis/FunWalletFactory.json").abi
 const walletAbi = require("../abis/FunWallet.json").abi
 const entryPointAbi = require("../abis/EntryPoint.json").abi
 
-const { Contract } = require("ethers")
 
 class WalletOnChainManager {
     constructor(chain, walletIdentifier) {
@@ -81,7 +81,6 @@ class WalletOnChainManager {
 
     async getOpErrors() {
         await this.init()
-
     }
 }
 
