@@ -3,15 +3,16 @@ const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
 const { FirstClassActions, genCall } = require("../actions")
 const { TokenSponsor } = require("../sponsors")
-const { ParameterFormatError } = require("../errors/ParameterError")
-const { Helper } = require("../errors/Helper")
+const { ParameterFormatError, Helper } = require("../errors")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
+
 const executeExpectedKeys = ["chain", "apiKey"]
 
 class FunWallet extends FirstClassActions {
     objCache = {}
+
     constructor(params) {
         super()
         this.estimateGas.parent = this
@@ -43,7 +44,6 @@ class FunWallet extends FirstClassActions {
         }
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-
         const sender = await this.getAddress({ chain })
 
         let tempCallData;
@@ -108,7 +108,6 @@ class FunWallet extends FirstClassActions {
         return new UserOp({ ...partialOp, ...res, signature: id, }, true)
     }
 
-
     async _getThisInitCode(chain, auth) {
         const owner = await auth.getUniqueId()
         const salt = await this.identifier.getIdentifier()
@@ -141,7 +140,6 @@ class FunWallet extends FirstClassActions {
         return await this.sendUserOp(userOp, txOptions)
     }
 
-
     async sendUserOp(userOp, txOptions = global) {
         validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
         const options = await parseOptions(txOptions, "Wallet.execute")
@@ -170,7 +168,9 @@ class FunWallet extends FirstClassActions {
 const modifiedActions = () => {
     const funcs = Object.getOwnPropertyNames(FirstClassActions.prototype)
     const bindedEstimateGas = FunWallet.prototype.estimateGas
+    
     const old = {}
+
     for (const func of funcs) {
         if (func == "constructor") continue
         const callfunc = async function (...args) {
