@@ -56,7 +56,7 @@ class FunWallet extends FirstClassActions {
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
-
+        
         let tempCallData;
         if (data.initAndExec) {
             const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)

@@ -17,6 +17,9 @@ const WETH_ADDR = {
     "5": {
         weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
     },
+    "137": {
+        wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
+    },
     "43113": {
         weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
     }

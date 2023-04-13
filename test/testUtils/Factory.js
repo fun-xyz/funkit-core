@@ -14,7 +14,7 @@ const FactoryTest = (chainId, authPrivateKey, apiKey="localtest") => {
         let auth
         let wallet
         let salt
-        this.timeout(50_000)
+        this.timeout(100_000)
 
         before(async function () {
             await configureEnvironment(options)

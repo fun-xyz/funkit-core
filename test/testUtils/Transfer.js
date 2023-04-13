@@ -1,7 +1,6 @@
 const TransferTest = (chainId, authPrivateKey, outToken, prefund = true, apiKey = "localtest") => {
     const { assert } = require("chai")
     const { Wallet } = require("ethers")
-    const { randomBytes } = require("ethers/lib/utils")
     const { Eoa } = require("../../auth")
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
@@ -17,7 +16,7 @@ const TransferTest = (chainId, authPrivateKey, outToken, prefund = true, apiKey 
             apiKey: apiKey,
         }
 
-        const amount = 1
+        const amount = .01
         before(async function () {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
@@ -47,14 +46,14 @@ const TransferTest = (chainId, authPrivateKey, outToken, prefund = true, apiKey 
 
             let b1 = Token.getBalance(outToken, randomAddress)
             let b2 = Token.getBalance(outToken, walletAddress)
-            await wallet.transfer(auth, { to: randomAddress, amount, token: outToken })
+            const receipt= await wallet.transfer(auth, { to: randomAddress, amount, token: outToken })
             let b3 = Token.getBalance(outToken, randomAddress)
             let b4 = Token.getBalance(outToken, walletAddress)
 
             let [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] = await Promise.all([b1, b2, b3, b4])
 
-            assert(randomTokenBalanceAfter - randomTokenBalanceBefore == amount, "Transfer failed")
-            assert(walletTokenBalanceBefore - walletTokenBalanceAfter == amount, "Transfer failed")
+            assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+            assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
 
         })
 

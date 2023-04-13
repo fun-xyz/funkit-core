@@ -6,7 +6,8 @@ const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK
 const config = {
     chainId: FORK_CHAIN_ID,
     authPrivateKey: TEST_PRIVATE_KEY,
+    inToken:"dai",
     outToken: "usdc",
     prefund: true
 }
-SwapTest(config.chainId, config.authPrivateKey, config.outToken, config.prefund)
+SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.prefund)

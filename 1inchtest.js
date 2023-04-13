@@ -1,17 +1,21 @@
 const Web3 = require('web3');
 const fetch = require('node-fetch');
 const erc20 = require('./abis/ERC20.json')
-const ethers = require('ethers')
-const chainId = 1;
-const web3RpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/demo';
+const ethers = require('ethers');
+const {Eoa} = require('./auth');
+const {FunWallet} = require('./wallet');
+const { configureEnvironment } = require('./managers');
+const chainId = 137;
+// const web3RpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/demo';
 // const web3RpcUrl = "http://localhost:8545"
+const web3RpcUrl = "https://polygon-rpc.com"
 
 const walletAddress = '0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9';
 const privateKey = '8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38';
 const swapParams = {
-    fromTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
-    toTokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
-    amount: '1000000',
+    fromTokenAddress: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+    toTokenAddress: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', // DAI 0x6B175474E89094C44Da98b954EedeAC495271d0F
+    amount: '10000',
     fromAddress: walletAddress,
     slippage: 1,
     disableEstimate: false,
@@ -46,26 +50,27 @@ async function buildTxForApproveTradeWithRouter(tokenAddress, amount) {
 
     const transaction = await fetch(url).then(res => res.json());
 
-    // const gasLimit = await web3.eth.estimateGas({
-    //     ...transaction,
-    //     from: walletAddress
-    // });
+    const gasLimit = await web3.eth.estimateGas({
+        ...transaction,
+        from: walletAddress
+    });
     // // const gasPrice = await provider.estimateGas().bar()
     // console.log(gasLimit)
     // console.log(gasPrice)
 
     return {
         ...transaction,
-        gas:  40000
+        gas: gasLimit
     };
 }
 
-async function signAndSendTransaction(transaction) {
-    const wallet = new ethers.Wallet(privateKey, provider)
-    const tx= await wallet.sendTransaction(transaction)
-    // const { rawTransaction } = await web3.eth.accounts.signTransaction(transaction, privateKey);
 
-    // return await broadCastRawTransaction(rawTransaction);
+async function signAndSendTransaction(transaction) {
+    // const wallet = new ethers.Wallet(privateKey, provider)
+    // const tx= await wallet.sendTransaction(transaction)
+    const { rawTransaction } = await web3.eth.accounts.signTransaction(transaction, privateKey);
+
+    return await broadCastRawTransaction(rawTransaction);
     return tx
 }
 
@@ -81,6 +86,22 @@ function checkAllowance(tokenAddress, walletAddress) {
 }
 
 const main = async () => {
+    const options = {
+        chain: 137,
+        apiKey: 'localtest',
+        // gasSponsor: {
+        //     sponsorAddress: SPONSOR_ADDRESS,
+        //     token: "USDC",
+        // },
+        sendTxLater: true,
+    };
+    configureEnvironment(options)
+    const provider = new ethers.providers.JsonRpcProvider(web3RpcUrl);
+    const eoa = new ethers.Wallet(privateKey, provider)
+    const auth = new Eoa({ signer: eoa })
+
+    const salt = await auth.getUniqueId()
+    const wallet = new FunWallet({ salt })
 
     const allowance = await checkAllowance(swapParams.fromTokenAddress, walletAddress);
     console.log('Allowance: ', allowance);
@@ -93,13 +114,13 @@ const main = async () => {
     const swapTransaction = await buildTxForSwap(swapParams);
     console.log('Transaction for swap: ', swapTransaction);
 
-    const erc20Contract = new ethers.Contract("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", erc20.abi, provider);
+    const erc20Contract = new ethers.Contract("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", erc20.abi, provider);
     const balance = await erc20Contract.balanceOf(walletAddress);
     console.log('balance before ', balance)
-    // await PromiseTimeout(20000);
+    await PromiseTimeout(20000);
     // await approveTxHash.wait()
 
-    // const swapTxHash = await signAndSendTransaction(swapTransaction);
+    const swapTxHash = await signAndSendTransaction(swapTransaction);
     console.log('Swap transaction hash: ', swapTxHash);
     const balance2 = await erc20Contract.balanceOf(walletAddress);
     console.log('balance after ', balance2)
