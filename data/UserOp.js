@@ -26,6 +26,14 @@ class UserOp {
         const hash = getOpHash(this.op, chainId, entryPointAddress)
         return hash
     }
+
+    getGasPrice() {
+        const { maxFeePerGas, maxPriorityFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
+        const mul = this.op.paymasterAndData != "0x" ? 3 : 1;
+        const requiredGas = callGasLimit + verificationGasLimit * mul + preVerificationGas;
+        return maxFeePerGas.mul(requiredGas)
+
+    }
 }
 
 module.exports = { UserOp };
