@@ -26,20 +26,17 @@ const deployFactory = async (signer) => {
     return await deploy(signer, factoryAbi)
 }
 
-
-
 const deployUserAuth = async (signer) => {
     return await deploy(signer, authAbi)
 }
 
-const main = async () => {
+const main = async (chainId, privateKey) => {
 
-    const chain = new Chain({ chainId: 36864 })
+    const chain = new Chain({ chainId })
     const provider = await chain.getProvider()
 
-    // const signer = new Wallet(GOERLI_PRIVATE_KEY, provider)
     const entryPointAddr = await chain.getAddress("entryPointAddress")
-    const signer = new Wallet(TEST_PRIVATE_KEY, provider)
+    const signer = new Wallet(privateKey, provider)
 
     const auth = await deployFactory(signer)
     const paymaster = await deployPaymaster(signer, entryPointAddr)
@@ -47,4 +44,4 @@ const main = async () => {
     fs.writeFileSync("contracts.json", JSON.stringify({ auth }))
 }
 
-main()
+main(5, GOERLI_PRIVATE_KEY)
