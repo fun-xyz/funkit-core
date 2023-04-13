@@ -37,12 +37,12 @@ const main = async () => {
     const chain = new Chain({ chainId: 36864 })
     const provider = await chain.getProvider()
 
-    // const entryPointAddr = await chain.getAddress("entryPointAddress")
     // const signer = new Wallet(GOERLI_PRIVATE_KEY, provider)
+    const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(TEST_PRIVATE_KEY, provider)
 
     const auth = await deployFactory(signer)
-    // const paymaster = await deployPaymaster(signer, entryPointAddr)
+    const paymaster = await deployPaymaster(signer, entryPointAddr)
 
     fs.writeFileSync("contracts.json", JSON.stringify({ auth }))
 }

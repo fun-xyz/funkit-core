@@ -41,8 +41,6 @@ describe("Transfer", function () {
         let b3 = Token.getBalance(testToken, randomAddress)
         let b4 = Token.getBalance(testToken, walletAddress)
 
-        console.log(receipt)
-
         let [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] = await Promise.all([b1, b2, b3, b4])
         assert(randomTokenBalanceAfter - randomTokenBalanceBefore == amount, "Transfer failed")
         assert(walletTokenBalanceBefore - walletTokenBalanceAfter == amount, "Transfer failed")

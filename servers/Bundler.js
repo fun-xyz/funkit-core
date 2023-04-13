@@ -29,18 +29,17 @@ class Bundler {
         }
     }
 
-    async sendUserOpToBundler(userOp1) {
-        const { UserOp } = require("../data/UserOp")
-        validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
-
+    async sendUserOpToBundler(userOp) {
+        validateOp(userOp)
         await this.validateChainId();
-        const hexifiedUserOp = deepHexlify(await resolveProperties(userOp1));
+        const hexifiedUserOp = deepHexlify(await resolveProperties(userOp));
         return await this.userOpJsonRpcProvider.send('eth_sendUserOperation', [hexifiedUserOp, this.entryPointAddress]);
     }
 
-    async estimateUserOpGas(userOp1) {
+    async estimateUserOpGas(userOp) {
+        validateOp(userOp)
         await this.validateChainId();
-        const hexifiedUserOp = deepHexlify(await resolveProperties(userOp1));
+        const hexifiedUserOp = deepHexlify(await resolveProperties(userOp));
         return await this.userOpJsonRpcProvider.send('eth_estimateUserOperationGas', [hexifiedUserOp, this.entryPointAddress]);
     }
 
@@ -49,6 +48,11 @@ class Bundler {
         const chain = await provider.send('eth_chainId', []);
         return parseInt(chain);
     }
+}
+
+const validateOp = (userOp) => {
+    const { UserOp } = require("../data/UserOp")
+    validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
 }
 
 module.exports = { Bundler };

@@ -168,7 +168,7 @@ class FunWallet extends FirstClassActions {
 const modifiedActions = () => {
     const funcs = Object.getOwnPropertyNames(FirstClassActions.prototype)
     const bindedEstimateGas = FunWallet.prototype.estimateGas
-    
+
     const old = {}
 
     for (const func of funcs) {
@@ -177,7 +177,7 @@ const modifiedActions = () => {
             if (args.length == 2) {
                 return await this.parent._executeSubCall(func, ...args, global, true)
             }
-            if (args.length == 3) {
+            else if (args.length == 3) {
                 return await this.parent._executeSubCall(func, ...args, true)
             }
             else {
