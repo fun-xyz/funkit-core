@@ -1,6 +1,6 @@
 const { resolveProperties } = require("ethers/lib/utils");
 const { JsonRpcProvider } = require("@ethersproject/providers");
-const { deepHexlify, verifyValidParametersForLocation } = require("../utils/data");
+const { deepHexlify, verifyValidParametersForLocation, validateClassInstance } = require("../utils/data");
 const { Helper, NoServerConnectionError, ServerError, ParameterFormatError } = require("../errors");
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
 
@@ -37,7 +37,6 @@ class Bundler {
     }
 
     async estimateUserOpGas(userOp) {
-        validateOp(userOp)
         await this.validateChainId();
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp));
         return await this.userOpJsonRpcProvider.send('eth_estimateUserOperationGas', [hexifiedUserOp, this.entryPointAddress]);
@@ -52,7 +51,12 @@ class Bundler {
 
 const validateOp = (userOp) => {
     const { UserOp } = require("../data/UserOp")
-    validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
+    try{
+
+        validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
+    }catch{
+        new UserOp(userOp)
+    }
 }
 
 module.exports = { Bundler };

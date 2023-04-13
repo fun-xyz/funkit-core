@@ -28,7 +28,7 @@ class UserOp {
         return hash
     }
 
-    getGasPrice() {
+    getMaxTxCost() {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
         const mul = this.op.paymasterAndData != "0x" ? 3 : 1;
         const requiredGas = callGasLimit + verificationGasLimit * mul + preVerificationGas;
