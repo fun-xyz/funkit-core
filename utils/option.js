@@ -5,11 +5,8 @@ const { JsonRpcProvider } = require("@ethersproject/providers")
 
 const { verifyValidParametersForLocation } = require("./data")
 
-const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
 
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
-const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
-const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
 
 
 const getChainsFromList = async (chains) => {
@@ -23,7 +20,7 @@ const verifyBundlerUrl = async (url) => {
     return (data.indexOf("aa-bundler") + 1)
 }
 const parseOptions = async (options, location) => {
-    
+
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)

@@ -6,6 +6,7 @@ const util = require('util')
 
 
 const transferExpected = ["to", "amount"]
+const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
 
@@ -33,13 +34,24 @@ class FirstClassActions {
             throw new Error("Wallet already exists as contract.")
         }
         else {
-            return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options, estimate)
+            return await this.execRawTx(auth, { to: address, data: "0x" }, options, estimate)
         }
+    }
+
+    async execRawTx(auth, input, options = global, estimate = false) {
+        verifyValidParametersForLocation("Wallet.execRawTx", input, genCallExpected)
+        return await this.execute(auth, genCall(input, input.gasLimit), options, estimate)
     }
 }
 
 const genCall = (data, callGasLimit = 100_000) => {
     return async () => {
+        if (!data.value) {
+            data.value = 0
+        }
+        if (!data.data) {
+            data.data = "0x"
+        }
         const gasInfo = { callGasLimit }
         return { gasInfo, data, errorData: { location: "action.genCall" } }
     }

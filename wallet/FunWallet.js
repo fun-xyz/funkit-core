@@ -19,7 +19,7 @@ class FunWallet extends FirstClassActions {
     objCache = {}
     constructor(params) {
         super()
-        this.estimate.parent = this
+        this.estimateGas.parent = this
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
     }
@@ -110,11 +110,7 @@ class FunWallet extends FirstClassActions {
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        let { preVerificationGas, verificationGas, callGasLimit } = res
-        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
-        verificationGas = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? 1.45 : 1.5))
-        callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.5)
-        return new UserOp({ ...partialOp, preVerificationGas, verificationGasLimit: verificationGas, callGasLimit })
+        return new UserOp({ ...partialOp, ...res, signature: id, })
     }
 
 
@@ -178,7 +174,7 @@ class FunWallet extends FirstClassActions {
 
 const modifiedActions = () => {
     const funcs = Object.getOwnPropertyNames(FirstClassActions.prototype)
-    const bindedEstimateGas = {}
+    const bindedEstimateGas = FunWallet.prototype.estimateGas
     const old = {}
     for (const func of funcs) {
         if (func == "constructor") continue
@@ -195,12 +191,13 @@ const modifiedActions = () => {
             }
 
         }
-        bindedEstimateGas[func] = callfunc
+        Object.assign(bindedEstimateGas, { [func]: callfunc })
+
         old[func] = FirstClassActions.prototype[func]
     }
 
     const proto = { ...FunWallet.prototype, ...FirstClassActions.prototype }
-    Object.assign(proto, { estimate: bindedEstimateGas, ...old })
+    Object.assign(proto, { estimateGas: bindedEstimateGas, ...old })
     Object.setPrototypeOf(FunWallet.prototype, proto)
 
     return FunWallet
