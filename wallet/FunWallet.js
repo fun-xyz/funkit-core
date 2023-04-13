@@ -110,7 +110,7 @@ class FunWallet extends FirstClassActions {
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: id, })
+        return new UserOp({ ...partialOp, ...res, signature: id, }, true)
     }
 
 

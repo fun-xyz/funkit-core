@@ -35,8 +35,11 @@ class UserOp {
         return maxFeePerGas.mul(requiredGas)
     }
 
-    async estimateGas(txOptions = global) {
+    async estimateGas(auth, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
+        if (!this.signature) {
+            this.signature = await auth.getUniqueId()
+        }
         const res = await options.chain.estimateOpGas({
             ...this.op,
             paymasterAndData: '0x',
