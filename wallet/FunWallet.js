@@ -17,9 +17,6 @@ const userOpDefaultParams = {
     verificationGasLimit: 200_000,
 }
 
-
-const executeExpectedKeys = ["chain", "apiKey"]
-
 class FunWallet extends FirstClassActions {
     objCache = {}
 
