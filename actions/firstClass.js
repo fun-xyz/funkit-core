@@ -7,6 +7,8 @@ const transferExpected = ["to", "amount"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
 
+const oneInchSupported = [1,137]
+
 class FirstClassActions {
     async transfer(auth, input, options = global) {
         verifyValidParametersForLocation("Wallet.transfer", input, transferExpected)
@@ -27,6 +29,13 @@ class FirstClassActions {
         }
         verifyValidParametersForLocation("Wallet.swap", swapParams, swapExpected)
 
+        for(let i of oneInchSupported) {
+            if(i==global.chain){
+                const rec1 = await this.execute(auth, _swap(swapParams), options)
+                const rec2 = await this.execute(auth, _swap(swapParams), options)
+            }
+        }
+        
         return await this.execute(auth, _swap(swapParams), options)
     }
 
