@@ -1,5 +1,5 @@
 const { arrayify } = require("ethers/lib/utils");
-const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey } = require("../utils/data")
+const { getUsedParametersFromOptions, verifyFunctionParameters, verifyPrivateKey } = require("../utils/data")
 const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
 const { Auth } = require("./Auth");
 
@@ -12,7 +12,7 @@ class Eoa extends Auth {
         super()
 
         const currentLocation = "EoaAuth constructor"
-        verifyValidParametersForLocation(currentLocation, input, eoaAuthConstructorExpectedKeys)
+        verifyFunctionParameters(currentLocation, input, eoaAuthConstructorExpectedKeys)
         const [key] = getUsedParametersFromOptions(input, eoaAuthConstructorExpectedKeys[0])
         switch (key) {
             case "privateKey":

@@ -1,16 +1,16 @@
 const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
-const { verifyValidParametersForLocation, validateType, getUsedParametersFromOptions } = require("../utils/data")
+const { verifyFunctionParameters, validateDataType, getUsedParametersFromOptions } = require("../utils/data")
 
 const walletIdentifierExpectedKeys = [["salt", "uid"]]
 
 class WalletIdentifier {
     constructor(input) {
         const currentLocation = "WalletIdentifier constructor"
-        verifyValidParametersForLocation(currentLocation, input, walletIdentifierExpectedKeys)
+        verifyFunctionParameters(currentLocation, input, walletIdentifierExpectedKeys)
         const [key] = getUsedParametersFromOptions(input, walletIdentifierExpectedKeys[0])
 
         if (input.index) {
-            validateType(input.index, "index", (typeof 0), currentLocation)
+            validateDataType(input.index, "index", (typeof 0), currentLocation)
             this.index = input.index
         } else {
             this.index = 0

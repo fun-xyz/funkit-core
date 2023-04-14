@@ -1,12 +1,12 @@
 const { parseOptions } = require("../utils/option")
-const { verifyValidParametersForLocation, objectValuesToBigNumber, } = require("../utils/data")
+const { verifyFunctionParameters, objectValuesToBigNumber, } = require("../utils/data")
 const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
 
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
 
 class UserOp {
     constructor(input) {
-        verifyValidParametersForLocation("UserOp constructor", input, userOpExpectedKeys)
+        verifyFunctionParameters("UserOp constructor", input, userOpExpectedKeys)
         input = objectValuesToBigNumber(input)
         let { initCode, paymasterAndData, preVerificationGas, signature } = input
         initCode = initCode ? initCode : "0x"

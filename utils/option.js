@@ -1,11 +1,11 @@
 const { Chain } = require("../data/Chain")
-const { verifyValidParametersForLocation } = require("./data")
+const { verifyFunctionParameters } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
 
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
 
 const getChainsFromList = async (chains) => {
-    const out = chains.map(getChainFromUnlabeledData)
+    const out = chains.map(implyChainFromData)
     return await Promise.all(out)
 }
 
@@ -17,10 +17,10 @@ const verifyBundlerUrl = async (url) => {
 const parseOptions = async (options, location) => {
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
-        verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
+        verifyFunctionParameters(location, paymaster, paymasterExpectedKeys)
     }
     if (chain) {
-        chain = await getChainFromUnlabeledData(chain)
+        chain = await implyChainFromData(chain)
     }
 
     return {
@@ -28,7 +28,7 @@ const parseOptions = async (options, location) => {
     }
 }
 
-const getChainFromUnlabeledData = async (chainIdentifier) => {
+const implyChainFromData = async (chainIdentifier) => {
     let chain
 
     if (chainIdentifier instanceof Chain) {
@@ -52,5 +52,5 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
 
 
 module.exports = {
-    getChainFromUnlabeledData, getChainsFromList, parseOptions
+    implyChainFromData, getChainsFromList, parseOptions
 };
