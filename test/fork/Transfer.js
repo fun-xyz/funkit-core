@@ -7,10 +7,6 @@ const { configureEnvironment } = require("../../managers")
 const { TEST_PRIVATE_KEY, prefundWallet, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
-const options = {
-    chain: 31337,
-    apiKey: "localtest",
-}
 const testToken = "usdc"
 
 describe("Transfer", function () {
@@ -22,6 +18,8 @@ describe("Transfer", function () {
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",
+        gasSponsor: ""
+
     }
 
     const amount = 1
@@ -43,11 +41,6 @@ describe("Transfer", function () {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        await configureEnvironment({
-            gasSponsor: {
-                sponsorAddress: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-            }
-        })
     })
 
     it("wallet should have lower balance of specified token", async () => {

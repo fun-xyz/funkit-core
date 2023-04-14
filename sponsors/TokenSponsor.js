@@ -14,13 +14,14 @@ class TokenSponsor {
     }
 
     async getPaymasterAddress(options = global) {
-        const parsedOptions = await parseOptions(options)
-        const chainId = await parsedOptions.chain.getChainId()
-        if (!this.paymasterAddress && chainId != this.chainId) {
-            this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
-            this.chainId = chainId
-        }
-        return this.paymasterAddress
+        // const parsedOptions = await parseOptions(options)
+        // const chainId = await parsedOptions.chain.getChainId()
+        // if (!this.paymasterAddress && chainId != this.chainId) {
+        //     this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
+        //     this.chainId = chainId
+        // }
+        // return this.paymasterAddress
+        return require("../contracts.json").tokenSponsor
     }
 
     async getPaymasterAndData(options = global) {
@@ -132,14 +133,20 @@ class TokenSponsor {
 
     async addWhitelistTokens(tokens) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("useTokens", [tokens])
+            const sendTokens = await Promise.all(tokens.map(token => {
+                return Token.getAddress(token, options)
+            }))
+            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }
 
     async removeWhitelistTokens(tokens) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("removeTokens", [tokens])
+            const sendTokens = await Promise.all(tokens.map(token => {
+                return Token.getAddress(token, options)
+            }))
+            const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }

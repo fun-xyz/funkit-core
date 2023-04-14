@@ -6,7 +6,7 @@ const { parseOptions } = require("../utils/option");
 
 const paymasterAbi = require("../abis/FeelessPaymaster.json").abi
 
-class FeelessSponsor {
+class GaslessSponsor {
     constructor(options = global) {
         this.sponsorAddress = options.gasSponsor.sponsorAddress
         this.interface = new Interface(paymasterAbi)
@@ -20,7 +20,7 @@ class FeelessSponsor {
         //     this.chainId = chainId
         // }
         // return this.paymasterAddress
-        return require("../paymaster.json").paymaster
+        return require("../contracts.json").gaslessSponsor
     }
 
     async getPaymasterAndData(options = global) {
@@ -124,4 +124,4 @@ class FeelessSponsor {
     }
 }
 
-module.exports = { FeelessSponsor };
+module.exports = { GaslessSponsor };

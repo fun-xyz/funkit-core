@@ -1,13 +1,12 @@
-const { UserOp, WalletIdentifier } = require("../data")
-const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyValidParametersForLocation, validateClassInstance, parseOptions } = require("../utils")
+const { UserOp, WalletIdentifier, Token } = require("../data")
 const { FirstClassActions, genCall } = require("../actions")
 const { ParameterFormatError, Helper } = require("../errors")
+const { TokenSponsor, GaslessSponsor } = require("../sponsors")
+const { WalletAbiManager, WalletOnChainManager } = require("../managers")
+const { verifyValidParametersForLocation, validateClassInstance, parseOptions } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
-const { FirstClassActions, genCall } = require("../actions")
-const { TokenSponsor, FeelessSponsor } = require("../sponsors")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
@@ -66,7 +65,13 @@ class FunWallet extends FirstClassActions {
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
         let paymasterAndData = ""
         if (options.gasSponsor) {
-            const sponsor = new FeelessSponsor(options)
+            let sponsor
+            if (options.gasSponsor.token) {
+                sponsor = new TokenSponsor(options)
+            } else {
+                sponsor = new GaslessSponsor(options)
+
+            }
             paymasterAndData = await sponsor.getPaymasterAndData(options)
         }
 

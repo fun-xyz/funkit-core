@@ -1,4 +1,4 @@
 const tokenSponsor = require("./TokenSponsor");
-const feelessSponsor = require("./Feeless")
+const GaslessSponsor = require("./GaslessSponsor")
 
-module.exports = { ...tokenSponsor, ...feelessSponsor };
+module.exports = { ...tokenSponsor, ...GaslessSponsor };

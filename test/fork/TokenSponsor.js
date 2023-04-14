@@ -12,12 +12,12 @@ const paymasterToken = "usdc"
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
-describe("Paymaster", function () {
+describe("TokenSponsor", function () {
     this.timeout(100_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
 
-    
+
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
     const options = {
@@ -53,8 +53,8 @@ describe("Paymaster", function () {
 
         await configureEnvironment({
             gasSponsor: {
-                sponsorAddress: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-                // token: paymasterToken
+                sponsorAddress: funderAddress,
+                token: paymasterToken,
             }
         })
 
@@ -72,8 +72,9 @@ describe("Paymaster", function () {
         const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
         const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
         const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+        const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
 
-        await funder.sendTxs([approve, deposit, deposit1, data])
+        await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
 
         const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
@@ -99,7 +100,7 @@ describe("Paymaster", function () {
 
     it("Blacklist Mode Approved", async () => {
         const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setGlobalToBlacklistMode())
+        await funder.sendTx(await gasSponsor.setToBlacklistMode())
         await runSwap(wallet)
     })
 
@@ -108,9 +109,9 @@ describe("Paymaster", function () {
         const walletAddress1 = await wallet1.getAddress()
 
         const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setGlobalToWhitelistMode())
-        await funder.sendTx(await gasSponsor.addSpenderToGlobalWhiteList(walletAddress))
-        await funder.sendTx(await gasSponsor.removeSpenderFromGlobalWhiteList(walletAddress1))
+        await funder.sendTx(await gasSponsor.setToWhitelistMode())
+        await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
+        await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
         await runSwap(wallet)
         try {
             await runSwap(wallet1)
