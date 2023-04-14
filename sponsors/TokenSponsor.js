@@ -178,7 +178,6 @@ class TokenSponsor {
             return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
-
 }
 
 module.exports = { TokenSponsor };

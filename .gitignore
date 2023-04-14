@@ -1,6 +1,10 @@
 **/.env
-.env
 **/node_modules
 
 **/.DS_Store
+<<<<<<< HEAD
 utils.sh
+=======
+test.js
+utils.sh
+>>>>>>> staging

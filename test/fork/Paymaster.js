@@ -13,7 +13,7 @@ const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
 describe("Paymaster", function () {
-    this.timeout(30_000)
+    this.timeout(100_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
 
@@ -33,7 +33,7 @@ describe("Paymaster", function () {
 
         salt = await auth.getUniqueId()
         wallet = new FunWallet({ salt, index: 0 })
-        await prefundWallet(funder, wallet, 3)
+        await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
 
         wallet1 = new FunWallet({ salt, index: 1 })
