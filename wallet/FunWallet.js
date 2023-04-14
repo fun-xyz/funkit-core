@@ -31,7 +31,7 @@ class FunWallet extends FirstClassActions {
         return this.objCache[storekey]
     }
 
-    async _generatePartialUserOp(auth, functionType, txOptions = global) {
+    async _generatePartialUserOp(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const actionData = {
@@ -39,7 +39,7 @@ class FunWallet extends FirstClassActions {
             chain,
             options
         }
-        const { data, errorData, optionalParams } = await functionType(actionData)
+        const { data, errorData, optionalParams } = await transactionFunc(actionData)
         {
             const { chain, apiKey } = options
             verifyFunctionParams(errorData.location, { chain, apiKey }, executeExpectedKeys)
@@ -77,10 +77,10 @@ class FunWallet extends FirstClassActions {
     }
 
 
-    async execute(auth, functionType, txOptions = global, estimate = false) {
+    async execute(auth, transactionFunc, txOptions = global, estimate = false) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
-        const estimatedOp = await this.estimateGas(auth, functionType, options)
+        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
 
         if (estimate) {
             return estimatedOp
@@ -93,10 +93,10 @@ class FunWallet extends FirstClassActions {
         return this.sendTx(estimatedOp, options)
     }
 
-    async estimateGas(auth, functionType, txOptions = global) {
+    async estimateGas(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
-        const partialOp = await this._generatePartialUserOp(auth, functionType, txOptions)
+        const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const id = await auth.getUniqueId()
         const res = await chain.estimateOpGas({
             ...partialOp, signature: id,

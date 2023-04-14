@@ -9,7 +9,7 @@ const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
 
 class FirstClassActions {
-    async execute(auth, functionType, txOptions = global, estimate = false) { }
+    async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
 
     async transfer(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
