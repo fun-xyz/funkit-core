@@ -1,12 +1,13 @@
 const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
-const { FirstClassActions, genCall } = require("../actions")
-const { TokenSponsor } = require("../sponsors")
-const { ParameterFormatError, Helper } = require("../errors")
+const { verifyValidParametersForLocation, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
+const { FirstClassActions, genCall } = require("../actions")
+const { TokenSponsor } = require("../sponsors")
+const { Helper, ParameterFormatError } = require("../errors")
+const { DataServer } = require("../servers")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
@@ -18,6 +19,7 @@ class FunWallet extends FirstClassActions {
         this.estimateGas.parent = this
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
+        this.dataServer = new DataServer()
     }
 
     async _getFromCache(obj) {
@@ -147,7 +149,10 @@ class FunWallet extends FirstClassActions {
         const ophash = await chain.sendOpToBundler(userOp)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const txid = await onChainDataManager.getTxId(ophash)
-        return { ophash, txid }
+        const gas = await gasCalculation(txid, chain)
+        const receipt = { ophash, txid , ...gas}
+        DataServer.storeUserOp(userOp, 0, receipt)
+        return receipt
     }
 
     async sendTxs({ auth, ops }, txOptions = global) {

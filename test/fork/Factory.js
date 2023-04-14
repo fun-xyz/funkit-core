@@ -4,7 +4,7 @@ const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
 const { FunWallet } = require("../../wallet")
-const { isContract, prefundWallet, TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL  } = require("../../utils")
+const { isContract, prefundWallet, TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL, TEST_API_KEY  } = require("../../utils")
 describe("Factory", function () {
     let auth
     let wallet
@@ -14,7 +14,7 @@ describe("Factory", function () {
 
     const options = {
         chain: FORK_CHAIN_ID,
-        apiKey: "localtest",
+        apiKey: TEST_API_KEY,
     }
     this.timeout(30_000)
 

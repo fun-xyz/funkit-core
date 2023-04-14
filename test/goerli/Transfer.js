@@ -5,12 +5,12 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { prefundWallet } = require("../../utils")
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../testUtils")
+const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
     gasSponsor: ""
 
 }
