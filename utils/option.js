@@ -1,5 +1,5 @@
 const { Chain } = require("../data/Chain")
-const { verifyFunctionParameters } = require("./data")
+const { verifyFunctionParams } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
 
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
@@ -17,7 +17,7 @@ const verifyBundlerUrl = async (url) => {
 const parseOptions = async (options, location) => {
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
-        verifyFunctionParameters(location, paymaster, paymasterExpectedKeys)
+        verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
     if (chain) {
         chain = await getChainFromData(chain)

@@ -1,6 +1,6 @@
 const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParameters, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, prefundWallet } = require("../utils")
 const { FirstClassActions, genCall } = require("../actions")
 const { TokenSponsor } = require("../sponsors")
 const { ParameterFormatError, Helper } = require("../errors")
@@ -40,7 +40,7 @@ class FunWallet extends FirstClassActions {
         const { data, errorData, optionalParams } = await functionType(actionData)
         {
             const { chain, apiKey } = options
-            verifyFunctionParameters(errorData.location, { chain, apiKey }, executeExpectedKeys)
+            verifyFunctionParams(errorData.location, { chain, apiKey }, executeExpectedKeys)
         }
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)

@@ -1,13 +1,13 @@
 const { resolveProperties } = require("ethers/lib/utils");
 const { JsonRpcProvider } = require("@ethersproject/providers");
-const { deepHexlify, verifyFunctionParameters, validateClassInstance } = require("../utils/data");
+const { deepHexlify, verifyFunctionParams, validateClassInstance } = require("../utils/data");
 const { Helper, NoServerConnectionError, ServerError, ParameterFormatError } = require("../errors");
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
 
 class Bundler {
     constructor(bundlerUrl, entryPointAddress, chainId) {
         const input = { bundlerUrl, entryPointAddress, chainId }
-        verifyFunctionParameters("Bundler constructor", input, bundlerExpectedKeys)
+        verifyFunctionParams("Bundler constructor", input, bundlerExpectedKeys)
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;

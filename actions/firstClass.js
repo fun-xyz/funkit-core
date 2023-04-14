@@ -1,4 +1,4 @@
-const { verifyFunctionParameters } = require("../utils")
+const { verifyFunctionParams } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
 const { isContract } = require('../utils')
@@ -12,17 +12,17 @@ class FirstClassActions {
     async execute(auth, functionType, txOptions = global, estimate = false) { }
 
     async transfer(auth, input, options = global, estimate = false) {
-        verifyFunctionParameters("Wallet.transfer", input, transferExpected)
+        verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
     }
 
     async approve(auth, input, options = global, estimate = false) {
-        verifyFunctionParameters("Wallet.approve", input, approveExpected)
+        verifyFunctionParams("Wallet.approve", input, approveExpected)
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
     async swap(auth, input, options = global, estimate = false) {
-        verifyFunctionParameters("Wallet.swap", input, swapExpected)
+        verifyFunctionParams("Wallet.swap", input, swapExpected)
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
@@ -37,7 +37,7 @@ class FirstClassActions {
     }
 
     async execRawTx(auth, input, options = global, estimate = false) {
-        verifyFunctionParameters("Wallet.execRawTx", input, genCallExpected)
+        verifyFunctionParams("Wallet.execRawTx", input, genCallExpected)
         return await this.execute(auth, genCall(input, input.gasLimit), options, estimate)
     }
 }

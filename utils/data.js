@@ -18,7 +18,7 @@ const compareToExpectedParams = (input, expected) => {
     })
 }
 
-const verifyFunctionParameters = (location, input, expected) => {
+const verifyFunctionParams = (location, input, expected) => {
     const missing = compareToExpectedParams(input, expected)
     if (missing.length) {
         const helperMainMessage = "Missing these parameters: " + formatMissingForError(missing)
@@ -138,4 +138,4 @@ const deepHexlify = (obj) => {
 }
 
 
-module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateDataType, validateClassInstance, compareToExpectedParams, orderParams, verifyFunctionParameters, verifyPrivateKey };
+module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateDataType, validateClassInstance, compareToExpectedParams, orderParams, verifyFunctionParams, verifyPrivateKey };

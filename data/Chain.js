@@ -3,13 +3,13 @@ const { MissingParameterError, Helper, ServerMissingDataError } = require("../er
 const { DataServer, } = require("../servers/DataServer")
 const { Bundler, } = require("../servers/Bundler")
 
-const { verifyFunctionParameters, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
+const { verifyFunctionParams, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
 const chainExpectedKeys = ["chainId", "rpcUrl", "chainName", "bundlerUrl"]
 
 class Chain {
     constructor(input) {
         const currentLocation = "Chain constructor"
-        verifyFunctionParameters(currentLocation, input, [chainExpectedKeys])
+        verifyFunctionParams(currentLocation, input, [chainExpectedKeys])
         const [key] = getUsedParametersFromOptions(input, chainExpectedKeys)
         this[key] = input[key]
         this.key = key

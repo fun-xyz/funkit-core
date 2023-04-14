@@ -1,5 +1,5 @@
 const { constants } = require("ethers")
-const { verifyFunctionParameters, validateDataType, verifyIsArray } = require("../utils/data")
+const { verifyFunctionParams, validateDataType, verifyIsArray } = require("../utils/data")
 const { verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../utils/chain")
 const { hexConcat } = require("ethers/lib/utils")
 
@@ -14,7 +14,7 @@ class WalletAbiManager {
     }
 
     encodeCall(input, location = "WalletAbiManager.encodeCall") {
-        verifyFunctionParameters(location, input, encodeCallExpectedKeys)
+        verifyFunctionParams(location, input, encodeCallExpectedKeys)
         let { to: dest, data, value } = input
         if (Array.isArray(data)) {
             data = data[1]
@@ -29,7 +29,7 @@ class WalletAbiManager {
     }
 
     encodeInitExecCall(input, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
-        verifyFunctionParameters(location, input, encodeCallExpectedKeys)
+        verifyFunctionParams(location, input, encodeCallExpectedKeys)
         let { to: dest, data, value } = input
         verifyIsArray(data, location)
         if (value) {
@@ -51,7 +51,7 @@ class WalletAbiManager {
     }
 
     getInitCode(input) {
-        verifyFunctionParameters("WalletAbiManager.getInitCode", input, initCodeExpectedKeys)
+        verifyFunctionParams("WalletAbiManager.getInitCode", input, initCodeExpectedKeys)
 
         const { salt, entryPointAddress, verificationAddress, owner, implementation } = input
 
