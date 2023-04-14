@@ -5,7 +5,7 @@ const { JsonRpcProvider } = require("@ethersproject/providers")
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
 
 const getChainsFromList = async (chains) => {
-    const out = chains.map(implyChainFromData)
+    const out = chains.map(getChainFromData)
     return await Promise.all(out)
 }
 
@@ -20,7 +20,7 @@ const parseOptions = async (options, location) => {
         verifyFunctionParameters(location, paymaster, paymasterExpectedKeys)
     }
     if (chain) {
-        chain = await implyChainFromData(chain)
+        chain = await getChainFromData(chain)
     }
 
     return {
@@ -28,7 +28,7 @@ const parseOptions = async (options, location) => {
     }
 }
 
-const implyChainFromData = async (chainIdentifier) => {
+const getChainFromData = async (chainIdentifier) => {
     let chain
 
     if (chainIdentifier instanceof Chain) {
@@ -52,5 +52,5 @@ const implyChainFromData = async (chainIdentifier) => {
 
 
 module.exports = {
-    implyChainFromData, getChainsFromList, parseOptions
+    getChainFromData, getChainsFromList, parseOptions
 };
