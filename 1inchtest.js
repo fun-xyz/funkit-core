@@ -2,16 +2,17 @@ const Web3 = require('web3');
 const fetch = require('node-fetch');
 const erc20 = require('./abis/ERC20.json')
 const ethers = require('ethers');
-const {Eoa} = require('./auth');
-const {FunWallet} = require('./wallet');
+const { Eoa } = require('./auth');
+const { FunWallet } = require('./wallet');
 const { configureEnvironment } = require('./managers');
+const { genCall } = require('./actions');
 const chainId = 137;
 // const web3RpcUrl = 'https://eth-mainnet.g.alchemy.com/v2/demo';
 // const web3RpcUrl = "http://localhost:8545"
 const web3RpcUrl = "https://polygon-rpc.com"
 
 const walletAddress = '0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9';
-const privateKey = '8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38';
+const privateKey = '6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064';
 const swapParams = {
     fromTokenAddress: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
     toTokenAddress: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', // DAI 0x6B175474E89094C44Da98b954EedeAC495271d0F
@@ -93,7 +94,6 @@ const main = async () => {
         //     sponsorAddress: SPONSOR_ADDRESS,
         //     token: "USDC",
         // },
-        sendTxLater: true,
     };
     configureEnvironment(options)
     const provider = new ethers.providers.JsonRpcProvider(web3RpcUrl);
@@ -101,27 +101,35 @@ const main = async () => {
     const auth = new Eoa({ signer: eoa })
 
     const salt = await auth.getUniqueId()
-    const wallet = new FunWallet({ salt })
-
+    const wallet = new FunWallet({ salt, index: 23420 })
+    const walletAddress = await wallet.getAddress()
+    console.log('wallet address: ',walletAddress)
     const allowance = await checkAllowance(swapParams.fromTokenAddress, walletAddress);
     console.log('Allowance: ', allowance);
 
     const transactionForSign = await buildTxForApproveTradeWithRouter(swapParams.fromTokenAddress);
     console.log('Transaction for approve: ', transactionForSign);
-    const approveTxHash = await signAndSendTransaction(transactionForSign);
-    console.log('Approve tx hash: ', approveTxHash);
+    // const approveTxHash = await signAndSendTransaction(transactionForSign);
+    // console.log('Approve tx hash: ', approveTxHash);
+
+    // console.log(await wallet.create())
+    const approveReceipt = await wallet.execute(auth, genCall(transactionForSign, 300_000 ))
+    console.log(approveReceipt)
 
     const swapTransaction = await buildTxForSwap(swapParams);
     console.log('Transaction for swap: ', swapTransaction);
 
-    const erc20Contract = new ethers.Contract("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", erc20.abi, provider);
+    const erc20Contract = new ethers.Contract("0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", erc20.abi, provider);
     const balance = await erc20Contract.balanceOf(walletAddress);
     console.log('balance before ', balance)
-    await PromiseTimeout(20000);
-    // await approveTxHash.wait()
+    await PromiseTimeout(20000);    
 
-    const swapTxHash = await signAndSendTransaction(swapTransaction);
-    console.log('Swap transaction hash: ', swapTxHash);
+    const receipt = await wallet.execute(auth, genCall(swapTransaction, 3_000_000 ))
+    console.log(receipt)
+
+    // const swapTxHash = await wallet.sendTx({ auth, op })
+    // const swapTxHash = await signAndSendTransaction(swapTransaction);
+    // console.log('Swap transaction hash: ', swapTxHash);
     const balance2 = await erc20Contract.balanceOf(walletAddress);
     console.log('balance after ', balance2)
 

@@ -48,7 +48,6 @@ const SwapTest = (chainId, authPrivateKey, inToken, outToken, prefund = true, ap
             })
             const tokenBalanceAfter = (await Token.getBalance(inToken, walletAddress))
             assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
-
         })
 
     })

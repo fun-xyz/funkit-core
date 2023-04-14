@@ -94,7 +94,7 @@ class FunWallet extends FirstClassActions {
         if (options.sendTxLater) {
             return userOp.op
         }
-        return this.sendTx(userOp, options)
+        return await this.sendTx(userOp, options)
     }
     // goerli implementation: 0xF30ca362C658BF50F9aFaAD0cbB95cfB6E50D901
     async _getThisInitCode(chain, auth) {
@@ -117,6 +117,7 @@ class FunWallet extends FirstClassActions {
 
     async sendTx({ auth, op, call }, txOptions = global) {
         let userOp
+
         try {
             userOp = new UserOp(op)
         } catch (e) {
@@ -126,6 +127,7 @@ class FunWallet extends FirstClassActions {
             const { to, value, data } = call
             return await this.execute(auth, genCall({ to, value, data }), txOptions)
         }
+
         return await this.sendUserOp(userOp, txOptions)
     }
 
