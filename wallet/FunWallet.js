@@ -5,8 +5,8 @@ const { verifyValidParametersForLocation, validateClassInstance, parseOptions, p
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 const { FirstClassActions, genCall } = require("../actions")
-const { TokenSponsor, MultiTokenSponsor } = require("../sponsors")
-const { MissingParameterError, Helper, ParameterFormatError } = require("../errors")
+const { TokenSponsor } = require("../sponsors")
+const { Helper, ParameterFormatError } = require("../errors")
 const { DataServer } = require("../servers")
 
 const executeExpectedKeys = ["chain", "apiKey"]
@@ -157,9 +157,7 @@ class FunWallet extends FirstClassActions {
         const txid = await onChainDataManager.getTxId(ophash)
         const gas = await gasCalculation(txid, chain)
         const receipt = { ophash, txid , ...gas}
-        // console.log(receipt)
         DataServer.storeUserOp(userOp, 0, receipt)
-
         return receipt
     }
 

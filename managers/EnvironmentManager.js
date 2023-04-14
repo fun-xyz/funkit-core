@@ -3,9 +3,8 @@ const { getOrgInfo } = require("../utils/aws")
 const configureEnvironment = async (envOptions) => {
     envOptions = { ...global, ...envOptions }
     const parsedOptions = await parseOptions(envOptions, "EnviromentManager.configureEnvironment")
-    global = { ...global, ...parsedOptions }
     const orgInfo = await getOrgInfo(global.apiKey)
-    global = {...global, orgInfo}
+    global = { ...global, ...parsedOptions, orgInfo }
 }
 
 module.exports = { configureEnvironment, parseOptions }

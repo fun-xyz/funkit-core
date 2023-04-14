@@ -27,7 +27,7 @@ const localTokenAddrs = {
     dai: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
     weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
 }
-
+const transactionType = "FunWalletInteraction"
 class DataServer {
     static async storeUserOp({ op, balance = 0, receipt = {} }) {
         if (global.apiKey == TEST_API_KEY) {
@@ -36,7 +36,7 @@ class DataServer {
         const userOp = await getPromiseFromOp(op)
         const body = {
             userOp,
-            type: "executeUserOp",
+            type: transactionType,
             balance,
             receipt,
             organization: global.orgInfo?.id,
@@ -98,8 +98,8 @@ class DataServer {
         throw new ServerMissingDataError("Token.getAddress", "DataServer", helper)
     }
 
-    static async sendGetRequest(APIURL, endpoint, apiKey) {
-        return await sendRequest(`${APIURL}/${endpoint}`, "GET", apiKey)
+    static async sendGetRequest(APIURL, endpoint) {
+        return await sendRequest(`${APIURL}/${endpoint}`, "GET", global.apiKey)
     }
 
     static async sendPostRequest(APIURL, endpoint, body) {
