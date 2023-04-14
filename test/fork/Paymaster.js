@@ -31,12 +31,12 @@ describe("Paymaster", function () {
     before(async function () {
         await configureEnvironment(options)
 
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 0 })
+        uniqueID = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueID, index: 0 })
         await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
 
-        wallet1 = new FunWallet({ salt, index: 1 })
+        wallet1 = new FunWallet({ uniqueID, index: 1 })
 
         await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()

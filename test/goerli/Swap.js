@@ -23,8 +23,8 @@ describe("Swap", function () {
     before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 236725 })
+        uniqueID = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueID, index: 236725 })
         // await prefundWallet(auth, wallet, .5)
     })
 
