@@ -2,12 +2,13 @@ const { expect } = require("chai")
 const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
+const { TEST_PRIVATE_KEY, TEST_API_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
-const { isContract, prefundWallet, TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
+const { isContract, prefundWallet, GOERLI_PRIVATE_KEY } = require("../../utils")
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
 }
 
 describe("Factory", function () {
@@ -19,6 +20,7 @@ describe("Factory", function () {
 
     before(async function () {
         await configureEnvironment(options)
+        
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         funder = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
         uniqueID = randomBytes(32).toString();

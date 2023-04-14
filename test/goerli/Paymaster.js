@@ -3,12 +3,12 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { prefundWallet, GOERLI_FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
+const { prefundWallet, GOERLI_FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY} = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
 }
 
 const paymasterToken = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
