@@ -1,7 +1,6 @@
 const { Contract, constants } = require("ethers");
 const { Interface } = require("ethers/lib/utils");
 const { Token } = require("../data");
-const { ParameterFormatError, Helper } = require("../errors");
 const { DataServer } = require("../servers");
 const { parseOptions } = require("../utils/option");
 
@@ -131,7 +130,6 @@ class TokenSponsor {
         }
     }
 
-
     async addSpenderToGlobalWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, true])
@@ -164,7 +162,6 @@ class TokenSponsor {
             return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
-
 }
 
 module.exports = { TokenSponsor };

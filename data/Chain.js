@@ -1,6 +1,5 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
-const { UserOp } = require("./UserOp")
-const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectionError } = require("../errors")
+const { MissingParameterError, Helper, ServerMissingDataError } = require("../errors")
 const { DataServer, } = require("../servers/DataServer")
 const { Bundler, } = require("../servers/Bundler")
 
@@ -104,7 +103,7 @@ class Chain {
         }
         return out
     }
-    
+
     async getModuleAddresses(name) {
         await this.init()
         return await DataServer.getModuleInfo(name, this.id)
@@ -125,17 +124,16 @@ class Chain {
         await this.init()
         return this.provider
     }
-    
+
     setAddress(name, address) {
         this.addresses[name] = address
     }
 
     async sendOpToBundler(userOp) {
-        validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
         await this.init()
         return await this.bundler.sendUserOpToBundler(userOp.op)
     }
-    
+
     async getFeeData() {
         await this.init()
         return await this.provider.getFeeData();
@@ -143,7 +141,12 @@ class Chain {
 
     async estimateOpGas(partialOp) {
         await this.init()
-        return await this.bundler.estimateUserOpGas(partialOp)
+        const res = await this.bundler.estimateUserOpGas(partialOp)
+        let { preVerificationGas, verificationGas, callGasLimit } = res
+        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
+        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? 1.45 : 1.5))
+        callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.5)
+        return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }
 

@@ -9,9 +9,8 @@ function fromReadableAmount(amount, decimals) {
     return ethers.utils.parseUnits(amount.toString(), decimals)
 }
 
-// Helper Quoting and Pool Functions
-class SwapToken {
 
+class SwapToken {
     constructor(provider, quoterContractAddr, poolFactoryContractAddr) {
         this.provider = provider
         this.quoterContractAddr = quoterContractAddr
@@ -35,7 +34,6 @@ class SwapToken {
             to: this.quoterContractAddr,
             data: calldata,
         })
-
         return ethers.utils.defaultAbiCoder.decode(['uint256'], quoteCallReturnData)
     }
 
