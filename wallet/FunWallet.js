@@ -1,6 +1,6 @@
 const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyValidParametersForLocation, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -31,7 +31,7 @@ class FunWallet extends FirstClassActions {
         return this.objCache[storekey]
     }
 
-    async _generatePartialUserOp(auth, actionFunc, txOptions = global) {
+    async _generatePartialUserOp(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const actionData = {
@@ -39,10 +39,10 @@ class FunWallet extends FirstClassActions {
             chain,
             options
         }
-        const { data, errorData, optionalParams } = await actionFunc(actionData)
+        const { data, errorData, optionalParams } = await transactionFunc(actionData)
         {
             const { chain, apiKey } = options
-            verifyValidParametersForLocation(errorData.location, { chain, apiKey }, executeExpectedKeys)
+            verifyFunctionParams(errorData.location, { chain, apiKey }, executeExpectedKeys)
         }
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
@@ -77,10 +77,10 @@ class FunWallet extends FirstClassActions {
     }
 
 
-    async execute(auth, actionFunc, txOptions = global, estimate = false) {
+    async execute(auth, transactionFunc, txOptions = global, estimate = false) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
-        const estimatedOp = await this.estimateGas(auth, actionFunc, options)
+        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
 
         if (estimate) {
             return estimatedOp
@@ -93,10 +93,10 @@ class FunWallet extends FirstClassActions {
         return this.sendTx(estimatedOp, options)
     }
 
-    async estimateGas(auth, actionFunc, txOptions = global) {
+    async estimateGas(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
-        const partialOp = await this._generatePartialUserOp(auth, actionFunc, txOptions)
+        const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const id = await auth.getUniqueId()
         const res = await chain.estimateOpGas({
             ...partialOp, signature: id,
@@ -112,11 +112,11 @@ class FunWallet extends FirstClassActions {
 
     async _getThisInitCode(chain, auth) {
         const owner = await auth.getUniqueId()
-        const salt = await this.identifier.getIdentifier()
+        const uniqueID = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
         const verificationAddress = await chain.getAddress("verificationAddress")
-        const initCodeParams = { salt, owner, entryPointAddress, verificationAddress, factoryAddress }
+        const initCodeParams = { uniqueID, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
     }
 
@@ -172,7 +172,7 @@ class FunWallet extends FirstClassActions {
 
 const modifiedActions = () => {
     const funcs = Object.getOwnPropertyNames(FirstClassActions.prototype)
-    const bindedEstimateGas = FunWallet.prototype.estimateGas
+    const bindedEstimateGasFunction = FunWallet.prototype.estimateGas
 
     const old = {}
 
@@ -190,12 +190,12 @@ const modifiedActions = () => {
                 throw new ParameterFormatError("Wallet.estimateGas", helper)
             }
         }
-        Object.assign(bindedEstimateGas, { [func]: callfunc })
+        Object.assign(bindedEstimateGasFunction, { [func]: callfunc })
         old[func] = FirstClassActions.prototype[func]
     }
 
     const proto = { ...FunWallet.prototype, ...FirstClassActions.prototype }
-    Object.assign(proto, { estimateGas: bindedEstimateGas, ...old })
+    Object.assign(proto, { estimateGas: bindedEstimateGasFunction, ...old })
     Object.setPrototypeOf(FunWallet.prototype, proto)
 
     return FunWallet

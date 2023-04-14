@@ -88,8 +88,8 @@ const eoa = provider.getSigner()
 const auth = new Eoa({ signer: eoa })
 
 // Get FunWallet associated with EOA
-const salt = await auth.getUniqueId()
-const wallet = new FunWallet({ salt })
+const uniqueID = await auth.getUniqueId()
+const wallet = new FunWallet({ uniqueID })
 
 ```
 ## 3. Run Transactions
@@ -131,8 +131,8 @@ const eoa = provider.getSigner()
 const auth = new Eoa({ signer: eoa })
 
 // Get FunWallet associated with EOA
-const salt = await auth.getUniqueId()
-const wallet = new FunWallet({ salt })
+const uniqueID = await auth.getUniqueId()
+const wallet = new FunWallet({ uniqueID })
 
 // Generate & deploy/execute Transactions that approve & send USDC & ETH from eoa to the Paymaster contract,
 // enabling wallet to transact by draining this staked USDC
