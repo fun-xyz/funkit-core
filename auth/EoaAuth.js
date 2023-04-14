@@ -69,7 +69,7 @@ class Eoa extends Auth {
         }
         const tx = await eoa.sendTransaction({ to, value, data })
         const receipt = await tx.wait()
-        await this.dataServer.storeEVMCall(receipt)
+        await DataServer.storeEVMCall(receipt)
         return receipt
     }
 

@@ -94,7 +94,7 @@ class DataServer {
         if (tokenInfo.contract_address) {
             return tokenInfo.contract_address
         }
-        const helper = new Helper("token", this.symbol, "token symbol doesn't exist")
+        const helper = new Helper("token", symbol, "token symbol doesn't exist")
         throw new ServerMissingDataError("Token.getAddress", "DataServer", helper)
     }
 
