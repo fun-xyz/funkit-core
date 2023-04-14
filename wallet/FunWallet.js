@@ -1,6 +1,6 @@
 const { UserOp, WalletIdentifier } = require("../data")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyValidParametersForLocation, validateClassInstance, parseOptions, prefundWallet, gasCalculation } = require("../utils")
+const { verifyValidParametersForLocation, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -10,12 +10,6 @@ const { Helper, ParameterFormatError } = require("../errors")
 const { DataServer } = require("../servers")
 
 const executeExpectedKeys = ["chain", "apiKey"]
-const gasExpectedKeys = ["callGasLimit"]
-const callExpectedKeys = ["to", "data"]
-
-const userOpDefaultParams = {
-    verificationGasLimit: 200_000,
-}
 
 class FunWallet extends FirstClassActions {
     objCache = {}

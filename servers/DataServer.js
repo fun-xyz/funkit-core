@@ -1,4 +1,4 @@
-const { ServerMissingDataError, Helper } = require('../errors')
+const { DataFormatError, Helper } = require('../errors')
 const { FUN_TESTNET_CHAIN_ID } = require('../test/testUtils')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
@@ -30,6 +30,9 @@ const localTokenAddrs = {
 const transactionType = "FunWalletInteraction"
 class DataServer {
     static async storeUserOp({ op, balance = 0, receipt = {} }) {
+        if (!global.apiKey) {
+            throw new DataFormatError("apiKey", "string", "configureEnvironment")
+        }
         if (global.apiKey == TEST_API_KEY) {
             return
         }
@@ -44,12 +47,14 @@ class DataServer {
             receipt: receipt
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
-            console.log(r.message + " with storeUserOp")
         })
         return userOpHash
     }
 
     static async storeEVMCall(receipt) {
+        if (!global.apiKey) {
+            throw new DataFormatError("apiKey", "string", "configureEnvironment")
+        }
         if (global.apiKey == TEST_API_KEY) {
             return
         }
@@ -61,7 +66,6 @@ class DataServer {
             orgName: global.orgInfo?.name
         }
         return await this.sendPostRequest(APIURL, "save-evm-receipt", body).then(r => {
-            console.log(r.message + " type: evm_receipt")
             return r
         })
     }
@@ -141,7 +145,7 @@ class DataServer {
             module: moduleName,
             chain: chainId.toString()
         }
-        
+
         if (chainId != LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(APIURL, "get-module-info", body).then((r) => {
                 return r.data
