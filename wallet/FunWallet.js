@@ -66,6 +66,10 @@ class FunWallet extends FirstClassActions {
         let paymasterAndData = ""
         if (options.gasSponsor) {
             let sponsor
+            // gas payment method check
+            switch(options.gasSponsor.token){
+                case "gasless":
+            }
             if (options.gasSponsor.token) {
                 sponsor = new TokenSponsor(options)
             } else {
