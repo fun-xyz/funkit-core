@@ -2,7 +2,7 @@ const { constants } = require("ethers")
 const { isHexString, hexlify } = require("ethers/lib/utils")
 const { MissingParameterError, Helper, DataFormatError } = require("../errors")
 
-const compareToExpectedStructure = (input, expected) => {
+const compareToExpectedParams = (input, expected) => {
     return expected.filter(key => {
         if (typeof key == "string") {
             return !input[key]
@@ -18,8 +18,8 @@ const compareToExpectedStructure = (input, expected) => {
     })
 }
 
-const verifyValidParametersForLocation = (location, input, expected) => {
-    const missing = compareToExpectedStructure(input, expected)
+const verifyFunctionParams = (location, input, expected) => {
+    const missing = compareToExpectedParams(input, expected)
     if (missing.length) {
         const helperMainMessage = "Missing these parameters: " + formatMissingForError(missing)
         const helper = new Helper(`${location} was given these parameters`, input, helperMainMessage)
@@ -35,7 +35,7 @@ const validateClassInstance = (data, dataName, classObj, location = "", isIntern
     throw new DataFormatError(dataName, classObj.name, location, helper, isInternal);
 }
 
-const validateType = (data, dataName, type, location = "", isInternal = false) => {
+const validateDataType = (data, dataName, type, location = "", isInternal = false) => {
     if (typeof data == type) {
         return;
     }
@@ -138,4 +138,4 @@ const deepHexlify = (obj) => {
 }
 
 
-module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateDataType, validateClassInstance, compareToExpectedParams, orderParams, verifyFunctionParams, verifyPrivateKey };

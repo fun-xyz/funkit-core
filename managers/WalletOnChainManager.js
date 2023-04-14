@@ -33,8 +33,8 @@ class WalletOnChainManager {
 
     async getWalletAddress() {
         await this.init()
-        const salt = await this.walletIdentifier.getIdentifier()
-        return await this.factory.getAddress(salt)
+        const uniqueID = await this.walletIdentifier.getIdentifier()
+        return await this.factory.getAddress(uniqueID)
     }
 
     async getTxId(userOpHash, timeout = 30000, interval = 5000) {

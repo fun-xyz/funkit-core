@@ -24,8 +24,8 @@ describe("Transfer", function () {
     before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 23421 })
+        uniqueID = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueID, index: 23421 })
         // await prefundWallet(auth, wallet, .3)
 
     })

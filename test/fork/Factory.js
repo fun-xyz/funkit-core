@@ -8,7 +8,7 @@ const { isContract, prefundWallet, TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TE
 describe("Factory", function () {
     let auth
     let wallet
-    let salt
+    let uniqueID
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
 
@@ -22,19 +22,19 @@ describe("Factory", function () {
         await configureEnvironment(options)
         const signer = new ethers.Wallet(TEST_PRIVATE_KEY)
         auth = new Eoa({ signer: signer })
-        salt = randomBytes(32).toString();
-        wallet = new FunWallet({ salt, index: 11450 })
+        uniqueID = randomBytes(32).toString();
+        wallet = new FunWallet({ uniqueID, index: 11450 })
     })
 
-    it("wallet should have the same address with a salt-index combination", async () => {
-        const wallet1 = new FunWallet({ salt, index: 11450 })
+    it("wallet should have the same address with a uniqueID-index combination", async () => {
+        const wallet1 = new FunWallet({ uniqueID, index: 11450 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
         expect(walletAddress).to.be.equal(wallet1Address)
     })
     it("wallet.create should create a wallet", async () => {
         const index = Math.random() * 10000
-        const wallet1 = new FunWallet({ salt, index })
+        const wallet1 = new FunWallet({ uniqueID, index })
         const walletAddress = await wallet1.getAddress()
         let iscontract = await isContract(walletAddress)
         expect(iscontract).to.be.false
@@ -44,14 +44,14 @@ describe("Factory", function () {
         expect(iscontract).to.be.true
     })
     it("wallet should not have the same address with a different index", async () => {
-        const wallet1 = new FunWallet({ salt, index: 1 })
+        const wallet1 = new FunWallet({ uniqueID, index: 1 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
         expect(walletAddress).to.not.be.equal(wallet1Address)
     })
-    it("wallet should not have the same address with a different salt", async () => {
-        let salt1 = randomBytes(32).toString();
-        const wallet1 = new FunWallet({ salt: salt1, index: 0 })
+    it("wallet should not have the same address with a different uniqueID", async () => {
+        let uniqueID1 = randomBytes(32).toString();
+        const wallet1 = new FunWallet({ uniqueID: uniqueID1, index: 0 })
         const walletAddress = await wallet.getAddress()
         const wallet1Address = await wallet1.getAddress()
         expect(walletAddress).to.not.be.equal(wallet1Address)
