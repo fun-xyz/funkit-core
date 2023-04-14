@@ -1,3 +1,4 @@
+const { parseOptions } = require("../utils/option")
 const { verifyValidParametersForLocation, objectValuesToBigNumber, } = require("../utils/data")
 const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
 
@@ -26,6 +27,31 @@ class UserOp {
         const hash = getOpHash(this.op, chainId, entryPointAddress)
         return hash
     }
+
+    getMaxTxCost() {
+        const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
+        const mul = this.op.paymasterAndData != "0x" ? 3 : 1;
+        const requiredGas = callGasLimit + verificationGasLimit * mul + preVerificationGas;
+        return maxFeePerGas.mul(requiredGas)
+    }
+
+    async estimateGas(auth, txOptions = global) {
+        const options = await parseOptions(txOptions, "Wallet.estimateGas")
+        if (!this.signature) {
+            this.signature = await auth.getUniqueId()
+        }
+        const res = await options.chain.estimateOpGas({
+            ...this.op,
+            paymasterAndData: '0x',
+            maxFeePerGas: 0,
+            maxPriorityFeePerGas: 0,
+            preVerificationGas: 0,
+            callGasLimit: 0,
+            verificationGasLimit: 10e6
+        })
+        return new UserOp({ ...this.op, ...res })
+    }
 }
+
 
 module.exports = { UserOp };

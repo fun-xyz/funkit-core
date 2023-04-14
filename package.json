@@ -7,7 +7,8 @@
     "test": "env  REMOTE_TEST=true mocha test/fork",
     "test-goerli": "mocha test/goerli",
     "test-localfork": "env REMOTE_TEST=false mocha test/fork",
-    "test-funtestnet": "env REMOTE_TEST=true mocha test/fork"
+    "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
+    "load": "node test/loader.js"
   },
   "author": "",
   "license": "ISC",

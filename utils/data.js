@@ -67,10 +67,10 @@ const orderParams = (paramOrder, input) => {
     return paramOrder.map(item => (input[item]))
 }
 
-
 const getUsedParametersFromOptions = (input, options) => {
     return options.filter(key => (!!input[key]))
 }
+
 const objectValuesToBigNumber = (obj) => {
     Object.keys(obj).forEach(key => {
         const val = obj[key]
@@ -93,14 +93,12 @@ const verifyPrivateKey = (value, location = "", isInternal = false) => {
     }
 }
 
-
 const verifyIsArray = (value, location = "", isInternal = false) => {
     if (!Array.isArray(value)) {
         const helper = new Helper("Data", value, helperMsg)
         throw new DataFormatError("Data", "array", location, helper, isInternal)
     }
 }
-
 
 const flattenObj = (obj) => {
     let out = {}
@@ -122,8 +120,6 @@ const objValToArray = (obj) => {
     }
     return out
 }
-
-
 
 const deepHexlify = (obj) => {
     if (typeof obj === 'function') {
