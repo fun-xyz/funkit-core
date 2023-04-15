@@ -1,4 +1,4 @@
-import { Eoa } from './EoaAuth.js'
+const { Eoa } = require("./EoaAuth");
 
 class Web3AuthEoa extends Eoa {
     constructor(input) {
