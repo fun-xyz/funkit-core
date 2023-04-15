@@ -1,5 +1,5 @@
 const Auth = require("./Auth")
 const EoaAuth = require("./EoaAuth")
-const WalletConnectAuth = require("./WalletConnectEoa")
+const Web3AuthEoa = require("./Web3AuthEoa")
 
-module.exports = { ...Auth, ...EoaAuth, ...WalletConnectAuth };
+module.exports = { ...Auth, ...EoaAuth, ...Web3AuthEoa};
