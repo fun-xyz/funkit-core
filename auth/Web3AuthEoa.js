@@ -1,6 +1,6 @@
 import { Eoa } from './EoaAuth.js'
 
-export default class Web3AuthEoa extends Eoa {
+class Web3AuthEoa extends Eoa {
     constructor(input) {
         super(input)
         this.provider = input.provider
@@ -23,3 +23,5 @@ export default class Web3AuthEoa extends Eoa {
         )
     }
 }
+
+module.exports = { Web3AuthEoa }
