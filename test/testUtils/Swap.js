@@ -20,7 +20,7 @@ const SwapTest = (chainId, authPrivateKey, inToken, outToken, prefund = true, ap
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             salt = await auth.getUniqueId()
-            wallet = new FunWallet({ salt, index: 3 })
+            wallet = new FunWallet({ salt, index: 23420 })
             if(prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
@@ -41,7 +41,7 @@ const SwapTest = (chainId, authPrivateKey, inToken, outToken, prefund = true, ap
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
-            await wallet.swap(auth, {
+            const res = await wallet.swap(auth, {
                 in: inToken,
                 amount: .00001,
                 out: outToken

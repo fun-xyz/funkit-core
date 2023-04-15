@@ -156,4 +156,6 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
     return { ...data, amount: tokenInAmount }
 }
 
-module.exports = { swapExec }
+
+
+module.exports = { swapExec, fromReadableAmount }

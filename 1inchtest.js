@@ -14,7 +14,8 @@ const web3RpcUrl = "https://polygon-rpc.com"
 const walletAddress = '0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9';
 const privateKey = '6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064';
 const swapParams = {
-    fromTokenAddress: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+    fromTokenAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+    // fromTokenAddress: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
     toTokenAddress: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', // DAI 0x6B175474E89094C44Da98b954EedeAC495271d0F
     amount: '10000',
     fromAddress: walletAddress,
@@ -48,17 +49,14 @@ async function buildTxForApproveTradeWithRouter(tokenAddress, amount) {
         '/approve/transaction',
         amount ? { tokenAddress, amount } : { tokenAddress }
     );
-
+    console.log(url)
     const transaction = await fetch(url).then(res => res.json());
 
     const gasLimit = await web3.eth.estimateGas({
         ...transaction,
         from: walletAddress
     });
-    // // const gasPrice = await provider.estimateGas().bar()
-    // console.log(gasLimit)
-    // console.log(gasPrice)
-
+    
     return {
         ...transaction,
         gas: gasLimit
@@ -104,8 +102,8 @@ const main = async () => {
     const wallet = new FunWallet({ salt, index: 23420 })
     const walletAddress = await wallet.getAddress()
     console.log('wallet address: ',walletAddress)
-    const allowance = await checkAllowance(swapParams.fromTokenAddress, walletAddress);
-    console.log('Allowance: ', allowance);
+    // const allowance = await checkAllowance(swapParams.fromTokenAddress, walletAddress);
+    // console.log('Allowance: ', allowance);
 
     const transactionForSign = await buildTxForApproveTradeWithRouter(swapParams.fromTokenAddress);
     console.log('Transaction for approve: ', transactionForSign);
@@ -118,7 +116,7 @@ const main = async () => {
 
     const swapTransaction = await buildTxForSwap(swapParams);
     console.log('Transaction for swap: ', swapTransaction);
-
+    
     const erc20Contract = new ethers.Contract("0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063", erc20.abi, provider);
     const balance = await erc20Contract.balanceOf(walletAddress);
     console.log('balance before ', balance)
