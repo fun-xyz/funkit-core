@@ -28,7 +28,7 @@ describe("Transfer", function () {
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         uniqueID = await auth.getUniqueId()
         wallet = new FunWallet({ uniqueID, index: 253840 })
-        await prefundWallet(auth, wallet, 10)
+        await prefundWallet(auth, wallet, 5)
         const walletAddress = await wallet.getAddress()
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
         if (tokenBalanceBefore < amount) {
