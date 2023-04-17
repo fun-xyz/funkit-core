@@ -16,7 +16,7 @@ describe("Factory", function () {
     let wallet
     let uniqueID
     let funder
-    this.timeout(50_000)
+    this.timeout(100_000)
 
     before(async function () {
         await configureEnvironment(options)

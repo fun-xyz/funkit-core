@@ -84,7 +84,7 @@ class FunWallet extends FirstClassActions {
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
-        let paymasterAndData = ""
+        let paymasterAndData = "0x"
         if (options.gasSponsor) {
             let sponsor
             // gas payment method check
