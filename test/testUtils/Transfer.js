@@ -20,8 +20,8 @@ const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = tr
         before(async function () {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            salt = await auth.getUniqueId()
-            wallet = new FunWallet({ salt, index: 23420 })
+            uniqueID = await auth.getuniqueID()
+            wallet = new FunWallet({ uniqueID, index: 23420 })
             if(prefund)
                 await prefundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()

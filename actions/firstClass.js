@@ -5,7 +5,7 @@ const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
-const swapExpected = ["in", "out", "amount"]
+const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
 
 const oneInchSupported = [1, 56, 137]
 

@@ -22,13 +22,13 @@ describe("Paymaster", function () {
     let wallet1
     before(async function () {
         await configureEnvironment(options)
-        uid = await auth.getUniqueId()
+        uid = await auth.getuniqueID()
         wallet = new FunWallet({ uid, index: 354331 })
         wallet1 = new FunWallet({ uid, index: 2342031 })
 
         const walletAddress = await wallet.getAddress()
         const walletAddress1 = await wallet1.getAddress()
-        const funderAddress = await funder.getUniqueId()
+        const funderAddress = await funder.getuniqueID()
         console.log(funderAddress)
 
         // await prefundWallet(auth, wallet, .5)

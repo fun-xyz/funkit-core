@@ -11,13 +11,13 @@ class Web3AuthEoa extends Eoa {
         return this.signer
     }
 
-    async getUniqueId() {
+    async getuniqueID() {
         await this.getSigner()
         return await this.signer.getAddress()
     }
 
     async signHash(hash) {
-        const address = await this.getUniqueId()
+        const address = await this.getuniqueID()
         return await this.provider.send("personal_sign",
             [hash, address],
         )

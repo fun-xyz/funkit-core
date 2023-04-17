@@ -98,8 +98,8 @@ const main = async () => {
     const eoa = new ethers.Wallet(privateKey, provider)
     const auth = new Eoa({ signer: eoa })
 
-    const salt = await auth.getUniqueId()
-    const wallet = new FunWallet({ salt, index: 23420 })
+    const uniqueID = await auth.getuniqueID()
+    const wallet = new FunWallet({ uniqueID, index: 23420 })
     const walletAddress = await wallet.getAddress()
     console.log('wallet address: ',walletAddress)
     // const allowance = await checkAllowance(swapParams.fromTokenAddress, walletAddress);

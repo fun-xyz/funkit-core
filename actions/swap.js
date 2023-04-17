@@ -18,7 +18,7 @@ const apiBaseUrl = 'https://api.1inch.io/v5.0/';
 
 const _swap = (params) => {
     return async (actionData) => {
-        const { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} } = params
+        const { tokenIn, tokenOut, amountIn, options: swapOptions = {} } = params
         const { wallet, chain } = actionData
         let {
             returnAddress,

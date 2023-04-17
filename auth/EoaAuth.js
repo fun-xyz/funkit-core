@@ -81,7 +81,7 @@ class Eoa extends Auth {
         return receipts
     }
 
-    async getUniqueId() {
+    async getuniqueID() {
         await this.init()
         return await this.signer.getAddress()
     }
