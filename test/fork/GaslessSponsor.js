@@ -12,6 +12,7 @@ const paymasterToken = "usdc"
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
+
 describe("GaslessSponsor", function () {
     this.timeout(100_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
@@ -31,12 +32,12 @@ describe("GaslessSponsor", function () {
     before(async function () {
         await configureEnvironment(options)
 
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 0 })
+        uid = await auth.getUniqueId()
+        wallet = new FunWallet({ uid, index: 0 })
         await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
 
-        wallet1 = new FunWallet({ salt, index: 1 })
+        wallet1 = new FunWallet({ uid, index: 1 })
 
         await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()
@@ -53,7 +54,7 @@ describe("GaslessSponsor", function () {
 
         await configureEnvironment({
             gasSponsor: {
-                sponsorAddress: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+                sponsorAddress: await funder.getUniqueId(),
             }
         })
 

@@ -4,7 +4,7 @@ const { Token } = require("../data");
 const { DataServer } = require("../servers");
 const { parseOptions } = require("../utils/option");
 
-const paymasterAbi = require("../abis/FeelessPaymaster.json").abi
+const paymasterAbi = require("../abis/GaslessPaymaster.json").abi
 
 class GaslessSponsor {
     constructor(options = global) {

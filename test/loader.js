@@ -8,9 +8,9 @@ const loadAbis = () => {
     const factoryPath = "deployer/FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "FunWallet.sol/FunWallet.json"
     const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
-    const feelessPaymasterpath = "paymaster/FeelessPaymaster.sol/FeelessPaymaster.json"
+    const gaslessPaymasterPaymasterpath = "paymaster/GaslessPaymaster.sol/GaslessPaymaster.json"
     const tokenOracle = "paymaster/TokenPriceOracle.sol/TokenPriceOracle.json"
-    const abis = [entryPointPath, authContractPath, feelessPaymasterpath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath, tokenOracle, aaveWithdrawPath]
+    const abis = [entryPointPath, authContractPath, gaslessPaymasterPaymasterpath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath, tokenOracle, aaveWithdrawPath]
     abis.forEach(moveFile)
 }
 

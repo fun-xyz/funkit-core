@@ -4,7 +4,7 @@ const fs = require("fs")
 
 const oracleAbi = require("../abis/TokenPriceOracle.json")
 const tokenSponsorAbi = require("../abis/TokenPaymaster.json")
-const gaslessSponsorAbi = require("../abis/FeelessPaymaster.json")
+const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
 
@@ -45,10 +45,16 @@ const main = async (chainId, privateKey) => {
     const signer = new Wallet(privateKey, provider)
 
     const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
-    const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
-    const oracle = await deployOracle(signer)
+    // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    // const oracle = await deployOracle(signer)
 
-    fs.writeFileSync("contracts.json", JSON.stringify({ gaslessSponsor, tokenSponsor,oracle }))
+    const old = require("../contracts.json")
+
+    fs.writeFileSync("contracts.json", JSON.stringify({
+        ...old,
+        gaslessSponsor,
+        // tokenSponsor,oracle 
+    }))
 }
 
 // main(5, GOERLI_PRIVATE_KEY)

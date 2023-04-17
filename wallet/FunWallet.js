@@ -46,11 +46,11 @@ class FunWallet extends FirstClassActions {
     /**
      * Generates UserOp object for a transaction
      * @param {Auth} auth Auth class instance that signs the transaction 
-     * @param {function} actionFunc Function that returns the data to be used in the transaction
+     * @param {function} transactionFunc Function that returns the data to be used in the transaction
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth, actionFunc, txOptions = global) {
+    async _generatePartialUserOp(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const actionData = {
@@ -108,12 +108,12 @@ class FunWallet extends FirstClassActions {
     /**
      * Executes UserOp
      * @param {Auth} auth Auth class instance that signs the transaction 
-     * @param {function} actionFunc Function that returns the data to be used in the transaction
+     * @param {function} transactionFunc Function that returns the data to be used in the transaction
      * @param {Object} txOptions Options for the transaction 
      * @param {bool} estimate Whether to estimate gas or not
      * @returns {UserOp || receipt}
      */
-    async execute(auth, actionFunc, txOptions = global, estimate = false) {
+    async execute(auth, transactionFunc, txOptions = global, estimate = false) {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
@@ -132,18 +132,17 @@ class FunWallet extends FirstClassActions {
     /**
     * Estimates gas for a transaction
     * @param {Auth} auth Auth class instance that signs the transaction 
-    * @param {function} actionFunc Function that returns the data to be used in the transaction
+    * @param {function} transactionFunc Function that returns the data to be used in the transaction
     * @param {Options} txOptions Options for the transaction 
     * @returns 
     */
-    async estimateGas(auth, actionFunc, txOptions = global) {
+    async estimateGas(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const id = await auth.getUniqueId()
         const res = await chain.estimateOpGas({
             ...partialOp, signature: id,
-            paymasterAndData: '0x',
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
