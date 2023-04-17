@@ -14,6 +14,7 @@ const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = tr
         const options = {
             chain: chainId,
             apiKey: apiKey,
+            gasSponsor: null
         }
 
         const amount = .01
@@ -21,7 +22,7 @@ const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = tr
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getuniqueID()
-            wallet = new FunWallet({ uniqueID, index: 23420 })
+            wallet = new FunWallet({ uniqueID, index: 23421 })
             if(prefund)
                 await prefundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()

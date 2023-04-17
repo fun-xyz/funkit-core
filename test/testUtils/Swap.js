@@ -20,7 +20,7 @@ const SwapTest = (chainId, authPrivateKey, inToken, outToken, baseToken, prefund
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getuniqueID()
-            wallet = new FunWallet({ uniqueID, index: 23420 })
+            wallet = new FunWallet({ uniqueID, index: 23421 })
             if(prefund) {
                 await prefundWallet(auth, wallet, .3)
             }

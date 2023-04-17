@@ -5,6 +5,6 @@ const config = {
     authPrivateKey: GOERLI_PRIVATE_KEY,
     outToken: "dai",
     baseToken: "eth",
-    prefund: true
+    prefund: false
 }
 TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.baseToken, config.prefund)
