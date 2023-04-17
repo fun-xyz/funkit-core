@@ -193,7 +193,7 @@ class DataServer {
     }
 
     static async validateChainId(chainId) {
-        return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", chainId)
+        return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", {chainId})
     }
 
     static async getChainId(bundlerUrl) {
