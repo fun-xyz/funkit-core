@@ -41,21 +41,24 @@ const main = async (chainId, privateKey) => {
     const chain = new Chain({ chainId })
     const provider = await chain.getProvider()
 
-    const entryPointAddr = await chain.getAddress("entryPointAddress")
+    // const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
-    const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
+    // const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
     // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     // const oracle = await deployOracle(signer)
 
+    const auth = await deployUserAuth(signer)
+    console.log(auth)
+
     const old = require("../contracts.json")
 
-    fs.writeFileSync("contracts.json", JSON.stringify({
-        ...old,
-        gaslessSponsor,
-        // tokenSponsor,oracle 
-    }))
+    // fs.writeFileSync("contracts.json", JSON.stringify({
+    //     ...old,
+    //     gaslessSponsor,
+    //     // tokenSponsor,oracle 
+    // }))
 }
 
-// main(5, GOERLI_PRIVATE_KEY)
-main(36864, TEST_PRIVATE_KEY)
+main(5, GOERLI_PRIVATE_KEY)
+// main(36864, TEST_PRIVATE_KEY)
