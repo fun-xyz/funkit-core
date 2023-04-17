@@ -18,15 +18,13 @@ const apiBaseUrl = 'https://api.1inch.io/v5.0/';
 
 const _swap = (params) => {
     return async (actionData) => {
+        const { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} } = params
         const { wallet, chain } = actionData
         let {
-            tokenIn,
-            tokenOut,
-            amountIn,
             returnAddress,
             slippage,
             poolFee
-        } = params
+        } = swapOptions
 
         const provider = await chain.getProvider()
 
@@ -35,7 +33,6 @@ const _swap = (params) => {
         const univ3factory = await chain.getAddress("univ3factory")
         const univ3router = await chain.getAddress("univ3router")
 
-
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
 
         const tokenInObj = new Token(tokenIn)
@@ -43,7 +40,6 @@ const _swap = (params) => {
 
         const tokenInAddress = await tokenInObj.getAddress({ chain });
         const tokenOutAddress = await tokenOutObj.getAddress({ chain });
-
 
         const uniswapAddrs = {
             univ3quoter,
@@ -85,13 +81,12 @@ const _swap = (params) => {
         }
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
-        const gasInfo = { callGasLimit: 400_000 }
 
         const errorData = {
             location: "actions.swap"
         }
 
-        return { gasInfo, data: txData, errorData }
+        return { data: txData, errorData }
     }
 }
 

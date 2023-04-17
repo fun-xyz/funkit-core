@@ -3,7 +3,7 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../../utils")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, TEST_API_KEY } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 
@@ -12,17 +12,17 @@ const paymasterToken = "usdc"
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
-describe("Paymaster", function () {
-    this.timeout(30_000)
+describe("TokenSponsor", function () {
+    this.timeout(100_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: FUNDER_PRIVATE_KEY })
 
-    
+
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
     const options = {
         chain: FORK_CHAIN_ID,
-        apiKey: "localtest",
+        apiKey: TEST_API_KEY,
     }
 
     const amount = 1
@@ -31,12 +31,12 @@ describe("Paymaster", function () {
     before(async function () {
         await configureEnvironment(options)
 
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 0 })
-        await prefundWallet(funder, wallet, 3)
+        uniqueID = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueID, index: 0 })
+        await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
 
-        wallet1 = new FunWallet({ salt, index: 1 })
+        wallet1 = new FunWallet({ uniqueID, index: 1 })
 
         await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()
@@ -54,7 +54,7 @@ describe("Paymaster", function () {
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
-                token: paymasterToken
+                token: paymasterToken,
             }
         })
 
@@ -72,8 +72,9 @@ describe("Paymaster", function () {
         const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
         const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
         const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+        const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
 
-        await funder.sendTxs([approve, deposit, deposit1, data])
+        await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
 
         const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
@@ -99,7 +100,7 @@ describe("Paymaster", function () {
 
     it("Blacklist Mode Approved", async () => {
         const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setGlobalToBlacklistMode())
+        await funder.sendTx(await gasSponsor.setToBlacklistMode())
         await runSwap(wallet)
     })
 
@@ -108,9 +109,9 @@ describe("Paymaster", function () {
         const walletAddress1 = await wallet1.getAddress()
 
         const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setGlobalToWhitelistMode())
-        await funder.sendTx(await gasSponsor.addSpenderToGlobalWhiteList(walletAddress))
-        await funder.sendTx(await gasSponsor.removeSpenderFromGlobalWhiteList(walletAddress1))
+        await funder.sendTx(await gasSponsor.setToWhitelistMode())
+        await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
+        await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
         await runSwap(wallet)
         try {
             await runSwap(wallet1)

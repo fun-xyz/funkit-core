@@ -1,11 +1,10 @@
 const { constants } = require("ethers")
-const { verifyValidParametersForLocation, validateType, verifyIsArray } = require("../utils/data")
+const { verifyFunctionParams, validateDataType, verifyIsArray } = require("../utils/data")
 const { verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../utils/chain")
 const { hexConcat } = require("ethers/lib/utils")
 
-
 const encodeCallExpectedKeys = ["to", "data"]
-const initCodeExpectedKeys = ["salt", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
+const initCodeExpectedKeys = ["uniqueID", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
 
 class WalletAbiManager {
     constructor(walletAbi, factoryAbi) {
@@ -15,7 +14,7 @@ class WalletAbiManager {
     }
 
     encodeCall(input, location = "WalletAbiManager.encodeCall") {
-        verifyValidParametersForLocation(location, input, encodeCallExpectedKeys)
+        verifyFunctionParams(location, input, encodeCallExpectedKeys)
         let { to: dest, data, value } = input
         if (Array.isArray(data)) {
             data = data[1]
@@ -30,7 +29,7 @@ class WalletAbiManager {
     }
 
     encodeInitExecCall(input, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
-        verifyValidParametersForLocation(location, input, encodeCallExpectedKeys)
+        verifyFunctionParams(location, input, encodeCallExpectedKeys)
         let { to: dest, data, value } = input
         verifyIsArray(data, location)
         if (value) {
@@ -52,12 +51,12 @@ class WalletAbiManager {
     }
 
     getInitCode(input) {
-        verifyValidParametersForLocation("WalletAbiManager.getInitCode", input, initCodeExpectedKeys)
+        verifyFunctionParams("WalletAbiManager.getInitCode", input, initCodeExpectedKeys)
 
-        const { salt, entryPointAddress, verificationAddress, owner, implementation } = input
+        const { uniqueID, entryPointAddress, verificationAddress, owner, implementation } = input
 
         const initCodeParams = {
-            salt, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
+            salt:uniqueID, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
         }
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero

@@ -1,5 +1,6 @@
 **/.env
-.env
 **/node_modules
 
 **/.DS_Store
+test.js
+utils.sh

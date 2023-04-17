@@ -1,4 +1,3 @@
-
 const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/utils");
 
 const calcPreVerificationGas = (userOp) => {
@@ -21,7 +20,6 @@ function encode(typevalues, forSignature) {
     return defaultAbiCoder.encode(types, values);
 }
 
-
 function packUserOp(op, forSignature = true) {
     if (forSignature) {
         let encoded = defaultAbiCoder.encode([userOpTypeSig], [{ ...op, signature: '0x' }]);
@@ -39,7 +37,6 @@ const getOpHash = (op, chainId, entryPoint) => {
     const userOpHash = keccak256(packUserOp(op, true));
     const enc = defaultAbiCoder.encode(['bytes32', 'address', 'uint256'], [userOpHash, entryPoint, chainId]);
     return keccak256(enc);
-
 }
 
 const getPromiseFromOp = async (op) => {
@@ -87,7 +84,6 @@ const DefaultGasOverheads = {
     bundleSize: 1,
     sigSize: 65
 };
-
 
 const UserOpType = {
     components: [
@@ -170,7 +166,5 @@ const userOpTypeSig = {
     name: 'userOp',
     type: 'tuple'
 };
-
-
 
 module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp, gasCalculation };

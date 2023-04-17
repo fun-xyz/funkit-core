@@ -1,16 +1,16 @@
 const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
-const { verifyValidParametersForLocation, validateType, getUsedParametersFromOptions } = require("../utils/data")
+const { verifyFunctionParams, validateDataType, getUsedParametersFromOptions } = require("../utils/data")
 
-const walletIdentifierExpectedKeys = [["salt", "uid"]]
+const walletIdentifierExpectedKeys = [["uniqueID", "uid"]]
 
 class WalletIdentifier {
     constructor(input) {
         const currentLocation = "WalletIdentifier constructor"
-        verifyValidParametersForLocation(currentLocation, input, walletIdentifierExpectedKeys)
+        verifyFunctionParams(currentLocation, input, walletIdentifierExpectedKeys)
         const [key] = getUsedParametersFromOptions(input, walletIdentifierExpectedKeys[0])
 
         if (input.index) {
-            validateType(input.index, "index", (typeof 0), currentLocation)
+            validateDataType(input.index, "index", (typeof 0), currentLocation)
             this.index = input.index
         } else {
             this.index = 0
@@ -24,26 +24,26 @@ class WalletIdentifier {
         switch (this.key) {
             case "uid":
                 return await this.getIdentifierFromUid(forced)
-            case "salt":
-                return this.getIdentifierFromSalt(forced)
+            case "uniqueID":
+                return this.getIdentifierFromuniqueID(forced)
         }
     }
 
     async loadIdentifierFromServer(forced = false) { }
 
-    getIdentifierFromSalt(forced = false) {
+    getIdentifierFromuniqueID(forced = false) {
         if (!this.identifier || forced) {
-            this.identifier = keccak256(toUtf8Bytes(`${this.salt}-${this.index}`))
+            this.identifier = keccak256(toUtf8Bytes(`${this.uniqueID}-${this.index}`))
         }
         return this.identifier
     }
 
     async getIdentifierFromUid(forced = false) {
-        if (forced || !this.salt) {
+        if (forced || !this.uniqueID) {
             await this.loadIdentifierFromServer()
-            return this.getIdentifierFromSalt(true)
+            return this.getIdentifierFromuniqueID(true)
         }
-        return this.getIdentifierFromSalt(forced)
+        return this.getIdentifierFromuniqueID(forced)
     }
 
 }
