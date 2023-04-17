@@ -5,6 +5,7 @@ const config = {
     chainId: 137,
     authPrivateKey: GOERLI_PRIVATE_KEY,
     outToken: DAI_POLYGON,
+    baseToken: 'matic',
     prefund: false
 }
-TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.prefund)
+TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.baseToken, config.prefund)

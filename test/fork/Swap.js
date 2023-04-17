@@ -8,6 +8,7 @@ const config = {
     authPrivateKey: TEST_PRIVATE_KEY,
     inToken:"dai",
     outToken: "usdc",
+    baseToken: "eth",
     prefund: true
 }
-SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.prefund)
+SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.baseToken, config.prefund)

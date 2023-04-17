@@ -7,6 +7,7 @@ const config = {
     chainId: FORK_CHAIN_ID,
     authPrivateKey: TEST_PRIVATE_KEY,
     outToken: "usdc",
+    baseToken: "eth",
     prefund: true
 }
-TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.prefund)
+TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.baseToken, config.prefund)

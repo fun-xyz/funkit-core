@@ -7,7 +7,7 @@ const transferExpected = ["to", "amount"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
 
-const oneInchSupported = [1, 137]
+const oneInchSupported = [1, 56, 137]
 
 class FirstClassActions {
     async transfer(auth, input, options = global) {
@@ -28,36 +28,37 @@ class FirstClassActions {
             ...swapOptions
         }
         verifyValidParametersForLocation("Wallet.swap", swapParams, swapExpected)
-
-        for (let i of oneInchSupported) {
-            if (i == global.chain.chainId) {
-                if (swapParams.tokenIn == "eth" || swapParams.tokenIn == "matic") {
-                    swapParams.tokenIn = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-                }
-                //check approvals
-                const address = await this.getAddress()
-                let approveReceipt = ""
-                const approveTx = await getOneInchApproveTx(swapParams.tokenIn, amountIn, address)
-                approveReceipt = await this.execute(auth, genCall(approveTx, 300_000), options)
-                const swapTx = await getOneInchSwapTx(swapParams, address)
-                const swapReceipt = await this.execute(auth, genCall(swapTx, 300_000), options)
-                return { approveReceipt, swapReceipt }
+        const chain = options.chain
+        //if mainnet, use 1inch
+        if (oneInchSupported.includes(chain.chainId)) {
+            if (swapParams.tokenIn.toUpperCase() == chain.currency) {
+                swapParams.tokenIn = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
             }
+            if (swapParams.tokenOut.toUpperCase() == chain.currency) {
+                swapParams.tokenOut = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+            }
+            
+            //check approvals
+            const address = await this.getAddress()
+            let approveReceipt = ""
+            const approveTx = await getOneInchApproveTx(swapParams.tokenIn, amountIn, address)
+            approveReceipt = await this.execute(auth, genCall(approveTx, 300_000), options)
+            const swapTx = await getOneInchSwapTx(swapParams, address)
+            const swapReceipt = await this.execute(auth, genCall(swapTx, 300_000), options)
+            return { approveReceipt, swapReceipt }
         }
-        //https://api.1inch.io/v5.0/137/approve/transaction?tokenAddress=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
-        //https://api.1inch.io/v5.0/137/approve/transaction?tokenAddress=0x0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
         return await this.execute(auth, _swap(swapParams), options)
     }
 
     async create(auth, options = global) {
-        const address = await this.getAddress()
-        if (await isContract(address)) {
-            throw new Error("Wallet already exists as contract.")
-        }
-        else {
-            return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
-        }
+    const address = await this.getAddress()
+    if (await isContract(address)) {
+        throw new Error("Wallet already exists as contract.")
     }
+    else {
+        return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
+    }
+}
 }
 
 const genCall = (data, callGasLimit = 100_000) => {

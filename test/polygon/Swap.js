@@ -8,6 +8,7 @@ const config = {
     authPrivateKey: GOERLI_PRIVATE_KEY,
     inToken:DAI_POLYGON,
     outToken: USDC_POLYGON,
+    baseToken: 'matic',
     prefund: false
 }
-SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.prefund)
+SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.baseToken, config.prefund)

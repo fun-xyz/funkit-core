@@ -2,7 +2,7 @@ const { Eoa } = require("../auth/EoaAuth")
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { orderParams, validateClassInstance, formatMissingForError } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
-const { parseOptions } = require ("../utils/option")
+const { parseOptions } = require("../utils/option")
 
 const getFunctionParamOrderFromInterface = (interf, func) => {
     for (const field of interf.fragments) {
@@ -63,7 +63,8 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-const prefundWallet = async (auth, wallet, value, gasPrice=0, txOptions = global) => {
+const gasSpecificChain = {"137": 200_000_000_000}
+const prefundWallet = async (auth, wallet, value, gasPrice = 0, txOptions = global) => {
     validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
     const options = await parseOptions(txOptions)
     const chain = options.chain
@@ -71,7 +72,13 @@ const prefundWallet = async (auth, wallet, value, gasPrice=0, txOptions = global
     const signer = await auth.getSigner()
     const provider = await chain.getProvider()
     const txSigner = signer.connect(provider)
-    const txData = { to, data: "0x", value: parseEther(`${value}`)}//,gasPrice :150_000_000_000
+    let txData;
+    if (gasSpecificChain[chain.id]){
+        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: gasSpecificChain[chain.id] }
+    }
+    else{
+        txData = { to, data: "0x", value: parseEther(`${value}`) }
+    }
     const tx = await txSigner.sendTransaction(txData)
     return await tx.wait()
 }

@@ -1,4 +1,4 @@
-const SwapTest = (chainId, authPrivateKey, inToken, outToken, prefund = true, apiKey="localtest" ) => {
+const SwapTest = (chainId, authPrivateKey, inToken, outToken, baseToken, prefund = true, apiKey="localtest" ) => {
     const { assert } = require("chai")
     const { Eoa } = require("../../auth")
     const { Token } = require("../../data")
@@ -30,7 +30,7 @@ const SwapTest = (chainId, authPrivateKey, inToken, outToken, prefund = true, ap
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
             const res= await wallet.swap(auth, {
-                in: "eth",
+                in: baseToken,
                 amount: .01,
                 out: inToken
             })
