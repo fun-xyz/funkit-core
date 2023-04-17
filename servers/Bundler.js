@@ -3,13 +3,12 @@ const { JsonRpcProvider } = require("@ethersproject/providers");
 const { deepHexlify, verifyValidParametersForLocation } = require("../utils/data");
 const { Helper, NoServerConnectionError } = require("../errors");
 const { DataServer } = require('./DataServer');
-
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
 
 class Bundler {
     constructor(bundlerUrl, entryPointAddress, chainId) {
         const input = { bundlerUrl, entryPointAddress, chainId }
-        verifyValidParametersForLocation("Bundler constructor", input, bundlerExpectedKeys)
+        verifyFunctionParams("Bundler constructor", input, bundlerExpectedKeys)
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;
@@ -49,6 +48,16 @@ class Bundler {
 
     static async getChainId(bundlerUrl) {
         return await DataServer.getChainId(bundlerUrl);
+    }
+}
+
+const validateOp = (userOp) => {
+    const { UserOp } = require("../data/UserOp")
+    try{
+
+        validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
+    }catch{
+        new UserOp(userOp)
     }
 }
 

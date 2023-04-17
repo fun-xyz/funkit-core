@@ -1,7 +1,8 @@
 const { arrayify } = require("ethers/lib/utils");
-const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey } = require("../utils/data")
+const { getUsedParametersFromOptions, verifyFunctionParams, verifyPrivateKey } = require("../utils/data")
 const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
 const { Auth } = require("./Auth");
+const { DataServer } = require("../servers");
 
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
 
@@ -12,7 +13,7 @@ class Eoa extends Auth {
         super()
 
         const currentLocation = "EoaAuth constructor"
-        verifyValidParametersForLocation(currentLocation, input, eoaAuthConstructorExpectedKeys)
+        verifyFunctionParams(currentLocation, input, eoaAuthConstructorExpectedKeys)
         const [key] = getUsedParametersFromOptions(input, eoaAuthConstructorExpectedKeys[0])
         switch (key) {
             case "privateKey":
@@ -27,6 +28,7 @@ class Eoa extends Auth {
         }
         this[key] = input[key]
         this.key = key
+        this.dataServer = new DataServer()
     }
 
     async init() {
@@ -66,7 +68,9 @@ class Eoa extends Auth {
             eoa = this.signer.connect(provider)
         }
         const tx = await eoa.sendTransaction({ to, value, data })
-        return await tx.wait()
+        const receipt = await tx.wait()
+        await DataServer.storeEVMCall(receipt)
+        return receipt
     }
 
     async sendTxs(txs, options = global) {

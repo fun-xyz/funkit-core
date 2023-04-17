@@ -5,15 +5,15 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { prefundWallet } = require("../../utils")
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../testUtils")
+const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY } = require("../testUtils")
 const { FunWallet } = require("../../wallet")
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
     gasSponsor: ""
-
 }
+
 const testToken = "dai"
 
 describe("Transfer", function () {
@@ -24,9 +24,10 @@ describe("Transfer", function () {
     before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 23420 })
+        uniqueID = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueID, index: 23421 })
         // await prefundWallet(auth, wallet, .3)
+
     })
 
     it("wallet should have lower balance of specified token", async () => {
@@ -36,7 +37,7 @@ describe("Transfer", function () {
 
         let b1 = Token.getBalance(testToken, randomAddress)
         let b2 = Token.getBalance(testToken, walletAddress)
-        await wallet.transfer(auth, { to: randomAddress, amount, token: testToken })
+        const receipt = await wallet.transfer(auth, { to: randomAddress, amount, token: testToken })
         let b3 = Token.getBalance(testToken, randomAddress)
         let b4 = Token.getBalance(testToken, walletAddress)
 

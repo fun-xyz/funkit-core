@@ -3,12 +3,12 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { prefundWallet, GOERLI_FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("../../utils")
+const { prefundWallet, GOERLI_FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY} = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
 }
 
 const paymasterToken = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
@@ -22,28 +22,17 @@ describe("Paymaster", function () {
     let wallet1
     before(async function () {
         await configureEnvironment(options)
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 3543 })
-        wallet1 = new FunWallet({ salt, index: 23420 })
+        uid = await auth.getUniqueId()
+        wallet = new FunWallet({ uid, index: 354331 })
+        wallet1 = new FunWallet({ uid, index: 2342031 })
 
         const walletAddress = await wallet.getAddress()
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
+        console.log(funderAddress)
 
         // await prefundWallet(auth, wallet, .5)
         const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))
-        if (tokenBalanceBefore < 2000) {
-            await wallet.swap(auth, {
-                in: "eth",
-                amount: .01,
-                out: paymasterToken,
-                options: {
-                    returnAddress: funderAddress
-                }
-            })
-            const tokenBalanceAfter = (await Token.getBalance(paymasterToken, funderAddress))
-            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-        }
 
 
         await configureEnvironment({

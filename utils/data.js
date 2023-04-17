@@ -2,7 +2,7 @@ const { constants } = require("ethers")
 const { isHexString, hexlify } = require("ethers/lib/utils")
 const { MissingParameterError, Helper, DataFormatError } = require("../errors")
 
-const compareToExpectedStructure = (input, expected) => {
+const compareToExpectedParams = (input, expected) => {
     return expected.filter(key => {
         if (typeof key == "string") {
             return !input[key]
@@ -18,8 +18,8 @@ const compareToExpectedStructure = (input, expected) => {
     })
 }
 
-const verifyValidParametersForLocation = (location, input, expected) => {
-    const missing = compareToExpectedStructure(input, expected)
+const verifyFunctionParams = (location, input, expected) => {
+    const missing = compareToExpectedParams(input, expected)
     if (missing.length) {
         const helperMainMessage = "Missing these parameters: " + formatMissingForError(missing)
         const helper = new Helper(`${location} was given these parameters`, input, helperMainMessage)
@@ -35,7 +35,7 @@ const validateClassInstance = (data, dataName, classObj, location = "", isIntern
     throw new DataFormatError(dataName, classObj.name, location, helper, isInternal);
 }
 
-const validateType = (data, dataName, type, location = "", isInternal = false) => {
+const validateDataType = (data, dataName, type, location = "", isInternal = false) => {
     if (typeof data == type) {
         return;
     }
@@ -67,10 +67,10 @@ const orderParams = (paramOrder, input) => {
     return paramOrder.map(item => (input[item]))
 }
 
-
 const getUsedParametersFromOptions = (input, options) => {
     return options.filter(key => (!!input[key]))
 }
+
 const objectValuesToBigNumber = (obj) => {
     Object.keys(obj).forEach(key => {
         const val = obj[key]
@@ -93,14 +93,12 @@ const verifyPrivateKey = (value, location = "", isInternal = false) => {
     }
 }
 
-
 const verifyIsArray = (value, location = "", isInternal = false) => {
     if (!Array.isArray(value)) {
         const helper = new Helper("Data", value, helperMsg)
         throw new DataFormatError("Data", "array", location, helper, isInternal)
     }
 }
-
 
 const flattenObj = (obj) => {
     let out = {}
@@ -123,8 +121,6 @@ const objValToArray = (obj) => {
     return out
 }
 
-
-
 const deepHexlify = (obj) => {
     if (typeof obj === 'function') {
         return undefined;
@@ -142,4 +138,4 @@ const deepHexlify = (obj) => {
 }
 
 
-module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateType, validateClassInstance, compareToExpectedStructure, orderParams, verifyValidParametersForLocation, verifyPrivateKey };
+module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateDataType, validateClassInstance, compareToExpectedParams, orderParams, verifyFunctionParams, verifyPrivateKey };

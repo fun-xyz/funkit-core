@@ -4,12 +4,14 @@ const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY, prefundWallet, GOERLI_PRIVATE_KEY } = require("../testUtils")
+const { TEST_PRIVATE_KEY,  GOERLI_PRIVATE_KEY, TEST_API_KEY} = require("../testUtils")
 const { FunWallet } = require("../../wallet")
+const { prefundWallet } = require("../../utils")
+
 
 const options = {
     chain: 5,
-    apiKey: "localtest",
+    apiKey: TEST_API_KEY,
     gasSponsor: ""
 
 }
@@ -23,9 +25,9 @@ describe("Swap", function () {
     before(async function () {
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: GOERLI_PRIVATE_KEY })
-        salt = await auth.getUniqueId()
-        wallet = new FunWallet({ salt, index: 236725 })
-        // await prefundWallet(auth, wallet, .5)
+        uniqueID = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueID, index: 2367251 })
+        // await prefundWallet(auth, wallet, .4)
     })
 
     it("ETH => ERC20", async () => {

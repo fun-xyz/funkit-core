@@ -1,19 +1,11 @@
-
 const { Chain } = require("../data/Chain")
+const { verifyFunctionParams } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
 
-
-const { verifyValidParametersForLocation } = require("./data")
-
-const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
-
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
-const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
-const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
-
 
 const getChainsFromList = async (chains) => {
-    const out = chains.map(getChainFromUnlabeledData)
+    const out = chains.map(getChainFromData)
     return await Promise.all(out)
 }
 
@@ -23,22 +15,20 @@ const verifyBundlerUrl = async (url) => {
     return (data.indexOf("aa-bundler") + 1)
 }
 const parseOptions = async (options, location) => {
-    
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
-        verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
+        verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
     if (chain) {
-        chain = await getChainFromUnlabeledData(chain)
+        chain = await getChainFromData(chain)
     }
-
 
     return {
         ...options, chain, gasSponsor
     }
 }
 
-const getChainFromUnlabeledData = async (chainIdentifier) => {
+const getChainFromData = async (chainIdentifier) => {
     let chain
 
     if (chainIdentifier instanceof Chain) {
@@ -62,5 +52,5 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
 
 
 module.exports = {
-    getChainFromUnlabeledData, getChainsFromList, parseOptions
+    getChainFromData, getChainsFromList, parseOptions
 };
