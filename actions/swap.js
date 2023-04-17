@@ -4,8 +4,7 @@ const { Token } = require("../data/Token")
 const Web3 = require('web3');
 const { swapExec, fromReadableAmount } = require("../utils/swap")
 const fetch = require('node-fetch');
-const { format } = require("path");
-
+const { parseOptions } = require('../utils')
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
@@ -14,7 +13,7 @@ const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.H
 const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
-const apiBaseUrl = 'https://api.1inch.io/v5.0/' ;
+const apiBaseUrl = 'https://api.1inch.io/v5.0/';
 
 
 const _swap = (params) => {
@@ -96,21 +95,22 @@ const _swap = (params) => {
     }
 }
 
-function apiRequestUrl(methodName, queryParams) {
-    return apiBaseUrl + global.chain.chainId + methodName + '?' + (new URLSearchParams(queryParams)).toString();
+async function apiRequestUrl(methodName, queryParams, options = global) {
+    const { chain } = await parseOptions(options)
+    return apiBaseUrl + chain.id + methodName + '?' + (new URLSearchParams(queryParams)).toString();
 }
 const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
-    let inTokenDecimals=0
-    if(tokenAddress!="0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"){
+    let inTokenDecimals = 0
+    if (tokenAddress != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
         const inToken = new Token(tokenAddress)
         inTokenDecimals = await inToken.getDecimals()
     }
-    else{
+    else {
         inTokenDecimals = 18
     }
 
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
-    const url = apiRequestUrl(
+    const url = await apiRequestUrl(
         '/approve/transaction',
         amount ? { tokenAddress, amount } : { tokenAddress }
     );
@@ -120,7 +120,7 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
         ...transaction,
         from: walletAddress
     });
-    
+
     return {
         ...transaction,
         gas: gasLimit
@@ -128,12 +128,12 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
 
 }
 const getOneInchSwapTx = async (swapParams, walletAddress) => {
-    let inTokenDecimals=0
-    if(swapParams.tokenIn!="0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"){
+    let inTokenDecimals = 0
+    if (swapParams.tokenIn != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
         const inToken = new Token(swapParams.tokenIn)
         inTokenDecimals = await inToken.getDecimals()
     }
-    else{
+    else {
         inTokenDecimals = 18
     }
 
@@ -147,7 +147,7 @@ const getOneInchSwapTx = async (swapParams, walletAddress) => {
         disableEstimate: false,
         allowPartialFill: false,
     };
-    const url = apiRequestUrl('/swap', formattedSwap);
+    const url = await apiRequestUrl('/swap', formattedSwap);
 
     return fetch(url).then(res => res.json()).then(res => res.tx);
 

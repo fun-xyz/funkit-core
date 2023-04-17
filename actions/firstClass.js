@@ -1,8 +1,7 @@
 const { verifyValidParametersForLocation } = require("../utils")
 const { _swap, getOneInchApproveTx, getOneInchSwapTx } = require("./swap")
 const { _transfer, _approve } = require("./token")
-const { isContract } = require('../utils')
-
+const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
@@ -28,16 +27,15 @@ class FirstClassActions {
             ...swapOptions
         }
         verifyValidParametersForLocation("Wallet.swap", swapParams, swapExpected)
-        const chain = options.chain
+        const { chain } = await parseOptions(options)
         //if mainnet, use 1inch
-        if (oneInchSupported.includes(chain.chainId)) {
+        if (oneInchSupported.includes(parseInt(chain.id)) ) {
             if (swapParams.tokenIn.toUpperCase() == chain.currency) {
                 swapParams.tokenIn = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
             }
             if (swapParams.tokenOut.toUpperCase() == chain.currency) {
                 swapParams.tokenOut = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
             }
-            
             //check approvals
             const address = await this.getAddress()
             let approveReceipt = ""
@@ -51,14 +49,14 @@ class FirstClassActions {
     }
 
     async create(auth, options = global) {
-    const address = await this.getAddress()
-    if (await isContract(address)) {
-        throw new Error("Wallet already exists as contract.")
+        const address = await this.getAddress()
+        if (await isContract(address)) {
+            throw new Error("Wallet already exists as contract.")
+        }
+        else {
+            return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
+        }
     }
-    else {
-        return await this.execute(auth, genCall({ to: address, data: "0x" }, 30_000), options)
-    }
-}
 }
 
 const genCall = (data, callGasLimit = 100_000) => {

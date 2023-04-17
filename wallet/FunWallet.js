@@ -25,6 +25,9 @@ class FunWallet extends FirstClassActions {
         super()
         this.identifier = new WalletIdentifier(params)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
+        if(!global.chain || !global.apiKey){
+            
+        }
     }
 
     async _getFromCache(obj) {

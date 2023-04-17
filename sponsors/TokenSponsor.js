@@ -59,12 +59,14 @@ class TokenSponsor {
 
     async encode(data, options = global) {
         const to = await this.getPaymasterAddress(options)
-        return { to, data, chain: options.chain }
+        const { chain } = await parseOptions(options)
+        return { to, data, chain }
     }
 
     async encodeValue(data, value, options = global) {
         const to = await this.getPaymasterAddress(options)
-        return { to, value, data, chain: options.chain }
+        const { chain } = await parseOptions(options)
+        return { to, value, data, chain }
     }
 
     async addUsableToken(oracle, token, aggregator) {

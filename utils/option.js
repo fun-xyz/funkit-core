@@ -22,8 +22,15 @@ const verifyBundlerUrl = async (url) => {
     const data = await provider.send("web3_clientVersion", [])
     return (data.indexOf("aa-bundler") + 1)
 }
+
+//set defaults
+const checkEnvironment = async (options) => { 
+    options.chain = options.chain ? options.chain : 5
+    return options
+}
+
 const parseOptions = async (options, location) => {
-    
+    options = await checkEnvironment(options)
     let { gasSponsor, chain } = options
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
@@ -31,8 +38,6 @@ const parseOptions = async (options, location) => {
     if (chain) {
         chain = await getChainFromUnlabeledData(chain)
     }
-
-
     return {
         ...options, chain, gasSponsor
     }
