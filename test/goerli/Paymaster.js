@@ -22,28 +22,17 @@ describe("Paymaster", function () {
     let wallet1
     before(async function () {
         await configureEnvironment(options)
-        uniqueID = await auth.getUniqueId()
-        wallet = new FunWallet({ uniqueID, index: 3543 })
-        wallet1 = new FunWallet({ uniqueID, index: 23420 })
+        salt = await auth.getUniqueId()
+        wallet = new FunWallet({ salt, index: 35433 })
+        wallet1 = new FunWallet({ salt, index: 234203 })
 
         const walletAddress = await wallet.getAddress()
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
+        console.log(funderAddress)
 
         // await prefundWallet(auth, wallet, .5)
         const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))
-        if (tokenBalanceBefore < 2000) {
-            await wallet.swap(auth, {
-                in: "eth",
-                amount: .01,
-                out: paymasterToken,
-                options: {
-                    returnAddress: funderAddress
-                }
-            })
-            const tokenBalanceAfter = (await Token.getBalance(paymasterToken, funderAddress))
-            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-        }
 
 
         await configureEnvironment({

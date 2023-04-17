@@ -69,7 +69,7 @@ class Token {
             amount = await contract.balanceOf(address)
         }
         const decimals = await this.getDecimals(parsedOptions)
-        return formatUnits(amount.toString(), decimals)
+        return formatUnits(amount, decimals)
     }
 
     async getApproval(owner, spender, options = global) {

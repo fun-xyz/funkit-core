@@ -7,10 +7,6 @@ const { configureEnvironment } = require("../../managers")
 const { TEST_PRIVATE_KEY, prefundWallet, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, TEST_API_KEY } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
-const options = {
-    chain: 31337,
-    apiKey: TEST_API_KEY,
-}
 const testToken = "usdc"
 
 describe("Transfer", function () {
@@ -22,6 +18,8 @@ describe("Transfer", function () {
     const options = {
         chain: FORK_CHAIN_ID,
         apiKey: "localtest",
+        gasSponsor: ""
+
     }
 
     const amount = 1
@@ -32,7 +30,6 @@ describe("Transfer", function () {
         wallet = new FunWallet({ uniqueID, index: 253840 })
         await prefundWallet(auth, wallet, 10)
         const walletAddress = await wallet.getAddress()
-
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
         if (tokenBalanceBefore < amount) {
             await wallet.swap(auth, {
@@ -43,7 +40,6 @@ describe("Transfer", function () {
             const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
-
 
     })
 

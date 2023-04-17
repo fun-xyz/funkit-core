@@ -1,15 +1,14 @@
-const { Contract, constants } = require("ethers");
+const { Contract } = require("ethers");
 const { Interface } = require("ethers/lib/utils");
 const { Token } = require("../data");
 const { DataServer } = require("../servers");
 const { parseOptions } = require("../utils/option");
 
-const paymasterAbi = require("../abis/TokenPaymaster.json").abi
+const paymasterAbi = require("../abis/GaslessPaymaster.json").abi
 
-class TokenSponsor {
+class GaslessSponsor {
     constructor(options = global) {
         this.sponsorAddress = options.gasSponsor.sponsorAddress
-        this.token = options.gasSponsor.token.toLowerCase()
         this.interface = new Interface(paymasterAbi)
     }
 
@@ -21,30 +20,11 @@ class TokenSponsor {
         //     this.chainId = chainId
         // }
         // return this.paymasterAddress
-        return require("../contracts.json").tokenSponsor
+        return require("../contracts.json").gaslessSponsor
     }
 
     async getPaymasterAndData(options = global) {
-        const tokenAddress = await Token.getAddress(this.token, options)
-        return await this.getPaymasterAddress(options) + this.sponsorAddress.slice(2) + tokenAddress.slice(2);
-    }
-
-    async getTokenInfo(token, options = global) {
-        const contract = await this.getContract(options)
-        const tokenAddress = await Token.getAddress(token, options)
-        return await contract.getToken(tokenAddress)
-    }
-
-    async getTokenBalance(token, spender, options = global) {
-        const contract = await this.getContract(options)
-        const tokenData = new Token(token)
-        let tokenAddress;
-        if (tokenData.isNative) {
-            tokenAddress = constants.AddressZero
-        } else {
-            tokenAddress = await tokenData.getAddress(options)
-        }
-        return await contract.getTokenBalance(tokenAddress, spender)
+        return await this.getPaymasterAddress(options) + this.sponsorAddress.slice(2)
     }
 
     async getContract(options = global) {
@@ -57,6 +37,11 @@ class TokenSponsor {
         return this.contract
     }
 
+    async getBalance(sponsor, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getBalance(sponsor)
+    }
+
     async encode(data, options = global) {
         const to = await this.getPaymasterAddress(options)
         return { to, data, chain: options.chain }
@@ -67,20 +52,10 @@ class TokenSponsor {
         return { to, value, data, chain: options.chain }
     }
 
-    async addUsableToken(oracle, token, aggregator) {
-        return async (options = global) => {
-            const decimals = 4
-            const tokenAddress = await Token.getAddress(token, options)
-            const data = [oracle, tokenAddress, decimals, aggregator]
-            const calldata = this.interface.encodeFunctionData("setTokenData", [data])
-            return await this.encode(calldata, options)
-        }
-    }
-
     async stake(walletAddress, amount) {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
-            const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
+            const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
             return await this.encodeValue(data, amountdec, options)
         }
     }
@@ -88,31 +63,21 @@ class TokenSponsor {
     async unstake(walletAddress, amount) {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
-            const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
+            const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])
             return await this.encode(data, options)
         }
     }
 
-    async stakeToken(token, walletAddress, amount) {
+    async lock() {
         return async (options = global) => {
-            const tokenObj = new Token(token)
-
-            const tokenAddress = await tokenObj.getAddress(options)
-            const amountdec = await tokenObj.getDecimalAmount(amount, options)
-
-            const data = this.interface.encodeFunctionData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
+            const data = this.interface.encodeFunctionData("lockDeposit", [])
             return await this.encode(data, options)
         }
     }
 
-    async unstakeToken(token, walletAddress, amount) {
+    async unlock(num) {
         return async (options = global) => {
-            const tokenObj = new Token(token)
-
-            const tokenAddress = await tokenObj.getAddress(options)
-            const amountdec = await tokenObj.getDecimalAmount(amount, options)
-
-            const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
+            const data = this.interface.encodeFunctionData("unlockDepositAfter", [num])
             return await this.encode(data, options)
         }
     }
@@ -131,33 +96,12 @@ class TokenSponsor {
         }
     }
 
-    async addWhitelistTokens(tokens) {
-        return async (options = global) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
-                return Token.getAddress(token, options)
-            }))
-            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
-    async removeWhitelistTokens(tokens) {
-        return async (options = global) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
-                return Token.getAddress(token, options)
-            }))
-            const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
     async addSpenderToWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
-
     async removeSpenderFromWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
@@ -178,13 +122,6 @@ class TokenSponsor {
             return await this.encode(data, options)
         }
     }
-
-    async approve(token, amount) {
-        return async (options = global) => {
-            const gasSponsorAddress = await this.getPaymasterAddress(options)
-            return await Token.approve(token, gasSponsorAddress, amount)
-        }
-    }
 }
 
-module.exports = { TokenSponsor };
+module.exports = { GaslessSponsor };

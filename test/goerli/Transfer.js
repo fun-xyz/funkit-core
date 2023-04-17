@@ -12,8 +12,8 @@ const options = {
     chain: 5,
     apiKey: TEST_API_KEY,
     gasSponsor: ""
-
 }
+
 const testToken = "dai"
 
 describe("Transfer", function () {

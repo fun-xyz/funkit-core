@@ -1,10 +1,13 @@
 const { ethers, Wallet } = require("ethers")
 const { ContractFactory } = ethers
 const fs = require("fs")
+
 const oracleAbi = require("../abis/TokenPriceOracle.json")
-const paymasterAbi = require("../abis/TokenPaymaster.json")
+const tokenSponsorAbi = require("../abis/TokenPaymaster.json")
+const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
+
 const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("./testUtils")
 const { Chain } = require("../data")
 
@@ -18,10 +21,13 @@ const deployOracle = async (signer) => {
     return await deploy(signer, oracleAbi)
 }
 
-const deployPaymaster = async (signer, entryPointAddr) => {
-    return await deploy(signer, paymasterAbi, [entryPointAddr])
+const deployTokenSponsor = async (signer, entryPointAddr) => {
+    return await deploy(signer, tokenSponsorAbi, [entryPointAddr])
 }
 
+const deployGaslessSponsor = async (signer, entryPointAddr) => {
+    return await deploy(signer, gaslessSponsorAbi, [entryPointAddr])
+}
 const deployFactory = async (signer) => {
     return await deploy(signer, factoryAbi)
 }
@@ -38,10 +44,18 @@ const main = async (chainId, privateKey) => {
     const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
-    const auth = await deployFactory(signer)
-    const paymaster = await deployPaymaster(signer, entryPointAddr)
+    const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
+    // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    // const oracle = await deployOracle(signer)
 
-    fs.writeFileSync("contracts.json", JSON.stringify({ auth }))
+    const old = require("../contracts.json")
+
+    fs.writeFileSync("contracts.json", JSON.stringify({
+        ...old,
+        gaslessSponsor,
+        // tokenSponsor,oracle 
+    }))
 }
 
-main(5, GOERLI_PRIVATE_KEY)
+// main(5, GOERLI_PRIVATE_KEY)
+main(36864, TEST_PRIVATE_KEY)
