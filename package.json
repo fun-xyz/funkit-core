@@ -1,5 +1,5 @@
 {
-  "name": "@fun-wallet",
+  "name": "fun-wallet",
   "version": "0.2.1",
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
