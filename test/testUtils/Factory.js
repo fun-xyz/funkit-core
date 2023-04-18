@@ -1,6 +1,5 @@
 const FactoryTest = (config, apiKey = "localtest") => {
     const { chainId, authPrivateKey } = config
-    console.log(chainId)
     const { expect } = require("chai")
     const { randomBytes } = require("ethers/lib/utils")
     const { Eoa } = require("../../auth")
