@@ -8,7 +8,7 @@ const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
 
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY } = require("./testUtils")
+const { TEST_PRIVATE_KEY, WALLET_PRIVATE_KEY } = require("./testUtils")
 const { Chain } = require("../data")
 
 const deploy = async (signer, obj, params = []) => {
@@ -60,5 +60,5 @@ const main = async (chainId, privateKey) => {
     // }))
 }
 
-main(5, GOERLI_PRIVATE_KEY)
+main(5, WALLET_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)

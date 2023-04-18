@@ -6,6 +6,7 @@ const { swapExec, fromReadableAmount } = require("../utils/swap")
 const fetch = require('node-fetch');
 const { parseOptions } = require('../utils')
 const { oneInchAPIRequest } = require('../utils/swap')
+const { sendRequest } = require('../utils')
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
@@ -103,7 +104,7 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
         '/approve/transaction',
         amount ? { tokenAddress, amount } : { tokenAddress }
     );
-    const transaction = await fetch(url).then(res => res.json());
+    const transaction = await sendRequest(url, 'GET', "")
     const web3 = new Web3(global.chain.rpcUrl);
     const gasLimit = await web3.eth.estimateGas({
         ...transaction,
@@ -131,13 +132,13 @@ const getOneInchSwapTx = async (swapParams, walletAddress) => {
         toTokenAddress: swapParams.tokenOut,
         amount: amount,
         fromAddress: walletAddress,
-        slippage: 1,
+        slippage: swapParams.slippage,
         disableEstimate: false,
         allowPartialFill: false,
     };
     const url = await oneInchAPIRequest('/swap', formattedSwap);
-
-    return fetch(url).then(res => res.json()).then(res => res.tx);
+    const res = await sendRequest(url, 'GET', "")
+    return res.tx
 
 }
 

@@ -27,10 +27,11 @@ class FirstClassActions {
             amountIn,
             ...swapOptions
         }
+        swapParams.slippage = swapParams.slippage ? swapParams.slippage : 1
         verifyFunctionParams("Wallet.swap", swapParams, swapExpected)
         const { chain } = await parseOptions(options)
         //if mainnet, use 1inch
-        if (oneInchSupported.includes(parseInt(chain.id)) ) {
+        if (oneInchSupported.includes(parseInt(chain.id))) {
             if (swapParams.tokenIn.toUpperCase() == chain.currency) {
                 swapParams.tokenIn = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
             }
