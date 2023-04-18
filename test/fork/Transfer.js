@@ -17,7 +17,7 @@ describe("Transfer", function () {
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
     const options = {
         chain: FORK_CHAIN_ID,
-        apiKey: "localtest",
+        apiKey: TEST_API_KEY,
         gasSponsor: ""
 
     }
