@@ -9,6 +9,6 @@ const config = {
     inToken:DAI_POLYGON,
     outToken: USDC_POLYGON,
     baseToken: 'matic',
-    prefund: false
+    prefund: true
 }
 SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.baseToken, config.prefund)

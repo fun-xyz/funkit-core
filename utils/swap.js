@@ -4,11 +4,12 @@ const { Pool, Route, SwapQuoter, SwapRouter, Trade, FeeAmount, computePoolAddres
 const { JSBI } = require('@uniswap/sdk');
 const ERC20 = require("../abis/ERC20.json")
 const IUniswapV3PoolABI = require('@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json')
+const { parseOptions } = require('../utils')
+const apiBaseUrl = 'https://api.1inch.io/v5.0/';
 
 function fromReadableAmount(amount, decimals) {
     return ethers.utils.parseUnits(amount.toString(), decimals)
 }
-
 
 class SwapToken {
     constructor(provider, quoterContractAddr, poolFactoryContractAddr) {
@@ -154,6 +155,11 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
     return { ...data, amount: tokenInAmount }
 }
 
+async function oneInchAPIRequest(methodName, queryParams, options = global) {
+    const { chain } = await parseOptions(options)
+    return apiBaseUrl + chain.id + methodName + '?' + (new URLSearchParams(queryParams)).toString();
+}
 
 
-module.exports = { swapExec, fromReadableAmount }
+
+module.exports = { swapExec, fromReadableAmount, oneInchAPIRequest }

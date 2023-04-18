@@ -88,7 +88,7 @@ const eoa = provider.getSigner()
 const auth = new Eoa({ signer: eoa })
 
 // Get FunWallet associated with EOA
-const uniqueID = await auth.getuniqueID()
+const uniqueID = await auth.getUniqueId()
 const wallet = new FunWallet({ uniqueID })
 
 ```
@@ -131,17 +131,17 @@ const eoa = provider.getSigner()
 const auth = new Eoa({ signer: eoa })
 
 // Get FunWallet associated with EOA
-const uniqueID = await auth.getuniqueID()
+const uniqueID = await auth.getUniqueId()
 const wallet = new FunWallet({ uniqueID })
 
 // Generate & deploy/execute Transactions that approve & send USDC & ETH from eoa to the Paymaster contract,
 // enabling wallet to transact by draining this staked USDC
 const sponsor = new TokenSponsor()
-const sponsorStakeTx = await sponsor.stake(auth.getuniqueID(), 2)
+const sponsorStakeTx = await sponsor.stake(auth.getUniqueId(), 2)
 const approveTx = await sponsor.approve("USDC", 10)
 const stakeTx = await sponsor.stakeToken("USDC", await wallet.getAddress(), 10)
 await auth.sendTxs([sponsorStakeTx, approveTx, stakeTx])
-await configureEnvironment({gasSponsor: {sponsorAddress: auth.getuniqueID()}})
+await configureEnvironment({gasSponsor: {sponsorAddress: auth.getUniqueId()}})
 
 // Send 0.1 ETH from the EOA to
 // Perform a transfer of 0.1 ETH from wallet to TO_ADDR

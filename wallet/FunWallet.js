@@ -141,7 +141,7 @@ class FunWallet extends FirstClassActions {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const id = await auth.getuniqueID()
+        const id = await auth.getUniqueId()
         const res = await chain.estimateOpGas({
             ...partialOp, signature: id,
             maxFeePerGas: 0,
@@ -154,7 +154,7 @@ class FunWallet extends FirstClassActions {
     }
 
     async _getThisInitCode(chain, auth) {
-        const owner = await auth.getuniqueID()
+        const owner = await auth.getUniqueId()
         const uniqueID = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")

@@ -6,6 +6,6 @@ const config = {
     inToken:"dai",
     outToken: "weth",
     baseToken: "eth",
-    prefund: false
+    prefund: true
 }
 SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.baseToken, config.prefund)

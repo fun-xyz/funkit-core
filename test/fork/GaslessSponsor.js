@@ -32,7 +32,7 @@ describe("GaslessSponsor", function () {
     before(async function () {
         await configureEnvironment(options)
 
-        uid = await auth.getuniqueID()
+        uid = await auth.getUniqueId()
         wallet = new FunWallet({ uid, index: 0 })
         await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
@@ -42,7 +42,7 @@ describe("GaslessSponsor", function () {
         await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()
 
-        const funderAddress = await funder.getuniqueID()
+        const funderAddress = await funder.getUniqueId()
         await wallet.swap(auth, {
             in: "eth",
             amount: 1,
@@ -54,7 +54,7 @@ describe("GaslessSponsor", function () {
 
         await configureEnvironment({
             gasSponsor: {
-                sponsorAddress: await funder.getuniqueID(),
+                sponsorAddress: await funder.getUniqueId(),
             }
         })
 

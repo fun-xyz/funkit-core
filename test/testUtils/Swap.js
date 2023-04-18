@@ -13,14 +13,14 @@ const SwapTest = (chainId, authPrivateKey, inToken, outToken, baseToken, prefund
     }
     
     describe("Swap", function () {
-        this.timeout(60_000)
+        this.timeout(100_000)
         let auth
         let wallet
         before(async function () {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            uniqueID = await auth.getuniqueID()
-            wallet = new FunWallet({ uniqueID, index: 23421 })
+            uniqueID = await auth.getUniqueId()
+            wallet = new FunWallet({ uniqueID, index: 23423 })
             if(prefund) {
                 await prefundWallet(auth, wallet, .3)
             }

@@ -5,15 +5,14 @@ const Web3 = require('web3');
 const { swapExec, fromReadableAmount } = require("../utils/swap")
 const fetch = require('node-fetch');
 const { parseOptions } = require('../utils')
+const { oneInchAPIRequest } = require('../utils/swap')
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
-
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
 const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
-const apiBaseUrl = 'https://api.1inch.io/v5.0/';
 
 
 const _swap = (params) => {
@@ -90,10 +89,6 @@ const _swap = (params) => {
     }
 }
 
-async function apiRequestUrl(methodName, queryParams, options = global) {
-    const { chain } = await parseOptions(options)
-    return apiBaseUrl + chain.id + methodName + '?' + (new URLSearchParams(queryParams)).toString();
-}
 const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
     let inTokenDecimals = 0
     if (tokenAddress != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
@@ -105,7 +100,7 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
     }
 
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
-    const url = await apiRequestUrl(
+    const url = await oneInchAPIRequest(
         '/approve/transaction',
         amount ? { tokenAddress, amount } : { tokenAddress }
     );
@@ -142,7 +137,7 @@ const getOneInchSwapTx = async (swapParams, walletAddress) => {
         disableEstimate: false,
         allowPartialFill: false,
     };
-    const url = await apiRequestUrl('/swap', formattedSwap);
+    const url = await oneInchAPIRequest('/swap', formattedSwap);
 
     return fetch(url).then(res => res.json()).then(res => res.tx);
 
