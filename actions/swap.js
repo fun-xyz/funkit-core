@@ -94,8 +94,7 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
     if (tokenAddress != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
         const inToken = new Token(tokenAddress)
         inTokenDecimals = await inToken.getDecimals()
-    }
-    else {
+    } else {
         inTokenDecimals = 18
     }
 

@@ -5,7 +5,7 @@ const { Eoa } = require("../../auth")
 const {parseOptions} = require('../../utils')
 const { TEST_PRIVATE_KEY }= require('../testUtils')
 describe("Unit Test: options.js", function () {
-    this.timeout(100_000)
+    this.timeout(40_000)
 
     it("configure environment with no options, use default goerli", async () => {
         let options = {}

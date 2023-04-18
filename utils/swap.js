@@ -160,6 +160,4 @@ async function oneInchAPIRequest(methodName, queryParams, options = global) {
     return apiBaseUrl + chain.id + methodName + '?' + (new URLSearchParams(queryParams)).toString();
 }
 
-
-
 module.exports = { swapExec, fromReadableAmount, oneInchAPIRequest }
