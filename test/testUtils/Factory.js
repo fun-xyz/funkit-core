@@ -21,13 +21,7 @@ const FactoryTest = (chainId, authPrivateKey, apiKey = "localtest") => {
             uniqueID = randomBytes(32).toString();
             wallet = new FunWallet({ uniqueID, index: 3923 })
         })
-        
-        // it("configure environment with no options, use default", async () => {
-        //     let options = {}
-        //     await configureEnvironment(options)
-        //     const wallet = new FunWallet({ uniqueID:9239, index: 23423 })
-        //     await wallet.transfer(auth, { to: await auth.getUniqueId(), amount: .01, token: 'eth' })
-        // })
+       
 
         it("wallet should have the same address with a uniqueID-index combination", async () => {
             let uniqueID1 = randomBytes(32).toString();
