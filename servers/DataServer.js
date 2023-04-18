@@ -6,7 +6,7 @@ const { getPromiseFromOp } = require('../utils/userop')
 const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
-const APIURL = 'https://vyhjm494l3.execute-api.us-west-2.amazonaws.com/prod'
+const APIURL = 'https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod'
 const TEST_API_KEY = "localtest"
 
 const BASE_WRAP_TOKEN_ADDR = {
@@ -113,14 +113,14 @@ class DataServer {
         return await sendRequest(`${APIURL}/${endpoint}`, "POST", global.apiKey, body)
     }
 
-    static async getChainInfo(chain) {
-        chain = chain.toString();
-        if (!Number(chain)) {
-            return await this.getChainFromName(chain)
+    static async getChainInfo(chainId) {
+        chainId = chainId.toString();
+        if (!Number(chainId)) {
+            return await this.getChainFromName(chainId)
         }
-        const body = { chain }
+        const body = { chain: chainId }
 
-        if (Number(chain) == LOCAL_FORK_CHAIN_ID) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
             })
@@ -164,6 +164,24 @@ class DataServer {
         const { moduleAddresses: { paymaster: { paymasterAddress } } } = await this.getChainInfo(chainId)
         return paymasterAddress
     }
+
+    static async sendUserOpToBundler(body) {
+        return await this.sendPostRequest(APIURL, "bundler/send-user-op", body)
+    }
+
+    static async estimateUserOpGas(body) {
+        return await this.sendPostRequest(APIURL, "bundler/estimate-user-op-gas", body)
+    }
+
+    static async validateChainId(chainId) {
+        return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", {chainId})
+    }
+
+    static async getChainId(bundlerUrl) {
+        const response =  await this.sendGetRequest(APIURL, `bundler/get-chain-id?bundlerUrl=${encodeURIComponent(bundlerUrl)}`)
+        return response.chainId;
+    }
+    
 }
 
 module.exports = { DataServer }

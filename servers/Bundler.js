@@ -1,7 +1,8 @@
 const { resolveProperties } = require("ethers/lib/utils");
 const { JsonRpcProvider } = require("@ethersproject/providers");
 const { deepHexlify, verifyFunctionParams, validateClassInstance } = require("../utils/data");
-const { Helper, NoServerConnectionError, ServerError, ParameterFormatError } = require("../errors");
+const { Helper, NoServerConnectionError } = require("../errors");
+const { DataServer } = require('./DataServer');
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
 
 class Bundler {
@@ -11,48 +12,49 @@ class Bundler {
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;
-        this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl);
     }
     async validateChainId() {
-        let chain;
-
+        // validate chainId is in sync with expected chainid
+        let response;
         try {
-            chain = await this.userOpJsonRpcProvider.send('eth_chainId', []);
+            response = await DataServer.validateChainId(this.chainId);
         } catch (e) {
-            const helper = new Helper("Bundler Url", this.bundlerUrl, "Can not connect to bundler.")
-            throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl")
-        }
-
-        if (parseInt(chain) != this.chainId && this.chainId != 1337) {
-            const helper = new Helper("Chain Id: ", this.chainId, `Bundler ${this.bundlerUrl} is on chainId ${chain}, but provider is on chainId ${this.chainId}`)
-            throw new ParameterFormatError("Chain.loadBundler", helper)
+            const helper = new Helper("Chain ID", this.chainId, "Cannot connect to bundler.");
+            throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl");
         }
     }
 
     async sendUserOpToBundler(userOp) {
         validateOp(userOp)
-        await this.validateChainId();
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp));
-        return await this.userOpJsonRpcProvider.send('eth_sendUserOperation', [hexifiedUserOp, this.entryPointAddress]);
+        const body = {
+            userOp: hexifiedUserOp,
+            entryPointAddress: this.entryPointAddress,
+            chainId: this.chainId
+        };
+        const response = await DataServer.sendUserOpToBundler(body);
+        return response;
     }
 
     async estimateUserOpGas(userOp) {
-        await this.validateChainId();
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp));
-        return await this.userOpJsonRpcProvider.send('eth_estimateUserOperationGas', [hexifiedUserOp, this.entryPointAddress]);
+        const body = {
+            userOp: hexifiedUserOp,
+            entryPointAddress: this.entryPointAddress,
+            chainId: this.chainId
+        };
+        const response = await DataServer.estimateUserOpGas(body);
+        return response;
     }
 
     static async getChainId(bundlerUrl) {
-        const provider = new JsonRpcProvider(bundlerUrl);
-        const chain = await provider.send('eth_chainId', []);
-        return parseInt(chain);
+        return await DataServer.getChainId(bundlerUrl);
     }
 }
 
 const validateOp = (userOp) => {
     const { UserOp } = require("../data/UserOp")
     try{
-
         validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
     }catch{
         new UserOp(userOp)
