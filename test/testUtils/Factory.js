@@ -37,7 +37,7 @@ const FactoryTest = (chainId, authPrivateKey, apiKey = "localtest") => {
             const walletAddress = await wallet1.getAddress()
             let iscontract = await isContract(walletAddress)
             expect(iscontract).to.be.false
-            await prefundWallet(auth, wallet1, .3)
+            await prefundWallet(auth, wallet1, .5)
             await wallet1.create(auth)
             iscontract = await isContract(walletAddress)
             expect(iscontract).to.be.true
