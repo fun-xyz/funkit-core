@@ -4,21 +4,22 @@ const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
 const { FunWallet } = require("../../wallet")
-const { isContract, prefundWallet, TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL, TEST_API_KEY  } = require("../../utils")
+const { isContract, prefundWallet, TEST_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL, getTestApiKey  } = require("../../utils")
 describe("Factory", function () {
     let auth
     let wallet
     let uniqueID
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-
-    const options = {
-        chain: FORK_CHAIN_ID,
-        apiKey: TEST_API_KEY,
-    }
     this.timeout(30_000)
 
     before(async function () {
+        const apiKey = await getTestApiKey()
+        console.log("apiKey: ", apiKey)
+        const options = {
+            chain: FORK_CHAIN_ID,
+            apiKey: apiKey,
+        }
         await configureEnvironment(options)
         const signer = new ethers.Wallet(TEST_PRIVATE_KEY)
         auth = new Eoa({ signer: signer })

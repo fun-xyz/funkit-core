@@ -4,7 +4,7 @@ const { randomBytes } = require("ethers/lib/utils")
 const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
-const { TEST_PRIVATE_KEY, prefundWallet, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, TEST_API_KEY } = require("../../utils")
+const { TEST_PRIVATE_KEY, prefundWallet, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 const testToken = "dai"
@@ -15,14 +15,15 @@ describe("Swap", function () {
     let wallet
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-    const options = {
-        chain: FORK_CHAIN_ID,
-        apiKey: TEST_API_KEY,
-        gasSponsor: ""
-    }
 
     const amount = 1
     before(async function () {
+        const apiKey = await getTestApiKey()
+        const options = {
+            chain: FORK_CHAIN_ID,
+            apiKey: apiKey,
+            gasSponsor: ""
+        }
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
         uniqueID = await auth.getUniqueId()
