@@ -1,6 +1,7 @@
 const { Chain } = require("../data/Chain")
 const { verifyFunctionParams } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
+const { getOrgInfo } = require("../utils/dashboard")
 
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
 
@@ -18,21 +19,26 @@ const verifyBundlerUrl = async (url) => {
 //set defaults
 const checkEnvironment = async (options) => {
     options.chain = options.chain ? options.chain : 5
+    options.apiKey = options.apiKey ? options.apiKey : "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
     return options
 }
 
 const parseOptions = async (options, location) => {
     options = await checkEnvironment(options)
-    let { gasSponsor, chain } = options
+    let { gasSponsor, chain, apiKey, orgInfo } = options
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
     if (chain) {
         chain = await getChainFromData(chain)
     }
+    if (apiKey) {
+        orgInfo = await getOrgInfo(options.apiKey)
+    }
+    global = { ...global, ...options, chain, gasSponsor, orgInfo }
 
     return {
-        ...options, chain, gasSponsor
+        ...options, chain, gasSponsor, orgInfo
     }
 }
 
