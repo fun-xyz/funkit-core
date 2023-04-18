@@ -8,4 +8,4 @@ const config = {
     baseToken: "eth",
     prefund: false
 }
-SwapTest(config.chainId, config.authPrivateKey, config.inToken, config.outToken, config.baseToken, config.prefund)
+SwapTest(config)

@@ -4,4 +4,4 @@ const config = {
     chainId: 5,
     authPrivateKey: GOERLI_PRIVATE_KEY,
 }
-FactoryTest(config.chainId, config.authPrivateKey)
+FactoryTest(config)

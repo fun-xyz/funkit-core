@@ -1,4 +1,6 @@
-const FactoryTest = (chainId, authPrivateKey, apiKey = "localtest") => {
+const FactoryTest = (config, apiKey = "localtest") => {
+    const { chainId, authPrivateKey } = config
+    console.log(chainId)
     const { expect } = require("chai")
     const { randomBytes } = require("ethers/lib/utils")
     const { Eoa } = require("../../auth")
@@ -21,7 +23,7 @@ const FactoryTest = (chainId, authPrivateKey, apiKey = "localtest") => {
             uniqueID = randomBytes(32).toString();
             wallet = new FunWallet({ uniqueID, index: 3923 })
         })
-       
+
 
         it("wallet should have the same address with a uniqueID-index combination", async () => {
             let uniqueID1 = randomBytes(32).toString();

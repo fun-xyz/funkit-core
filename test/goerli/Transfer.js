@@ -7,4 +7,4 @@ const config = {
     baseToken: "eth",
     prefund: false
 }
-TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.baseToken, config.prefund)
+TransferTest(config)

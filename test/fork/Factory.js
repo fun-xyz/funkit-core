@@ -6,4 +6,4 @@ const config = {
     chainId: FORK_CHAIN_ID,
     authPrivateKey: TEST_PRIVATE_KEY,
 }
-FactoryTest(config.chainId, config.authPrivateKey)
+FactoryTest(config)

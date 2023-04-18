@@ -1,4 +1,5 @@
-const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = true, apiKey = "localtest") => {
+const TransferTest = (config, apiKey = "localtest") => {
+    const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
     const { Wallet } = require("ethers")
     const { Eoa } = require("../../auth")
@@ -23,7 +24,7 @@ const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = tr
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueID, index: 23423 })
-            if(prefund)
+            if (prefund)
                 await prefundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()
 
@@ -47,7 +48,7 @@ const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = tr
 
             let b1 = Token.getBalance(outToken, randomAddress)
             let b2 = Token.getBalance(outToken, walletAddress)
-            const receipt= await wallet.transfer(auth, { to: randomAddress, amount, token: outToken })
+            const receipt = await wallet.transfer(auth, { to: randomAddress, amount, token: outToken })
             let b3 = Token.getBalance(outToken, randomAddress)
             let b4 = Token.getBalance(outToken, walletAddress)
 
@@ -60,4 +61,4 @@ const TransferTest = (chainId, authPrivateKey, outToken, baseToken, prefund = tr
 
     })
 }
-module.exports = {TransferTest}
+module.exports = { TransferTest }

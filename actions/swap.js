@@ -121,8 +121,7 @@ const getOneInchSwapTx = async (swapParams, walletAddress) => {
     if (swapParams.tokenIn != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
         const inToken = new Token(swapParams.tokenIn)
         inTokenDecimals = await inToken.getDecimals()
-    }
-    else {
+    } else {
         inTokenDecimals = 18
     }
 

@@ -8,4 +8,4 @@ const config = {
     baseToken: 'matic',
     prefund: false
 }
-TransferTest(config.chainId, config.authPrivateKey, config.outToken, config.baseToken, config.prefund)
+TransferTest(config)
