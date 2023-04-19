@@ -11,10 +11,10 @@ const factory = require("../abis/FunWalletFactory.json")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
+const { constants } = require("ethers")
 
 class FunWallet extends FirstClassActions {
     objCache = {}
-
 
     /**
      * Creates FunWallet object
@@ -66,21 +66,7 @@ class FunWallet extends FirstClassActions {
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const sender = await this.getAddress({ chain })
-
-        let tempCallData;
-        if (data.initAndExec) {
-            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
-            if (!moduleIsInit) {
-                tempCallData = this.abiManager.encodeInitExecCall(data)
-            } else {
-                tempCallData = this.abiManager.encodeCall(data)
-            }
-        }
-        else {
-            tempCallData = this.abiManager.encodeCall(data)
-        }
-
-        const callData = tempCallData
+        const callData = await this._getCallData(onChainDataManager, data, sender, options)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
@@ -103,6 +89,35 @@ class FunWallet extends FirstClassActions {
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
         return { ...partialOp, nonce }
+    }
+
+    async _getCallData(onChainDataManager, data, sender, options) {
+        let tempCallData;
+        let fee = { ...options.fee }
+        if (options.fee) {
+
+            const token = new Token(fee.token)
+            if (token.isNative) {
+                fee.token = constants.AddressZero
+            }
+            else {
+                fee.token = await token.getAddress()
+            }
+            fee.amount = (await token.getDecimalAmount(fee.amount)).toString()
+        }
+        data = { ...data, ...fee }
+        if (data.initAndExec) {
+            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
+            if (!moduleIsInit) {
+                tempCallData = this.abiManager.encodeInitExecCall(data)
+            } else {
+                tempCallData = this.abiManager.encodeCall(data)
+            }
+        }
+        else {
+            tempCallData = this.abiManager.encodeCall(data)
+        }
+        return tempCallData
     }
 
     /**
@@ -149,10 +164,7 @@ class FunWallet extends FirstClassActions {
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-
-
-        
-        return new UserOp({ ...partialOp, ...res, signature: id, }, true)
+        return new UserOp({ ...partialOp, ...res, signature: id, })
     }
 
     async _getThisInitCode(chain, auth) {

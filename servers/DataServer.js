@@ -48,7 +48,7 @@ class DataServer {
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
         })
-        return userOpHash
+        return receipt.userOpHash
     }
 
     static async storeEVMCall(receipt) {
@@ -171,14 +171,14 @@ class DataServer {
     }
 
     static async validateChainId(chainId) {
-        return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", {chainId})
+        return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", { chainId })
     }
 
     static async getChainId(bundlerUrl) {
-        const response =  await this.sendGetRequest(APIURL, `bundler/get-chain-id?bundlerUrl=${encodeURIComponent(bundlerUrl)}`)
+        const response = await this.sendGetRequest(APIURL, `bundler/get-chain-id?bundlerUrl=${encodeURIComponent(bundlerUrl)}`)
         return response.chainId;
     }
-    
+
 }
 
 module.exports = { DataServer }

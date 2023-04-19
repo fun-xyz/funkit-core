@@ -48,17 +48,19 @@ const main = async (chainId, privateKey) => {
     // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     // const oracle = await deployOracle(signer)
 
-    const auth = await deployUserAuth(signer)
-    console.log(auth)
+    const factory = await deployFactory(signer)
 
     const old = require("../contracts.json")
 
-    // fs.writeFileSync("contracts.json", JSON.stringify({
-    //     ...old,
-    //     gaslessSponsor,
-    //     // tokenSponsor,oracle 
-    // }))
+    fs.writeFileSync("contracts.json", JSON.stringify({
+        ...old,
+        factory,
+        // gaslessSponsor,
+        // tokenSponsor,oracle 
+    }))
 }
 
-main(5, GOERLI_PRIVATE_KEY)
-// main(36864, TEST_PRIVATE_KEY)
+const factory = "0xf7F5aA1788bb4D4406b7b7b52a000Ed8EEc89f2e"
+
+// main(5, GOERLI_PRIVATE_KEY)
+main(36864, TEST_PRIVATE_KEY)

@@ -54,6 +54,7 @@ const encodeContractCall = (interf, encodeFunctionName, input, location, isInter
 }
 
 const verifyParamIsSolidityType = (param, location, isInternal = false) => {
+    if (Array.isArray(param.data)) return
     try {
         defaultAbiCoder.encode([param.type], [param.data])
     }
