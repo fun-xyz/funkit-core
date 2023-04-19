@@ -29,7 +29,7 @@ const parseOptions = async (options, location) => {
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
-    if (chain && !global.chain) {
+    if (chain) {
         chain = await getChainFromData(chain)
     }
     if (apiKey && !global.orgInfo) {
