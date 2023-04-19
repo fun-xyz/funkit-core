@@ -155,9 +155,5 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
     return { ...data, amount: tokenInAmount }
 }
 
-async function oneInchAPIRequest(methodName, queryParams, options = global) {
-    const { chain } = await parseOptions(options)
-    return apiBaseUrl + chain.id + methodName + '?' + (new URLSearchParams(queryParams)).toString();
-}
 
-module.exports = { swapExec, fromReadableAmount, oneInchAPIRequest }
+module.exports = { swapExec, fromReadableAmount }
