@@ -9,7 +9,6 @@ function fromReadableAmount(amount, decimals) {
     return ethers.utils.parseUnits(amount.toString(), decimals)
 }
 
-
 class SwapToken {
     constructor(provider, quoterContractAddr, poolFactoryContractAddr) {
         this.provider = provider
@@ -154,4 +153,5 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
     return { ...data, amount: tokenInAmount }
 }
 
-module.exports = { swapExec }
+
+module.exports = { swapExec, fromReadableAmount }

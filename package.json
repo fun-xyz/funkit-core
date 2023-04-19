@@ -1,5 +1,5 @@
 {
-  "name": "@fun-wallet/sdk",
+  "name": "fun-wallet",
   "version": "0.2.1",
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
@@ -19,7 +19,8 @@
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-sdk": "^3.9.0",
     "ethers": "5.7.2",
-    "node-fetch": "2.0.0"
+    "node-fetch": "2.0.0",
+    "web3": "^1.9.0"
   },
   "devDependencies": {
     "chai": "^4.3.7",
