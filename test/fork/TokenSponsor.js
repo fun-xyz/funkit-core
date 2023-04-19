@@ -45,7 +45,7 @@ describe("TokenSponsor", function () {
         await wallet.swap(auth, {
             in: "eth",
             amount: 1,
-            out: "usdc",
+            out: paymasterToken,
             options: {
                 returnAddress: funderAddress
             }
