@@ -7,7 +7,6 @@ const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
 
-
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
 
@@ -15,14 +14,14 @@ class FirstClassActions {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
     }
+    
     async approve(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.approve", input, approveExpected)
         return await this.execute(auth, _approve(input), options, estimate)
     }
+
     async swap(auth, input, options = global, estimate = false) {
-      
         verifyFunctionParams("Wallet.swap", input, swapExpected)
-        
         return await this.execute(auth, _swap(input), options, estimate)
     }
 

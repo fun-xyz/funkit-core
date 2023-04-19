@@ -2,7 +2,6 @@ const { expect } = require("chai")
 const { FunWallet } = require("../../wallet")
 const { configureEnvironment } = require("../../managers")
 const { Eoa } = require("../../auth")
-const {parseOptions} = require('../../utils')
 const { TEST_PRIVATE_KEY }= require('../testUtils')
 describe("Unit Test: options.js", function () {
     this.timeout(40_000)

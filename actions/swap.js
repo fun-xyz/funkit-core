@@ -1,15 +1,13 @@
 const { Contract, constants } = require("ethers")
 const { Interface } = require("ethers/lib/utils")
 const { Token } = require("../data/Token")
-const { swapExec, fromReadableAmount } = require("../utils/swap")
+const { swapExec } = require("../utils/swap")
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
 const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
-
-
 
 const _swap = (params) => {
     return async (actionData) => {
