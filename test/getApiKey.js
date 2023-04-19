@@ -1,35 +1,37 @@
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
+const { retry, DEFAULT_RETRY_OPTIONS } = require('../utils/network')
+
+const SECRET_NAME = "FunApiServer/ApiGateway";
+const REGION = "us-west-2";
+const VERSION_STAGE = "AWSCURRENT";
 
 async function getApiKey() {
-    const secret_name = "FunApiServer/ApiGateway";
-    
     const client = new SecretsManagerClient({
-        region: "us-west-2",
-    });
-    
-    let response;
-    
+        region: REGION
+    })
+
+    let response
+
     try {
-        response = await client.send(
+        response = await retry(() => client.send(
             new GetSecretValueCommand({
-                SecretId: secret_name,
-                VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
+                SecretId: SECRET_NAME,
+                VersionStage: VERSION_STAGE
             })
-        );
+        ), DEFAULT_RETRY_OPTIONS);
     } catch (error) {
         // For a list of exceptions thrown, see
         // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-        throw error;
+        throw error
     }
-    
-    const secret = JSON.parse(response.SecretString);
-    const apiKey = secret.apigw;
-    console.log("API Key: ", apiKey);
-    return apiKey;
+
+    const secret = JSON.parse(response.SecretString)
+    const apiKey = secret.apigw
+    return apiKey
 }
 
 getApiKey().catch((error) => {
-    console.error("Error retrieving API key:", error);
-});
+    console.error("Error retrieving API key:", error)
+})
 
-module.exports = getApiKey;
+module.exports = { getApiKey }

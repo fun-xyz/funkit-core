@@ -13,7 +13,7 @@ const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
 
-const getApiKey = require('./getApiKey');
+const { getApiKey } = require('./getApiKey');
 
 async function getTestApiKey() {
     if (!process.env.REMOTE_TEST) {
@@ -29,7 +29,6 @@ async function getTestApiKey() {
 }
 
 const TEST_API_KEY = getTestApiKey();
-// const TEST_API_KEY = process.env.REMOTE_TEST ? "aci4Jw5RtX36aHiCZEfm96vmnYfqfBgi28FFCGJe" : "localtest"
 
 module.exports = {
     TEST_PRIVATE_KEY, FUNDER_PRIVATE_KEY, GOERLI_PRIVATE_KEY, FUN_TESTNET_CHAIN_ID, GOERLI_FUNDER_PRIVATE_KEY,

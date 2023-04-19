@@ -41,4 +41,4 @@ const DEFAULT_RETRY_OPTIONS = {
     calculateDelay: null
 }
 
-module.exports = { sendRequest, DEFAULT_RETRY_OPTIONS };
+module.exports = { retry, sendRequest, DEFAULT_RETRY_OPTIONS };

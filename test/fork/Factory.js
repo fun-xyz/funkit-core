@@ -15,7 +15,6 @@ describe("Factory", function () {
 
     before(async function () {
         const apiKey = await getTestApiKey()
-        console.log("apiKey: ", apiKey)
         const options = {
             chain: FORK_CHAIN_ID,
             apiKey: apiKey,
