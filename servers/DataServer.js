@@ -165,23 +165,42 @@ class DataServer {
         return paymasterAddress
     }
 
-    static async sendUserOpToBundler(body) {
-        return await this.sendPostRequest(APIURL, "bundler/send-user-op", body)
+    static async sendUserOpToBundler(body, chainId, provider) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+            return await provider.send('eth_sendUserOperation', [body.userOp, body.entryPointAddress]);
+        } else {
+            return await this.sendPostRequest(APIURL, "bundler/send-user-op", body)
+        }
     }
 
-    static async estimateUserOpGas(body) {
-        return await this.sendPostRequest(APIURL, "bundler/estimate-user-op-gas", body)
+    static async estimateUserOpGas(body, chainId, provider) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+            return await provider.send('eth_estimateUserOperationGas', [body.userOp, body.entryPointAddress]);
+        } else {
+            return await this.sendPostRequest(APIURL, "bundler/estimate-user-op-gas", body)
+        }
     }
 
-    static async validateChainId(chainId) {
-        return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", {chainId})
+    static async validateChainId(chainId, provider) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+            const chain = await provider.send('eth_chainId', [])
+            return chain
+        } else {
+            return await this.sendPostRequest(APIURL, "bundler/validate-chain-id", { chainId })
+        }
     }
 
-    static async getChainId(bundlerUrl) {
-        const response =  await this.sendGetRequest(APIURL, `bundler/get-chain-id?bundlerUrl=${encodeURIComponent(bundlerUrl)}`)
-        return response.chainId;
+    static async getChainId(bundlerUrl, chainId, provider) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+            const chain = await provider.send('eth_chainId', []);
+            return parseInt(chain); 
+        } else {
+            const response = await this.sendGetRequest(APIURL, `bundler/get-chain-id?bundlerUrl=${encodeURIComponent(bundlerUrl)}`)
+            return response.chainId;
+        }
+
     }
-    
+
 }
 
 module.exports = { DataServer }
