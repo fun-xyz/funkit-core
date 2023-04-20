@@ -56,7 +56,7 @@ class WalletAbiManager {
         const { uniqueID, entryPointAddress, verificationAddress, owner, implementation } = input
 
         const initCodeParams = {
-            salt:uniqueID, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
+            salt: uniqueID, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
         }
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero

@@ -9,12 +9,15 @@ const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 const APIURL = 'https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod'
 const TEST_API_KEY = "localtest"
 
-const WETH_ADDR = {
+const BASE_WRAP_TOKEN_ADDR = {
     "1": {
         weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     "5": {
         weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+    },
+    "137": {
+        wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
     },
     "43113": {
         weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
@@ -88,8 +91,8 @@ class DataServer {
                 chain: 1
             }
         }
-        if (symbol == "weth" && WETH_ADDR[chain]) {
-            return WETH_ADDR[chain][symbol]
+        if (symbol == "weth" || symbol == "wmatic" && BASE_WRAP_TOKEN_ADDR[chain]) {
+            return BASE_WRAP_TOKEN_ADDR[chain][symbol]
         }
 
         tokenInfo = await this.sendPostRequest(APIURL, "get-erc-token", body).then(r => {

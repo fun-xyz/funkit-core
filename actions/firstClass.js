@@ -1,8 +1,7 @@
 const { verifyFunctionParams } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
-const { isContract } = require('../utils')
-
+const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
@@ -15,7 +14,7 @@ class FirstClassActions {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
     }
-
+    
     async approve(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.approve", input, approveExpected)
         return await this.execute(auth, _approve(input), options, estimate)
