@@ -3,7 +3,7 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, TEST_API_KEY } = require("../../utils")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 
@@ -20,15 +20,16 @@ describe("TokenSponsor", function () {
 
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-    const options = {
-        chain: FORK_CHAIN_ID,
-        apiKey: TEST_API_KEY,
-    }
 
     const amount = 1
     let wallet
     let wallet1
     before(async function () {
+        const apiKey = await getTestApiKey()
+        const options = {
+            chain: FORK_CHAIN_ID,
+            apiKey: apiKey,
+        }
         await configureEnvironment(options)
 
         uniqueID = await auth.getUniqueId()
