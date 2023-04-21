@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const { Eoa } = require("./EoaAuth");
 const { arrayify } = require("ethers/lib/utils");
 
-class MultiAuth extends Eoa {
+class MultiAuthEoa extends Eoa {
     constructor(input) {
         super(input)
         this.ids = input.ids //["twitter###Chazzz", "google###chaz@fun.xyz", "0x111111111111111111"]
@@ -31,3 +31,5 @@ class MultiAuth extends Eoa {
         return await signer.signMessage(arrayify(hash))
     }
 }
+
+module.exports = { MultiAuthEoa }
