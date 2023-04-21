@@ -22,13 +22,13 @@ const FactoryTest = (config, apiKey = "localtest") => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = randomBytes(32).toString();
-            wallet = new FunWallet({ uniqueID, index: 3923 })
+            wallet = new FunWallet({ uniqueID, index: 3123 })
         })
 
 
         it("wallet should have the same address with a uniqueID-index combination", async () => {
             let uniqueID1 = randomBytes(32).toString();
-            const wallet1 = new FunWallet({ uniqueID, index: 3923 })
+            const wallet1 = new FunWallet({ uniqueID, index: 3123 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.be.equal(wallet1Address)

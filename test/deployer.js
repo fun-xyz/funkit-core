@@ -62,11 +62,11 @@ const main = async (chainId, privateKey) => {
     const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
-    // const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
+    const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
     const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     const oracle = await deployOracle(signer)
 
-    const auth = await deployApproveAndExec(signer)
+    const auth = await deployUserAuth(signer)
     console.log(auth)
 
 
@@ -74,12 +74,13 @@ const main = async (chainId, privateKey) => {
 
     fs.writeFileSync("contracts.json", JSON.stringify({
         ...old,
+        // gaslessSponsor,
         tokenSponsor, oracle
     }))
 }
 
 const paymasterConfig = async () => {
-    await configureEnvironment(getOptions)
+    await configureEnvironment(await getOptions())
 
     const tokenAddress = await Token.getAddress("usdc")
     const eoa = new Eoa({ privateKey: TEST_PRIVATE_KEY })
@@ -97,7 +98,7 @@ const paymasterConfig = async () => {
 }
 
 
-main(31337, TEST_PRIVATE_KEY)
+// main(31337, TEST_PRIVATE_KEY)
 // main(5, GOERLI_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)
-// paymasterConfig()
+paymasterConfig()
