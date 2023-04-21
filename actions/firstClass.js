@@ -20,7 +20,6 @@ class FirstClassActions {
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
-
     async swap(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.swap", input, swapExpected)
         return await this.execute(auth, _swap(input), options, estimate)
