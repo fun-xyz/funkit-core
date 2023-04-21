@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ "main", "staging" ]
 
+env:
+  AWS_ACCESS_KEY_ID: AKIAZBJVQUYMYV5LTBIH
+  AWS_SECRET_ACCESS_KEY: 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
+
 jobs:
   build:
 
