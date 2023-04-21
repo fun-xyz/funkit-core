@@ -15,6 +15,9 @@ const DEFAULT_FEE = "medium"
 
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 
+const errorData = {
+    location: "actions.swap"
+}
 
 const _swap = (params) => {
     return async (actionData) => {
@@ -24,7 +27,12 @@ const _swap = (params) => {
         //if mainnet, use 1inch
         if (oneInchSupported.includes(parseInt(chain.id))) {
             const data = await _1inchSwap(params, options)
-            console.log(data)
+            if (!data.approveTx) {
+                return { data: data.swapTx, errorData }
+            }
+            else {
+                return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
+            }
         }
         let {
             returnAddress,
@@ -88,9 +96,7 @@ const _swap = (params) => {
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
 
-        const errorData = {
-            location: "actions.swap"
-        }
+
 
         return { data: txData, errorData }
     }
@@ -99,23 +105,23 @@ const _swap = (params) => {
 
 const oneInchSupported = [1, 56, 137, 31337]
 const _1inchSwap = async (swapParams, options = global) => {
-
+    let approveTx = undefined
     const { chain } = await parseOptions(options)
     if (swapParams.tokenIn.toUpperCase() == chain.currency) {
         swapParams.tokenIn = eth1InchAddress
+    } else {
+
+        approveTx = await _getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn)
     }
     if (swapParams.tokenOut.toUpperCase() == chain.currency) {
         swapParams.tokenOut = eth1InchAddress
     }
-    //check approvals
 
-    const approveTx = await getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn)
-    const swapTx = await getOneInchSwapTx(swapParams, options)
+    const swapTx = await _getOneInchSwapTx(swapParams, options)
     return { approveTx, swapTx }
-
 }
 
-const getOneInchApproveTx = async (tokenAddress, amt) => {
+const _getOneInchApproveTx = async (tokenAddress, amt) => {
     let inTokenDecimals = 0
     if (tokenAddress != eth1InchAddress) {
         const inToken = new Token(tokenAddress)
@@ -132,7 +138,7 @@ const getOneInchApproveTx = async (tokenAddress, amt) => {
     const transaction = await sendRequest(url, 'GET', "")
     return transaction
 }
-const getOneInchSwapTx = async (swapParams, options) => {
+const _getOneInchSwapTx = async (swapParams, options) => {
     const parsedOptions = await parseOptions(options)
     let inTokenDecimals = 0
     if (swapParams.tokenIn != eth1InchAddress) {
@@ -160,4 +166,4 @@ const getOneInchSwapTx = async (swapParams, options) => {
 
 }
 
-module.exports = { _swap, getOneInchApproveTx, getOneInchSwapTx };
+module.exports = { _swap };

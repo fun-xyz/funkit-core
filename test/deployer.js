@@ -7,6 +7,7 @@ const tokenSponsorAbi = require("../abis/TokenPaymaster.json")
 const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
+const approveAndExecAbi = require("../abis/ApproveAndExec.json")
 
 const { TEST_PRIVATE_KEY, WALLET_PRIVATE_KEY } = require("./testUtils")
 const { Chain } = require("../data")
@@ -36,6 +37,10 @@ const deployUserAuth = async (signer) => {
     return await deploy(signer, authAbi)
 }
 
+const deployApproveAndExec = async (signer) => {
+    return await deploy(signer, approveAndExecAbi)
+}
+
 const main = async (chainId, privateKey) => {
 
     const chain = new Chain({ chainId })
@@ -48,7 +53,7 @@ const main = async (chainId, privateKey) => {
     // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     // const oracle = await deployOracle(signer)
 
-    const auth = await deployUserAuth(signer)
+    const auth = await deployApproveAndExec(signer)
     console.log(auth)
 
     const old = require("../contracts.json")
@@ -60,5 +65,5 @@ const main = async (chainId, privateKey) => {
     // }))
 }
 
-main(5, WALLET_PRIVATE_KEY)
+main(31337, TEST_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)

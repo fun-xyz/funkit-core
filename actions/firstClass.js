@@ -1,5 +1,5 @@
 const { verifyFunctionParams } = require("../utils")
-const { _swap, getOneInchApproveTx, getOneInchSwapTx } = require("./swap")
+const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
 const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
@@ -27,7 +27,7 @@ class FirstClassActions {
         }
         swapParams.slippage = swapParams.slippage ? swapParams.slippage : 1
         verifyFunctionParams("Wallet.swap", swapParams, swapExpected)
-        
+
         return await this.execute(auth, _swap(swapParams), options)
     }
 
