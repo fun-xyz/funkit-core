@@ -14,13 +14,16 @@ class FirstClassActions {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
     }
+    
     async approve(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.approve", input, approveExpected)
         return await this.execute(auth, _approve(input), options, estimate)
     }
-    async swap(auth, input, options = global) {
+
+
+    async swap(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.swap", input, swapExpected)
-        return await this.execute(auth, _swap(input), options)
+        return await this.execute(auth, _swap(input), options, estimate)
     }
 
     async create(auth, options = global, estimate = false) {

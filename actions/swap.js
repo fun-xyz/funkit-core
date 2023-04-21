@@ -55,7 +55,6 @@ const _uniswapSwap = (params, options = global) => {
     return async (actionData) => {
         const { tokenIn, tokenOut, amountIn, options: swapOptions = {} } = params
         const { wallet, chain, options } = actionData
-
         let {
             returnAddress,
             slippage,
@@ -70,7 +69,7 @@ const _uniswapSwap = (params, options = global) => {
         const univ3router = await chain.getAddress("univ3router")
 
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
-
+        
         const tokenInObj = new Token(tokenIn)
         const tokenOutObj = new Token(tokenOut)
 
@@ -123,7 +122,6 @@ const _uniswapSwap = (params, options = global) => {
         return { data: txData, errorData }
     }
 }
-
 
 const _1inchSwap = async (swapParams, options = global) => {
     let approveTx = undefined
