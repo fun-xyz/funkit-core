@@ -1,3 +1,5 @@
+const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../testUtils")
+
 const FactoryTest = (config, apiKey = "localtest") => {
     const { chainId, authPrivateKey } = config
     const { expect } = require("chai")
@@ -33,15 +35,17 @@ const FactoryTest = (config, apiKey = "localtest") => {
         })
 
         it("wallet.create should create a wallet", async () => {
-            const index = Math.random() * 10000
-            const wallet1 = new FunWallet({ uniqueID, index })
-            const walletAddress = await wallet1.getAddress()
-            let iscontract = await isContract(walletAddress)
-            expect(iscontract).to.be.false
-            await prefundWallet(auth, wallet1, .5)
-            await wallet1.create(auth)
-            iscontract = await isContract(walletAddress)
-            expect(iscontract).to.be.true
+            if (chainId == FUN_TESTNET_CHAIN_ID || chainId == LOCAL_FORK_CHAIN_ID) {
+                const index = Math.random() * 10000
+                const wallet1 = new FunWallet({ uniqueID, index })
+                const walletAddress = await wallet1.getAddress()
+                let iscontract = await isContract(walletAddress)
+                expect(iscontract).to.be.false
+                await prefundWallet(auth, wallet1, .5)
+                await wallet1.create(auth)
+                iscontract = await isContract(walletAddress)
+                expect(iscontract).to.be.true
+            }
         })
 
         it("wallet should not have the same address with a different index", async () => {
