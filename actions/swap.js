@@ -1,7 +1,6 @@
 const { Contract, constants } = require("ethers")
 const { Interface } = require("ethers/lib/utils")
 const { Token } = require("../data/Token")
-const Web3 = require('web3');
 const { swapExec, fromReadableAmount } = require("../utils/swap")
 const fetch = require('node-fetch');
 const { parseOptions } = require('../utils')
@@ -14,12 +13,19 @@ const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.H
 const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
+const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 
 
 const _swap = (params) => {
     return async (actionData) => {
         const { tokenIn, tokenOut, amountIn, options: swapOptions = {} } = params
-        const { wallet, chain } = actionData
+        const { wallet, chain, options } = actionData
+
+        //if mainnet, use 1inch
+        if (oneInchSupported.includes(parseInt(chain.id))) {
+            const data = await _1inchSwap(params, options)
+            console.log(data)
+        }
         let {
             returnAddress,
             slippage,
@@ -90,9 +96,28 @@ const _swap = (params) => {
     }
 }
 
-const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
+
+const oneInchSupported = [1, 56, 137, 31337]
+const _1inchSwap = async (swapParams, options = global) => {
+
+    const { chain } = await parseOptions(options)
+    if (swapParams.tokenIn.toUpperCase() == chain.currency) {
+        swapParams.tokenIn = eth1InchAddress
+    }
+    if (swapParams.tokenOut.toUpperCase() == chain.currency) {
+        swapParams.tokenOut = eth1InchAddress
+    }
+    //check approvals
+
+    const approveTx = await getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn)
+    const swapTx = await getOneInchSwapTx(swapParams, options)
+    return { approveTx, swapTx }
+
+}
+
+const getOneInchApproveTx = async (tokenAddress, amt) => {
     let inTokenDecimals = 0
-    if (tokenAddress != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+    if (tokenAddress != eth1InchAddress) {
         const inToken = new Token(tokenAddress)
         inTokenDecimals = await inToken.getDecimals()
     } else {
@@ -105,28 +130,17 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
         amount ? { tokenAddress, amount } : { tokenAddress }
     );
     const transaction = await sendRequest(url, 'GET', "")
-    const web3 = new Web3(global.chain.rpcUrl);
-    const gasLimit = await web3.eth.estimateGas({
-        ...transaction,
-        from: walletAddress
-    });
-
-    return {
-        ...transaction,
-        gas: gasLimit
-    };
-
+    return transaction
 }
-const getOneInchSwapTx = async (swapParams, walletAddress, options) => {
+const getOneInchSwapTx = async (swapParams, options) => {
     const parsedOptions = await parseOptions(options)
     let inTokenDecimals = 0
-    if (swapParams.tokenIn != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
+    if (swapParams.tokenIn != eth1InchAddress) {
         const inToken = new Token(swapParams.tokenIn)
         inTokenDecimals = await inToken.getDecimals()
     } else {
         inTokenDecimals = 18
     }
-
 
     const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, parsedOptions)
     const toTokenAddress = await Token.getAddress(swapParams.tokenOut, parsedOptions)
@@ -142,7 +156,6 @@ const getOneInchSwapTx = async (swapParams, walletAddress, options) => {
     };
     const url = await oneInchAPIRequest('/swap', formattedSwap);
     const res = await sendRequest(url, 'GET', "")
-    console.log(res)
     return res.tx
 
 }

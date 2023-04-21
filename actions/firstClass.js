@@ -7,8 +7,6 @@ const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
 
-const oneInchSupported = [1, 56, 137, 31337]
-
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
 
@@ -29,25 +27,7 @@ class FirstClassActions {
         }
         swapParams.slippage = swapParams.slippage ? swapParams.slippage : 1
         verifyFunctionParams("Wallet.swap", swapParams, swapExpected)
-        const { chain } = await parseOptions(options)
-        //if mainnet, use 1inch
-        if (oneInchSupported.includes(parseInt(chain.id))) {
-            if (swapParams.tokenIn.toUpperCase() == chain.currency) {
-                swapParams.tokenIn = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-            }
-            if (swapParams.tokenOut.toUpperCase() == chain.currency) {
-                swapParams.tokenOut = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-            }
-            //check approvals
-            const address = await this.getAddress()
-            let approveReceipt = ""
-            const approveTx = await getOneInchApproveTx(swapParams.tokenIn, amountIn, address)
-            approveReceipt = await this.execute(auth, genCall(approveTx, 300_000), options)
-            const swapTx = await getOneInchSwapTx(swapParams, address, options)
-            console.log(swapTx)
-            const swapReceipt = await this.execute(auth, genCall(swapTx, 300_000), options)
-            return { approveReceipt, swapReceipt }
-        }
+        
         return await this.execute(auth, _swap(swapParams), options)
     }
 
