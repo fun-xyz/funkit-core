@@ -12,7 +12,7 @@ class MultiAuthEoa extends Eoa {
 
     // figure storage part
 
-    async getUniqueID() {
+    async getUniqueId() {
         return this.uniqueID
     }
 
@@ -22,7 +22,7 @@ class MultiAuthEoa extends Eoa {
     }
 
     async getOwnerAddr() {
-        const signer = await this.getSigner()
+        const signer = await this.provider.getSigner()
         return await signer.getAddress()
     }
 
