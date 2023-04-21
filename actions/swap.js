@@ -5,7 +5,9 @@ const { swapExec, fromReadableAmount } = require("../utils/swap")
 const fetch = require('node-fetch');
 const { parseOptions } = require('../utils')
 const { oneInchAPIRequest } = require('../utils/swap')
-const { sendRequest } = require('../utils')
+const { sendRequest } = require('../utils');
+const { approveAndExec } = require("./approveAndExec");
+
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
@@ -14,17 +16,19 @@ const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-
+const _1inchRouter = "0x1111111254eeb25477b68fb85ed929f73a960582"
 const errorData = {
     location: "actions.swap"
 }
 
+const oneInchSupported = [1, 56, 137]
+// const oneInchSupported = [1, 56, 137, 31337]
+
+
 const _swap = (params) => {
     return async (actionData) => {
-        const { tokenIn, tokenOut, amountIn, options: swapOptions = {} } = params
-        const { wallet, chain, options } = actionData
-
         //if mainnet, use 1inch
+        const { wallet, chain, options } = actionData
         if (oneInchSupported.includes(parseInt(chain.id))) {
             const data = await _1inchSwap(params, options)
             if (!data.approveTx) {
@@ -34,6 +38,16 @@ const _swap = (params) => {
                 return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
             }
         }
+        return await _uniswapSwap(params, options)(actionData)
+    }
+}
+
+
+const _uniswapSwap = (params, options = global) => {
+    return async (actionData) => {
+        const { tokenIn, tokenOut, amountIn, options: swapOptions = {} } = params
+        const { wallet, chain, options } = actionData
+
         let {
             returnAddress,
             slippage,
@@ -103,7 +117,6 @@ const _swap = (params) => {
 }
 
 
-const oneInchSupported = [1, 56, 137, 31337]
 const _1inchSwap = async (swapParams, options = global) => {
     let approveTx = undefined
     const { chain } = await parseOptions(options)
@@ -111,7 +124,7 @@ const _1inchSwap = async (swapParams, options = global) => {
         swapParams.tokenIn = eth1InchAddress
     } else {
 
-        approveTx = await _getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn)
+        approveTx = await _getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn, options)
     }
     if (swapParams.tokenOut.toUpperCase() == chain.currency) {
         swapParams.tokenOut = eth1InchAddress
@@ -121,7 +134,9 @@ const _1inchSwap = async (swapParams, options = global) => {
     return { approveTx, swapTx }
 }
 
-const _getOneInchApproveTx = async (tokenAddress, amt) => {
+const _getOneInchApproveTx = async (tokenAddress, amt, options) => {
+    const parsedOptions = await parseOptions(options)
+
     let inTokenDecimals = 0
     if (tokenAddress != eth1InchAddress) {
         const inToken = new Token(tokenAddress)
@@ -129,7 +144,7 @@ const _getOneInchApproveTx = async (tokenAddress, amt) => {
     } else {
         inTokenDecimals = 18
     }
-
+    tokenAddress = await Token.getAddress(tokenAddress, parsedOptions)
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
     const url = await oneInchAPIRequest(
         '/approve/transaction',
@@ -138,6 +153,7 @@ const _getOneInchApproveTx = async (tokenAddress, amt) => {
     const transaction = await sendRequest(url, 'GET', "")
     return transaction
 }
+
 const _getOneInchSwapTx = async (swapParams, options) => {
     const parsedOptions = await parseOptions(options)
     let inTokenDecimals = 0
@@ -155,9 +171,9 @@ const _getOneInchSwapTx = async (swapParams, options) => {
         fromTokenAddress,
         toTokenAddress,
         amount: amount,
-        fromAddress: constants.AddressZero,
+        fromAddress: _1inchRouter,
         slippage: swapParams.slippage,
-        disableEstimate: false,
+        disableEstimate: true,
         allowPartialFill: false,
     };
     const url = await oneInchAPIRequest('/swap', formattedSwap);
