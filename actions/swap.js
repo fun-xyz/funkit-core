@@ -21,12 +21,20 @@ const errorData = {
     location: "actions.swap"
 }
 
-const oneInchSupported = [1, 56, 137]
-// const oneInchSupported = [1, 56, 137, 31337]
+// const oneInchSupported = [1, 56, 137]
+const oneInchSupported = [1, 56, 137, 31337]
 
 
 const _swap = (params) => {
     return async (actionData) => {
+        let { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} } = params
+        params = {
+            tokenIn,
+            tokenOut,
+            amountIn,
+            ...swapOptions
+        }
+        params.slippage = params.slippage ? params.slippage : 1
         //if mainnet, use 1inch
         const { wallet, chain, options } = actionData
         if (oneInchSupported.includes(parseInt(chain.id))) {

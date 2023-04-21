@@ -5,7 +5,7 @@ const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
-const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
+const swapExpected = ["in", "out", "amount"]
 
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
@@ -18,17 +18,9 @@ class FirstClassActions {
         verifyFunctionParams("Wallet.approve", input, approveExpected)
         return await this.execute(auth, _approve(input), options, estimate)
     }
-    async swap(auth, { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} }, options = global) {
-        const swapParams = {
-            tokenIn,
-            tokenOut,
-            amountIn,
-            ...swapOptions
-        }
-        swapParams.slippage = swapParams.slippage ? swapParams.slippage : 1
-        verifyFunctionParams("Wallet.swap", swapParams, swapExpected)
-
-        return await this.execute(auth, _swap(swapParams), options)
+    async swap(auth, input, options = global) {
+        verifyFunctionParams("Wallet.swap", input, swapExpected)
+        return await this.execute(auth, _swap(input), options)
     }
 
     async create(auth, options = global, estimate = false) {
