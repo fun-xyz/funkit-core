@@ -4,7 +4,7 @@ const { ParameterFormatError, Helper } = require("../errors")
 const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -140,20 +140,20 @@ class FunWallet extends FirstClassActions {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const id = await auth.getUniqueId()
+        const ownerAddr = await auth.getOwnerAddr()
         const res = await chain.estimateOpGas({
-            ...partialOp, signature: id,
+            ...partialOp, signature: ownerAddr,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: id, }, true)
+        return new UserOp({ ...partialOp, ...res, signature: ownerAddr, }, true)
     }
 
     async _getThisInitCode(chain, auth) {
-        const owner = await auth.getUniqueId()
+        const owner = await auth.getOwnerAddr()
         const uniqueID = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
@@ -173,6 +173,11 @@ class FunWallet extends FirstClassActions {
             this.address = await (new WalletOnChainManager(parsedOptions.chain, this.identifier)).getWalletAddress()
         }
         return this.address
+    }
+
+    static async getAddress(uniqueID, chainId) {
+        const chain = getChainFromData(chainId)
+        return WalletOnChainManager.getWalletAddress(uniqueID, chain)
     }
 
     async sendTx({ auth, op, call }, txOptions = global) {

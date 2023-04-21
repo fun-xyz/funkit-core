@@ -37,6 +37,13 @@ class WalletOnChainManager {
         return await this.factory.getAddress(uniqueID)
     }
 
+    static async getWalletAddress(uniqueID, chain) {
+        const factoryAddress = await chain.getAddress("factoryAddress")
+        const provider = await chain.getProvider()
+        const factory = new Contract(factoryAddress, factoryAbi, provider)
+        return await factory.getAddress(uniqueID)
+    }
+
     async getTxId(userOpHash, timeout = 30000, interval = 5000) {
         await this.init()
         const endtime = Date.now() + timeout;

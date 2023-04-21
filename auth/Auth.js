@@ -4,6 +4,7 @@ const { keccak256, toUtf8Bytes } = require("ethers/lib/utils");
 class Auth {
     async signHash() { }
     async getUniqueId() { }
+    async getOwnerAddr() { }
     async getNonce({ sender, callData }, timeout = 1000) {
         const now = Date.now()
         const time = now - now % timeout
