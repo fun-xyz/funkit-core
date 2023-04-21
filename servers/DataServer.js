@@ -182,6 +182,20 @@ class DataServer {
         return response.chainId;
     }
     
+    static async connectAuth(authId, method, uniqueID){
+        return await this.sendPostRequest(APIURL, "auth/connect-auth", {
+            id: authId,
+            method,
+            wallet: uniqueID
+        })
+    }
+
+    static async getAuth(authId){
+        return await this.sendPostRequest(APIURL, "auth/get-auth", {
+            id: authId
+        })
+    }
+
 }
 
 module.exports = { DataServer }
