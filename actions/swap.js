@@ -117,7 +117,8 @@ const getOneInchApproveTx = async (tokenAddress, amt, walletAddress) => {
     };
 
 }
-const getOneInchSwapTx = async (swapParams, walletAddress) => {
+const getOneInchSwapTx = async (swapParams, walletAddress, options) => {
+    const parsedOptions = await parseOptions(options)
     let inTokenDecimals = 0
     if (swapParams.tokenIn != "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE") {
         const inToken = new Token(swapParams.tokenIn)
@@ -126,18 +127,22 @@ const getOneInchSwapTx = async (swapParams, walletAddress) => {
         inTokenDecimals = 18
     }
 
+
+    const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, parsedOptions)
+    const toTokenAddress = await Token.getAddress(swapParams.tokenOut, parsedOptions)
     const amount = fromReadableAmount(swapParams.amountIn, inTokenDecimals)
     const formattedSwap = {
-        fromTokenAddress: swapParams.tokenIn,
-        toTokenAddress: swapParams.tokenOut,
+        fromTokenAddress,
+        toTokenAddress,
         amount: amount,
-        fromAddress: walletAddress,
+        fromAddress: constants.AddressZero,
         slippage: swapParams.slippage,
         disableEstimate: false,
         allowPartialFill: false,
     };
     const url = await oneInchAPIRequest('/swap', formattedSwap);
     const res = await sendRequest(url, 'GET', "")
+    console.log(res)
     return res.tx
 
 }

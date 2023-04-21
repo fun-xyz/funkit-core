@@ -7,7 +7,7 @@ const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["tokenIn", "tokenOut", "amountIn"]
 
-const oneInchSupported = [1, 56, 137]
+const oneInchSupported = [1, 56, 137, 31337]
 
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
@@ -43,7 +43,8 @@ class FirstClassActions {
             let approveReceipt = ""
             const approveTx = await getOneInchApproveTx(swapParams.tokenIn, amountIn, address)
             approveReceipt = await this.execute(auth, genCall(approveTx, 300_000), options)
-            const swapTx = await getOneInchSwapTx(swapParams, address)
+            const swapTx = await getOneInchSwapTx(swapParams, address, options)
+            console.log(swapTx)
             const swapReceipt = await this.execute(auth, genCall(swapTx, 300_000), options)
             return { approveReceipt, swapReceipt }
         }
