@@ -67,7 +67,7 @@ const main = async (chainId, privateKey) => {
     const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     console.log(tokenSponsor)
     const oracle = await deployOracle(signer)
-
+    console.log(oracle)
     const auth = await deployUserAuth(signer)
     console.log(auth)
 
