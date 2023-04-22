@@ -9,7 +9,7 @@ const authAbi = require("../abis/UserAuthentication.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
 const approveAndExecAbi = require("../abis/ApproveAndExec.json")
 
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
+const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, WALLET_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
 const { Chain, Token } = require("../data")
 const { configureEnvironment } = require("../managers")
 const { Eoa } = require("../auth")
@@ -63,7 +63,9 @@ const main = async (chainId, privateKey) => {
     const signer = new Wallet(privateKey, provider)
 
     const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
+    console.log(gaslessSponsor)
     const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    console.log(tokenSponsor)
     const oracle = await deployOracle(signer)
 
     const auth = await deployUserAuth(signer)
@@ -99,6 +101,6 @@ const paymasterConfig = async () => {
 
 
 // main(31337, TEST_PRIVATE_KEY)
-// main(5, GOERLI_PRIVATE_KEY)
+main(5, WALLET_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)
-paymasterConfig()
+// paymasterConfig()
