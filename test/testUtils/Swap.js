@@ -1,4 +1,4 @@
-const SwapTest = (config, apiKey="localtest" ) => {
+const SwapTest = (config, apiKey = "localtest") => {
     const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
     const { Eoa } = require("../../auth")
@@ -12,7 +12,7 @@ const SwapTest = (config, apiKey="localtest" ) => {
         apiKey: apiKey,
         gasSponsor: "",
     }
-    
+
     describe("Swap", function () {
         this.timeout(100_000)
         let auth
@@ -21,8 +21,8 @@ const SwapTest = (config, apiKey="localtest" ) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueID, index: 23423 })
-            if(prefund) {
+            wallet = new FunWallet({ uniqueID, index: 234231 })
+            if (prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
         })
@@ -30,7 +30,7 @@ const SwapTest = (config, apiKey="localtest" ) => {
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
-            const res= await wallet.swap(auth, {
+            const res = await wallet.swap(auth, {
                 in: baseToken,
                 amount: .01,
                 out: inToken

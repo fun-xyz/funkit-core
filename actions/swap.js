@@ -1,7 +1,13 @@
 const { Contract, constants } = require("ethers")
 const { Interface } = require("ethers/lib/utils")
 const { Token } = require("../data/Token")
-const { swapExec } = require("../utils/swap")
+const { swapExec, fromReadableAmount } = require("../utils/swap")
+const fetch = require('node-fetch');
+const { parseOptions } = require('../utils')
+const { oneInchAPIRequest } = require('../utils/swap')
+const { sendRequest } = require('../utils');
+const { approveAndExec } = require("./approveAndExec");
+
 const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
 const approveAndSwapInterface = new Interface(approveAndSwapAbi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
@@ -9,15 +15,46 @@ const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.H
 const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
+const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+const _1inchRouter = "0x1111111254eeb25477b68fb85ed929f73a960582"
+const errorData = {
+    location: "actions.swap"
+}
+
+const oneInchSupported = [1, 56, 137]
+// const oneInchSupported = [1, 56, 137, 31337]
+
+
 const _swap = (params) => {
     return async (actionData) => {
-        const { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} } = params
-        const { wallet, chain } = actionData
-        let {
-            returnAddress,
-            slippage,
-            poolFee
-        } = swapOptions
+        let { in: tokenIn, out: tokenOut, amount: amountIn, options: swapOptions = {} } = params
+        params = {
+            tokenIn,
+            tokenOut,
+            amountIn,
+            ...swapOptions
+        }
+        params.slippage = params.slippage ? params.slippage : 1
+        //if mainnet, use 1inch
+        const { wallet, chain, options } = actionData
+        if (oneInchSupported.includes(parseInt(chain.id))) {
+            const data = await _1inchSwap(params, options)
+            if (!data.approveTx) {
+                return { data: data.swapTx, errorData }
+            }
+            else {
+                return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
+            }
+        }
+        return await _uniswapSwap(params, options)(actionData)
+    }
+}
+
+
+const _uniswapSwap = (params, options = global) => {
+    return async (actionData) => {
+        let { tokenIn, tokenOut, amountIn, returnAddress, slippage, poolFee } = params
+        const { wallet, chain, options } = actionData
 
         const provider = await chain.getProvider()
 
@@ -27,7 +64,7 @@ const _swap = (params) => {
         const univ3router = await chain.getAddress("univ3router")
 
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
-        
+
         const tokenInObj = new Token(tokenIn)
         const tokenOutObj = new Token(tokenOut)
 
@@ -54,7 +91,6 @@ const _swap = (params) => {
             slippage *= 10;
         }
 
-
         const swapParams = {
             tokenInAddress,
             tokenOutAddress,
@@ -75,12 +111,76 @@ const _swap = (params) => {
 
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
 
-        const errorData = {
-            location: "actions.swap"
-        }
+
 
         return { data: txData, errorData }
     }
 }
+
+const _1inchSwap = async (swapParams, options = global) => {
+    let approveTx = undefined
+    const { chain } = await parseOptions(options)
+    if (swapParams.tokenIn.toUpperCase() == chain.currency) {
+        swapParams.tokenIn = eth1InchAddress
+    } else {
+
+        approveTx = await _getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn, options)
+    }
+    if (swapParams.tokenOut.toUpperCase() == chain.currency) {
+        swapParams.tokenOut = eth1InchAddress
+    }
+
+    const swapTx = await _getOneInchSwapTx(swapParams, options)
+    return { approveTx, swapTx }
+}
+
+const _getOneInchApproveTx = async (tokenAddress, amt, options) => {
+    const parsedOptions = await parseOptions(options)
+
+    let inTokenDecimals = 0
+    if (tokenAddress != eth1InchAddress) {
+        const inToken = new Token(tokenAddress)
+        inTokenDecimals = await inToken.getDecimals()
+    } else {
+        inTokenDecimals = 18
+    }
+    tokenAddress = await Token.getAddress(tokenAddress, parsedOptions)
+    const amount = fromReadableAmount(amt, inTokenDecimals).toString()
+    const url = await oneInchAPIRequest(
+        '/approve/transaction',
+        amount ? { tokenAddress, amount } : { tokenAddress }
+    );
+    const transaction = await sendRequest(url, 'GET', "")
+    return transaction
+}
+
+const _getOneInchSwapTx = async (swapParams, options) => {
+    const parsedOptions = await parseOptions(options)
+    let inTokenDecimals = 0
+    if (swapParams.tokenIn != eth1InchAddress) {
+        const inToken = new Token(swapParams.tokenIn)
+        inTokenDecimals = await inToken.getDecimals()
+    } else {
+        inTokenDecimals = 18
+    }
+
+    const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, parsedOptions)
+    const toTokenAddress = await Token.getAddress(swapParams.tokenOut, parsedOptions)
+    const amount = fromReadableAmount(swapParams.amountIn, inTokenDecimals)
+    const formattedSwap = {
+        fromTokenAddress,
+        toTokenAddress,
+        amount: amount,
+        fromAddress: _1inchRouter,
+        slippage: swapParams.slippage,
+        disableEstimate: true,
+        allowPartialFill: false,
+    };
+    const url = await oneInchAPIRequest('/swap', formattedSwap);
+    const res = await sendRequest(url, 'GET', "")
+    return res.tx
+
+}
+
 
 module.exports = { _swap };

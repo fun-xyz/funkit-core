@@ -29,7 +29,6 @@ describe("Paymaster", function () {
         const walletAddress = await wallet.getAddress()
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
-        console.log(funderAddress)
 
         // await prefundWallet(auth, wallet, .5)
         const tokenBalanceBefore = (await Token.getBalance(paymasterToken, funderAddress))

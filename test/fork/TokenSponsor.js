@@ -33,11 +33,11 @@ describe("TokenSponsor", function () {
         await configureEnvironment(options)
 
         uniqueID = await auth.getUniqueId()
-        wallet = new FunWallet({ uniqueID, index: 2 })
+        wallet = new FunWallet({ uniqueID, index: 12142 })
         await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
 
-        wallet1 = new FunWallet({ uniqueID, index: 1 })
+        wallet1 = new FunWallet({ uniqueID, index: 235231 })
 
         await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()
@@ -67,7 +67,6 @@ describe("TokenSponsor", function () {
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
-
 
         const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
         const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
