@@ -182,7 +182,7 @@ class DataServer {
         return response.chainId;
     }
     
-    static async connectAuth(authId, method, uniqueID){
+    static async setAuth(authId, method, uniqueID){
         return await this.sendPostRequest(APIURL, "auth/connect-auth", {
             id: authId,
             method,
