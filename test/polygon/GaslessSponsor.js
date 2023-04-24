@@ -67,14 +67,12 @@ describe("GaslessSponsor", function () {
     const runSwap = async (wallet, testToken = "dai") => {
         const walletAddress = await wallet.getAddress()
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
-        console.log(tokenBalanceBefore)
         if (tokenBalanceBefore < .1) {
-            const asdf= await wallet.swap(auth, {
+            await wallet.swap(auth, {
                 in: "eth",
                 amount: .1,
                 out: testToken
             })
-            console.log(asdf)
             const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
@@ -83,7 +81,6 @@ describe("GaslessSponsor", function () {
     it("Blacklist Mode Approved", async () => {
         const gasSponsor = new GaslessSponsor()
         await funder.sendTx(await gasSponsor.setToBlacklistMode())
-        console.log('ajsdkfasdjf')
         await runSwap(wallet)
     })
 

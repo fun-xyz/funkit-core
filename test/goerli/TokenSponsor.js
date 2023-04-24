@@ -15,7 +15,7 @@ const timeout = (ms) => {
 }
 describe("TokenSponsor", function () {
     this.timeout(300_000)
-    let auth = new Eoa({ privateKey: "0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38" })
+    let auth = new Eoa({ privateKey: PRIVATEKEY2 })
     let funder = new Eoa({ privateKey: WALLET_PRIVATE_KEY })
 
     const amount = 1
