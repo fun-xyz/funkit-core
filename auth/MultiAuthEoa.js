@@ -1,42 +1,35 @@
 const { v4: uuidv4 } = require('uuid');
 const { Eoa } = require("./EoaAuth");
 const { arrayify } = require("ethers/lib/utils");
-const { DataServer } = require("../servers/DataServer")
+const { getStoredUniqueId, setStoredUniqueId } = require("../utils")
 
 class MultiAuthEoa extends Eoa {
     constructor(input) {
         super(input)
-        this.ids = input.ids //["twitter###Chazzz", "google###chaz@fun.xyz", "0x111111111111111111"]
+        this.authIds = input.authIds //["twitter###Chazzz", "google###chaz@fun.xyz", "0x111111111111111111"]
         this.provider = input.provider
     }
 
-    async getUniqueID() {
-        let uniqueIDs = new Set()
-        for (const id of this.ids) {
-            const auth = await DataServer.getAuth(id)
-            if (auth && auth.wallet) {
-                uniqueIDs.add(auth.wallet)
+    async getUniqueId() {
+        let uniqueIds = new Set()
+        for (const authId of this.authIds) {
+            const storedUniqueId = await getStoredUniqueId(authId)
+            if (storedUniqueId) {
+                uniqueIds.add(storedUniqueId)
             }
         }
         
-        if (uniqueIDs.size >= 1) {
-            this.uniqueID = uniqueIDs[0]
+        if (uniqueIds.size >= 1) {
+            [ this.uniqueId ] = uniqueIds
         } else {
-            this.uniqueID = uuidv4()
+            this.uniqueId = uuidv4()
         }
 
-        for (const id of this.ids) {
-            const words = id.split("###")
-            let method
-            if (words[0].startsWith("0x")) {
-                method = "eoa"
-            } else {
-                method = words[0]
-            }
-            await DataServer.setAuth(id, method, this.uniqueID)
+        for (const authId of this.authIds) {
+            await setStoredUniqueId(authId, this.uniqueId)
         }
 
-        return this.uniqueID
+        return this.uniqueId
     }
 
     async getSigner() {

@@ -5,7 +5,7 @@ class MagicAuthEoa extends Eoa {
     constructor(input) {
         super(input)
         this.provider = input.provider
-        this.uniqueID = input.uniqueID
+        this.uniqueId = input.uniqueId
     }
 
     async getSigner() {
@@ -14,7 +14,7 @@ class MagicAuthEoa extends Eoa {
     }
 
     getUniqueId() {
-        return this.uniqueID
+        return this.uniqueId
     }
 
     async getOwnerAddr() {

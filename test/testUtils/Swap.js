@@ -20,8 +20,8 @@ const SwapTest = (config, apiKey="localtest" ) => {
         before(async function () {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            uniqueID = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueID, index: 23423 })
+            uniqueId = await auth.getUniqueId()
+            wallet = new FunWallet({ uniqueId, index: 23423 })
             if(prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
