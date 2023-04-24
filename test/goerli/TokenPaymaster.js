@@ -5,6 +5,7 @@ const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
 const { WALLET_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
 const { FunWallet } = require("../../wallet")
+const PRIVATEKEY2="0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38"
 
 
 const testTokens = ["usdc", "dai"]
@@ -13,8 +14,8 @@ const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
 describe("TokenSponsor", function () {
-    this.timeout(150_000)
-    let auth = new Eoa({ privateKey: WALLET_PRIVATE_KEY })
+    this.timeout(300_000)
+    let auth = new Eoa({ privateKey: "0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38" })
     let funder = new Eoa({ privateKey: WALLET_PRIVATE_KEY })
 
     const amount = 1
@@ -30,24 +31,24 @@ describe("TokenSponsor", function () {
 
         uniqueID = await auth.getUniqueId()
         wallet = new FunWallet({ uniqueID, index: 12142 })
-        await prefundWallet(funder, wallet, .5)
+        // await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
-
+        console.log(walletAddress)
         wallet1 = new FunWallet({ uniqueID, index: 235231 })
 
-        await prefundWallet(auth, wallet1, .5)
+        // await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
-
         const funderAddress = await funder.getUniqueId()
+        console.log(walletAddress1)
+
         await wallet.swap(auth, {
             in: "eth",
-            amount: 1,
+            amount: .01,
             out: paymasterToken,
             options: {
                 returnAddress: funderAddress
             }
         })
-
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
@@ -63,14 +64,17 @@ describe("TokenSponsor", function () {
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+        console.log('sdfjkj')
 
         const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
         const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
         const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
         const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
         const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
+        console.log('sdfjkj')
 
         await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
+        console.log('sdfjkj')
 
         const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)

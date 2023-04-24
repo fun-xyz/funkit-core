@@ -63,7 +63,7 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-const gasSpecificChain = {"137": 350_000_000_000}
+const gasSpecificChain = {"137": 550_000_000_000}
 const prefundWallet = async (auth, wallet, value, gasPrice = 0, txOptions = global) => {
     validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
     const options = await parseOptions(txOptions)

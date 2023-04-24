@@ -17,7 +17,7 @@ class Token {
             return;
         }
 
-        if (nativeTokens.includes(data)) {
+        if (nativeTokens.includes(data.toLowerCase())) {
             this.isNative = true
         }
         this.symbol = data

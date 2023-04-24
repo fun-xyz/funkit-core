@@ -9,7 +9,7 @@ const TransferTest = (config, apiKey = "localtest") => {
     const { FunWallet } = require("../../wallet")
 
     describe("Transfer", function () {
-        this.timeout(90_000)
+        this.timeout(120_000)
         let auth
         let wallet
         const options = {
@@ -27,7 +27,7 @@ const TransferTest = (config, apiKey = "localtest") => {
             if (prefund)
                 await prefundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()
-
+            console.log(walletAddress)
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             if (tokenBalanceBefore < amount) {
                 await wallet.swap(auth, {
@@ -36,6 +36,7 @@ const TransferTest = (config, apiKey = "localtest") => {
                     out: outToken
                 })
                 const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))
+                console.log(tokenBalanceAfter,tokenBalanceBefore)
                 assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
             }
 

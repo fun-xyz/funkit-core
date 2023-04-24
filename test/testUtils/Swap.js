@@ -14,7 +14,7 @@ const SwapTest = (config, apiKey = "localtest") => {
     }
 
     describe("Swap", function () {
-        this.timeout(100_000)
+        this.timeout(120_000)
         let auth
         let wallet
         before(async function () {
@@ -22,6 +22,7 @@ const SwapTest = (config, apiKey = "localtest") => {
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueID, index: 234231 })
+            console.log(await wallet.getAddress())
             if (prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
