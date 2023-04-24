@@ -21,8 +21,8 @@ const errorData = {
     location: "actions.swap"
 }
 
-const oneInchSupported = [1, 56, 137]
-// const oneInchSupported = [1, 56, 137, 31337]
+// const oneInchSupported = [1, 56, 137]
+const oneInchSupported = [1, 56, 137, 31337]
 
 
 const _swap = (params) => {
@@ -38,7 +38,8 @@ const _swap = (params) => {
         //if mainnet, use 1inch
         const { wallet, chain, options } = actionData
         if (oneInchSupported.includes(parseInt(chain.id))) {
-            const data = await _1inchSwap(params, options)
+            const address = await actionData.wallet.getAddress()
+            const data = await _1inchSwap(params, address, options)
             if (!data.approveTx) {
                 return { data: data.swapTx, errorData }
             }
@@ -117,7 +118,7 @@ const _uniswapSwap = (params, options = global) => {
     }
 }
 
-const _1inchSwap = async (swapParams, options = global) => {
+const _1inchSwap = async (swapParams, address, options = global) => {
     let approveTx = undefined
     const { chain } = await parseOptions(options)
     if (swapParams.tokenIn.toUpperCase() == chain.currency) {
@@ -130,7 +131,7 @@ const _1inchSwap = async (swapParams, options = global) => {
         swapParams.tokenOut = eth1InchAddress
     }
 
-    const swapTx = await _getOneInchSwapTx(swapParams, options)
+    const swapTx = await _getOneInchSwapTx(swapParams, address, options)
     return { approveTx, swapTx }
 }
 
@@ -154,7 +155,7 @@ const _getOneInchApproveTx = async (tokenAddress, amt, options) => {
     return transaction
 }
 
-const _getOneInchSwapTx = async (swapParams, options) => {
+const _getOneInchSwapTx = async (swapParams, address, options) => {
     const parsedOptions = await parseOptions(options)
     let inTokenDecimals = 0
     if (swapParams.tokenIn != eth1InchAddress) {
@@ -171,13 +172,18 @@ const _getOneInchSwapTx = async (swapParams, options) => {
         fromTokenAddress,
         toTokenAddress,
         amount: amount,
-        fromAddress: _1inchRouter,
+        fromAddress: address,
         slippage: swapParams.slippage,
         disableEstimate: true,
         allowPartialFill: false,
     };
+
+    if (swapParams.returnAddress) {
+        formattedSwap.destReceiver = swapParams.returnAddress
+    }
     const url = await oneInchAPIRequest('/swap', formattedSwap);
     const res = await sendRequest(url, 'GET', "")
+    console.log(res)
     return res.tx
 
 }
