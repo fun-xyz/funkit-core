@@ -183,7 +183,6 @@ const _getOneInchSwapTx = async (swapParams, address, options) => {
     }
     const url = await oneInchAPIRequest('/swap', formattedSwap);
     const res = await sendRequest(url, 'GET', "")
-    console.log(res)
     return res.tx
 
 }

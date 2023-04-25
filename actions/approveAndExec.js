@@ -14,7 +14,7 @@ const initData = approveAndExecInterface.encodeFunctionData("init", [constants.H
 const approveAndExec = ({ approve, exec }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
-        const appproveAndExecAddress = "0x2cd2a00aaFbfAD79dd1ae971795E126fe4811354"
+        const appproveAndExecAddress = "0x8d766C1F4CB10cAB0B5D1Ad4A1399Cc9b34644a3" //"0x2cd2a00aaFbfAD79dd1ae971795E126fe4811354"
         const dest = exec.to
         const value = exec.value
         const executeData = exec.data

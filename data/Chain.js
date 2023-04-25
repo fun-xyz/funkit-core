@@ -143,9 +143,14 @@ class Chain {
         await this.init()
         const res = await this.bundler.estimateUserOpGas(partialOp)
         let { preVerificationGas, verificationGas, callGasLimit } = res
-        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
-        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? 1.45 : 1.6))
-        callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.6)
+        if (!(preVerificationGas || verificationGas || verificationGas)) {
+            throw new Error(JSON.stringify(res))
+        }
+
+        const mul = 10
+        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * (mul + 1.2))
+        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? (mul + 1.45) : (mul + 1.6)))
+        callGasLimit = Math.ceil(parseInt(callGasLimit) * (mul + 1.6))
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }

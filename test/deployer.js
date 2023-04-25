@@ -18,7 +18,7 @@ const { TokenSponsor } = require("../sponsors")
 const getOptions = async () => {
     const apiKey = await getTestApiKey()
     return {
-        chain: 5,
+        chain: 137,
         apiKey: apiKey,
     }
 }
@@ -68,8 +68,10 @@ const main = async (chainId, privateKey) => {
     // console.log(tokenSponsor)
     // const oracle = await deployOracle(signer)
     // console.log(oracle)
-    const auth = await deployUserAuth(signer)
-    console.log(auth)
+    // const auth = await deployUserAuth(signer)
+    // console.log(auth)
+    const apex = await deployApproveAndExec(signer)
+    console.log(apex)
 
 
     const old = require("../contracts.json")
@@ -84,7 +86,8 @@ const main = async (chainId, privateKey) => {
 const paymasterConfig = async () => {
     await configureEnvironment(await getOptions())
 
-    const tokenAddress = await Token.getAddress("usdc")
+    // const tokenAddress = await Token.getAddress("usdc")
+    const tokenAddress = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
     console.log(tokenAddress)
     const eoa = new Eoa({ privateKey: "0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064" })
     const sponsor = new TokenSponsor({
@@ -94,7 +97,7 @@ const paymasterConfig = async () => {
         }
     })
     const oracle = require("../contracts.json").oracle
-    const addtoken = await sponsor.addUsableToken(oracle, tokenAddress, "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e")
+    const addtoken = await sponsor.addUsableToken(oracle, tokenAddress, "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0")
     console.log('jkj')
     // console.log(addtoken)
     await eoa.sendTx(await addtoken())
@@ -105,6 +108,6 @@ const paymasterConfig = async () => {
 // main(31337, TEST_PRIVATE_KEY)
 // main(5, WALLET_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)
-// main(137, '0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38')
-paymasterConfig()
+main(137, '0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064')
+// paymasterConfig()
 

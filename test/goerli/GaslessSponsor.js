@@ -14,7 +14,7 @@ const timeout = (ms) => {
 }
 
 describe("GaslessSponsor", function () {
-    this.timeout(150_000)
+    this.timeout(180_000)
     let auth = new Eoa({ privateKey: WALLET_PRIVATE_KEY })
     let funder = new Eoa({ privateKey: PRIVATEKEY2 })
 
@@ -73,7 +73,6 @@ describe("GaslessSponsor", function () {
                 amount: .1,
                 out: testToken
             })
-            console.log(asdf)
             const tokenBalanceAfter = (await Token.getBalance(testToken, walletAddress))
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }

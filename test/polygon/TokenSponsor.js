@@ -9,7 +9,7 @@ const PRIVATEKEY2="0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a
 
 
 const testTokens = ["usdc", "dai"]
-const paymasterToken = "usdc"
+const paymasterToken = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
 const timeout = (ms) => {
     return new Promise(resolve => { setTimeout(resolve, ms) })
 }
@@ -24,7 +24,7 @@ describe("TokenSponsor", function () {
     before(async function () {
         const apiKey = await getTestApiKey()
         const options = {
-            chain: 5,
+            chain: 137,
             apiKey: apiKey,
         }
         await configureEnvironment(options)
@@ -40,15 +40,15 @@ describe("TokenSponsor", function () {
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
         console.log(walletAddress1)
-
-        await wallet.swap(auth, {
-            in: "eth",
-            amount: .01,
-            out: paymasterToken,
-            options: {
-                returnAddress: funderAddress
-            }
-        })
+        
+        // await wallet.swap(auth, {
+        //     in: "matic",
+        //     amount: .01,
+        //     out: paymasterToken,
+        //     options: {
+        //         returnAddress: funderAddress
+        //     }
+        // })
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
@@ -60,7 +60,7 @@ describe("TokenSponsor", function () {
 
 
         const ethstakeAmount = 1
-        const usdcStakeAmount = 100
+        const usdcStakeAmount = 1
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
@@ -89,7 +89,7 @@ describe("TokenSponsor", function () {
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
         if (tokenBalanceBefore < .1) {
             await wallet.swap(auth, {
-                in: "eth",
+                in: "matic",
                 amount: .1,
                 out: testToken
             })
@@ -101,6 +101,7 @@ describe("TokenSponsor", function () {
     it("Blacklist Mode Approved", async () => {
         const gasSponsor = new TokenSponsor()
         await funder.sendTx(await gasSponsor.setToBlacklistMode())
+        console.log('jasajsdfj')
         await runSwap(wallet)
     })
 

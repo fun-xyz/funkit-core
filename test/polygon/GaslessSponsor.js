@@ -84,23 +84,23 @@ describe("GaslessSponsor", function () {
         await runSwap(wallet)
     })
 
-    // it("Only User Whitelisted", async () => {
-    //     const walletAddress = await wallet.getAddress()
-    //     const walletAddress1 = await wallet1.getAddress()
+    it("Only User Whitelisted", async () => {
+        const walletAddress = await wallet.getAddress()
+        const walletAddress1 = await wallet1.getAddress()
 
-    //     const gasSponsor = new GaslessSponsor()
-    //     await funder.sendTx(await gasSponsor.setToWhitelistMode())
-    //     await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
-    //     await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
-    //     await runSwap(wallet)
+        const gasSponsor = new GaslessSponsor()
+        await funder.sendTx(await gasSponsor.setToWhitelistMode())
+        await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
+        await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
+        await runSwap(wallet)
         
-    //     try {
-    //         await runSwap(wallet1)
-    //         throw new Error("Wallet is not whitelisted but transaction passed")
-    //     } catch (e) {
-    //         assert(e.message.includes("AA33"), "Error but not AA33")
-    //     }
-    // })
+        try {
+            await runSwap(wallet1)
+            throw new Error("Wallet is not whitelisted but transaction passed")
+        } catch (e) {
+            assert(e.message.includes("AA33"), "Error but not AA33")
+        }
+    })
 
 
 })

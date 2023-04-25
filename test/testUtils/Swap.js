@@ -22,7 +22,6 @@ const SwapTest = (config, apiKey = "localtest") => {
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueID, index: 234231 })
-            console.log(await wallet.getAddress())
             if (prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
@@ -45,7 +44,7 @@ const SwapTest = (config, apiKey = "localtest") => {
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: inToken,
-                amount: .00001,
+                amount: .1,
                 out: outToken
             })
             const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))
