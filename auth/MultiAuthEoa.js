@@ -6,14 +6,14 @@ const { getStoredUniqueId, setStoredUniqueId } = require("../utils")
 class MultiAuthEoa extends Eoa {
     constructor(input) {
         super(input)
-        this.authIds = input.authIds //["twitter###Chazzz", "google###chaz@fun.xyz", "0x111111111111111111"]
+        this.authIds = input.authIds //[["twitter###Chazzz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["google###chaz@fun.xyz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"]]
         this.provider = input.provider
     }
 
     async getUniqueId() {
         let uniqueIds = new Set()
         for (const authId of this.authIds) {
-            const storedUniqueId = await getStoredUniqueId(authId)
+            const storedUniqueId = await getStoredUniqueId(authId[0])
             if (storedUniqueId) {
                 uniqueIds.add(storedUniqueId)
             }
@@ -26,7 +26,7 @@ class MultiAuthEoa extends Eoa {
         }
 
         for (const authId of this.authIds) {
-            await setStoredUniqueId(authId, this.uniqueId)
+            await setStoredUniqueId(authId[0], this.uniqueId, authId[1])
         }
 
         return this.uniqueId
@@ -38,8 +38,14 @@ class MultiAuthEoa extends Eoa {
     }
 
     async getOwnerAddr() {
-        const signer = await this.provider.getSigner()
-        return await signer.getAddress()
+        return this.authIds.map(authId => {
+            return authId[1]
+        })
+    }
+
+    async getEstimateGasSignature() {
+        const ownerAddr = await this.getOwnerAddr()
+        return ownerAddr[0]
     }
 
     async signHash(hash) {

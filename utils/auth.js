@@ -13,10 +13,10 @@ const getSignerFromProvider = async (provider) => {
 
 const getStoredUniqueId = async (authId) => {
     const auth = await DataServer.getAuth(authId)
-    return auth.data ? auth.data.wallet : null
+    return auth.data ? auth.data.uniqueId : null
 }
 
-const setStoredUniqueId = async (authId, uniqueId) => {
+const setStoredUniqueId = async (authId, uniqueId, addr = "") => {
     const words = authId.split("###")
     let method
     if (words[0].startsWith("0x")) {
@@ -24,17 +24,17 @@ const setStoredUniqueId = async (authId, uniqueId) => {
     } else {
         method = words[0]
     }
-    await DataServer.setAuth(authId, method, uniqueId)
+    await DataServer.setAuth(authId, method, addr, uniqueId)
 }
 
-const getUniqueId = async (authId) => {
+const getUniqueId = async (authId, addr="") => {
     let uniqueId
     const storedUniqueId = await getStoredUniqueId(authId)
     if (storedUniqueId) {
         uniqueId = storedUniqueId
     } else {
         uniqueId = uuidv4()
-        await setStoredUniqueId(authId, uniqueId)
+        await setStoredUniqueId(authId, uniqueId, addr)
     }
     return uniqueId
 }

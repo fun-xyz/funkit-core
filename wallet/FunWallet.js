@@ -139,23 +139,23 @@ class FunWallet extends FirstClassActions {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const ownerAddr = await auth.getOwnerAddr()
+        const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
-            ...partialOp, signature: ownerAddr,
+            ...partialOp, signature: signature,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: ownerAddr, }, true)
+        return new UserOp({ ...partialOp, ...res, signature: signature, }, true)
     }
 
     async _getThisInitCode(chain, auth) {
         const owner = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const factoryAddress = await chain.getAddress("factoryAddress")
+        const factoryAddress = "0x5F6795513666eA7253D3Ba15Dfbc7c8BcB8bD754" //await chain.getAddress("factoryAddress")
         const verificationAddress = await chain.getAddress("verificationAddress")
         const initCodeParams = { uniqueId, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
@@ -174,7 +174,8 @@ class FunWallet extends FirstClassActions {
         return this.address
     }
 
-    static async getAddress(authId, index, chainId) {
+    static async getAddress(authId, index, chainId, apiKey) {
+        global.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chain = await getChainFromData(chainId)
         const walletIdentifer = new WalletIdentifier({uniqueId, index})

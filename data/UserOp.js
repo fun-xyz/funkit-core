@@ -38,7 +38,7 @@ class UserOp {
     async estimateGas(auth, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         if (!this.signature) {
-            this.signature = await auth.getOwnerAddr()
+            this.signature = await auth.getEstimateGasSignature()
         }
         const res = await options.chain.estimateOpGas({
             ...this.op,

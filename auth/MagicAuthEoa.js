@@ -19,7 +19,7 @@ class MagicAuthEoa extends Eoa {
 
     async getOwnerAddr() {
         const signer = await this.getSigner()
-        return await signer.getAddress()
+        return [await signer.getAddress()]
     }
 
     async signHash(hash) {

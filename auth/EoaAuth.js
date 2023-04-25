@@ -87,6 +87,10 @@ class Eoa extends Auth {
     }
 
     async getOwnerAddr() { 
+        return [await this.getUniqueId()]
+    }
+
+    async getEstimateGasSignature() {
         return await this.getUniqueId()
     }
 }
