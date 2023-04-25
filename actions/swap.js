@@ -109,11 +109,7 @@ const _uniswapSwap = (params, options = global) => {
         } else {
             swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, univ3router, amount, data)
         }
-
         const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
-
-
-
         return { data: txData, errorData }
     }
 }
