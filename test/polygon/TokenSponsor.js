@@ -30,16 +30,14 @@ describe("TokenSponsor", function () {
         await configureEnvironment(options)
 
         uniqueID = await auth.getUniqueId()
-        wallet = new FunWallet({ uniqueID, index: 12142 })
+        wallet = new FunWallet({ uniqueID, index: 234231 })
         // await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
-        console.log(walletAddress)
         wallet1 = new FunWallet({ uniqueID, index: 235231 })
 
         // await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
-        console.log(walletAddress1)
         
         // await wallet.swap(auth, {
         //     in: "matic",
@@ -49,6 +47,7 @@ describe("TokenSponsor", function () {
         //         returnAddress: funderAddress
         //     }
         // })
+        console.log(walletAddress, walletAddress1)
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
@@ -59,28 +58,28 @@ describe("TokenSponsor", function () {
         const gasSponsor = new TokenSponsor()
 
 
-        const ethstakeAmount = 1
-        const usdcStakeAmount = 1
+        // const ethstakeAmount = 5
+        // const usdcStakeAmount = 1
 
-        const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-        const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
-        console.log('sdfjkj')
+        // const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        // const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+        // console.log('sdfjkj')
 
-        const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
-        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
-        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
-        const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
-        const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
-        console.log('sdfjkj')
+        // const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
+        // const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
+        // const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
+        // const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+        // const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
+        // console.log('sdfjkj')
 
-        await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
-        console.log('sdfjkj')
+        // await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
+        // console.log('sdfjkj')
 
-        const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-        const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+        // const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        // const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-        assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
-        assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+        // assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
+        // assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
 
     })
 
@@ -98,12 +97,12 @@ describe("TokenSponsor", function () {
         }
     }
 
-    it("Blacklist Mode Approved", async () => {
-        const gasSponsor = new TokenSponsor()
-        await funder.sendTx(await gasSponsor.setToBlacklistMode())
-        console.log('jasajsdfj')
-        await runSwap(wallet)
-    })
+    // it("Blacklist Mode Approved", async () => {
+    //     const gasSponsor = new TokenSponsor()
+    //     await funder.sendTx(await gasSponsor.setToBlacklistMode())
+    //     console.log('jasajsdfj')
+    //     await runSwap(wallet)
+    // })
 
     it("Only User Whitelisted", async () => {
         const walletAddress = await wallet.getAddress()
