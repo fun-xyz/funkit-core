@@ -17,7 +17,7 @@ const SwapTest = (config) => {
             const options = {
                 chain: chainId,
                 apiKey: await getTestApiKey(),
-                gasSponsor: "",
+                gasSponsor: null,
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })

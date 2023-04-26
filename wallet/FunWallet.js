@@ -141,7 +141,8 @@ class FunWallet extends FirstClassActions {
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
-            ...partialOp, signature: signature,
+            ...partialOp,
+            signature: signature,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
