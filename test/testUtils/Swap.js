@@ -31,7 +31,6 @@ const SwapTest = (config) => {
 
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            console.log(walletAddress)
             const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: baseToken,
