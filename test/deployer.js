@@ -62,23 +62,23 @@ const main = async (chainId, privateKey) => {
     const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
-    const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
-    const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
-    const oracle = await deployOracle(signer)
+    // const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
+    // // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    // const oracle = await deployOracle(signer)
 
-    // const feeoracle = await deployFeeOracle(signer)
+    const feeoracle = await deployFeeOracle(signer)
 
-    // const factory = await deployFactory(signer)
+    const factory = await deployFactory(signer)
 
 
     const old = require("../contracts.json")
 
     fs.writeFileSync("contracts.json", JSON.stringify({
         ...old,
-        // feeoracle,
-        // factory,
-        gaslessSponsor,
-        tokenSponsor,oracle 
+        feeoracle,
+        factory,
+        // gaslessSponsor,
+        // tokenSponsor,oracle 
     }))
 }
 
@@ -106,11 +106,11 @@ const feeOracleConfig = async (chainId, pkey) => {
     const wallet = new Wallet(pkey, provider)
     const contract = new Contract(oracle, feeOracleAbi.abi, wallet)
     await contract.setValues(10, 2)
-    console.log((await contract.getFeePercent(10)).toString())
+    console.log((await contract.getFee(10)).toString())
 }
 // main(5, GOERLI_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)
-paymasterConfig()
+// paymasterConfig()
 
 // main(31337, TEST_PRIVATE_KEY)
-// feeOracleConfig(31337, TEST_PRIVATE_KEY) 
+feeOracleConfig(31337, TEST_PRIVATE_KEY) 
