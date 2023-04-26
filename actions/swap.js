@@ -16,13 +16,11 @@ const DEFAULT_SLIPPAGE = .5 // .5%
 const DEFAULT_FEE = "medium"
 
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-const _1inchRouter = "0x1111111254eeb25477b68fb85ed929f73a960582"
 const errorData = {
     location: "actions.swap"
 }
 
 const oneInchSupported = [1, 56, 137, 31337, 36864]
-
 
 const _swap = (params) => {
     return async (actionData) => {

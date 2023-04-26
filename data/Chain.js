@@ -141,12 +141,11 @@ class Chain {
 
     async estimateOpGas(partialOp) {
         await this.init()
-        const mod = 10
         const res = await this.bundler.estimateUserOpGas(partialOp)
         let { preVerificationGas, verificationGas, callGasLimit } = res
-        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * (mod + 1.2))
-        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? (mod + 1.45) : (mod + 1.6)))
-        callGasLimit = Math.ceil(parseInt(callGasLimit) * (mod + 1.6))
+        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
+        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? 1.45 : 1.6))
+        callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.6)
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }
