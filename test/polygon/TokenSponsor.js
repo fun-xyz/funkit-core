@@ -26,13 +26,13 @@ describe("TokenSponsor", function () {
         }
         await configureEnvironment(options)
 
-        // uniqueID = await auth.getUniqueId()
+        uniqueID = await auth.getUniqueId()
         uniqueID = await funder.getUniqueId()
         wallet = new FunWallet({ uniqueID, index: 234231 })
         await prefundWallet(funder, wallet, 1)
         wallet1 = new FunWallet({ uniqueID, index: 235231 })
 
-        // await prefundWallet(auth, wallet1, 1)
+        await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
         const walletAddress = await wallet.getAddress()
@@ -64,21 +64,21 @@ describe("TokenSponsor", function () {
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
         console.log('sdfjkj')
 
-        // const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
-        // const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
-        // const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
-        // const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
-        // const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
-        // console.log('sdfjkj')
+        const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
+        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
+        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
+        const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+        const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
+        console.log('sdfjkj')
 
-        // await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
-        // console.log('sdfjkj')
+        await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
+        console.log('sdfjkj')
 
-        // const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-        // const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+        const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-        // assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
-        // assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+        assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
+        assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
 
     })
 

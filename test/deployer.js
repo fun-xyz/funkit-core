@@ -66,8 +66,8 @@ const main = async (chainId, privateKey) => {
     // console.log(gaslessSponsor)
     const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     console.log(tokenSponsor)
-    const oracle = await deployOracle(signer)
-    console.log(oracle)
+    // const oracle = await deployOracle(signer)
+    // console.log(oracle)
     // const auth = await deployUserAuth(signer)
     // console.log(auth)
     // const apex = await deployApproveAndExec(signer)
@@ -92,14 +92,12 @@ const paymasterConfig = async () => {
     const eoa = new Eoa({ privateKey: "0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064" })
     const sponsor = new TokenSponsor({
         gasSponsor: {
-            sponsorAddress: "0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9",
+            sponsorAddress: "0x175C5611402815Eba550Dad16abd2ac366a63329",
             token: "usdc",
         }
     })
     const oracle = require("../contracts.json").oracle
     const addtoken = await sponsor.addUsableToken(oracle, tokenAddress, "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0")
-    console.log('jkj')
-    // console.log(addtoken)
     await eoa.sendTx(addtoken)
 
 }

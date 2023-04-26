@@ -1,16 +1,16 @@
 const { TokenSponsorTest } = require('../testUtils/TokenSponsor.js')
 const { WALLET_PRIVATE_KEY, CHAIN_FUNDER_PRIVATE_KEY } = require("../../utils/index.js")
 const config = {
-    chainId: 5,
+    chainId: 137,
     authPrivateKey: CHAIN_FUNDER_PRIVATE_KEY,
     funderPrivateKey: WALLET_PRIVATE_KEY,
-    inToken: "eth",
+    inToken: "matic",
     outToken: "dai",
-    paymasterToken: "usdc",
+    paymasterToken: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
     baseTokenStakeAmt: 1,
-    paymasterTokenStakeAmt: 100,
+    paymasterTokenStakeAmt: 1,
     prefund: false,
     swapAmount: .01,
-    stake:true,
+    stake: true,
 }
 TokenSponsorTest(config)

@@ -13,7 +13,8 @@ const config = {
     paymasterTokenStakeAmt: 100,
     stakeAmount: 1,
     prefund: true,
-    swapAmount:1,
+    swapAmount: 1,
+    stake: true,
 }
 
 
