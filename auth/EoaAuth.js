@@ -5,7 +5,7 @@ const { Auth } = require("./Auth");
 const { DataServer } = require("../servers");
 
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
-const gasSpecificChain = { "137": 550_000_000_000 }
+const gasSpecificChain = { "137": 850_000_000_000 }
 
 class Eoa extends Auth {
     signer = false
@@ -71,7 +71,6 @@ class Eoa extends Auth {
         }
         let tx;
         if (gasSpecificChain[chain.id]) {
-            console.log(chain.id)
             tx = await eoa.sendTransaction({ to, value, data, gasPrice: gasSpecificChain[chain.id] })
         }
         else {

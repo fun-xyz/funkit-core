@@ -1,25 +1,27 @@
-const TransferTest = (config, apiKey = "localtest") => {
+const TransferTest = (config) => {
     const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
     const { Wallet } = require("ethers")
     const { Eoa } = require("../../auth")
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
-    const { prefundWallet } = require("../../utils")
+    const { prefundWallet, getTestApiKey } = require("../../utils")
     const { FunWallet } = require("../../wallet")
 
     describe("Transfer", function () {
         this.timeout(120_000)
         let auth
         let wallet
-        const options = {
-            chain: chainId,
-            apiKey: apiKey,
-            gasSponsor: null
-        }
+
 
         const amount = .01
         before(async function () {
+            let apiKey = await getTestApiKey()
+            const options = {
+                chain: chainId,
+                apiKey: apiKey,
+                gasSponsor: null
+            }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = await auth.getUniqueId()

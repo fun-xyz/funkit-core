@@ -21,8 +21,7 @@ const errorData = {
     location: "actions.swap"
 }
 
-// const oneInchSupported = [1, 56, 137]
-const oneInchSupported = [1, 56, 137, 31337]
+const oneInchSupported = [1, 56, 137]
 
 
 const _swap = (params) => {
@@ -65,7 +64,6 @@ const _uniswapSwap = (params, options = global) => {
         const univ3router = await chain.getAddress("univ3router")
 
         const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
-
         const tokenInObj = new Token(tokenIn)
         const tokenOutObj = new Token(tokenOut)
 

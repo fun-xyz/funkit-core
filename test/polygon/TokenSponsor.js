@@ -5,14 +5,11 @@ const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
 const { WALLET_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
 const { FunWallet } = require("../../wallet")
-const PRIVATEKEY2="0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38"
+const PRIVATEKEY2 = "0x8996148bbbf98e0adf5ce681114fd32288df7dcb97829348cb2a99a600a92c38"
 
-
-const testTokens = ["usdc", "dai"]
 const paymasterToken = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
-const timeout = (ms) => {
-    return new Promise(resolve => { setTimeout(resolve, ms) })
-}
+
+
 describe("TokenSponsor", function () {
     this.timeout(300_000)
     let auth = new Eoa({ privateKey: PRIVATEKEY2 })
@@ -29,25 +26,27 @@ describe("TokenSponsor", function () {
         }
         await configureEnvironment(options)
 
-        uniqueID = await auth.getUniqueId()
+        // uniqueID = await auth.getUniqueId()
+        uniqueID = await funder.getUniqueId()
         wallet = new FunWallet({ uniqueID, index: 234231 })
-        // await prefundWallet(funder, wallet, 1)
-        const walletAddress = await wallet.getAddress()
+        await prefundWallet(funder, wallet, 1)
         wallet1 = new FunWallet({ uniqueID, index: 235231 })
 
         // await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
-        
-        // await wallet.swap(auth, {
-        //     in: "matic",
-        //     amount: .01,
-        //     out: paymasterToken,
-        //     options: {
-        //         returnAddress: funderAddress
-        //     }
-        // })
+        const walletAddress = await wallet.getAddress()
         console.log(walletAddress, walletAddress1)
+
+        await wallet.swap(funder, {
+            in: "matic",
+            amount: .01,
+            out: paymasterToken,
+            options: {
+                returnAddress: funderAddress
+            }
+        })
+
         await configureEnvironment({
             gasSponsor: {
                 sponsorAddress: funderAddress,
@@ -58,12 +57,12 @@ describe("TokenSponsor", function () {
         const gasSponsor = new TokenSponsor()
 
 
-        // const ethstakeAmount = 5
-        // const usdcStakeAmount = 1
+        const ethstakeAmount = 1
+        const usdcStakeAmount = 1
 
-        // const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-        // const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
-        // console.log('sdfjkj')
+        const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+        console.log('sdfjkj')
 
         // const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
         // const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
@@ -97,12 +96,11 @@ describe("TokenSponsor", function () {
         }
     }
 
-    // it("Blacklist Mode Approved", async () => {
-    //     const gasSponsor = new TokenSponsor()
-    //     await funder.sendTx(await gasSponsor.setToBlacklistMode())
-    //     console.log('jasajsdfj')
-    //     await runSwap(wallet)
-    // })
+    it("Blacklist Mode Approved", async () => {
+        const gasSponsor = new TokenSponsor()
+        await funder.sendTx(await gasSponsor.setToBlacklistMode())
+        await runSwap(wallet)
+    })
 
     it("Only User Whitelisted", async () => {
         const walletAddress = await wallet.getAddress()

@@ -25,7 +25,7 @@ const getOptions = async () => {
 
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
-    const contract = await factory.deploy(...params,{gasPrice:550_000_000_000});
+    const contract = await factory.deploy(...params, { gasPrice: 850_000_000_000 });
     return contract.address
 }
 
@@ -64,14 +64,14 @@ const main = async (chainId, privateKey) => {
 
     // const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
     // console.log(gaslessSponsor)
-    // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
-    // console.log(tokenSponsor)
-    // const oracle = await deployOracle(signer)
-    // console.log(oracle)
+    const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    console.log(tokenSponsor)
+    const oracle = await deployOracle(signer)
+    console.log(oracle)
     // const auth = await deployUserAuth(signer)
     // console.log(auth)
-    const apex = await deployApproveAndExec(signer)
-    console.log(apex)
+    // const apex = await deployApproveAndExec(signer)
+    // console.log(apex)
 
 
     const old = require("../contracts.json")
@@ -100,7 +100,7 @@ const paymasterConfig = async () => {
     const addtoken = await sponsor.addUsableToken(oracle, tokenAddress, "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0")
     console.log('jkj')
     // console.log(addtoken)
-    await eoa.sendTx(await addtoken())
+    await eoa.sendTx(addtoken)
 
 }
 
@@ -108,6 +108,6 @@ const paymasterConfig = async () => {
 // main(31337, TEST_PRIVATE_KEY)
 // main(5, WALLET_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)
-main(137, '0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064')
-// paymasterConfig()
+// main(137, '0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064')
+paymasterConfig()
 

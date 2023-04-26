@@ -4,7 +4,7 @@ const config = {
     chainId: 5,
     authPrivateKey: WALLET_PRIVATE_KEY,
     inToken:"dai",
-    outToken: "usdc",
+    outToken: "weth",
     baseToken: "eth",
     prefund: false
 }
