@@ -57,7 +57,6 @@ class Chain {
                 this.currency = chain.currency
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                this.addresses.factoryAddress = require("../contracts.json").factory
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -142,7 +141,7 @@ class Chain {
 
     async estimateOpGas(partialOp) {
         await this.init()
-        const mod = 10
+        const mod = 0
         const res = await this.bundler.estimateUserOpGas(partialOp)
         let { preVerificationGas, verificationGas, callGasLimit } = res
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * (mod + 1.2))
