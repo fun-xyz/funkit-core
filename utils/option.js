@@ -33,8 +33,7 @@ const parseOptions = async (options, location) => {
         chain = await getChainFromData(chain)
     }
     if ((apiKey && !global.orgInfo) || (apiKey != global.apiKey)) {
-        // orgInfo = await getOrgInfo(options.apiKey)
-        orgInfo = "fun"
+        orgInfo = await getOrgInfo(options.apiKey)
     }
     global = { ...global, ...options, chain, gasSponsor, orgInfo, apiKey }
 
