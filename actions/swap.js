@@ -35,7 +35,7 @@ const _swap = (params) => {
             ...swapOptions
         }
         params.slippage = params.slippage ? params.slippage : 1
-        //if mainnet, use 1inch
+        
         const { wallet, chain, options } = actionData
         if (oneInchSupported.includes(parseInt(chain.id))) {
             const address = await actionData.wallet.getAddress()
@@ -120,13 +120,11 @@ const _1inchSwap = async (swapParams, address, options = global) => {
     if (swapParams.tokenIn.toUpperCase() == chain.currency) {
         swapParams.tokenIn = eth1InchAddress
     } else {
-
         approveTx = await _getOneInchApproveTx(swapParams.tokenIn, swapParams.amountIn, options)
     }
     if (swapParams.tokenOut.toUpperCase() == chain.currency) {
         swapParams.tokenOut = eth1InchAddress
     }
-
     const swapTx = await _getOneInchSwapTx(swapParams, address, options)
     return { approveTx, swapTx }
 }
@@ -179,7 +177,6 @@ const _getOneInchSwapTx = async (swapParams, address, options) => {
     }
     const url = await oneInchAPIRequest('/swap', formattedSwap);
     const res = await sendRequest(url, 'GET', "")
-    console.log(res)
     return res.tx
 
 }

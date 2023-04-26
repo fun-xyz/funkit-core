@@ -3,7 +3,7 @@ const { Token } = require("../data")
 const { Interface } = require("ethers/lib/utils")
 const approveAndExecAbi = require("../abis/ApproveAndExec.json").abi
 const approveAndExecInterface = new Interface(approveAndExecAbi)
-const {  constants } = require("ethers")
+const { constants } = require("ethers")
 
 const errorData = {
     location: "actions.approveAndExec"
@@ -14,7 +14,8 @@ const initData = approveAndExecInterface.encodeFunctionData("init", [constants.H
 const approveAndExec = ({ approve, exec }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
-        const appproveAndExecAddress = "0x2cd2a00aaFbfAD79dd1ae971795E126fe4811354"
+        // const appproveAndExecAddress = await chain.getAddress("appproveAndExecAddress")
+        const appproveAndExecAddress = "0x72851f2406F7417616BA09Ba6034CD6BD4aE3221"
         const dest = exec.to
         const value = exec.value
         const executeData = exec.data
