@@ -21,8 +21,7 @@ const errorData = {
     location: "actions.swap"
 }
 
-// const oneInchSupported = [1, 56, 137]
-const oneInchSupported = [1, 56, 137, 31337]
+const oneInchSupported = [1, 56, 137, 31337, 36864]
 
 
 const _swap = (params) => {

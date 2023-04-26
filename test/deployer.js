@@ -70,13 +70,13 @@ const main = async (chainId, privateKey) => {
     console.log(auth)
 
 
-    const old = require("../contracts.json")
+    // const old = require("../contracts.json")
 
-    fs.writeFileSync("contracts.json", JSON.stringify({
-        ...old,
-        // gaslessSponsor,
-        // tokenSponsor, oracle
-    }))
+    // fs.writeFileSync("contracts.json", JSON.stringify({
+    //     ...old,
+    //     // gaslessSponsor,
+    //     // tokenSponsor, oracle
+    // }))
 }
 
 const paymasterConfig = async () => {
@@ -98,7 +98,7 @@ const paymasterConfig = async () => {
 }
 
 
-main(31337, TEST_PRIVATE_KEY)
+// main(31337, TEST_PRIVATE_KEY)
 // main(5, GOERLI_PRIVATE_KEY)
-// main(36864, TEST_PRIVATE_KEY)
+main(36864, TEST_PRIVATE_KEY)
 // paymasterConfig()

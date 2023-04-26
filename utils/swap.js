@@ -155,9 +155,11 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
     return { ...data, amount: tokenInAmount }
 }
 
+
+const testIds = [36864, 31337]
 async function oneInchAPIRequest(methodName, queryParams, options = global) {
     const { chain } = await parseOptions(options)
-    const chainId = chain.id == 31337 ? 1 : chain.id
+    const chainId = testIds.includes(Number(chain.id)) ? 1 : chain.id
     return apiBaseUrl + chainId + methodName + '?' + (new URLSearchParams(queryParams)).toString();
 }
 
