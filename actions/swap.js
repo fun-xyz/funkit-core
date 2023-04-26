@@ -35,7 +35,7 @@ const _swap = (params) => {
             ...swapOptions
         }
         params.slippage = params.slippage ? params.slippage : 1
-        
+
         const { wallet, chain, options } = actionData
         if (oneInchSupported.includes(parseInt(chain.id))) {
             const address = await actionData.wallet.getAddress()
@@ -132,13 +132,7 @@ const _1inchSwap = async (swapParams, address, options = global) => {
 const _getOneInchApproveTx = async (tokenAddress, amt, options) => {
     const parsedOptions = await parseOptions(options)
 
-    let inTokenDecimals = 0
-    if (tokenAddress != eth1InchAddress) {
-        const inToken = new Token(tokenAddress)
-        inTokenDecimals = await inToken.getDecimals()
-    } else {
-        inTokenDecimals = 18
-    }
+    let inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, parsedOptions)
     tokenAddress = await Token.getAddress(tokenAddress, parsedOptions)
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
     const url = await oneInchAPIRequest(
@@ -151,14 +145,7 @@ const _getOneInchApproveTx = async (tokenAddress, amt, options) => {
 
 const _getOneInchSwapTx = async (swapParams, address, options) => {
     const parsedOptions = await parseOptions(options)
-    let inTokenDecimals = 0
-    if (swapParams.tokenIn != eth1InchAddress) {
-        const inToken = new Token(swapParams.tokenIn)
-        inTokenDecimals = await inToken.getDecimals()
-    } else {
-        inTokenDecimals = 18
-    }
-
+    let inTokenDecimals = await _get1inchTokenDecimals(swapParams.tokenIn, parsedOptions)
     const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, parsedOptions)
     const toTokenAddress = await Token.getAddress(swapParams.tokenOut, parsedOptions)
     const amount = fromReadableAmount(swapParams.amountIn, inTokenDecimals)
@@ -178,7 +165,15 @@ const _getOneInchSwapTx = async (swapParams, address, options) => {
     const url = await oneInchAPIRequest('/swap', formattedSwap);
     const res = await sendRequest(url, 'GET', "")
     return res.tx
+}
 
+const _get1inchTokenDecimals = async (tokenAddress, options) => {
+    if (tokenAddress != eth1InchAddress) {
+        const inToken = new Token(tokenAddress)
+        return await inToken.getDecimals(options)
+    }
+
+    return 18
 }
 
 
