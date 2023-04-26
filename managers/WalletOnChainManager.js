@@ -19,7 +19,7 @@ class WalletOnChainManager {
 
     async init() {
         if (!this.factory) {
-            const factoryAddress = "0x5F6795513666eA7253D3Ba15Dfbc7c8BcB8bD754" //await this.chain.getAddress("factoryAddress")
+            const factoryAddress = await this.chain.getAddress("factoryAddress")
             const provider = await this.chain.getProvider()
             this.factory = new Contract(factoryAddress, factoryAbi, provider)
         }

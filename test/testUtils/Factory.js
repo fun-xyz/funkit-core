@@ -1,6 +1,6 @@
-const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../testUtils")
+const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../testUtils")
 
-const FactoryTest = (config, apiKey = "localtest") => {
+const FactoryTest = (config) => {
     const { chainId, authPrivateKey } = config
     const { expect } = require("chai")
     const { randomBytes } = require("ethers/lib/utils")
@@ -8,10 +8,6 @@ const FactoryTest = (config, apiKey = "localtest") => {
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
     const { isContract, prefundWallet } = require("../../utils")
-    const options = {
-        chain: chainId,
-        apiKey: apiKey,
-    }
 
     describe("Factory", function () {
         let auth
@@ -19,6 +15,10 @@ const FactoryTest = (config, apiKey = "localtest") => {
         let uniqueId
         this.timeout(100_000)
         before(async function () {
+            const options = {
+                chain: chainId,
+                apiKey: await getTestApiKey(),
+            }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = randomBytes(32).toString();

@@ -155,7 +155,7 @@ class FunWallet extends FirstClassActions {
         const owner = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const factoryAddress = "0x5F6795513666eA7253D3Ba15Dfbc7c8BcB8bD754" //await chain.getAddress("factoryAddress")
+        const factoryAddress = await chain.getAddress("factoryAddress")
         const verificationAddress = await chain.getAddress("verificationAddress")
         const initCodeParams = { uniqueId, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
