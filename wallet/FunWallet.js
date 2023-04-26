@@ -19,7 +19,7 @@ class FunWallet extends FirstClassActions {
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the WalletIdentifier - salt, index
+     * @param {object} params - The parameters for the WalletIdentifier - uniqueID, index
      */
     constructor(params) {
         super()
@@ -31,8 +31,8 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Gets cached class instances
-     * @param {Class} obj Class object stored in cache 
-     * @returns 
+     * @param {Class} obj Class object stored in cache
+     * @returns
      */
     async _getFromCache(obj) {
         const storekey = `${obj.constructor.name}:${obj[obj.key]}`
@@ -45,7 +45,7 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Generates UserOp object for a transaction
-     * @param {Auth} auth Auth class instance that signs the transaction 
+     * @param {Auth} auth Auth class instance that signs the transaction
      * @param {function} transactionFunc Function that returns the data to be used in the transaction
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
@@ -65,6 +65,7 @@ class FunWallet extends FirstClassActions {
         }
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+
         const sender = await this.getAddress({ chain })
         const callData = await this._getCallData(onChainDataManager, data, sender, options)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
@@ -122,9 +123,9 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Executes UserOp
-     * @param {Auth} auth Auth class instance that signs the transaction 
+     * @param {Auth} auth Auth class instance that signs the transaction
      * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Object} txOptions Options for the transaction 
+     * @param {Object} txOptions Options for the transaction
      * @param {bool} estimate Whether to estimate gas or not
      * @returns {UserOp || receipt}
      */
@@ -132,7 +133,6 @@ class FunWallet extends FirstClassActions {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
-
         if (estimate) {
             return estimatedOp.getMaxTxCost()
         }
@@ -141,15 +141,15 @@ class FunWallet extends FirstClassActions {
         if (options.sendTxLater) {
             return estimatedOp.op
         }
-        return this.sendTx(estimatedOp, options)
+        return await this.sendTx(estimatedOp, options)
     }
 
     /**
     * Estimates gas for a transaction
-    * @param {Auth} auth Auth class instance that signs the transaction 
+    * @param {Auth} auth Auth class instance that signs the transaction
     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-    * @param {Options} txOptions Options for the transaction 
-    * @returns 
+    * @param {Options} txOptions Options for the transaction
+    * @returns
     */
     async estimateGas(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
@@ -164,7 +164,7 @@ class FunWallet extends FirstClassActions {
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: id, })
+        return new UserOp({ ...partialOp, ...res, signature: id, }, true)
     }
 
     async _getThisInitCode(chain, auth) {
@@ -179,8 +179,8 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Returns the wallet address
-     * @param {*} options 
-     * @returns 
+     * @param {*} options
+     * @returns
      */
     async getAddress(options = global) {
         if (!this.address) {
@@ -206,9 +206,9 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Sends a UserOp to the bundler
-     * @param {UserOp} userOp 
-     * @param {Options} txOptions Options for the transaction 
-     * @returns 
+     * @param {UserOp} userOp
+     * @param {Options} txOptions Options for the transaction
+     * @returns
      */
     async sendUserOp(userOp, txOptions = global) {
         validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
@@ -224,11 +224,11 @@ class FunWallet extends FirstClassActions {
     }
 
     /**
-     * 
+     *
      * @param {Auth?} auth Optional Auth class instance that signs the transaction if not already signed
-     * @param {UserOp[]} ops list of UserOps to be sent 
-     * @param {*} txOptions 
-     * @returns 
+     * @param {UserOp[]} ops list of UserOps to be sent
+     * @param {*} txOptions
+     * @returns
      */
     async sendTxs({ auth, ops }, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.execute")

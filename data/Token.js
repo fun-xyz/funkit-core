@@ -5,7 +5,7 @@ const { DataServer } = require("../servers")
 const { parseOptions } = require("../utils/option")
 const erc20Abi = require("../abis/ERC20.json").abi
 
-const nativeTokens = ["eth"]
+const nativeTokens = ["eth", "matic"]
 
 class Token {
     constructor(data, location = "Token constructor") {

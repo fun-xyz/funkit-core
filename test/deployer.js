@@ -9,16 +9,20 @@ const authAbi = require("../abis/UserAuthentication.json")
 const feeOracleAbi = require("../abis/FeePercentOracle.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
 
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY } = require("./testUtils")
+const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
 const { Chain, Token } = require("../data")
 const { configureEnvironment } = require("../managers")
 const { Eoa } = require("../auth")
 const { TokenSponsor } = require("../sponsors")
 
-const options = {
-    chain: 36864,
-    apiKey: "aci4Jw5RtX36aHiCZEfm96vmnYfqfBgi28FFCGJe",
+const getOptions = async () => {
+    const apiKey = await getTestApiKey()
+    return {
+        chain: 36864,
+        apiKey: apiKey,
+    }
 }
+
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
     const contract = await factory.deploy(...params);
@@ -50,7 +54,7 @@ const deployFeeOracle = async (signer) => {
 
 
 const main = async (chainId, privateKey) => {
-    await configureEnvironment(options)
+    await configureEnvironment(getOptions)
 
     const chain = new Chain({ chainId })
     const provider = await chain.getProvider()
@@ -79,7 +83,7 @@ const main = async (chainId, privateKey) => {
 }
 
 const paymasterConfig = async () => {
-    await configureEnvironment(options)
+    await configureEnvironment(getOptions)
 
     const tokenAddress = await Token.getAddress("usdc")
     const eoa = new Eoa({ privateKey: TEST_PRIVATE_KEY })

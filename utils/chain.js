@@ -64,7 +64,8 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-const prefundWallet = async (auth, wallet, value, txOptions = global) => {
+const gasSpecificChain = {"137": 350_000_000_000}
+const prefundWallet = async (auth, wallet, value, gasPrice = 0, txOptions = global) => {
     validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
     const options = await parseOptions(txOptions)
     const chain = options.chain
@@ -72,7 +73,13 @@ const prefundWallet = async (auth, wallet, value, txOptions = global) => {
     const signer = await auth.getSigner()
     const provider = await chain.getProvider()
     const txSigner = signer.connect(provider)
-    const txData = { to, data: "0x", value: parseEther(`${value}`) }
+    let txData;
+    if (gasSpecificChain[chain.id]){
+        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: gasSpecificChain[chain.id] }
+    }
+    else{
+        txData = { to, data: "0x", value: parseEther(`${value}`) }
+    }
     const tx = await txSigner.sendTransaction(txData)
     return await tx.wait()
 }
