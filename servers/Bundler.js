@@ -12,12 +12,13 @@ class Bundler {
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;
+        this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl);
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid
         let response;
         try {
-            response = await DataServer.validateChainId(this.chainId);
+            response = await DataServer.validateChainId(this.chainId, this.userOpJsonRpcProvider);
         } catch (e) {
             const helper = new Helper("Chain ID", this.chainId, "Cannot connect to bundler.");
             throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl");
@@ -32,7 +33,7 @@ class Bundler {
             entryPointAddress: this.entryPointAddress,
             chainId: this.chainId
         };
-        const response = await DataServer.sendUserOpToBundler(body);
+        const response = await DataServer.sendUserOpToBundler(body, this.chainId, this.userOpJsonRpcProvider);
         return response;
     }
 
@@ -43,12 +44,12 @@ class Bundler {
             entryPointAddress: this.entryPointAddress,
             chainId: this.chainId
         };
-        const response = await DataServer.estimateUserOpGas(body);
+        const response = await DataServer.estimateUserOpGas(body, this.chainId, this.userOpJsonRpcProvider);
         return response;
     }
 
     static async getChainId(bundlerUrl) {
-        return await DataServer.getChainId(bundlerUrl);
+        return await DataServer.getChainId(bundlerUrl, this.chainId, this.userOpJsonRpcProvider);
     }
 }
 
