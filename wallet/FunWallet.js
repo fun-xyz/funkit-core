@@ -95,7 +95,6 @@ class FunWallet extends FirstClassActions {
         let tempCallData;
         let fee = { ...options.fee }
         if (options.fee) {
-
             const token = new Token(fee.token)
             if (token.isNative) {
                 fee.token = constants.AddressZero
@@ -104,6 +103,7 @@ class FunWallet extends FirstClassActions {
                 fee.token = await token.getAddress()
             }
             fee.amount = (await token.getDecimalAmount(fee.amount)).toString()
+            fee.oracle = require("../contracts.json").feeoracle
         }
         data = { ...data, ...fee }
         if (data.initAndExec) {

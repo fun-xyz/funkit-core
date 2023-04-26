@@ -34,7 +34,7 @@ class WalletAbiManager {
 
     encodeFeeCall(input, location = "WalletAbiManager.encodeFeeCall") {
         verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
-        let { to: dest, data, value, token, amount, recipient } = input
+        let { to: dest, data, value, token, amount, recipient, oracle } = input
         if (Array.isArray(data)) {
             data = data[1]
         }
@@ -44,7 +44,7 @@ class WalletAbiManager {
             value = value ? value : 0
         }
 
-        const feedata = [token, recipient, amount]
+        const feedata = [token, recipient, oracle, amount]
         const encodeObj = { dest, data, value, feedata }
         return this.encodeWalletCall("execFromEntryPointOrOwnerWithFee", encodeObj)
     }
