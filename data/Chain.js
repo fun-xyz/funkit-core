@@ -57,7 +57,6 @@ class Chain {
                 this.currency = chain.currency
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                this.addresses.factoryAddress = require("../contracts.json").factory
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
