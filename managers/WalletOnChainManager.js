@@ -82,6 +82,14 @@ class WalletOnChainManager {
     async getOpErrors() {
         await this.init()
     }
+
+    async getEthTokenPairing(token) {
+        const OffChainOracleAbi = require("../abis/OffChainOracle.json").abi
+        const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress");
+        const provider = await this.chain.getProvider()
+        const oracle = new Contract(offChainOracleAddress, OffChainOracleAbi, provider)
+        return await oracle.getRateToEth(token, true)
+    }
 }
 
 

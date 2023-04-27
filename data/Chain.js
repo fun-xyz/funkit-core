@@ -57,6 +57,11 @@ class Chain {
                 this.currency = chain.currency
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+                this.addresses.factoryAddress = require("../contracts.json").factory
+                if (chainId == 31337) {
+                    const defaultAddresses = require("../utils/forkDefaults").defaultAddresses
+                    this.addresses = { ...this.addresses, ...defaultAddresses }
+                }
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -143,7 +148,11 @@ class Chain {
         await this.init()
         const mod = 0
         const res = await this.bundler.estimateUserOpGas(partialOp)
+        console.log(res)
         let { preVerificationGas, verificationGas, callGasLimit } = res
+        if (!(preVerificationGas && verificationGas && callGasLimit)) {
+            throw new Error(res)
+        }
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * (mod + 1.2))
         let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? (mod + 1.45) : (mod + 1.6)))
         callGasLimit = Math.ceil(parseInt(callGasLimit) * (mod + 2))

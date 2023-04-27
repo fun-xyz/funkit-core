@@ -109,8 +109,11 @@ const feeOracleConfig = async (chainId, pkey) => {
     console.log((await contract.getFee(10)).toString())
 }
 // main(5, GOERLI_PRIVATE_KEY)
-// main(36864, TEST_PRIVATE_KEY)
 // paymasterConfig()
 
 // main(31337, TEST_PRIVATE_KEY)
-feeOracleConfig(31337, TEST_PRIVATE_KEY) 
+// feeOracleConfig(31337, TEST_PRIVATE_KEY) 
+
+
+// main(36864, TEST_PRIVATE_KEY)
+// feeOracleConfig(36864, TEST_PRIVATE_KEY)
