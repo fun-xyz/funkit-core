@@ -91,7 +91,7 @@ class DataServer {
                 chain: 1
             }
         }
-        if (symbol == "weth" || symbol == "wmatic" && BASE_WRAP_TOKEN_ADDR[chain]) {
+        if ((symbol == "weth" || symbol == "wmatic") && BASE_WRAP_TOKEN_ADDR[chain]) {
             return BASE_WRAP_TOKEN_ADDR[chain][symbol]
         }
 

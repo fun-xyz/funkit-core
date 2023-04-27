@@ -1,17 +1,14 @@
 const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../testUtils")
 
-const FactoryTest = (config, apiKey = "localtest") => {
+const FactoryTest = (config) => {
     const { chainId, authPrivateKey } = config
     const { expect } = require("chai")
     const { randomBytes } = require("ethers/lib/utils")
     const { Eoa } = require("../../auth")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
-    const { isContract, prefundWallet } = require("../../utils")
-    const options = {
-        chain: chainId,
-        apiKey: apiKey,
-    }
+    const { isContract, prefundWallet, getTestApiKey } = require("../../utils")
+    
 
     describe("Factory", function () {
         let auth
@@ -19,6 +16,11 @@ const FactoryTest = (config, apiKey = "localtest") => {
         let uniqueID
         this.timeout(100_000)
         before(async function () {
+            const apiKey = await getTestApiKey()
+            const options = {
+                chain: chainId,
+                apiKey: apiKey,
+            }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueID = randomBytes(32).toString();
@@ -62,8 +64,6 @@ const FactoryTest = (config, apiKey = "localtest") => {
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.not.be.equal(wallet1Address)
         })
-
-
     })
 }
 
