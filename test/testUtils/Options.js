@@ -10,7 +10,7 @@ describe("Unit Test: options.js", function () {
         let options = {}
         await configureEnvironment(options)
         auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
-        const wallet = new FunWallet({ uniqueID: 9239, index: 23423 })
+        const wallet = new FunWallet({ uniqueId: 9239, index: 23423 })
         await wallet.transfer(auth, { to: await auth.getUniqueId(), amount: .01, token: 'eth' })
         expect(global.chain.id).to.be.equal('5')
     })

@@ -4,6 +4,7 @@ const loadAbis = () => {
     const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
     const authContractPath = "validations/UserAuthentication.sol/UserAuthentication.json"
     const approveAndSwapPath = "modules/actions/ApproveAndSwap.sol/ApproveAndSwap.json"
+    const approveAndExecPath = "modules/actions/ApproveAndExec.sol/ApproveAndExec.json"
     const aaveWithdrawPath = "modules/actions/AaveWithdraw.sol/AaveWithdraw.json"
     const factoryPath = "deployer/FunWalletFactory.sol/FunWalletFactory.json"
     const walletPath = "FunWallet.sol/FunWallet.json"
@@ -11,7 +12,7 @@ const loadAbis = () => {
     const gaslessPaymasterPaymasterpath = "paymaster/GaslessPaymaster.sol/GaslessPaymaster.json"
     const tokenOracle = "oracles/TokenPriceOracle.sol/TokenPriceOracle.json"
     const feeOracle = "oracles/FeePercentOracle.sol/FeePercentOracle.json"
-    const abis = [entryPointPath, feeOracle, authContractPath, gaslessPaymasterPaymasterpath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath, tokenOracle, aaveWithdrawPath]
+    const abis = [entryPointPath,feeOracle, authContractPath, gaslessPaymasterPaymasterpath, approveAndExecPath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath, tokenOracle, aaveWithdrawPath]
     abis.forEach(moveFile)
 }
 

@@ -1,28 +1,32 @@
-const SwapTest = (config, apiKey="localtest" ) => {
+const { getTestApiKey } = require("../testUtils")
+const SwapTest = (config) => {
     const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
     const { Eoa } = require("../../auth")
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
-    const { prefundWallet } = require("../../utils")
+    const { prefundWallet, getTestApiKey } = require("../../utils")
 
-    const options = {
-        chain: chainId,
-        apiKey: apiKey,
-        gasSponsor: "",
-    }
+
     
+
     describe("Swap", function () {
-        this.timeout(100_000)
+        this.timeout(120_000)
         let auth
         let wallet
         before(async function () {
+            let apiKey = await getTestApiKey()
+            const options = {
+                chain: chainId,
+                apiKey: apiKey,
+                gasSponsor: null,
+            }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            uniqueID = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueID, index: 23423 })
-            if(prefund) {
+            uniqueId = await auth.getUniqueId()
+            wallet = new FunWallet({ uniqueId, index: 234231 })
+            if (prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
         })
@@ -30,7 +34,7 @@ const SwapTest = (config, apiKey="localtest" ) => {
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
-            const res= await wallet.swap(auth, {
+            const res = await wallet.swap(auth, {
                 in: baseToken,
                 amount: .01,
                 out: inToken
@@ -41,14 +45,14 @@ const SwapTest = (config, apiKey="localtest" ) => {
 
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
+            const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: inToken,
-                amount: .00001,
+                amount: .0001,
                 out: outToken
             })
-            const tokenBalanceAfter = (await Token.getBalance(inToken, walletAddress))
-            assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
+            const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
     })

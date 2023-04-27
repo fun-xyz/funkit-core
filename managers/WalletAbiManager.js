@@ -4,7 +4,7 @@ const { verifyValidParamsFromAbi, checkAbi, encodeContractCall } = require("../u
 const { hexConcat } = require("ethers/lib/utils")
 
 const encodeCallExpectedKeys = ["to", "data"]
-const initCodeExpectedKeys = ["uniqueID", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
+const initCodeExpectedKeys = ["uniqueId", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
 
 const encodeFeeCallExpectedKeys = ["to", "data", "token", "amount", "recipient"]
 class WalletAbiManager {
@@ -93,10 +93,10 @@ class WalletAbiManager {
     getInitCode(input) {
         verifyFunctionParams("WalletAbiManager.getInitCode", input, initCodeExpectedKeys)
 
-        const { uniqueID, entryPointAddress, verificationAddress, owner, implementation } = input
+        const { uniqueId, entryPointAddress, verificationAddress, owner, implementation } = input
 
         const initCodeParams = {
-            salt: uniqueID, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
+            salt: uniqueId, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
         }
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero

@@ -8,6 +8,7 @@ const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
 const feeOracleAbi = require("../abis/FeePercentOracle.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
+const approveAndExecAbi = require("../abis/ApproveAndExec.json")
 
 const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
 const { Chain, Token } = require("../data")
@@ -51,6 +52,9 @@ const deployUserAuth = async (signer) => {
 const deployFeeOracle = async (signer) => {
     return await deploy(signer, feeOracleAbi)
 }
+const deployApproveAndExec = async (signer) => {
+    return await deploy(signer, approveAndExecAbi)
+}
 
 
 const main = async (chainId, privateKey) => {
@@ -66,12 +70,18 @@ const main = async (chainId, privateKey) => {
     // // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     // const oracle = await deployOracle(signer)
 
-    const feeoracle = await deployFeeOracle(signer)
+    // const feeoracle = await deployFeeOracle(signer)
 
     // const factory = await deployFactory(signer)
 
+    // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    // const oracle = await deployOracle(signer)
 
-    const old = require("../contracts.json")
+    const auth = await deployApproveAndExec(signer)
+    console.log(auth)
+
+    // const factory = await deployFactory(signer)
+    // console.log(factory)
 
     fs.writeFileSync("contracts.json", JSON.stringify({
         ...old,
@@ -83,7 +93,7 @@ const main = async (chainId, privateKey) => {
 }
 
 const paymasterConfig = async () => {
-    await configureEnvironment(getOptions)
+    await configureEnvironment(await getOptions())
 
     const tokenAddress = await Token.getAddress("usdc")
     const eoa = new Eoa({ privateKey: TEST_PRIVATE_KEY })
@@ -112,7 +122,7 @@ const feeOracleConfig = async (chainId, pkey) => {
 // paymasterConfig()
 
 // main(31337, TEST_PRIVATE_KEY)
-feeOracleConfig(31337, TEST_PRIVATE_KEY) 
+// feeOracleConfig(31337, TEST_PRIVATE_KEY) 
 
 
 // main(36864, TEST_PRIVATE_KEY)
