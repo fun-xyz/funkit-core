@@ -1,7 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const { Eoa } = require("./EoaAuth");
 const { arrayify } = require("ethers/lib/utils");
-const { getStoredUniqueId, setStoredUniqueId } = require("../utils")
+const { ParameterFormatError, Helper } = require("../errors");
+const { getStoredUniqueId, setStoredUniqueId } = require("../utils");
 
 class MultiAuthEoa extends Eoa {
     constructor(input) {
@@ -18,8 +19,13 @@ class MultiAuthEoa extends Eoa {
                 uniqueIds.add(storedUniqueId)
             }
         }
+
+        if (uniqueIds.size > 1) {
+            const helper = new Helper("Invalid parameters", this.authIds, "authIds already link to multiple fun wallets")
+            throw new ParameterFormatError("MultiAuthEoa.getUniqueId", helper)
+        }
         
-        if (uniqueIds.size >= 1) {
+        if (uniqueIds.size == 1) {
             [ this.uniqueId ] = uniqueIds
         } else {
             this.uniqueId = uuidv4()
