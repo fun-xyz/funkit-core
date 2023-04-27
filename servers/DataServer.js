@@ -91,7 +91,7 @@ class DataServer {
                 chain: 1
             }
         }
-        if (symbol == "weth" || symbol == "wmatic" && BASE_WRAP_TOKEN_ADDR[chain]) {
+        if ((symbol == "weth" || symbol == "wmatic") && BASE_WRAP_TOKEN_ADDR[chain]) {
             return BASE_WRAP_TOKEN_ADDR[chain][symbol]
         }
 
@@ -200,7 +200,7 @@ class DataServer {
         }
 
     }
-    
+
     static async setAuth(authId, method, addr, uniqueId){
         return await this.sendPostRequest(APIURL, "auth/set-auth", {
             authId,
@@ -215,6 +215,7 @@ class DataServer {
             authId
         })
     }
+
 
 }
 

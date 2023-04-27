@@ -13,14 +13,13 @@ class GaslessSponsor {
     }
 
     async getPaymasterAddress(options = global) {
-        // const parsedOptions = await parseOptions(options)
-        // const chainId = await parsedOptions.chain.getChainId()
-        // if (!this.paymasterAddress && chainId != this.chainId) {
-        //     this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
-        //     this.chainId = chainId
-        // }
-        // return this.paymasterAddress
-        return require("../contracts.json").gaslessSponsor
+        const parsedOptions = await parseOptions(options)
+        const chainId = await parsedOptions.chain.getChainId()
+        if (!this.paymasterAddress && chainId != this.chainId) {
+            this.paymasterAddress = await parsedOptions.chain.getAddress("gaslessSponsorAddress")
+            this.chainId = chainId
+        }
+        return this.paymasterAddress
     }
 
     async getPaymasterAndData(options = global) {

@@ -7,6 +7,7 @@ const tokenSponsorAbi = require("../abis/TokenPaymaster.json")
 const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
+const approveAndExecAbi = require("../abis/ApproveAndExec.json")
 
 const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
 const { Chain, Token } = require("../data")
@@ -47,6 +48,10 @@ const deployUserAuth = async (signer) => {
     return await deploy(signer, authAbi)
 }
 
+const deployApproveAndExec = async (signer) => {
+    return await deploy(signer, approveAndExecAbi)
+}
+
 
 const main = async (chainId, privateKey) => {
     await configureEnvironment(getOptions)
@@ -58,21 +63,29 @@ const main = async (chainId, privateKey) => {
     const signer = new Wallet(privateKey, provider)
 
     // const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
-    const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
-    const oracle = await deployOracle(signer)
+    // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    // const oracle = await deployOracle(signer)
 
-    const auth = await deployUserAuth(signer)
+    const auth = await deployApproveAndExec(signer)
+    console.log(auth)
 
-    const old = require("../contracts.json")
+    // const factory = await deployFactory(signer)
+    // console.log(factory)
 
-    fs.writeFileSync("contracts.json", JSON.stringify({
-        ...old,
-        tokenSponsor, oracle
-    }))
+
+
+
+    // const old = require("../contracts.json")
+
+    // fs.writeFileSync("contracts.json", JSON.stringify({
+    //     ...old,
+    //     // gaslessSponsor,
+    //     // tokenSponsor, oracle
+    // }))
 }
 
 const paymasterConfig = async () => {
-    await configureEnvironment(getOptions)
+    await configureEnvironment(await getOptions())
 
     const tokenAddress = await Token.getAddress("usdc")
     const eoa = new Eoa({ privateKey: TEST_PRIVATE_KEY })
@@ -89,6 +102,8 @@ const paymasterConfig = async () => {
 
 }
 
+
+// main(31337, TEST_PRIVATE_KEY)
 // main(5, GOERLI_PRIVATE_KEY)
-// main(36864, TEST_PRIVATE_KEY)
+main(36864, TEST_PRIVATE_KEY)
 // paymasterConfig()

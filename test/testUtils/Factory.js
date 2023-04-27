@@ -7,7 +7,9 @@ const FactoryTest = (config) => {
     const { Eoa } = require("../../auth")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
-    const { isContract, prefundWallet } = require("../../utils")
+    const { isContract, prefundWallet, getTestApiKey } = require("../../utils")
+    
+
 
     describe("Factory", function () {
         let auth
@@ -15,20 +17,22 @@ const FactoryTest = (config) => {
         let uniqueId
         this.timeout(100_000)
         before(async function () {
+
+            const apiKey = await getTestApiKey()
             const options = {
                 chain: chainId,
-                apiKey: await getTestApiKey(),
+                apiKey: apiKey,
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = randomBytes(32).toString();
-            wallet = new FunWallet({ uniqueId, index: 3923 })
+            wallet = new FunWallet({ uniqueId, index: 3123 })
         })
 
 
         it("wallet should have the same address with a uniqueId-index combination", async () => {
-            let uniqueId1 = randomBytes(32).toString();
-            const wallet1 = new FunWallet({ uniqueId, index: 3923 })
+            let uniqueID1 = randomBytes(32).toString();
+            const wallet1 = new FunWallet({ uniqueId, index: 3123 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.be.equal(wallet1Address)
@@ -62,8 +66,6 @@ const FactoryTest = (config) => {
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.not.be.equal(wallet1Address)
         })
-
-
     })
 }
 
