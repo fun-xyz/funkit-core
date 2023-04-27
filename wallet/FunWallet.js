@@ -5,13 +5,11 @@ const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
-const { BigNumber } = require("ethers")
+const { BigNumber,constants } = require("ethers")
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 
 const executeExpectedKeys = ["chain", "apiKey"]
-
-const { constants } = require("ethers")
 
 class FunWallet extends FirstClassActions {
     objCache = {}
