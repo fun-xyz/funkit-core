@@ -32,12 +32,12 @@ describe("TokenSponsor", function () {
         }
         await configureEnvironment(options)
 
-        uniqueID = await auth.getUniqueId()
-        wallet = new FunWallet({ uniqueID, index: 2 })
+        uniqueId = await auth.getUniqueId()
+        wallet = new FunWallet({ uniqueId, index: 2 })
         await prefundWallet(funder, wallet, 1)
         const walletAddress = await wallet.getAddress()
 
-        wallet1 = new FunWallet({ uniqueID, index: 1 })
+        wallet1 = new FunWallet({ uniqueId, index: 1 })
 
         await prefundWallet(auth, wallet1, 3)
         const walletAddress1 = await wallet1.getAddress()

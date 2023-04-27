@@ -1,4 +1,6 @@
-const SwapTest = (config, apiKey="localtest" ) => {
+const { getTestApiKey } = require("../testUtils")
+
+const SwapTest = (config) => {
     const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
     const { Eoa } = require("../../auth")
@@ -6,22 +8,21 @@ const SwapTest = (config, apiKey="localtest" ) => {
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
     const { prefundWallet } = require("../../utils")
-
-    const options = {
-        chain: chainId,
-        apiKey: apiKey,
-        gasSponsor: "",
-    }
     
     describe("Swap", function () {
         this.timeout(100_000)
         let auth
         let wallet
         before(async function () {
+            const options = {
+                chain: chainId,
+                apiKey: await getTestApiKey(),
+                gasSponsor: null,
+            }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            uniqueID = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueID, index: 23423 })
+            uniqueId = await auth.getUniqueId()
+            wallet = new FunWallet({ uniqueId, index: 23423 })
             if(prefund) {
                 await prefundWallet(auth, wallet, .3)
             }

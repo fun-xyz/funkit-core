@@ -85,6 +85,14 @@ class Eoa extends Auth {
         await this.init()
         return await this.signer.getAddress()
     }
+
+    async getOwnerAddr() { 
+        return [await this.getUniqueId()]
+    }
+
+    async getEstimateGasSignature() {
+        return await this.getUniqueId()
+    }
 }
 
 module.exports = { Eoa };
