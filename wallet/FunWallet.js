@@ -175,12 +175,12 @@ class FunWallet extends FirstClassActions {
         return this.address
     }
 
-    static async getAddress(authId, index, chainId, apiKey) {
+    static async getAddress(authId, index, chain, apiKey) {
         global.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
-        const chain = await getChainFromData(chainId)
+        const chainObj = await getChainFromData(chain)
         const walletIdentifer = new WalletIdentifier({uniqueId, index})
-        const walletOnChainManager = new WalletOnChainManager(chain, walletIdentifer)
+        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
         return await walletOnChainManager.getWalletAddress()
     }
 
