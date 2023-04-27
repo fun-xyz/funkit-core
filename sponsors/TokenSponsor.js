@@ -14,14 +14,13 @@ class TokenSponsor {
     }
 
     async getPaymasterAddress(options = global) {
-        // const parsedOptions = await parseOptions(options)
-        // const chainId = await parsedOptions.chain.getChainId()
-        // if (!this.paymasterAddress && chainId != this.chainId) {
-        //     this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
-        //     this.chainId = chainId
-        // }
-        // return this.paymasterAddress
-        return require("../contracts.json").tokenSponsor
+        const parsedOptions = await parseOptions(options)
+        const chainId = await parsedOptions.chain.getChainId()
+        if (!this.paymasterAddress && chainId != this.chainId) {
+            this.paymasterAddress = await parsedOptions.chain.getAddress("tokenSponsorAddress")
+            this.chainId = chainId
+        }
+        return this.paymasterAddress
     }
 
     async getPaymasterAndData(options = global) {
@@ -48,6 +47,7 @@ class TokenSponsor {
     }
 
     async getContract(options = global) {
+
         if (!this.contract) {
             const parsedOptions = await parseOptions(options)
             const provider = await parsedOptions.chain.getProvider()

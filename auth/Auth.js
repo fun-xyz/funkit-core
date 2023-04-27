@@ -14,6 +14,15 @@ class Auth {
         const entrypointContract = new Contract(entryPointAddress, entrypointAbi, provider)
         return await entrypointContract.getNonce(sender, key)
     }
+    
+    async getOwnerAddr() { }
+    async getEstimateGasSignature() { }
+    async getNonce({ sender, callData }, timeout = 1000) {
+        const now = Date.now()
+        const time = now - now % timeout
+        return BigNumber.from(keccak256(toUtf8Bytes(`${sender}${callData}${time}`)));
+    }
+        
 }
 
 module.exports = { Auth }

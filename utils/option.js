@@ -1,7 +1,8 @@
 const { Chain } = require("../data/Chain")
 const { verifyFunctionParams } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
-
+const { getOrgInfo } = require("../utils/dashboard")
+const testApiKey = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
 
 const getChainsFromList = async (chains) => {
@@ -14,17 +15,30 @@ const verifyBundlerUrl = async (url) => {
     const data = await provider.send("web3_clientVersion", [])
     return (data.indexOf("aa-bundler") + 1)
 }
+
+//set defaults
+const checkEnvironment = async (options) => {
+    options.chain = options.chain ? options.chain : 5
+    options.apiKey = options.apiKey ? options.apiKey : testApiKey
+    return options
+}
+
 const parseOptions = async (options, location) => {
-    let { gasSponsor, chain } = options
+    options = await checkEnvironment(options)
+    let { gasSponsor, chain, apiKey, orgInfo } = options
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
-    if (chain) {
+    if (chain && !(chain instanceof Chain) && chain!=global.chain?.chainId) {
         chain = await getChainFromData(chain)
     }
+    if ((apiKey && !global.orgInfo) || (apiKey != global.apiKey)) {
+        orgInfo = await getOrgInfo(options.apiKey)
+    }
+    global = { ...global, ...options, chain, gasSponsor, orgInfo, apiKey }
 
     return {
-        ...options, chain, gasSponsor
+        ...options, chain, gasSponsor, orgInfo
     }
 }
 

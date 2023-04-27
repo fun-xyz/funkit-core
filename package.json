@@ -1,10 +1,10 @@
 {
-  "name": "@fun-wallet/sdk",
+  "name": "fun-wallet",
   "version": "0.2.1",
   "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
   "main": "index.js",
   "scripts": {
-    "test": "env  REMOTE_TEST=true mocha test/fork",
+    "test": "env REMOTE_TEST=true mocha test/fork",
     "test-goerli": "mocha test/goerli",
     "test-localfork": "env REMOTE_TEST=false mocha test/fork",
     "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
@@ -14,12 +14,14 @@
   "license": "ISC",
   "dependencies": {
     "@account-abstraction/sdk": "^0.4.0",
+    "@aws-sdk/client-secrets-manager": "^3.315.0",
     "@lifeomic/attempt": "^3.0.3",
     "@uniswap/sdk": "^3.0.3",
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-sdk": "^3.9.0",
     "ethers": "5.7.2",
-    "node-fetch": "2.0.0"
+    "node-fetch": "2.0.0",
+    "web3": "^1.9.0"
   },
   "devDependencies": {
     "chai": "^4.3.7",

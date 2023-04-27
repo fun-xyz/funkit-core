@@ -4,7 +4,7 @@ const { ParameterFormatError, Helper } = require("../errors")
 const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -15,11 +15,10 @@ const executeExpectedKeys = ["chain", "apiKey"]
 class FunWallet extends FirstClassActions {
     objCache = {}
 
-
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the WalletIdentifier - salt, index
+     * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
     constructor(params) {
         super()
@@ -31,8 +30,8 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Gets cached class instances
-     * @param {Class} obj Class object stored in cache 
-     * @returns 
+     * @param {Class} obj Class object stored in cache
+     * @returns
      */
     async _getFromCache(obj) {
         const storekey = `${obj.constructor.name}:${obj[obj.key]}`
@@ -45,7 +44,7 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Generates UserOp object for a transaction
-     * @param {Auth} auth Auth class instance that signs the transaction 
+     * @param {Auth} auth Auth class instance that signs the transaction
      * @param {function} transactionFunc Function that returns the data to be used in the transaction
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
@@ -65,6 +64,7 @@ class FunWallet extends FirstClassActions {
         }
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+
         const sender = await this.getAddress({ chain })
 
         let tempCallData;
@@ -107,9 +107,9 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Executes UserOp
-     * @param {Auth} auth Auth class instance that signs the transaction 
+     * @param {Auth} auth Auth class instance that signs the transaction
      * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Object} txOptions Options for the transaction 
+     * @param {Object} txOptions Options for the transaction
      * @param {bool} estimate Whether to estimate gas or not
      * @returns {UserOp || receipt}
      */
@@ -117,7 +117,6 @@ class FunWallet extends FirstClassActions {
         const options = await parseOptions(txOptions, "Wallet.execute")
         const chain = await this._getFromCache(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
-
         if (estimate) {
             return estimatedOp.getMaxTxCost()
         }
@@ -126,46 +125,47 @@ class FunWallet extends FirstClassActions {
         if (options.sendTxLater) {
             return estimatedOp.op
         }
-        return this.sendTx(estimatedOp, options)
+        return await this.sendTx(estimatedOp, options)
     }
 
     /**
     * Estimates gas for a transaction
-    * @param {Auth} auth Auth class instance that signs the transaction 
+    * @param {Auth} auth Auth class instance that signs the transaction
     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-    * @param {Options} txOptions Options for the transaction 
-    * @returns 
+    * @param {Options} txOptions Options for the transaction
+    * @returns
     */
     async estimateGas(auth, transactionFunc, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const id = await auth.getUniqueId()
+        const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
-            ...partialOp, signature: id,
+            ...partialOp,
+            signature: signature,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: id, }, true)
+        return new UserOp({ ...partialOp, ...res, signature: signature, }, true)
     }
 
     async _getThisInitCode(chain, auth) {
-        const owner = await auth.getUniqueId()
-        const uniqueID = await this.identifier.getIdentifier()
+        const owner = await auth.getOwnerAddr()
+        const uniqueId = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
         const verificationAddress = await chain.getAddress("verificationAddress")
-        const initCodeParams = { uniqueID, owner, entryPointAddress, verificationAddress, factoryAddress }
+        const initCodeParams = { uniqueId, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
     }
 
     /**
      * Returns the wallet address
-     * @param {*} options 
-     * @returns 
+     * @param {*} options
+     * @returns
      */
     async getAddress(options = global) {
         if (!this.address) {
@@ -173,6 +173,15 @@ class FunWallet extends FirstClassActions {
             this.address = await (new WalletOnChainManager(parsedOptions.chain, this.identifier)).getWalletAddress()
         }
         return this.address
+    }
+
+    static async getAddress(authId, index, chain, apiKey) {
+        global.apiKey = apiKey
+        const uniqueId = await getUniqueId(authId)
+        const chainObj = await getChainFromData(chain)
+        const walletIdentifer = new WalletIdentifier({uniqueId, index})
+        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+        return await walletOnChainManager.getWalletAddress()
     }
 
     async sendTx({ auth, op, call }, txOptions = global) {
@@ -191,9 +200,9 @@ class FunWallet extends FirstClassActions {
 
     /**
      * Sends a UserOp to the bundler
-     * @param {UserOp} userOp 
-     * @param {Options} txOptions Options for the transaction 
-     * @returns 
+     * @param {UserOp} userOp
+     * @param {Options} txOptions Options for the transaction
+     * @returns
      */
     async sendUserOp(userOp, txOptions = global) {
         validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
@@ -209,11 +218,11 @@ class FunWallet extends FirstClassActions {
     }
 
     /**
-     * 
+     *
      * @param {Auth?} auth Optional Auth class instance that signs the transaction if not already signed
-     * @param {UserOp[]} ops list of UserOps to be sent 
-     * @param {*} txOptions 
-     * @returns 
+     * @param {UserOp[]} ops list of UserOps to be sent
+     * @param {*} txOptions
+     * @returns
      */
     async sendTxs({ auth, ops }, txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.execute")

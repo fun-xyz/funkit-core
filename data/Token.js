@@ -5,7 +5,8 @@ const { DataServer } = require("../servers")
 const { parseOptions } = require("../utils/option")
 const erc20Abi = require("../abis/ERC20.json").abi
 
-const nativeTokens = ["eth"]
+const nativeTokens = ["eth", "matic"]
+const wrappedNativeTokens = { "eth": "weth", "matic": "wmatic" }
 
 class Token {
     constructor(data, location = "Token constructor") {
@@ -17,7 +18,7 @@ class Token {
             return;
         }
 
-        if (nativeTokens.includes(data)) {
+        if (nativeTokens.includes(data.toLowerCase())) {
             this.isNative = true
         }
         this.symbol = data
@@ -31,7 +32,8 @@ class Token {
         }
         let tokenInfo;
         if (this.isNative) {
-            tokenInfo = await DataServer.getTokenInfo("weth", chainId)
+            const nativeName = wrappedNativeTokens[this.symbol]
+            tokenInfo = await DataServer.getTokenInfo(nativeName, chainId)
         } else if (this.symbol) {
             tokenInfo = await DataServer.getTokenInfo(this.symbol, chainId)
         }
