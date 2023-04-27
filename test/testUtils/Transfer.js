@@ -1,3 +1,4 @@
+const { getTestApiKey } = require("../testUtils")
 const TransferTest = (config) => {
     const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
@@ -12,8 +13,6 @@ const TransferTest = (config) => {
         this.timeout(120_000)
         let auth
         let wallet
-
-
         const amount = .01
         before(async function () {
             let apiKey = await getTestApiKey()

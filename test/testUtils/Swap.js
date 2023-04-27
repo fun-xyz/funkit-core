@@ -1,3 +1,4 @@
+const { getTestApiKey } = require("../testUtils")
 const SwapTest = (config) => {
     const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
@@ -6,6 +7,7 @@ const SwapTest = (config) => {
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
     const { prefundWallet, getTestApiKey } = require("../../utils")
+
 
     
 

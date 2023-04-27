@@ -4,7 +4,7 @@ const { ParameterFormatError, Helper } = require("../errors")
 const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -15,11 +15,10 @@ const executeExpectedKeys = ["chain", "apiKey"]
 class FunWallet extends FirstClassActions {
     objCache = {}
 
-
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the WalletIdentifier - uniqueID, index
+     * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
     constructor(params) {
         super()
@@ -140,25 +139,26 @@ class FunWallet extends FirstClassActions {
         const options = await parseOptions(txOptions, "Wallet.estimateGas")
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const id = await auth.getUniqueId()
+        const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
-            ...partialOp, signature: id,
+            ...partialOp,
+            signature: signature,
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: id, }, true)
+        return new UserOp({ ...partialOp, ...res, signature: signature, }, true)
     }
 
     async _getThisInitCode(chain, auth) {
-        const owner = await auth.getUniqueId()
-        const uniqueID = await this.identifier.getIdentifier()
+        const owner = await auth.getOwnerAddr()
+        const uniqueId = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
         const verificationAddress = await chain.getAddress("verificationAddress")
-        const initCodeParams = { uniqueID, owner, entryPointAddress, verificationAddress, factoryAddress }
+        const initCodeParams = { uniqueId, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
     }
 
@@ -173,6 +173,15 @@ class FunWallet extends FirstClassActions {
             this.address = await (new WalletOnChainManager(parsedOptions.chain, this.identifier)).getWalletAddress()
         }
         return this.address
+    }
+
+    static async getAddress(authId, index, chain, apiKey) {
+        global.apiKey = apiKey
+        const uniqueId = await getUniqueId(authId)
+        const chainObj = await getChainFromData(chain)
+        const walletIdentifer = new WalletIdentifier({uniqueId, index})
+        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+        return await walletOnChainManager.getWalletAddress()
     }
 
     async sendTx({ auth, op, call }, txOptions = global) {

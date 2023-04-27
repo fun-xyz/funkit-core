@@ -101,6 +101,7 @@ const _uniswapSwap = (params, options = global) => {
             poolFee
         }
         const { data, to, amount } = await swapExec(provider, uniswapAddrs, swapParams)
+        let swapData
         if (tokenInObj.isNative) {
             swapData = await actionContract.populateTransaction.executeSwapETH(to, amount, data)
         } else {

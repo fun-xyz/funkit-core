@@ -201,6 +201,22 @@ class DataServer {
 
     }
 
+    static async setAuth(authId, method, addr, uniqueId){
+        return await this.sendPostRequest(APIURL, "auth/set-auth", {
+            authId,
+            method,
+            addr,
+            uniqueId
+        })
+    }
+
+    static async getAuth(authId){
+        return await this.sendPostRequest(APIURL, "auth/get-auth", {
+            authId
+        })
+    }
+
+
 }
 
 module.exports = { DataServer }

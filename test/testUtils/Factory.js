@@ -1,4 +1,4 @@
-const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../testUtils")
+const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../testUtils")
 
 const FactoryTest = (config) => {
     const { chainId, authPrivateKey } = config
@@ -10,12 +10,14 @@ const FactoryTest = (config) => {
     const { isContract, prefundWallet, getTestApiKey } = require("../../utils")
     
 
+
     describe("Factory", function () {
         let auth
         let wallet
-        let uniqueID
+        let uniqueId
         this.timeout(100_000)
         before(async function () {
+
             const apiKey = await getTestApiKey()
             const options = {
                 chain: chainId,
@@ -39,7 +41,7 @@ const FactoryTest = (config) => {
         it("wallet.create should create a wallet", async () => {
             if (chainId == FUN_TESTNET_CHAIN_ID || chainId == LOCAL_FORK_CHAIN_ID) {
                 const index = Math.random() * 10000
-                const wallet1 = new FunWallet({ uniqueID, index })
+                const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
                 let iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.false
@@ -51,15 +53,15 @@ const FactoryTest = (config) => {
         })
 
         it("wallet should not have the same address with a different index", async () => {
-            const wallet1 = new FunWallet({ uniqueID, index: 28 })
+            const wallet1 = new FunWallet({ uniqueId, index: 28 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.not.be.equal(wallet1Address)
         })
 
-        it("wallet should not have the same address with a different uniqueID", async () => {
-            let uniqueID1 = randomBytes(32).toString();
-            const wallet1 = new FunWallet({ uniqueID: uniqueID1, index: 3923 })
+        it("wallet should not have the same address with a different uniqueId", async () => {
+            let uniqueId1 = randomBytes(32).toString();
+            const wallet1 = new FunWallet({ uniqueId: uniqueId1, index: 3923 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.not.be.equal(wallet1Address)

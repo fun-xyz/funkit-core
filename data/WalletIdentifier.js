@@ -1,7 +1,7 @@
 const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
 const { verifyFunctionParams, validateDataType, getUsedParametersFromOptions } = require("../utils/data")
 
-const walletIdentifierExpectedKeys = [["uniqueID", "uid"]]
+const walletIdentifierExpectedKeys = [["uniqueId", "uid"]]
 
 class WalletIdentifier {
     constructor(input) {
@@ -24,26 +24,26 @@ class WalletIdentifier {
         switch (this.key) {
             case "uid":
                 return await this.getIdentifierFromUid(forced)
-            case "uniqueID":
-                return this.getIdentifierFromuniqueID(forced)
+            case "uniqueId":
+                return this.getIdentifierFromuniqueId(forced)
         }
     }
 
     async loadIdentifierFromServer(forced = false) { }
 
-    getIdentifierFromuniqueID(forced = false) {
+    getIdentifierFromuniqueId(forced = false) {
         if (!this.identifier || forced) {
-            this.identifier = keccak256(toUtf8Bytes(`${this.uniqueID}-${this.index}`))
+            this.identifier = keccak256(toUtf8Bytes(`${this.uniqueId}-${this.index}`))
         }
         return this.identifier
     }
 
     async getIdentifierFromUid(forced = false) {
-        if (forced || !this.uniqueID) {
+        if (forced || !this.uniqueId) {
             await this.loadIdentifierFromServer()
-            return this.getIdentifierFromuniqueID(true)
+            return this.getIdentifierFromuniqueId(true)
         }
-        return this.getIdentifierFromuniqueID(forced)
+        return this.getIdentifierFromuniqueId(forced)
     }
 
 }
