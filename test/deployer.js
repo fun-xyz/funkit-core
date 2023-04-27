@@ -68,7 +68,7 @@ const main = async (chainId, privateKey) => {
 
     const feeoracle = await deployFeeOracle(signer)
 
-    const factory = await deployFactory(signer)
+    // const factory = await deployFactory(signer)
 
 
     const old = require("../contracts.json")
@@ -76,7 +76,7 @@ const main = async (chainId, privateKey) => {
     fs.writeFileSync("contracts.json", JSON.stringify({
         ...old,
         feeoracle,
-        factory,
+        // factory,
         // gaslessSponsor,
         // tokenSponsor,oracle 
     }))
@@ -112,7 +112,7 @@ const feeOracleConfig = async (chainId, pkey) => {
 // paymasterConfig()
 
 // main(31337, TEST_PRIVATE_KEY)
-// feeOracleConfig(31337, TEST_PRIVATE_KEY) 
+feeOracleConfig(31337, TEST_PRIVATE_KEY) 
 
 
 // main(36864, TEST_PRIVATE_KEY)

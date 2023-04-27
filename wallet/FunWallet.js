@@ -13,8 +13,6 @@ const executeExpectedKeys = ["chain", "apiKey"]
 
 const { constants } = require("ethers")
 
-const GAS_AWAIT = "1i23yu4v12hopiu np2ok"
-
 class FunWallet extends FirstClassActions {
     objCache = {}
 

@@ -57,13 +57,9 @@ class Chain {
                 this.currency = chain.currency
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                this.addresses.factoryAddress = require("../contracts.json").factory
-                if (chainId == 31337) {
-                    const defaultAddresses = require("../utils/forkDefaults").defaultAddresses
-                    this.addresses = { ...this.addresses, ...defaultAddresses }
-                }
             }
         } catch (e) {
+            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 

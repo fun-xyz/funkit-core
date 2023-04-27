@@ -122,6 +122,8 @@ class DataServer {
 
         if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
+                const defaultAddresses = require("../utils/forkDefaults").defaultAddresses
+                r.moduleAddresses = { ...r.moduleAddresses, defaultAddresses }
                 return r
             })
         } else {
