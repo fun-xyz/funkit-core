@@ -69,6 +69,11 @@ const main = async (chainId, privateKey) => {
     const auth = await deployApproveAndExec(signer)
     console.log(auth)
 
+    // const factory = await deployFactory(signer)
+    // console.log(factory)
+
+
+
 
     // const old = require("../contracts.json")
 

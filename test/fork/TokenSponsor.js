@@ -1,22 +1,17 @@
-const { TokenSponsorTest } = require('../testUtils/TokenSponsor.js')
-var REMOTE_TEST = process.env.REMOTE_TEST;
-const { TEST_PRIVATE_KEY, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../../utils/index.js")
-const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-const config = {
-    chainId: FORK_CHAIN_ID,
-    authPrivateKey: TEST_PRIVATE_KEY,
-    funderPrivateKey: FUNDER_PRIVATE_KEY,
-    inToken: "eth",
-    outToken: "dai",
-    paymasterToken: "usdc",
-    baseTokenStakeAmt: 1,
-    paymasterTokenStakeAmt: 100,
-    stakeAmount: 1,
-    prefund: true,
-    swapAmount: 1,
-    stake: true,
-}
+const { assert } = require("chai")
+const { Eoa } = require("../../auth")
+const { Token } = require("../../data")
+const { configureEnvironment } = require("../../managers")
+const { TokenSponsor } = require("../../sponsors")
+const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
+const { FunWallet } = require("../../wallet")
 
+
+const testTokens = ["usdc", "dai"]
+const paymasterToken = "usdc"
+const timeout = (ms) => {
+    return new Promise(resolve => { setTimeout(resolve, ms) })
+}
 describe("TokenSponsor", function () {
     this.timeout(100_000)
     let auth = new Eoa({ privateKey: TEST_PRIVATE_KEY })
@@ -126,3 +121,6 @@ describe("TokenSponsor", function () {
             assert(e.message.includes("AA33"), "Error but not AA33")
         }
     })
+
+
+})
