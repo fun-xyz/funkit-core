@@ -147,7 +147,7 @@ class Chain {
             throw new Error(JSON.stringify(res))
         }
 
-        const mul = 10
+        const mul = 0
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * (mul + 1.2))
         let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? (mul + 1.45) : (mul + 1.6)))
         callGasLimit = Math.ceil(parseInt(callGasLimit) * (mul + 1.6))
