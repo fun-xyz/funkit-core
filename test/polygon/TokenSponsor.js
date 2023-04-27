@@ -26,13 +26,13 @@ describe("TokenSponsor", function () {
         }
         await configureEnvironment(options)
 
-        uniqueID = await auth.getUniqueId()
+        // uniqueID = await auth.getUniqueId()
         uniqueID = await funder.getUniqueId()
-        wallet = new FunWallet({ uniqueID, index: 234231 })
-        await prefundWallet(funder, wallet, 1)
-        wallet1 = new FunWallet({ uniqueID, index: 235231 })
+        wallet = new FunWallet({ uniqueID, index: 1231 })
+        // await prefundWallet(funder, wallet, 1)
+        wallet1 = new FunWallet({ uniqueID, index: 2231 })
 
-        await prefundWallet(auth, wallet1, 1)
+        // await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
         const funderAddress = await funder.getUniqueId()
         const walletAddress = await wallet.getAddress()
@@ -62,17 +62,14 @@ describe("TokenSponsor", function () {
 
         const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
-        console.log('sdfjkj')
 
         const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
         const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
         const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
         const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
         const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
-        console.log('sdfjkj')
 
         await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
-        console.log('sdfjkj')
 
         const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
@@ -86,7 +83,7 @@ describe("TokenSponsor", function () {
         const walletAddress = await wallet.getAddress()
         const tokenBalanceBefore = (await Token.getBalance(testToken, walletAddress))
         if (tokenBalanceBefore < .1) {
-            await wallet.swap(auth, {
+            await wallet.swap(funder, {
                 in: "matic",
                 amount: .1,
                 out: testToken
@@ -111,6 +108,7 @@ describe("TokenSponsor", function () {
         await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
         await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
         await runSwap(wallet)
+        console.log('jasdfkjasd')
         try {
             await runSwap(wallet1)
             throw new Error("Wallet is not whitelisted but transaction passed")

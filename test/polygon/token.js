@@ -1,8 +1,8 @@
 const { TokenSponsorTest } = require('../testUtils/TokenSponsor.js')
-const { WALLET_PRIVATE_KEY, CHAIN_FUNDER_PRIVATE_KEY } = require("../../utils/index.js")
+const { WALLET_PRIVATE_KEY, WALLET_PRIVATE_KEY_2 } = require("../../utils/index.js")
 const config = {
     chainId: 137,
-    authPrivateKey: CHAIN_FUNDER_PRIVATE_KEY,
+    authPrivateKey: WALLET_PRIVATE_KEY_2,
     funderPrivateKey: WALLET_PRIVATE_KEY,
     inToken: "matic",
     outToken: "dai",
