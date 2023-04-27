@@ -5,12 +5,12 @@ const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
+const { BigNumber,constants } = require("ethers")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 
 const executeExpectedKeys = ["chain", "apiKey"]
-
 
 class FunWallet extends FirstClassActions {
     objCache = {}
@@ -66,21 +66,7 @@ class FunWallet extends FirstClassActions {
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
-
-        let tempCallData;
-        if (data.initAndExec) {
-            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
-            if (!moduleIsInit) {
-                tempCallData = this.abiManager.encodeInitExecCall(data)
-            } else {
-                tempCallData = this.abiManager.encodeCall(data)
-            }
-        }
-        else {
-            tempCallData = this.abiManager.encodeCall(data)
-        }
-
-        const callData = tempCallData
+        const callData = await this._getCallData(onChainDataManager, data, sender, auth, options)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
@@ -103,6 +89,75 @@ class FunWallet extends FirstClassActions {
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp)
         return { ...partialOp, nonce }
+    }
+
+    async _getCallData(onChainDataManager, data, sender, auth, options) {
+        let tempCallData;
+        let fee = { ...options.fee }
+        if (options.fee) {
+            if (!(fee.token || options.gasSponsor.token)) {
+                const helper = new Helper("Fee", fee, "fee.token or gasSponsor.token is required")
+                throw new ParameterFormatError("Wallet.execute", helper)
+            }
+            if (!fee.token && options.gasSponsor.token) {
+                fee.token = options.gasSponsor.token
+            }
+
+            const token = new Token(fee.token)
+            if (token.isNative) {
+                fee.token = constants.AddressZero
+            }
+            else {
+                fee.token = await token.getAddress()
+            }
+
+            if (fee.amount) {
+                fee.amount = (await token.getDecimalAmount(fee.amount)).toString()
+            } else if (fee.gasPercent) {
+                const emptyFunc = async () => {
+                    return {
+                        data, errorData: { location: "Wallet.execute" }
+                    }
+                }
+                const actualGas = await this.estimateGas(auth, emptyFunc, { ...options, fee: false })
+                let eth = actualGas.getMaxTxCost()
+
+                let percentNum = fee.gasPercent
+                let percentBase = 100;
+                while (percentNum % 1 != 0) {
+                    percentNum *= 10
+                    percentBase *= 10
+                }
+
+                if (!token.isNative) {
+                    const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token)
+                    const decimals = await token.getDecimals()
+                    const numerator = BigNumber.from(10).pow(decimals);
+                    const denominator = BigNumber.from(10).pow(18); // eth decimals
+                    const price = ethTokenPairing.mul(numerator).div(denominator);
+                    eth = price.mul(numerator).div(eth).mul(percentNum).div(percentBase)
+                }
+
+                fee.amount = eth
+            } else {
+                const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
+                throw new ParameterFormatError("Wallet.execute", helper)
+            }
+            fee.oracle = await onChainDataManager.chain.getAddress("feeOracle")
+        }
+        data = { ...data, ...fee }
+        if (data.initAndExec) {
+            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
+            if (!moduleIsInit) {
+                tempCallData = this.abiManager.encodeInitExecCall(data)
+            } else {
+                tempCallData = this.abiManager.encodeCall(data)
+            }
+        }
+        else {
+            tempCallData = this.abiManager.encodeCall(data)
+        }
+        return tempCallData
     }
 
     /**

@@ -51,7 +51,7 @@ class DataServer {
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
         })
-        return userOpHash
+        return receipt.userOpHash
     }
 
     static async storeEVMCall(receipt) {
@@ -122,6 +122,8 @@ class DataServer {
 
         if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
+                const defaultAddresses = require("../test/forkDefaults").defaultAddresses
+                r.moduleAddresses = { ...r.moduleAddresses, defaultAddresses }
                 return r
             })
         } else {

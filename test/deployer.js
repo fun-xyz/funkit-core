@@ -1,11 +1,12 @@
 const { ethers, Wallet } = require("ethers")
-const { ContractFactory } = ethers
+const { ContractFactory, Contract } = ethers
 const fs = require("fs")
 
 const oracleAbi = require("../abis/TokenPriceOracle.json")
 const tokenSponsorAbi = require("../abis/TokenPaymaster.json")
 const gaslessSponsorAbi = require("../abis/GaslessPaymaster.json")
 const authAbi = require("../abis/UserAuthentication.json")
+const feeOracleAbi = require("../abis/FeePercentOracle.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
 const approveAndExecAbi = require("../abis/ApproveAndExec.json")
 
@@ -48,6 +49,9 @@ const deployUserAuth = async (signer) => {
     return await deploy(signer, authAbi)
 }
 
+const deployFeeOracle = async (signer) => {
+    return await deploy(signer, feeOracleAbi)
+}
 const deployApproveAndExec = async (signer) => {
     return await deploy(signer, approveAndExecAbi)
 }
@@ -63,6 +67,13 @@ const main = async (chainId, privateKey) => {
     const signer = new Wallet(privateKey, provider)
 
     // const gaslessSponsor = await deployGaslessSponsor(signer, entryPointAddr)
+    // // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
+    // const oracle = await deployOracle(signer)
+
+    // const feeoracle = await deployFeeOracle(signer)
+
+    // const factory = await deployFactory(signer)
+
     // const tokenSponsor = await deployTokenSponsor(signer, entryPointAddr)
     // const oracle = await deployOracle(signer)
 
@@ -72,16 +83,13 @@ const main = async (chainId, privateKey) => {
     // const factory = await deployFactory(signer)
     // console.log(factory)
 
-
-
-
-    // const old = require("../contracts.json")
-
-    // fs.writeFileSync("contracts.json", JSON.stringify({
-    //     ...old,
-    //     // gaslessSponsor,
-    //     // tokenSponsor, oracle
-    // }))
+    fs.writeFileSync("contracts.json", JSON.stringify({
+        ...old,
+        feeoracle,
+        // factory,
+        // gaslessSponsor,
+        // tokenSponsor,oracle 
+    }))
 }
 
 const paymasterConfig = async () => {
@@ -99,11 +107,23 @@ const paymasterConfig = async () => {
 
     const addtoken = await sponsor.addUsableToken(oracle, tokenAddress, "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419")
     await eoa.sendTx(addtoken)
-
 }
 
+const feeOracleConfig = async (chainId, pkey) => {
+    const oracle = require("../contracts.json").feeoracle
+    const chain = new Chain({ chainId })
+    const provider = await chain.getProvider()
+    const wallet = new Wallet(pkey, provider)
+    const contract = new Contract(oracle, feeOracleAbi.abi, wallet)
+    await contract.setValues(10, 2)
+    console.log((await contract.getFee(10)).toString())
+}
+// main(5, GOERLI_PRIVATE_KEY)
+// paymasterConfig()
 
 // main(31337, TEST_PRIVATE_KEY)
-// main(5, GOERLI_PRIVATE_KEY)
-main(36864, TEST_PRIVATE_KEY)
-// paymasterConfig()
+// feeOracleConfig(31337, TEST_PRIVATE_KEY) 
+
+
+// main(36864, TEST_PRIVATE_KEY)
+// feeOracleConfig(36864, TEST_PRIVATE_KEY)
