@@ -128,6 +128,9 @@ class DataServer {
             })
         } else {
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
+                if(!r.data) {
+                    throw new Error(JSON.stringify(r))
+                }
                 return r.data
             })
         }

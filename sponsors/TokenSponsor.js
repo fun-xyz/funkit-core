@@ -46,6 +46,11 @@ class TokenSponsor {
         return await contract.getTokenBalance(tokenAddress, spender)
     }
 
+    async getListMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getListMode(spender)
+    }
+
     async getContract(options = global) {
 
         if (!this.contract) {
