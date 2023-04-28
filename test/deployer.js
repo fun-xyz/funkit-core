@@ -9,9 +9,10 @@ const authAbi = require("../abis/UserAuthentication.json")
 const feeOracleAbi = require("../abis/FeePercentOracle.json")
 const factoryAbi = require("../abis/FunWalletFactory.json")
 const approveAndExecAbi = require("../abis/ApproveAndExec.json")
+const approveAndSwapAbi = require("../abis/ApproveAndSwap.json")
 const entrypointAbi = require("../abis/EntryPoint.json")
 
-const { TEST_PRIVATE_KEY, GOERLI_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
+const { TEST_PRIVATE_KEY, WALLET_PRIVATE_KEY, TEST_API_KEY, getTestApiKey } = require("./testUtils")
 const { Chain, Token } = require("../data")
 const { configureEnvironment } = require("../managers")
 const { Eoa } = require("../auth")
@@ -27,7 +28,7 @@ const getOptions = async (chain = 36864) => {
 
 const deploy = async (signer, obj, params = []) => {
     const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
-    const contract = await factory.deploy(...params);
+    const contract = await factory.deploy(...params, { gasLimit: 10_000_000 });
     return contract.address
 }
 
@@ -53,8 +54,13 @@ const deployUserAuth = async (signer) => {
 const deployFeeOracle = async (signer) => {
     return await deploy(signer, feeOracleAbi)
 }
+
 const deployApproveAndExec = async (signer) => {
     return await deploy(signer, approveAndExecAbi)
+}
+
+const deployApproveAndSwap = async (signer) => {
+    return await deploy(signer, approveAndSwapAbi)
 }
 
 
@@ -67,17 +73,12 @@ const main = async (chainId, privateKey) => {
     const signer = new Wallet(privateKey, provider)
 
 
-    const factory = await deployTokenSponsor(signer, entryPointAddr)
-    console.log(factory)
-    // const entrypoint = await deploy(signer, entrypointAbi)
-    // console.log(entrypoint)
-    // fs.writeFileSync("contracts.json", JSON.stringify({
-    //     ...old,
-    //     feeoracle,
-    //     // factory,
-    //     // gaslessSponsor,
-    //     // tokenSponsor,oracle 
-    // }))
+    // const factory = await deployFactory(signer)
+    const entrypoint = await deploy(signer, entrypointAbi)
+    // const auth = await deployUserAuth(signer)
+    // const swap = await deployApproveAndSwap(signer)
+
+    console.log(entrypoint)
 }
 
 const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
@@ -95,11 +96,6 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
     await eoa.sendTx(addtoken)
 }
 
-const paymasterTest = async () => {
-    // await main(36864, TEST_PRIVATE_KEY)
-    await paymasterConfig(36864, TEST_PRIVATE_KEY)
-}
-
 const feeOracleConfig = async (chainId, pkey) => {
     const oracle = "0xe2588cbD21D677144B04606123d1435dCa32b6a2"
     const chain = new Chain({ chainId })
@@ -109,14 +105,14 @@ const feeOracleConfig = async (chainId, pkey) => {
     await contract.setValues(10, 2)
     console.log((await contract.getFee(10)).toString())
 }
-// main(5, GOERLI_PRIVATE_KEY)
+main(5, WALLET_PRIVATE_KEY)
 
 // main(31337, TEST_PRIVATE_KEY)
 // feeOracleConfig(31337, TEST_PRIVATE_KEY) 
 
 
 // main(36864, TEST_PRIVATE_KEY)
-paymasterConfig(36864, TEST_PRIVATE_KEY)
+// paymasterConfig(36864, TEST_PRIVATE_KEY)
 // feeOracleConfig(36864, TEST_PRIVATE_KEY)
 
 // paymasterTest()

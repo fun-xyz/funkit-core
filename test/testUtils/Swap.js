@@ -25,7 +25,7 @@ const SwapTest = (config) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId, index: 234231 })
+            wallet = new FunWallet({ uniqueId, index: 23523 })
             if (prefund) {
                 await prefundWallet(auth, wallet, .3)
             }
