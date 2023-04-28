@@ -49,7 +49,7 @@ const genCall = (data, callGasLimit = 100_000) => {
         if (!data.data) {
             data.data = "0x"
         }
-        const gasInfo = { callGasLimit }
+        const gasInfo = {  }
         return { gasInfo, data, errorData: { location: "action.genCall" } }
     }
 }
