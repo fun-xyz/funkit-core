@@ -67,13 +67,10 @@ const main = async (chainId, privateKey) => {
     const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
-    // const newEntry = await deploy(signer, entrypointAbi)
-    // console.log(newEntry)
 
-    const factory = await deployTokenSponsor(signer, entryPointAddr)
-    const oracle = await deployOracle(signer, entryPointAddr)
-    
-    console.log(factory)
+    // const factory = await deployTokenSponsor(signer, entryPointAddr)
+    const oracle = await deployFeeOracle(signer)
+    // console.log(factory)
     console.log(oracle)
     // fs.writeFileSync("contracts.json", JSON.stringify({
     //     ...old,
@@ -86,7 +83,6 @@ const main = async (chainId, privateKey) => {
 
 const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
     await configureEnvironment(await getOptions(chainId))
-
     const tokenAddress = await Token.getAddress("usdc")
     const eoa = new Eoa({ privateKey })
     const sponsor = new TokenSponsor({
@@ -96,12 +92,17 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
         }
     })
 
-    const addtoken = await sponsor.addUsableToken("0xCb7C8BF1a08b1B631051f80c2f7C4566F3ad785D", tokenAddress, "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419")
+    const addtoken = await sponsor.addUsableToken("0x4627873B4c7b0D99801c393fC0Dfb9F3Fd56eB9E", tokenAddress, "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419")
     await eoa.sendTx(addtoken)
 }
 
+const paymasterTest = async()=>{
+    // await main(36864, TEST_PRIVATE_KEY)
+    await paymasterConfig(36864, TEST_PRIVATE_KEY)
+}
+
 const feeOracleConfig = async (chainId, pkey) => {
-    const oracle = require("../contracts.json").feeoracle
+    const oracle = "0xe2588cbD21D677144B04606123d1435dCa32b6a2"
     const chain = new Chain({ chainId })
     const provider = await chain.getProvider()
     const wallet = new Wallet(pkey, provider)
@@ -115,6 +116,8 @@ const feeOracleConfig = async (chainId, pkey) => {
 // feeOracleConfig(31337, TEST_PRIVATE_KEY) 
 
 
-// paymasterConfig(36864, TEST_PRIVATE_KEY)
 // main(36864, TEST_PRIVATE_KEY)
+// paymasterConfig(36864, TEST_PRIVATE_KEY)
 // feeOracleConfig(36864, TEST_PRIVATE_KEY)
+
+// paymasterTest()

@@ -20,7 +20,6 @@ describe("TokenSponsor", function () {
 
     var REMOTE_TEST = process.env.REMOTE_TEST;
     const FORK_CHAIN_ID = REMOTE_TEST === 'true' ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
-
     const amount = 1
     let wallet
     let wallet1
@@ -59,11 +58,11 @@ describe("TokenSponsor", function () {
             }
         })
 
-        const gasSponsor = new TokenSponsor()
+        // const gasSponsor = new TokenSponsor()
 
 
-        const ethstakeAmount = 1
-        const usdcStakeAmount = 100
+        // const ethstakeAmount = 1
+        // const usdcStakeAmount = 100
 
         // const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
         // const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
@@ -101,29 +100,30 @@ describe("TokenSponsor", function () {
 
     it("Blacklist Mode Approved", async () => {
         const gasSponsor = new TokenSponsor()
-        console.log(await funder.sendTx(await gasSponsor.setToBlacklistMode()))
-        const funderAddress = await funder.getUniqueId()
-
-        console.log(await gasSponsor.getListMode(funderAddress))
+        await funder.sendTx(await gasSponsor.setToBlacklistMode())
         await runSwap(wallet)
     })
 
-    // it("Only User Whitelisted", async () => {
-    //     const walletAddress = await wallet.getAddress()
-    //     const walletAddress1 = await wallet1.getAddress()
+    it("Only User Whitelisted", async () => {
+        const walletAddress = await wallet.getAddress()
+        const walletAddress1 = await wallet1.getAddress()
 
-    //     const gasSponsor = new TokenSponsor()
-    //     await funder.sendTx(await gasSponsor.setToWhitelistMode())
-    //     await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
-    //     await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
-    //     await runSwap(wallet)
-    //     try {
-    //         await runSwap(wallet1)
-    //         throw new Error("Wallet is not whitelisted but transaction passed")
-    //     } catch (e) {
-    //         assert(e.message.includes("AA33"), "Error but not AA33")
-    //     }
-    // })
+        const gasSponsor = new TokenSponsor()
+        await funder.sendTx(await gasSponsor.setToWhitelistMode())
+        await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
+        await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
+        await runSwap(wallet)
+        try {
+            await runSwap(wallet1)
+            throw new Error("Wallet is not whitelisted but transaction passed")
+        } catch (e) {
+            assert(e.message.includes("AA33"), "Error but not AA33")
+        }
+    })
 
 
 })
+
+// 0xCb7C8BF1a08b1B631051f80c2f7C4566F3ad785D
+// 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+// 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
