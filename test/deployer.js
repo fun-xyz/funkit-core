@@ -77,7 +77,7 @@ const main = async (chainId, privateKey) => {
     // const entrypoint = await deploy(signer, entrypointAbi)
     // const auth = await deployUserAuth(signer)
     // const swap = await deployApproveAndSwap(signer)
-    const token = await deployGaslessSponsor(signer, entryPointAddr)
+    const token = await deployTokenSponsor(signer, entryPointAddr)
 
     console.log(token)
 }
@@ -93,8 +93,16 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
         }
     })
 
-    const addtoken = await sponsor.addUsableToken("0xc0c5618f0F3Fa66b496F2940f373DC366d765BAe", tokenAddress, "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419")
-    await eoa.sendTx(addtoken)
+    const oracle = "0x601cD9fdF44EcE68bA5FF7b9273b5231d019e301"
+    const aggergator = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"
+    await eoa.sendTx(await sponsor.addUsableToken(oracle, tokenAddress, aggergator))
+
+    // fun dai
+    // await eoa.sendTx(await sponsor.addUsableToken(oracle, "0x855af47cdf980a650ade1ad47c78ec1deebe9093", aggergator))
+    // fun usdc
+    // await eoa.sendTx(await sponsor.addUsableToken(oracle, "0xaa8958047307da7bb00f0766957edec0435b46b5", aggergator))
+    // fun usdt
+    // await eoa.sendTx(await sponsor.addUsableToken(oracle, "0x3e1ff16b9a94ebde6968206706bcd473aa3da767", aggergator))
 }
 
 const feeOracleConfig = async (chainId, pkey) => {
@@ -106,7 +114,8 @@ const feeOracleConfig = async (chainId, pkey) => {
     await contract.setValues(10, 2)
     console.log((await contract.getFee(10)).toString())
 }
-main(5, WALLET_PRIVATE_KEY)
+// main(5, WALLET_PRIVATE_KEY)
+paymasterConfig(5, WALLET_PRIVATE_KEY)
 
 // main(31337, TEST_PRIVATE_KEY)
 // feeOracleConfig(31337, TEST_PRIVATE_KEY) 
