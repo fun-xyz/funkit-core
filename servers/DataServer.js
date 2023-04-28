@@ -47,6 +47,7 @@ class DataServer {
             receipt,
             organization: global.orgInfo?.id,
             orgName: global.orgInfo?.name,
+            chainId:global.chain?.id
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
         })
