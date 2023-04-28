@@ -74,11 +74,12 @@ const main = async (chainId, privateKey) => {
 
 
     // const factory = await deployFactory(signer)
-    const entrypoint = await deploy(signer, entrypointAbi)
+    // const entrypoint = await deploy(signer, entrypointAbi)
     // const auth = await deployUserAuth(signer)
     // const swap = await deployApproveAndSwap(signer)
+    const token = await deployTokenSponsor(signer, entryPointAddr)
 
-    console.log(entrypoint)
+    console.log(token)
 }
 
 const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
