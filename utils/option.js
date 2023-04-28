@@ -1,19 +1,13 @@
-
 const { Chain } = require("../data/Chain")
+const { verifyFunctionParams } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
-
-
-const { verifyValidParametersForLocation } = require("./data")
-
-const SUPPORTED_CHAINS = ["ethereum", "ethereum-goerli", "polygon"]
-
+const { constants } = require("ethers")
+const { getOrgInfo } = require("../utils/dashboard")
+const testApiKey = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
-const chainExpectedKeys = ["id", "rpc", "bundler", "name"]
-const chainExpectedKeysToInput = ["chainId", "rpcUrl", "bundlerUrl", "chainName"]
-
 
 const getChainsFromList = async (chains) => {
-    const out = chains.map(getChainFromUnlabeledData)
+    const out = chains.map(getChainFromData)
     return await Promise.all(out)
 }
 
@@ -22,23 +16,36 @@ const verifyBundlerUrl = async (url) => {
     const data = await provider.send("web3_clientVersion", [])
     return (data.indexOf("aa-bundler") + 1)
 }
+
+//set defaults
+const checkEnvironment = async (options) => {
+    options.chain = options.chain ? options.chain : 5
+    options.apiKey = options.apiKey ? options.apiKey : testApiKey
+    return options
+}
+
 const parseOptions = async (options, location) => {
-    
-    let { gasSponsor, chain } = options
+    options = { ...global, ...options }
+    options = await checkEnvironment(options)
+    let { gasSponsor, chain, apiKey, orgInfo } = options
+
     if (gasSponsor && typeof gasSponsor != "object") {
-        verifyValidParametersForLocation(location, paymaster, paymasterExpectedKeys)
+        verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
-    if (chain) {
-        chain = await getChainFromUnlabeledData(chain)
+    if (chain && !(chain instanceof Chain) && chain!=global.chain?.chainId) {
+        chain = await getChainFromData(chain)
     }
 
-
+    if ((apiKey && !global.orgInfo) || (apiKey != global.apiKey)) {
+        orgInfo = await getOrgInfo(options.apiKey)
+    }
+    global = { ...global, ...options, chain, gasSponsor, orgInfo, apiKey }
     return {
-        ...options, chain, gasSponsor
+        ...options, chain, gasSponsor, orgInfo
     }
 }
 
-const getChainFromUnlabeledData = async (chainIdentifier) => {
+const getChainFromData = async (chainIdentifier) => {
     let chain
 
     if (chainIdentifier instanceof Chain) {
@@ -62,5 +69,5 @@ const getChainFromUnlabeledData = async (chainIdentifier) => {
 
 
 module.exports = {
-    getChainFromUnlabeledData, getChainsFromList, parseOptions
+    getChainFromData, getChainsFromList, parseOptions
 };

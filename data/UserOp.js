@@ -1,11 +1,13 @@
-const { verifyValidParametersForLocation, objectValuesToBigNumber, } = require("../utils/data")
+const { parseOptions } = require("../utils/option")
+const { verifyFunctionParams, objectValuesToBigNumber, } = require("../utils/data")
 const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
+const { Contract } = require("ethers")
 
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
 
 class UserOp {
     constructor(input) {
-        verifyValidParametersForLocation("UserOp constructor", input, userOpExpectedKeys)
+        verifyFunctionParams("UserOp constructor", input, userOpExpectedKeys)
         input = objectValuesToBigNumber(input)
         let { initCode, paymasterAndData, preVerificationGas, signature } = input
         initCode = initCode ? initCode : "0x"
@@ -23,9 +25,36 @@ class UserOp {
     async getOpHashData(chain) {
         const chainId = await chain.getActualChainId()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const hash = getOpHash(this.op, chainId, entryPointAddress)
-        return hash
+        const provider = await chain.getProvider()
+        const abi = require("../abis/EntryPoint.json").abi
+        const contract = new Contract(entryPointAddress, abi, provider)
+        return await contract.getUserOpHash(this.op)
+    }
+
+    getMaxTxCost() {
+        const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
+        const mul = this.op.paymasterAndData != "0x" ? 3 : 1;
+        const requiredGas = callGasLimit + verificationGasLimit * mul + preVerificationGas;
+        return maxFeePerGas.mul(requiredGas)
+    }
+
+    async estimateGas(auth, txOptions = global) {
+        const options = await parseOptions(txOptions, "Wallet.estimateGas")
+        if (!this.signature) {
+            this.signature = await auth.getEstimateGasSignature()
+        }
+        const res = await options.chain.estimateOpGas({
+            ...this.op,
+            paymasterAndData: '0x',
+            maxFeePerGas: 0,
+            maxPriorityFeePerGas: 0,
+            preVerificationGas: 0,
+            callGasLimit: 0,
+            verificationGasLimit: 10e6
+        })
+        return new UserOp({ ...this.op, ...res })
     }
 }
+
 
 module.exports = { UserOp };

@@ -1,16 +1,15 @@
 const { JsonRpcProvider } = require("@ethersproject/providers")
-const { UserOp } = require("./UserOp")
-const { MissingParameterError, Helper, ServerMissingDataError, NoServerConnectionError } = require("../errors")
+const { MissingParameterError, Helper, ServerMissingDataError } = require("../errors")
 const { DataServer, } = require("../servers/DataServer")
 const { Bundler, } = require("../servers/Bundler")
 
-const { verifyValidParametersForLocation, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
+const { verifyFunctionParams, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
 const chainExpectedKeys = ["chainId", "rpcUrl", "chainName", "bundlerUrl"]
 
 class Chain {
     constructor(input) {
         const currentLocation = "Chain constructor"
-        verifyValidParametersForLocation(currentLocation, input, [chainExpectedKeys])
+        verifyFunctionParams(currentLocation, input, [chainExpectedKeys])
         const [key] = getUsedParametersFromOptions(input, chainExpectedKeys)
         this[key] = input[key]
         this.key = key
@@ -60,6 +59,7 @@ class Chain {
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
+            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
@@ -104,7 +104,7 @@ class Chain {
         }
         return out
     }
-    
+
     async getModuleAddresses(name) {
         await this.init()
         return await DataServer.getModuleInfo(name, this.id)
@@ -125,17 +125,16 @@ class Chain {
         await this.init()
         return this.provider
     }
-    
+
     setAddress(name, address) {
         this.addresses[name] = address
     }
 
     async sendOpToBundler(userOp) {
-        validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
         await this.init()
         return await this.bundler.sendUserOpToBundler(userOp.op)
     }
-    
+
     async getFeeData() {
         await this.init()
         return await this.provider.getFeeData();
@@ -143,7 +142,16 @@ class Chain {
 
     async estimateOpGas(partialOp) {
         await this.init()
-        return await this.bundler.estimateUserOpGas(partialOp)
+        const res = await this.bundler.estimateUserOpGas(partialOp)
+        let { preVerificationGas, verificationGas, callGasLimit } = res
+        if (!(preVerificationGas || verificationGas || verificationGas)) {
+            throw new Error(JSON.stringify(res))
+        }
+
+        preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
+        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * 4.8)
+        callGasLimit = Math.ceil(parseInt(callGasLimit) * 4.9)
+        return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }
 

@@ -2,6 +2,7 @@ const { Eoa } = require("../auth/EoaAuth")
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { orderParams, validateClassInstance, formatMissingForError } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
+const { parseOptions } = require("../utils/option")
 
 const getFunctionParamOrderFromInterface = (interf, func) => {
     for (const field of interf.fragments) {
@@ -53,6 +54,7 @@ const encodeContractCall = (interf, encodeFunctionName, input, location, isInter
 }
 
 const verifyParamIsSolidityType = (param, location, isInternal = false) => {
+    if (Array.isArray(param.data)) return
     try {
         defaultAbiCoder.encode([param.type], [param.data])
     }
@@ -62,17 +64,39 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
     }
 }
 
-const prefundWallet = async (auth, wallet, value, chain = global.chain) => {
-    validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
+const gasSpecificChain = {"137": 350_000_000_000}
+const fundWallet = async (auth, wallet, value, gasPrice = 0, txOptions = global) => {
+    validateClassInstance(auth, "prefund auth", Eoa, "fundWallet")
+    const options = await parseOptions(txOptions)
+    const chain = options.chain
     const to = await wallet.getAddress()
     const signer = await auth.getSigner()
     const provider = await chain.getProvider()
     const txSigner = signer.connect(provider)
-    const txData = { to, data: "0x", value: parseEther(`${value}`) }
+    let txData;
+    if (gasSpecificChain[chain.id]){
+        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: gasSpecificChain[chain.id] }
+    }
+    else{
+        txData = { to, data: "0x", value: parseEther(`${value}`) }
+    }
     const tx = await txSigner.sendTransaction(txData)
     return await tx.wait()
 }
 
+const isContract = async (address, txOptions = global) => {
+    const options = await parseOptions(txOptions)
+    const chain = options.chain
+    const provider = await chain.getProvider()
+    try {
+        const code = await provider.getCode(address);
+        if (code != '0x') return true;
+    } catch (error) {
+        return false
+    }
+    return false
+}
+
 module.exports = {
-    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi
+    fundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi, isContract
 };

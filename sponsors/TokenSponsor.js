@@ -1,7 +1,6 @@
 const { Contract, constants } = require("ethers");
 const { Interface } = require("ethers/lib/utils");
 const { Token } = require("../data");
-const { ParameterFormatError, Helper } = require("../errors");
 const { DataServer } = require("../servers");
 const { parseOptions } = require("../utils/option");
 
@@ -18,7 +17,7 @@ class TokenSponsor {
         const parsedOptions = await parseOptions(options)
         const chainId = await parsedOptions.chain.getChainId()
         if (!this.paymasterAddress && chainId != this.chainId) {
-            this.paymasterAddress = await DataServer.getPaymasterAddress(chainId)
+            this.paymasterAddress = await parsedOptions.chain.getAddress("tokenSponsorAddress")
             this.chainId = chainId
         }
         return this.paymasterAddress
@@ -47,7 +46,13 @@ class TokenSponsor {
         return await contract.getTokenBalance(tokenAddress, spender)
     }
 
+    async getListMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getListMode(spender)
+    }
+
     async getContract(options = global) {
+
         if (!this.contract) {
             const parsedOptions = await parseOptions(options)
             const provider = await parsedOptions.chain.getProvider()
@@ -69,7 +74,7 @@ class TokenSponsor {
 
     async addUsableToken(oracle, token, aggregator) {
         return async (options = global) => {
-            const decimals = 4
+            const decimals = await Token.getDecimals(token, options)
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.interface.encodeFunctionData("setTokenData", [data])
@@ -117,43 +122,64 @@ class TokenSponsor {
         }
     }
 
-    async setGlobalToBlacklistMode() {
+    async setToBlacklistMode() {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [true])
+            const data = this.interface.encodeFunctionData("setListMode", [true])
             return await this.encode(data, options)
         }
     }
 
-    async setGlobalToWhitelistMode() {
+    async setToWhitelistMode() {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setGlobalBlacklistMode", [false])
+            const data = this.interface.encodeFunctionData("setListMode", [false])
             return await this.encode(data, options)
         }
     }
 
-
-    async addSpenderToGlobalWhiteList(spender) {
+    async addWhitelistTokens(tokens) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, true])
-            return await this.encode(data, options)
-        }
-    }
-    async removeSpenderFromGlobalWhiteList(spender) {
-        return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalWhitelistMode", [spender, false])
+            const sendTokens = await Promise.all(tokens.map(token => {
+                return Token.getAddress(token, options)
+            }))
+            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }
 
-    async addSpenderToGlobalBlackList(spender) {
+    async removeWhitelistTokens(tokens) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, true])
+            const sendTokens = await Promise.all(tokens.map(token => {
+                return Token.getAddress(token, options)
+            }))
+            const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }
-    async removeSpenderFromGlobalBlackList(spender) {
+
+    async addSpenderToWhiteList(spender) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setSpenderTotalBlackListMode", [spender, false])
+            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+
+    async removeSpenderFromWhiteList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
+            return await this.encode(data, options)
+        }
+    }
+
+    async addSpenderToBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
+            return await this.encode(data, options)
+        }
+    }
+
+    async removeSpenderFromBlackList(spender) {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
             return await this.encode(data, options)
         }
     }
@@ -164,7 +190,6 @@ class TokenSponsor {
             return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
-
 }
 
 module.exports = { TokenSponsor };

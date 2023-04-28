@@ -1,3 +1,4 @@
+const { Contract } = require("ethers")
 const { WalletIdentifier, Chain } = require("../data")
 const { validateClassInstance } = require("../utils/data")
 
@@ -5,7 +6,6 @@ const factoryAbi = require("../abis/FunWalletFactory.json").abi
 const walletAbi = require("../abis/FunWallet.json").abi
 const entryPointAbi = require("../abis/EntryPoint.json").abi
 
-const { Contract } = require("ethers")
 
 class WalletOnChainManager {
     constructor(chain, walletIdentifier) {
@@ -33,8 +33,8 @@ class WalletOnChainManager {
 
     async getWalletAddress() {
         await this.init()
-        const salt = await this.walletIdentifier.getIdentifier()
-        return await this.factory.getAddress(salt)
+        const uniqueId = await this.walletIdentifier.getIdentifier()
+        return await this.factory.getAddress(uniqueId)
     }
 
     async getTxId(userOpHash, timeout = 30000, interval = 5000) {
@@ -81,7 +81,14 @@ class WalletOnChainManager {
 
     async getOpErrors() {
         await this.init()
+    }
 
+    async getEthTokenPairing(token) {
+        const OffChainOracleAbi = require("../abis/OffChainOracle.json").abi
+        const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress");
+        const provider = await this.chain.getProvider()
+        const oracle = new Contract(offChainOracleAddress, OffChainOracleAbi, provider)
+        return await oracle.getRateToEth(token, true)
     }
 }
 

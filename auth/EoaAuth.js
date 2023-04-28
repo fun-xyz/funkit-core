@@ -1,9 +1,11 @@
 const { arrayify } = require("ethers/lib/utils");
-const { getUsedParametersFromOptions, verifyValidParametersForLocation, verifyPrivateKey } = require("../utils/data")
+const { getUsedParametersFromOptions, verifyFunctionParams, verifyPrivateKey } = require("../utils/data")
 const { getSignerFromPrivateKey, getSignerFromProvider } = require("../utils/auth")
 const { Auth } = require("./Auth");
+const { DataServer } = require("../servers");
 
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
+const gasSpecificChain = { "137": 850_000_000_000 }
 
 class Eoa extends Auth {
     signer = false
@@ -12,7 +14,7 @@ class Eoa extends Auth {
         super()
 
         const currentLocation = "EoaAuth constructor"
-        verifyValidParametersForLocation(currentLocation, input, eoaAuthConstructorExpectedKeys)
+        verifyFunctionParams(currentLocation, input, eoaAuthConstructorExpectedKeys)
         const [key] = getUsedParametersFromOptions(input, eoaAuthConstructorExpectedKeys[0])
         switch (key) {
             case "privateKey":
@@ -27,6 +29,7 @@ class Eoa extends Auth {
         }
         this[key] = input[key]
         this.key = key
+        this.dataServer = new DataServer()
     }
 
     async init() {
@@ -65,8 +68,16 @@ class Eoa extends Auth {
         if (!eoa.provider) {
             eoa = this.signer.connect(provider)
         }
-        const tx = await eoa.sendTransaction({ to, value, data })
-        return await tx.wait()
+        let tx;
+        if (gasSpecificChain[chain.id]) {
+            tx = await eoa.sendTransaction({ to, value, data, gasPrice: gasSpecificChain[chain.id] })
+        }
+        else {
+            tx = await eoa.sendTransaction({ to, value, data })
+        }
+        const receipt = await tx.wait()
+        await DataServer.storeEVMCall(receipt)
+        return receipt
     }
 
     async sendTxs(txs, options = global) {
@@ -80,6 +91,14 @@ class Eoa extends Auth {
     async getUniqueId() {
         await this.init()
         return await this.signer.getAddress()
+    }
+
+    async getOwnerAddr() { 
+        return [await this.getUniqueId()]
+    }
+
+    async getEstimateGasSignature() {
+        return await this.getUniqueId()
     }
 }
 
