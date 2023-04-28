@@ -31,7 +31,6 @@ const FactoryTest = (config) => {
 
 
         it("wallet should have the same address with a uniqueId-index combination", async () => {
-            let uniqueID1 = randomBytes(32).toString();
             const wallet1 = new FunWallet({ uniqueId, index: 3123 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
