@@ -77,7 +77,7 @@ const main = async (chainId, privateKey) => {
     // const entrypoint = await deploy(signer, entrypointAbi)
     // const auth = await deployUserAuth(signer)
     // const swap = await deployApproveAndSwap(signer)
-    const token = await deployTokenSponsor(signer, entryPointAddr)
+    const token = await deployGaslessSponsor(signer, entryPointAddr)
 
     console.log(token)
 }

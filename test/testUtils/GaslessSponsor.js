@@ -24,8 +24,8 @@ const GaslessSponsorTest = (config) => {
             await configureEnvironment(options)
 
             uid = await auth.getUniqueId()
-            wallet = new FunWallet({ uid, index: 0 })
-            wallet1 = new FunWallet({ uid, index: 1 })
+            wallet = new FunWallet({ uid, index: 129856341 })
+            wallet1 = new FunWallet({ uid, index: 1234123846541 })
 
             if (config.prefund) {
                 await fundWallet(funder, wallet, .5)
