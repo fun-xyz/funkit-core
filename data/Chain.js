@@ -59,6 +59,7 @@ class Chain {
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
+            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
@@ -146,10 +147,10 @@ class Chain {
         if (!(preVerificationGas || verificationGas || verificationGas)) {
             throw new Error(JSON.stringify(res))
         }
-        
+
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
-        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * (partialOp.paymasterAndData == "0x" ? 1.45 : 1.6))
-        callGasLimit = Math.ceil(parseInt(callGasLimit) * 1.6)
+        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * 4.8)
+        callGasLimit = Math.ceil(parseInt(callGasLimit) * 4.9)
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }

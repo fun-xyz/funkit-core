@@ -1,6 +1,7 @@
 const { parseOptions } = require("../utils/option")
 const { verifyFunctionParams, objectValuesToBigNumber, } = require("../utils/data")
 const { calcPreVerificationGas, getOpHash, } = require("../utils/userop")
+const { Contract } = require("ethers")
 
 const userOpExpectedKeys = ["sender", "callData", "nonce", "maxFeePerGas", "maxPriorityFeePerGas", "callGasLimit", "verificationGasLimit"]
 
@@ -24,8 +25,10 @@ class UserOp {
     async getOpHashData(chain) {
         const chainId = await chain.getActualChainId()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const hash = getOpHash(this.op, chainId, entryPointAddress)
-        return hash
+        const provider = await chain.getProvider()
+        const abi = require("../abis/EntryPoint.json").abi
+        const contract = new Contract(entryPointAddress, abi, provider)
+        return await contract.getUserOpHash(this.op)
     }
 
     getMaxTxCost() {

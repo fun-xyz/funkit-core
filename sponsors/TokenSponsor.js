@@ -46,6 +46,11 @@ class TokenSponsor {
         return await contract.getTokenBalance(tokenAddress, spender)
     }
 
+    async getListMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getListMode(spender)
+    }
+
     async getContract(options = global) {
 
         if (!this.contract) {
@@ -69,7 +74,7 @@ class TokenSponsor {
 
     async addUsableToken(oracle, token, aggregator) {
         return async (options = global) => {
-            const decimals = 4
+            const decimals = await Token.getDecimals(token, options)
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.interface.encodeFunctionData("setTokenData", [data])

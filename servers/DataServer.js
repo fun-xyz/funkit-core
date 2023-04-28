@@ -32,7 +32,7 @@ const localTokenAddrs = {
 }
 const transactionType = "FunWalletInteraction"
 class DataServer {
-    static async storeUserOp({ op, balance = 0, receipt = {} }) {
+    static async storeUserOp( op, balance = 0, receipt = {} ) {
         if (!global.apiKey) {
             throw new DataFormatError("apiKey", "string", "configureEnvironment")
         }
@@ -47,7 +47,7 @@ class DataServer {
             receipt,
             organization: global.orgInfo?.id,
             orgName: global.orgInfo?.name,
-            receipt: receipt
+            chainId: global.chain?.id
         }
         await this.sendPostRequest(APIURL, "save-user-op", body).then((r) => {
         })
@@ -128,6 +128,9 @@ class DataServer {
             })
         } else {
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
+                if(!r.data) {
+                    throw new Error(JSON.stringify(r))
+                }
                 return r.data
             })
         }

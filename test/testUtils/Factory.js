@@ -7,7 +7,7 @@ const FactoryTest = (config) => {
     const { Eoa } = require("../../auth")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
-    const { isContract, prefundWallet, getTestApiKey } = require("../../utils")
+    const { isContract, fundWallet, getTestApiKey } = require("../../utils")
     
 
 
@@ -31,7 +31,6 @@ const FactoryTest = (config) => {
 
 
         it("wallet should have the same address with a uniqueId-index combination", async () => {
-            let uniqueID1 = randomBytes(32).toString();
             const wallet1 = new FunWallet({ uniqueId, index: 3123 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
@@ -45,7 +44,7 @@ const FactoryTest = (config) => {
                 const walletAddress = await wallet1.getAddress()
                 let iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.false
-                await prefundWallet(auth, wallet1, .5)
+                await fundWallet(auth, wallet1, .5)
                 await wallet1.create(auth)
                 iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.true

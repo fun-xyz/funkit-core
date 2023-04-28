@@ -4,7 +4,7 @@ const TokenSponsorTest = (config) => {
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
     const { TokenSponsor } = require("../../sponsors")
-    const { prefundWallet, getTestApiKey } = require("../../utils")
+    const { fundWallet, getTestApiKey } = require("../../utils")
     const { FunWallet } = require("../../wallet")
 
     const paymasterToken = config.paymasterToken
@@ -24,10 +24,10 @@ const TokenSponsorTest = (config) => {
 
             await configureEnvironment(options)
             
-            uniqueID = await auth.getUniqueId()
+            uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueID, index: 12142 })
-            wallet1 = new FunWallet({ uniqueID, index: 235231 })
+            wallet = new FunWallet({ uniqueId, index: 12142 })
+            wallet1 = new FunWallet({ uniqueId, index: 235231 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -35,8 +35,8 @@ const TokenSponsorTest = (config) => {
             const funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await prefundWallet(funder, wallet, 1)
-                await prefundWallet(auth, wallet1, 1)
+                await fundWallet(funder, wallet, 1)
+                await fundWallet(auth, wallet1, 1)
             }
 
             await wallet.swap(auth, {

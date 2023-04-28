@@ -65,8 +65,8 @@ const verifyParamIsSolidityType = (param, location, isInternal = false) => {
 }
 
 const gasSpecificChain = {"137": 350_000_000_000}
-const prefundWallet = async (auth, wallet, value, gasPrice = 0, txOptions = global) => {
-    validateClassInstance(auth, "prefund auth", Eoa, "prefundWallet")
+const fundWallet = async (auth, wallet, value, gasPrice = 0, txOptions = global) => {
+    validateClassInstance(auth, "prefund auth", Eoa, "fundWallet")
     const options = await parseOptions(txOptions)
     const chain = options.chain
     const to = await wallet.getAddress()
@@ -98,5 +98,5 @@ const isContract = async (address, txOptions = global) => {
 }
 
 module.exports = {
-    prefundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi, isContract
+    fundWallet, getFunctionParamOrderFromInterface, checkAbi, encodeContractCall, verifyValidParamsFromAbi, isContract
 };
