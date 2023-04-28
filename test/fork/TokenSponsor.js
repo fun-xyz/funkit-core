@@ -33,23 +33,23 @@ describe("TokenSponsor", function () {
 
         uniqueId = await auth.getUniqueId()
         wallet = new FunWallet({ uniqueId, index: 2 })
-        // await prefundWallet(funder, wallet, 1)
+        await prefundWallet(funder, wallet, 11)
         const walletAddress = await wallet.getAddress()
 
         wallet1 = new FunWallet({ uniqueId, index: 1 })
 
-        // await prefundWallet(auth, wallet1, 3)
+        await prefundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
 
         const funderAddress = await funder.getUniqueId()
-        // await wallet.swap(auth, {
-        //     in: "eth",
-        //     amount: 1,
-        //     out: paymasterToken,
-        //     options: {
-        //         returnAddress: funderAddress
-        //     }
-        // })
+        await wallet.swap(auth, {
+            in: "eth",
+            amount: 1,
+            out: paymasterToken,
+            options: {
+                returnAddress: funderAddress
+            }
+        })
 
         await configureEnvironment({
             gasSponsor: {

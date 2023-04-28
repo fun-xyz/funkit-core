@@ -63,15 +63,14 @@ const main = async (chainId, privateKey) => {
 
     const chain = new Chain({ chainId })
     const provider = await chain.getProvider()
-
     const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
 
-    // const factory = await deployTokenSponsor(signer, entryPointAddr)
-    const oracle = await deployFeeOracle(signer)
-    // console.log(factory)
-    console.log(oracle)
+    const factory = await deployTokenSponsor(signer, entryPointAddr)
+    console.log(factory)
+    // const entrypoint = await deploy(signer, entrypointAbi)
+    // console.log(entrypoint)
     // fs.writeFileSync("contracts.json", JSON.stringify({
     //     ...old,
     //     feeoracle,
@@ -92,11 +91,11 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
         }
     })
 
-    const addtoken = await sponsor.addUsableToken("0x4627873B4c7b0D99801c393fC0Dfb9F3Fd56eB9E", tokenAddress, "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419")
+    const addtoken = await sponsor.addUsableToken("0xc0c5618f0F3Fa66b496F2940f373DC366d765BAe", tokenAddress, "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419")
     await eoa.sendTx(addtoken)
 }
 
-const paymasterTest = async()=>{
+const paymasterTest = async () => {
     // await main(36864, TEST_PRIVATE_KEY)
     await paymasterConfig(36864, TEST_PRIVATE_KEY)
 }
@@ -121,3 +120,4 @@ paymasterConfig(36864, TEST_PRIVATE_KEY)
 // feeOracleConfig(36864, TEST_PRIVATE_KEY)
 
 // paymasterTest()
+// yarn run bundler --network "http://fun-alchemy-fork-eb-2-dev.us-west-2.elasticbeanstalk.com" --entryPoint "0x687F36336FCAB8747be1D41366A416b41E7E1a96" --unsafe
