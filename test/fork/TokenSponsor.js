@@ -58,29 +58,29 @@ describe("TokenSponsor", function () {
             }
         })
 
-        // const gasSponsor = new TokenSponsor()
+        const gasSponsor = new TokenSponsor()
 
 
-        // const ethstakeAmount = 1
-        // const usdcStakeAmount = 100
+        const ethstakeAmount = 1
+        const usdcStakeAmount = 100
 
-        // const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-        // const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+        const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
 
 
-        // const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
-        // const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
-        // const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
-        // const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
-        // const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
+        const approve = await gasSponsor.approve(paymasterToken, usdcStakeAmount * 2)
+        const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, usdcStakeAmount)
+        const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, usdcStakeAmount)
+        const data = await gasSponsor.stake(funderAddress, ethstakeAmount)
+        const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
 
-        // await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
+        await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
 
-        // const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-        // const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+        const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+        const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-        // assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
-        // assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+        assert(depositInfo1E.gt(depositInfo1S), "Eth Stake Failed")
+        assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
 
     })
 
@@ -117,7 +117,10 @@ describe("TokenSponsor", function () {
             await runSwap(wallet1)
             throw new Error("Wallet is not whitelisted but transaction passed")
         } catch (e) {
-            assert(e.message.includes("AA33"), "Error but not AA33")
+            if (!e.message.includes("AA33")) {
+                console.log(e)
+                assert(false, "Error but not AA33")
+            }
         }
     })
 

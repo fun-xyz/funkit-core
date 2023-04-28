@@ -117,7 +117,7 @@ const feeOracleConfig = async (chainId, pkey) => {
 
 
 // main(36864, TEST_PRIVATE_KEY)
-// paymasterConfig(36864, TEST_PRIVATE_KEY)
+paymasterConfig(36864, TEST_PRIVATE_KEY)
 // feeOracleConfig(36864, TEST_PRIVATE_KEY)
 
 // paymasterTest()
