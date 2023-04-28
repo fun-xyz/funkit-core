@@ -11,6 +11,6 @@ const config = {
     paymasterTokenStakeAmt: 100,
     prefund: false,
     swapAmount: .01,
-    stake:true,
+    stake: true,
 }
 TokenSponsorTest(config)

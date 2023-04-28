@@ -24,7 +24,7 @@ const TransferTest = (config) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId, index: 234231 })
+            wallet = new FunWallet({ uniqueId, index: 17928340 })
             if (prefund)
                 await fundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()

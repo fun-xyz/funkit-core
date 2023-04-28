@@ -8,9 +8,6 @@ const SwapTest = (config) => {
     const { FunWallet } = require("../../wallet")
     const { fundWallet, getTestApiKey } = require("../../utils")
 
-
-    
-
     describe("Swap", function () {
         this.timeout(120_000)
         let auth
@@ -25,7 +22,7 @@ const SwapTest = (config) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId, index: 23523 })
+            wallet = new FunWallet({ uniqueId, index: 14142 })
             if (prefund) {
                 await fundWallet(auth, wallet, .3)
             }
