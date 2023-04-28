@@ -7,7 +7,7 @@ const FactoryTest = (config) => {
     const { Eoa } = require("../../auth")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
-    const { isContract, prefundWallet, getTestApiKey } = require("../../utils")
+    const { isContract, fundWallet, getTestApiKey } = require("../../utils")
     
 
 
@@ -45,7 +45,7 @@ const FactoryTest = (config) => {
                 const walletAddress = await wallet1.getAddress()
                 let iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.false
-                await prefundWallet(auth, wallet1, .5)
+                await fundWallet(auth, wallet1, .5)
                 await wallet1.create(auth)
                 iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.true

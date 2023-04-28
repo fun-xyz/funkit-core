@@ -6,7 +6,7 @@ const SwapTest = (config) => {
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
-    const { prefundWallet, getTestApiKey } = require("../../utils")
+    const { fundWallet, getTestApiKey } = require("../../utils")
 
 
     
@@ -27,7 +27,7 @@ const SwapTest = (config) => {
             uniqueId = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueId, index: 23523 })
             if (prefund) {
-                await prefundWallet(auth, wallet, .3)
+                await fundWallet(auth, wallet, .3)
             }
         })
 

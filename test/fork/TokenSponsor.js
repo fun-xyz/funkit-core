@@ -3,7 +3,7 @@ const { Eoa } = require("../../auth")
 const { Token } = require("../../data")
 const { configureEnvironment } = require("../../managers")
 const { TokenSponsor } = require("../../sponsors")
-const { TEST_PRIVATE_KEY, prefundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
+const { TEST_PRIVATE_KEY, fundWallet, FUNDER_PRIVATE_KEY, LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../../utils")
 const { FunWallet } = require("../../wallet")
 
 
@@ -33,12 +33,12 @@ describe("TokenSponsor", function () {
 
         uniqueId = await auth.getUniqueId()
         wallet = new FunWallet({ uniqueId, index: 2 })
-        await prefundWallet(funder, wallet, 11)
+        await fundWallet(funder, wallet, 11)
         const walletAddress = await wallet.getAddress()
 
         wallet1 = new FunWallet({ uniqueId, index: 1 })
 
-        await prefundWallet(auth, wallet1, 1)
+        await fundWallet(auth, wallet1, 1)
         const walletAddress1 = await wallet1.getAddress()
 
         const funderAddress = await funder.getUniqueId()

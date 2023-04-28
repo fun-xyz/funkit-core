@@ -6,7 +6,7 @@ const TransferTest = (config) => {
     const { Eoa } = require("../../auth")
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
-    const { prefundWallet, getTestApiKey } = require("../../utils")
+    const { fundWallet, getTestApiKey } = require("../../utils")
     const { FunWallet } = require("../../wallet")
 
     describe("Transfer", function () {
@@ -26,7 +26,7 @@ const TransferTest = (config) => {
             uniqueId = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueId, index: 234231 })
             if (prefund)
-                await prefundWallet(auth, wallet, .3)
+                await fundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             if (tokenBalanceBefore < amount) {

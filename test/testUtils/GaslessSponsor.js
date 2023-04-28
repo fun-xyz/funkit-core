@@ -4,7 +4,7 @@ const GaslessSponsorTest = (config) => {
     const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
     const { GaslessSponsor } = require("../../sponsors")
-    const { prefundWallet, getTestApiKey } = require("../../utils")
+    const { fundWallet, getTestApiKey } = require("../../utils")
     const { FunWallet } = require("../../wallet")
 
     describe("GaslessSponsor", function () {
@@ -28,8 +28,8 @@ const GaslessSponsorTest = (config) => {
             wallet1 = new FunWallet({ uid, index: 1 })
 
             if (config.prefund) {
-                await prefundWallet(funder, wallet, .5)
-                await prefundWallet(auth, wallet1, .5)
+                await fundWallet(funder, wallet, .5)
+                await fundWallet(auth, wallet1, .5)
             }
             const funderAddress = await funder.getUniqueId()
             await wallet.swap(auth, {

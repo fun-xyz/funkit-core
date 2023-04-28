@@ -146,7 +146,7 @@ await configureEnvironment({gasSponsor: {sponsorAddress: auth.getUniqueId()}})
 // Send 0.1 ETH from the EOA to
 // Perform a transfer of 0.1 ETH from wallet to TO_ADDR
 // This logs the difference between the amount of staked USDC in the Paymaster before & after a FunWallet transaction
-await prefundWallet(eoa, wallet, 0.1)
+await fundWallet(eoa, wallet, 0.1)
 console.log(sponsor.getTokenBalance("USDC", wallet.getAddress()))
 wallet.transfer(auth, { TO_ADDR, 0.1, "ETH" } )
 console.log(sponsor.getTokenBalance("USDC", wallet.getAddress()))
