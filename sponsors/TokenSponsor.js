@@ -206,7 +206,4 @@ class TokenSponsor {
     }
 }
 
-
-
-
 module.exports = { TokenSponsor };

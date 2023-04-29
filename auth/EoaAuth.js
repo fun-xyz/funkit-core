@@ -100,12 +100,6 @@ class Eoa extends Auth {
     async getEstimateGasSignature() {
         return await this.getUniqueId()
     }
-
-    async switchChain(chain) {
-        const provider = await chain.getProvider()
-        await this.signer.connect(provider)
-    }
-
 }
 
 module.exports = { Eoa };
