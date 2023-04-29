@@ -14,6 +14,7 @@ class Auth {
         const entrypointContract = new Contract(entryPointAddress, entrypointAbi, provider)
         return await entrypointContract.getNonce(sender, key)
     }
+
     async getOwnerAddr() { }
     async getEstimateGasSignature() { }
 }
