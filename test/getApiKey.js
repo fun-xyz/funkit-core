@@ -30,8 +30,4 @@ async function getApiKey() {
     return apiKey
 }
 
-getApiKey().catch((error) => {
-    console.error("Error retrieving API key:", error)
-})
-
 module.exports = { getApiKey }
