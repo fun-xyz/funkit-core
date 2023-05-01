@@ -4,6 +4,7 @@ const { deepHexlify, verifyFunctionParams, validateClassInstance } = require("..
 const { Helper, NoServerConnectionError } = require("../errors");
 const { DataServer } = require('./DataServer');
 const bundlerExpectedKeys = ["bundlerUrl", "entryPointAddress", "chainId"]
+const LOCAL_FORK_CHAIN_ID = 31337
 
 class Bundler {
     constructor(bundlerUrl, entryPointAddress, chainId) {
@@ -12,7 +13,8 @@ class Bundler {
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;
-        this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl);
+        this.userOpJsonRpcProvider = Number(chainId) == LOCAL_FORK_CHAIN_ID ? 
+            new JsonRpcProvider(this.bundlerUrl) : null;
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid
