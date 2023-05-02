@@ -31,7 +31,6 @@ const localTokenAddrs = {
     weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
 }
 
-const LOCAL_BUNDLER_MODE = false
 
 const transactionType = "FunWalletInteraction"
 class DataServer {
@@ -180,7 +179,7 @@ class DataServer {
     }
 
     static async sendUserOpToBundler(body, chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             return await provider.send('eth_sendUserOperation', [body.userOp, body.entryPointAddress]);
         } else {
             return await this.sendPostRequest(APIURL, "bundler/send-user-op", body)
@@ -188,7 +187,7 @@ class DataServer {
     }
 
     static async estimateUserOpGas(body, chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             return await provider.send('eth_estimateUserOperationGas', [body.userOp, body.entryPointAddress]);
         } else {
             return await this.sendPostRequest(APIURL, "bundler/estimate-user-op-gas", body)
@@ -196,7 +195,7 @@ class DataServer {
     }
 
     static async validateChainId(chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             const chain = await provider.send('eth_chainId', [])
             return chain
         } else {
@@ -205,7 +204,7 @@ class DataServer {
     }
 
     static async getChainId(bundlerUrl, chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             const chain = await provider.send('eth_chainId', []);
             return parseInt(chain);
         } else {
