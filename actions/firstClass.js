@@ -1,11 +1,13 @@
 const { verifyFunctionParams } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
+const { _onramp} = require("./onramp")
 const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
+const onrampExpected = ["in", "out", "amount"] //CHANGe
 
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
@@ -13,6 +15,11 @@ class FirstClassActions {
     async transfer(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
+    }
+
+    async onramp(auth, input, options = global, estimate = false) {
+        verifyFunctionParams("Wallet.onramp", input, onrampExpected)
+        return await this.execute(auth, _onramp(input), options, estimate)
     }
     
     async approve(auth, input, options = global, estimate = false) {

@@ -16,10 +16,11 @@
     "@account-abstraction/sdk": "^0.4.0",
     "@aws-sdk/client-secrets-manager": "^3.315.0",
     "@lifeomic/attempt": "^3.0.3",
+    "@ramp-network/ramp-instant-sdk": "^4.0.2",
     "@uniswap/sdk": "^3.0.3",
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-sdk": "^3.9.0",
-    "ethers": "5.7.2",
+    "ethers": "^5.7.2",
     "node-fetch": "2.0.0",
     "web3": "^1.9.0"
   },
