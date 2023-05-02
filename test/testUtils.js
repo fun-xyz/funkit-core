@@ -17,16 +17,14 @@ const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
 const { getApiKey } = require('./getApiKey');
 
 async function getTestApiKey() {
-  if (!process.env.REMOTE_TEST) {
-    return "localtest";
-  } else {
-    try {
-      return await getApiKey();
-    } catch (error) {
-      console.error("Error retrieving API key:", error);
-      return null;
-    }
+
+  try {
+    return await getApiKey();
+  } catch (error) {
+    console.error("Error retrieving API key:", error);
+    return null;
   }
+
 }
 
 module.exports = {

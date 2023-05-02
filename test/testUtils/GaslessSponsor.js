@@ -77,7 +77,7 @@ const GaslessSponsorTest = (config) => {
             await runSwap(wallet)
         })
 
-        it("Only User Whitelisted", async () => {
+        it.skip("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 

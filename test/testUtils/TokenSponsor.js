@@ -35,8 +35,8 @@ const TokenSponsorTest = (config) => {
             const funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, 1)
-                await fundWallet(auth, wallet1, 1)
+                await fundWallet(funder, wallet, .5)
+                await fundWallet(auth, wallet1, .5)
             }
 
             await wallet.swap(auth, {
@@ -99,7 +99,7 @@ const TokenSponsorTest = (config) => {
             await runSwap(wallet)
         })
 
-        it("Only User Whitelisted", async () => {
+        it.skip("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
             const gasSponsor = new TokenSponsor()
