@@ -1,17 +1,31 @@
-import { RampInstantSDK } from "@ramp-network/ramp-instant-sdk";
+const { RampInstantSDK } = require("@ramp-network/ramp-instant-sdk")
+
+//hostLogoURL, hostAppName passed from front-end and instantiated in the SDK
+//hostApiKey stored in AWS and retrieved in SDK
+//swapAsset will be set to ETH compatible assets
+//enabledFlows will be set ONRAMP
+//userAddress will be retrieved from the wallet instance
+
 
 //TODO:
 //GetAPIKey from AWS
 
-//getUser address from wallet
 const _onramp = (params) => {
 
-//partial user op - chain and wallet
   return async (actionData) => {
-    let { hostLogoUrl, hostAppName, hostApiKey, swapAsset, userAddress } = params;
+    const { wallet, chain, options } = actionData
+    const {logo, name} = params;
 
-    return 
-  };
-};
+    const userAddress = await wallet.getAddress({ chain })
+    return new RampInstantSDK({
+        hostLogoUrl: logo,
+        hostAppName: name,
+        userAddress: userAddress,
+        enabledFlows: ['ONRAMP'],
+        swapAsset: 'ETH_*',
+        url: 'https://app.demo.ramp.network'
+    })
+  }
+}
 
-module.exports = { _transfer, _approve };
+module.exports = { _onramp}
