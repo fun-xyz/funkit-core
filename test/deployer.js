@@ -68,18 +68,18 @@ const deployApproveAndSwap = async (signer) => {
 const main = async (chainId, privateKey) => {
     await configureEnvironment(getOptions)
 
-    // const chain = new Chain({ chainId })
-    const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545")
+    const chain = new Chain({ chainId })
+    const provider = await chain.getProvider()
     const signer = new Wallet(privateKey, provider)
-
 
     const factory = await deployFactory(signer)
     // const entrypoint = await deploy(signer, entrypointAbi)
-    // const auth = await deployUserAuth(signer)
+    const auth = await deployUserAuth(signer)
     // const swap = await deployApproveAndSwap(signer)
 
     console.log({
         factory,
+        auth
     })
     // const token = await deployTokenSponsor(signer, entryPointAddr)
     // 
@@ -119,14 +119,14 @@ const feeOracleConfig = async (chainId, pkey) => {
     console.log((await contract.getFee(10)).toString())
 }
 
-main(5, WALLET_PRIVATE_KEY)
+// main(5, WALLET_PRIVATE_KEY)
 // paymasterConfig(5, WALLET_PRIVATE_KEY)
 
 // main(31337, TEST_PRIVATE_KEY)
 // feeOracleConfig(31337, TEST_PRIVATE_KEY) 
 
 
-// main(36864, TEST_PRIVATE_KEY)
+main(36864, TEST_PRIVATE_KEY)
 // paymasterConfig(36864, TEST_PRIVATE_KEY)
 // feeOracleConfig(36864, TEST_PRIVATE_KEY)
 
