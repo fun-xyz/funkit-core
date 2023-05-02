@@ -7,10 +7,10 @@ const config = {
     inToken: "eth",
     outToken: "dai",
     paymasterToken: "usdc",
-    baseTokenStakeAmt: 1,
+    baseTokenStakeAmt: .61,
     paymasterTokenStakeAmt: 100,
     prefund: false,
     swapAmount: .01,
-    stake: true,
+    stake: false,
 }
 TokenSponsorTest(config)

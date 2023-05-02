@@ -24,7 +24,7 @@ const SwapTest = (config) => {
             uniqueId = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueId, index: 14142 })
             if (prefund) {
-                await fundWallet(auth, wallet, .3)
+                await fundWallet(auth, wallet, .5)
             }
         })
 
@@ -45,7 +45,7 @@ const SwapTest = (config) => {
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: inToken,
-                amount: .0001,
+                amount: .1,
                 out: outToken
             })
             const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))
