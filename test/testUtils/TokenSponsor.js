@@ -26,8 +26,8 @@ const TokenSponsorTest = (config) => {
 
             uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueId, index: 12142 })
-            wallet1 = new FunWallet({ uniqueId, index: 235231 })
+            wallet = new FunWallet({ uniqueId, index: 1223452391856341 })
+            wallet1 = new FunWallet({ uniqueId, index: 2345234 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
