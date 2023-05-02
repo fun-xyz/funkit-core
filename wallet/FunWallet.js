@@ -5,7 +5,7 @@ const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
-const { BigNumber,constants } = require("ethers")
+const { BigNumber, constants } = require("ethers")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -195,11 +195,12 @@ class FunWallet extends FirstClassActions {
         const chain = await this._getFromCache(options.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const signature = await auth.getEstimateGasSignature()
+        const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
         const res = await chain.estimateOpGas({
             ...partialOp,
             signature: signature,
-            maxFeePerGas: 0,
-            maxPriorityFeePerGas: 0,
+            maxFeePerGas,
+            maxPriorityFeePerGas,
             preVerificationGas: 0,
             callGasLimit: 0,
             verificationGasLimit: 10e6
@@ -234,7 +235,7 @@ class FunWallet extends FirstClassActions {
         global.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain)
-        const walletIdentifer = new WalletIdentifier({uniqueId, index})
+        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
         const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
         return await walletOnChainManager.getWalletAddress()
     }
