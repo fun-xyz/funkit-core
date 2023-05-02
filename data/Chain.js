@@ -42,7 +42,6 @@ class Chain {
 
     async loadBundler() {
         if (!this.bundler) {
-            this.bundlerUrl = "http://localhost:3000/rpc";
             this.bundler = new Bundler(this.bundlerUrl, this.addresses.entryPointAddress, this.id)
             await this.bundler.validateChainId()
         }
