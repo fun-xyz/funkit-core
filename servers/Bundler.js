@@ -20,6 +20,7 @@ class Bundler {
         try {
             response = await DataServer.validateChainId(this.chainId, this.userOpJsonRpcProvider);
         } catch (e) {
+            console.log(e)
             const helper = new Helper("Chain ID", this.chainId, "Cannot connect to bundler.");
             throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, this.key != "bundlerUrl");
         }

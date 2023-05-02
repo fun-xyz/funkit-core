@@ -30,9 +30,12 @@ const localTokenAddrs = {
     dai: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
     weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
 }
+
+const LOCAL_BUNDLER_MODE = true
+
 const transactionType = "FunWalletInteraction"
 class DataServer {
-    static async storeUserOp( op, balance = 0, receipt = {} ) {
+    static async storeUserOp(op, balance = 0, receipt = {}) {
         if (!global.apiKey) {
             throw new DataFormatError("apiKey", "string", "configureEnvironment")
         }
@@ -121,14 +124,20 @@ class DataServer {
         const body = { chain: chainId }
 
         if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
-            return await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
-                const defaultAddresses = require("../test/forkDefaults").defaultAddresses
-                r.moduleAddresses = { ...r.moduleAddresses, defaultAddresses }
+            let req = await this.sendPostRequest(LOCAL_URL, "get-chain-info", body).then((r) => {
                 return r
-            })
+            }).catch(() => (undefined))
+            const r = req ? req : {
+                chain: chainId,
+                rpcUrl: "http://localhost:8545"
+            }
+            const defaultAddresses = require("../test/forkDefaults").defaultAddresses
+            r.moduleAddresses = { ...r.moduleAddresses, defaultAddresses }
+            return r
+
         } else {
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
-                if(!r.data) {
+                if (!r.data) {
                     throw new Error(JSON.stringify(r))
                 }
                 return r.data
@@ -171,7 +180,7 @@ class DataServer {
     }
 
     static async sendUserOpToBundler(body, chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
             return await provider.send('eth_sendUserOperation', [body.userOp, body.entryPointAddress]);
         } else {
             return await this.sendPostRequest(APIURL, "bundler/send-user-op", body)
@@ -179,7 +188,7 @@ class DataServer {
     }
 
     static async estimateUserOpGas(body, chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
             return await provider.send('eth_estimateUserOperationGas', [body.userOp, body.entryPointAddress]);
         } else {
             return await this.sendPostRequest(APIURL, "bundler/estimate-user-op-gas", body)
@@ -187,7 +196,7 @@ class DataServer {
     }
 
     static async validateChainId(chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
             const chain = await provider.send('eth_chainId', [])
             return chain
         } else {
@@ -196,7 +205,7 @@ class DataServer {
     }
 
     static async getChainId(bundlerUrl, chainId, provider) {
-        if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+        if (Number(chainId) == LOCAL_FORK_CHAIN_ID || LOCAL_BUNDLER_MODE) {
             const chain = await provider.send('eth_chainId', []);
             return parseInt(chain);
         } else {
@@ -206,7 +215,7 @@ class DataServer {
 
     }
 
-    static async setAuth(authId, method, addr, uniqueId){
+    static async setAuth(authId, method, addr, uniqueId) {
         return await this.sendPostRequest(APIURL, "auth/set-auth", {
             authId,
             method,
@@ -215,7 +224,7 @@ class DataServer {
         })
     }
 
-    static async getAuth(authId){
+    static async getAuth(authId) {
         return await this.sendPostRequest(APIURL, "auth/get-auth", {
             authId
         })
