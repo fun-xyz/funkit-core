@@ -13,7 +13,7 @@ class Bundler {
         this.bundlerUrl = bundlerUrl;
         this.entryPointAddress = entryPointAddress;
         this.chainId = chainId;
-        this.userOpJsonRpcProvider = Number(chainId) == LOCAL_FORK_CHAIN_ID ? 
+        this.userOpJsonRpcProvider = Number(chainId) == LOCAL_FORK_CHAIN_ID ?
             new JsonRpcProvider(this.bundlerUrl) : null;
     }
     async validateChainId() {
@@ -58,9 +58,9 @@ class Bundler {
 
 const validateOp = (userOp) => {
     const { UserOp } = require("../data/UserOp")
-    try{
+    try {
         validateClassInstance(userOp, "userOp", UserOp, "Chain.sendOpToBundler")
-    }catch{
+    } catch {
         new UserOp(userOp)
     }
 }
