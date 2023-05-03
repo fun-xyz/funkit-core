@@ -32,7 +32,7 @@ const parseOptions = async (options, location) => {
     if (gasSponsor && typeof gasSponsor != "object") {
         verifyFunctionParams(location, paymaster, paymasterExpectedKeys)
     }
-    if (chain && !(chain instanceof Chain) && chain!=global.chain?.chainId) {
+    if (chain && !(chain instanceof Chain) && chain != global.chain?.chainId) {
         chain = await getChainFromData(chain)
     }
 
@@ -48,7 +48,7 @@ const parseOptions = async (options, location) => {
 const getChainFromData = async (chainIdentifier) => {
     let chain
 
-    if (chainIdentifier instanceof Chain) {
+    if (chainIdentifier.constructor.toString() == Chain.toString()) {
         return chainIdentifier
     }
     if (Number(chainIdentifier)) {
