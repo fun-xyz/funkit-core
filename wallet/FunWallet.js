@@ -6,7 +6,7 @@ const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
 const { BigNumber, constants } = require("ethers")
-
+const { getAllOwnedNFTs, getTokenBalances } = require("../utils/GetAssets")
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 
@@ -291,6 +291,14 @@ class FunWallet extends FirstClassActions {
 
     async _executeSubCall(call, ...args) {
         return await this[call](...args)
+    }
+
+    static async getNFTs(chainId, address = await this.getAddress()){
+        return await getAllOwnedNFTs(chainId, address)
+    }
+
+    static async getTokens(chainId, address = await this.getAddress()) {
+        return await getTokenBalances(chainId, await this.getAddress())
     }
 }
 
