@@ -17,7 +17,7 @@ const _onramp = (params) => {
     const {logo, name} = params;
 
     const userAddress = await wallet.getAddress({ chain })
-    return new RampInstantSDK({
+    const rampObj = new RampInstantSDK({
         hostLogoUrl: logo,
         hostAppName: name,
         userAddress: userAddress,
@@ -25,7 +25,12 @@ const _onramp = (params) => {
         swapAsset: 'ETH_*',
         url: 'https://app.demo.ramp.network'
     })
+    const errorData = {
+      location: "action.onramp",
+    }
+    return {data: rampObj, errorData}
+    
   }
 }
 
-module.exports = { _onramp}
+// module.exports = { _onramp}

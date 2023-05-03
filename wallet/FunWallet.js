@@ -6,6 +6,7 @@ const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
 const { BigNumber,constants } = require("ethers")
+const { RampInstantSDK } = require("@ramp-network/ramp-instant-sdk")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -291,6 +292,21 @@ class FunWallet extends FirstClassActions {
 
     async _executeSubCall(call, ...args) {
         return await this[call](...args)
+    }
+
+    async onramp({logo, name},txOptions = global) {
+        const options = await parseOptions(txOptions, "Wallet.onramp")
+        const chain = await this._getFromCache(options.chain)
+        const walletAddress = await this.getAddress({ chain })
+          const rampObj = new RampInstantSDK({
+              defaultAsset: ['ETH'],
+              hostLogoUrl: logo,
+              hostAppName: name,
+              userAddress: walletAddress,
+              enabledFlows: ['ONRAMP'],
+              url: 'https://app.demo.ramp.network'
+          })
+          return rampObj  
     }
 }
 
