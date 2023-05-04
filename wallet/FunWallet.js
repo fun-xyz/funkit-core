@@ -297,7 +297,7 @@ class FunWallet extends FirstClassActions {
     }
 
     /**
-     * returns a url of the onramp browser widget, to be implemenetd in an iFrame
+     * returns a url for the Transak browser widget with onramping configuration
      * @param {*} txOptions 
      * @returns string containing the url of fiat onramp hosted on transak
      */
@@ -308,15 +308,20 @@ class FunWallet extends FirstClassActions {
         //for production, remove the -stg 
         const baseUrl = "https://global-stg.transak.com"
         //pull the api key from AWS
-        const apiKeyParam = "apiKey=" + "ef9387b0-53de-4ee5-afb8-24e202bb8456"
+        const apiKeyParam = "apiKey=" + "Replace this with the variable returned from AWS"
         const walletAddressParam = "&walletAddress=" + walletAddress
         const networkParam = "&network=ethereum"
         const buyModeParam = "&productsAvailed=BUY"
-        return baseUrl + "/?" + apiKeyParam + networkParam + walletAddressParam + buyModeParam
+        //for Moonpay, you would need to add a signed url
+        //the AWS backend should have a secret key and sign the whole url with it
+        const url = baseUrl + "/?" + apiKeyParam + networkParam + walletAddressParam + buyModeParam
+        //const singedurl = getSignedURL(url)
+        //see moonpay docs for how to construct the HMAC using the secret key
+        return url
     }
 
     /**
-     * returns a url of the offramp browser widget, to be implemenetd in an iFrame
+     * returns a url of the Transak browser widget with offramping configuration
      * @param {*} txOptions 
      * @returns string containing the url of fiat offramp hosted on transak
      */
@@ -327,11 +332,12 @@ class FunWallet extends FirstClassActions {
             //for production, remove the -stg 
             const baseUrl = "https://global-stg.transak.com"
             //pull the api key from AWS
-            const apiKeyParam = "apiKey=" + "ef9387b0-53de-4ee5-afb8-24e202bb8456"
+            const apiKeyParam = "apiKey=" + "Replace this with the variable returned from AWS"
             const walletAddressParam = "&walletAddress=" + walletAddress
             const networkParam = "&network=ethereum"
             const sellModeParam = "&productsAvailed=SELL"
             return baseUrl + "/?" + apiKeyParam + networkParam + walletAddressParam + sellModeParam
+            //this url also needs to be signed in order to use it with moonpay
         }
 }
 

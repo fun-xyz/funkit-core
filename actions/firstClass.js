@@ -14,10 +14,6 @@ class FirstClassActions {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
     }
-
-    // async onramp(auth, input, options = global, estimate = false) {
-    //     return await this.execute(auth, _onramp(input), options, estimate)
-    // }
     
     async approve(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.approve", input, approveExpected)
