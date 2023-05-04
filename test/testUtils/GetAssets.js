@@ -8,7 +8,7 @@ const GetAssetsTest = (config) => {
     const { FunWallet } = require("../../wallet")
     const { fundWallet, getTestApiKey } = require("../../utils")
 
-    describe("Swap", function () {
+    describe("Get Assets", function () {
         this.timeout(120_000)
         let auth
         let wallet

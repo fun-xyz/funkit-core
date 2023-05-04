@@ -292,7 +292,7 @@ class FunWallet extends FirstClassActions {
         return await this[call](...args)
     }
 
-    static async getNFTs(chainId, address){
+    async getNFTs(chainId, address){
         const res = await DataServer.getTokenBalances(chainId, address, onlyVerifiedTokens=false)
         console.log(res)
         return res
