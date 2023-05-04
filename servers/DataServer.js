@@ -6,7 +6,7 @@ const { getPromiseFromOp } = require('../utils/userop')
 const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
-const APIURL = 'https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod'
+const APIURL = 'https://dffw93t17k.execute-api.us-west-2.amazonaws.com/prod'
 const TEST_API_KEY = "localtest"
 
 const BASE_WRAP_TOKEN_ADDR = {
@@ -108,6 +108,7 @@ class DataServer {
     }
 
     static async sendGetRequest(APIURL, endpoint, apiKey) {
+        console.log(apiKey)
         return await sendRequest(`${APIURL}/${endpoint}`, "GET", apiKey ? apiKey : global.apiKey)
     }
 
@@ -229,6 +230,20 @@ class DataServer {
         })
     }
 
+    static async getTokenBalances(chainId, holderAddr, onlyVerifiedTokens=false) {
+        return await this.sendGetRequest(APIURL, "getAssets/get-tokens", {
+            chainId,
+            holderAddr,
+            onlyVerifiedTokens
+        })
+    }
+
+    static async getAllOwnedNFTs(chainId, holderAddr) {
+        return await this.sendGetRequest(APIURL, "getAssets/get-tokens", {
+            chainId,
+            holderAddr
+        })
+    }
 
 }
 
