@@ -4,6 +4,7 @@ const {Eoa} = require("../../../auth")
 const { ethers } = require("ethers")
 const {useState} = require("react")
 
+//for metamask
 declare global {
   interface Window {
     ethereum: any
@@ -11,7 +12,9 @@ declare global {
 }
 
 export default function Page() {
+  //state for displaying the transak widget
   const [visible, setVisible] = useState(false);
+  //state for passing in the widget url from the sdk into the iFrame
   const [onrampStr, setOnrampStr] = useState("");
 
   const show = () => {
@@ -22,7 +25,9 @@ export default function Page() {
     setVisible(false);
   }
 
+  
   const handleOn = async () => {
+    //gets the wallet associated with metamask address
     await configureEnvironment({
         apiKey: "dzRNnQ3C567eKkTMnbB3R1JgNnEYcxNO7Fc4EhqE"
     })
@@ -39,12 +44,15 @@ export default function Page() {
     const auth = new Eoa({ provider: eoa })
     const uniqueId = await auth.getUniqueId()
     const wallet = new FunWallet({ uniqueId })
+
+    // THE WALLET ONRAMP FLOW
     const url =  await wallet.onramp()
     setOnrampStr(url)
     show()
   }
 
   const handleOff = async () => {
+    //gets the wallet associated with metamask address
     await configureEnvironment({
         apiKey: "dzRNnQ3C567eKkTMnbB3R1JgNnEYcxNO7Fc4EhqE"
     })
@@ -61,6 +69,8 @@ export default function Page() {
     const auth = new Eoa({ provider: eoa })
     const uniqueId = await auth.getUniqueId()
     const wallet = new FunWallet({ uniqueId })
+
+    //THE WALLET OFFRAMP FLOW
     const url =  await wallet.offramp()
     setOnrampStr(url)
     show()
