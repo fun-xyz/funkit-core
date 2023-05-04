@@ -6,7 +6,9 @@ const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
 const { BigNumber,constants } = require("ethers")
-const { RampInstantSDK } = require("@ramp-network/ramp-instant-sdk")
+const { TransakSDK } = require("@transak/transak-sdk")
+
+
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -294,20 +296,43 @@ class FunWallet extends FirstClassActions {
         return await this[call](...args)
     }
 
-    async onramp({logo, name},txOptions = global) {
+    /**
+     * returns a url of the onramp browser widget, to be implemenetd in an iFrame
+     * @param {*} txOptions 
+     * @returns string containing the url of fiat onramp hosted on transak
+     */
+    async onramp(txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.onramp")
         const chain = await this._getFromCache(options.chain)
         const walletAddress = await this.getAddress({ chain })
-          const rampObj = new RampInstantSDK({
-              defaultAsset: ['ETH'],
-              hostLogoUrl: logo,
-              hostAppName: name,
-              userAddress: walletAddress,
-              enabledFlows: ['ONRAMP'],
-              url: 'https://app.demo.ramp.network'
-          })
-          return rampObj  
+        //for production, remove the -stg 
+        const baseUrl = "https://global-stg.transak.com"
+        //pull the api key from AWS
+        const apiKeyParam = "apiKey=" + "ef9387b0-53de-4ee5-afb8-24e202bb8456"
+        const walletAddressParam = "&walletAddress=" + walletAddress
+        const networkParam = "&network=ethereum"
+        const buyModeParam = "&productsAvailed=BUY"
+        return baseUrl + "/?" + apiKeyParam + networkParam + walletAddressParam + buyModeParam
     }
+
+    /**
+     * returns a url of the offramp browser widget, to be implemenetd in an iFrame
+     * @param {*} txOptions 
+     * @returns string containing the url of fiat offramp hosted on transak
+     */
+        async offramp(txOptions = global) {
+            const options = await parseOptions(txOptions, "Wallet.onramp")
+            const chain = await this._getFromCache(options.chain)
+            const walletAddress = await this.getAddress({ chain })
+            //for production, remove the -stg 
+            const baseUrl = "https://global-stg.transak.com"
+            //pull the api key from AWS
+            const apiKeyParam = "apiKey=" + "ef9387b0-53de-4ee5-afb8-24e202bb8456"
+            const walletAddressParam = "&walletAddress=" + walletAddress
+            const networkParam = "&network=ethereum"
+            const sellModeParam = "&productsAvailed=SELL"
+            return baseUrl + "/?" + apiKeyParam + networkParam + walletAddressParam + sellModeParam
+        }
 }
 
 
