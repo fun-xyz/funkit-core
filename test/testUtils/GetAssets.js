@@ -2,11 +2,11 @@ const GetAssetsTest = (config) => {
     const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
     const { expect } = require("chai")
     const { Eoa } = require("../../auth")
-    const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
     const { FunWallet } = require("../../wallet")
     const chai = require('chai')
     const { fundWallet, getTestApiKey } = require("../../utils")
+    const {BigNumber} = require("@ethersproject/bignumber")
     chai.use(require('chai-json-schema'))
 
     describe("GetAssets", function () {
@@ -53,27 +53,41 @@ const GetAssetsTest = (config) => {
             describe("Positive Unit Tests", () => {
                 it("Goerli, Funwallet", async () => {
                     const res = await wallet.getTokens(5)
-                    expect(Object.keys(res.message).length).to.be.gte(0)
+                    expect(Object.values(res)[0].tokenBalance).to.not.be.empty
+                    expect(BigNumber.from(Math.floor(Object.values(res)[0].price)).gte(500)).to.be.true
                 })
 
                 it("Mainnet, Binance 8", async () => {
                     const res = await wallet.getTokens(1, "0xF977814e90dA44bFA03b6295A0616a897441aceC", "true")
-                    expect(Object.keys(res.message)).to.be.gte(1)
+                    expect(BigNumber.from(Object.values(res)[0].tokenBalance).gte(BigNumber.from(1))).to.be.true
+                    expect(BigNumber.from(Math.ceil(Object.values(res)[0].price)).gt(0)).to.be.true
+                    expect(BigNumber.from(Object.values(res)[0].decimals).gte(6)).to.be.true
+                    expect(Object.values(res)[0].symbol).to.not.be.empty
+                    expect(Object.values(res)[0].logo).to.not.be.empty
                 })
 
                 it("Optimism, Optimism Foundation", async () => {
-                    const res = await wallet.getTokens(10, "0x2501c477d0a35545a387aa4a3eee4292a9a8b3f0", "true")
-                    expect(Object.keys(res.message)).to.be.gte(1)
+                    const res = await wallet.getTokens(10, "0xc5451b523d5FFfe1351337a221688a62806ad91a", "true")
+                    expect(BigNumber.from(Object.values(res)[0].tokenBalance).gte(BigNumber.from(0))).to.be.true
+                    expect(BigNumber.from(Math.ceil(Object.values(res)[0].price)).gt(0)).to.be.true
                 })
 
                 it("Polygon, Quickswap Team", async () => {
                     const res = await wallet.getTokens(137, "0x958d208cdf087843e9ad98d23823d32e17d723a1", "true")
-                    expect(Object.keys(res.message)).to.be.gte(1)
+                    expect(BigNumber.from(Object.values(res)[0].tokenBalance).gte(BigNumber.from(0))).to.be.true
+                    expect(BigNumber.from(Math.ceil(Object.values(res)[0].price)).gt(0)).to.be.true
+                    expect(BigNumber.from(Object.values(res)[0].decimals).gte(6)).to.be.true
+                    expect(Object.values(res)[0].symbol).to.not.be.empty
+                    expect(Object.values(res)[0].logo).to.not.be.empty
                 })
 
                 it("Arbitrum, ARB market maker", async () => {
                     const res = await wallet.getTokens(42161, "0x1E7016f7C23859d097668C27B72C170eD7129A10", "true")
-                    expect(Object.keys(res.message)).to.be.gte(1)
+                    expect(BigNumber.from(Object.values(res)[0].tokenBalance).gte(BigNumber.from(0))).to.be.true
+                    expect(BigNumber.from(Math.ceil(Object.values(res)[0].price)).gt(0)).to.be.true
+                    expect(BigNumber.from(Object.values(res)[0].decimals).gte(6)).to.be.true
+                    expect(Object.values(res)[0].symbol).to.not.be.empty
+                    expect(Object.values(res)[0].logo).to.not.be.empty
                 })
             })
         })
@@ -129,7 +143,7 @@ const GetAssetsTest = (config) => {
                     expect(res[0]).to.be.jsonSchema(getNFTsSchema)
                 })
 
-                it("Arbitrum, Arbitrum Odessey", async () => {
+                it("Arbitrum, Arbitrum Odyssey", async () => {
                     const res = await wallet.getNFTs(42161, "0xCE1a11c0f641c7219B19BFb5e1Cb5900F27ff92c")
                     expect(res.length).to.be.gte(1)
                     expect(res[0]).to.be.jsonSchema(getNFTsSchema)

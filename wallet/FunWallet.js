@@ -296,7 +296,6 @@ class FunWallet extends FirstClassActions {
         if(address === null){
             address = await this.getAddress()
         }
-        console.log(address)
         const res = await DataServer.getTokenBalances(chainId, address, onlyVerifiedTokens)
         return res
     }
