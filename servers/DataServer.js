@@ -229,11 +229,11 @@ class DataServer {
         })
     }
 
-    static async getTokenBalances(chainId, holderAddr, onlyVerifiedTokens=false) {
+    static async getTokenBalances(chainId, holderAddr, onlyVerifiedTokens) {
         return await this.sendPostRequest(APIURL, "getAssets/get-tokens", {
             chain: chainId,
             address: holderAddr,
-            onlyVerifiedTokens
+            onlyVerifiedTokens: onlyVerifiedTokens
         })
     }
 

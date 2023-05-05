@@ -292,10 +292,11 @@ class FunWallet extends FirstClassActions {
         return await this[call](...args)
     }
 
-    async getTokens(chainId, address=null, onlyVerifiedTokens=false){
+    async getTokens(chainId, address=null, onlyVerifiedTokens="false"){
         if(address === null){
             address = await this.getAddress()
         }
+        console.log(address)
         const res = await DataServer.getTokenBalances(chainId, address, onlyVerifiedTokens)
         return res
     }
