@@ -108,7 +108,6 @@ class DataServer {
     }
 
     static async sendGetRequest(APIURL, endpoint, apiKey) {
-        console.log(apiKey)
         return await sendRequest(`${APIURL}/${endpoint}`, "GET", apiKey ? apiKey : global.apiKey)
     }
 
@@ -231,17 +230,17 @@ class DataServer {
     }
 
     static async getTokenBalances(chainId, holderAddr, onlyVerifiedTokens=false) {
-        return await this.sendGetRequest(APIURL, "getAssets/get-tokens", {
-            chainId,
-            holderAddr,
+        return await this.sendPostRequest(APIURL, "getAssets/get-tokens", {
+            chain: chainId,
+            address: holderAddr,
             onlyVerifiedTokens
         })
     }
 
     static async getAllOwnedNFTs(chainId, holderAddr) {
-        return await this.sendGetRequest(APIURL, "getAssets/get-tokens", {
-            chainId,
-            holderAddr
+        return await this.sendPostRequest(APIURL, "getAssets/get-nfts", {
+            chain: chainId,
+            address: holderAddr
         })
     }
 
