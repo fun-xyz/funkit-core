@@ -228,7 +228,23 @@ class DataServer {
             authId
         })
     }
-
+    
+    /**
+     * Get all tokens for a specific chain
+     * @param {string} chainId https://chainlist.org/
+     * @param {string} address 
+     * @param {string} onlyVerifiedTokens If true, only return alchemy tokens that are verified(filters spam)
+     * @returns JSON
+     * {
+     *    "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
+     * }
+     */
     static async getTokenBalances(chainId, holderAddr, onlyVerifiedTokens) {
         return await this.sendPostRequest(APIURL, "getAssets/get-tokens", {
             chain: chainId,
@@ -237,6 +253,19 @@ class DataServer {
         })
     }
 
+    /**
+     * Calls the fun api server to get all the NFTs owned by the holder
+     * @param {string} chainId From https://chainlist.org/
+     * @param {string} holderAddr Address of holder
+     * @returns array
+     *  [
+     *     {
+     *       "address": "string",
+     *       "token_id": "string",
+     *       "floor_price": "string",
+     *     }
+     *  ]
+     */
     static async getAllOwnedNFTs(chainId, holderAddr) {
         return await this.sendPostRequest(APIURL, "getAssets/get-nfts", {
             chain: chainId,

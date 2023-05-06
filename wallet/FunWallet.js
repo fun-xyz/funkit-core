@@ -292,6 +292,22 @@ class FunWallet extends FirstClassActions {
         return await this[call](...args)
     }
 
+    /**
+     * Get all tokens for a specific chain
+     * @param {string} chainId https://chainlist.org/
+     * @param {string} address defaults to the fun wallet address
+     * @param {string} onlyVerifiedTokens If true, only return alchemy tokens that are verified(filters spam) - defaults to false
+     * @returns JSON
+     * {
+     *    "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
+     * }
+     */
     async getTokens(chainId, address=null, onlyVerifiedTokens="false"){
         if(address === null){
             address = await this.getAddress()
@@ -300,6 +316,19 @@ class FunWallet extends FirstClassActions {
         return res
     }
 
+    /**
+     * Given an address and a chain, returns all NFTs owned by that address
+     * @param {string} chainId Use the string version of the chainId
+     * @param {string} address Defaults to this fun wallet address
+     * @returns array
+     * [
+     *     {
+     *       "address": "string",
+     *       "token_id": "string",
+     *       "floor_price": "string",
+     *     }
+     *  ]
+     */
     async getNFTs(chainId, address=null) {
         if(address === null){
             address = await this.getAddress()
@@ -308,6 +337,21 @@ class FunWallet extends FirstClassActions {
         return res
     }
 
+    /**
+     * Return all NFTs on all supported chains.
+     * @param {*} address 
+     * @param {*} onlyVerifiedTokens 
+     * @returns JSON
+     * {
+     *  "chainId": [
+     *     {
+     *       "address": "string",
+     *       "token_id": "string",
+     *       "floor_price": "string",
+     *     }
+     *   ]
+     * }
+     */
     async getAllNFTs(address=null, onlyVerifiedTokens="false") {
         const supportedChains = ["1", "5", "10", "56", "137", "42161"]
         let allNFTs = {}
