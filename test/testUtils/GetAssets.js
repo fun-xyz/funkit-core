@@ -151,7 +151,32 @@ const GetAssetsTest = (config) => {
             })
         })
         
+        describe("getAllTokens()", () => {
+            describe("Positive Tests", () => {
+                it("Sanity Test", async () => {
+                    const res = await wallet.getAllTokens("0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263")
+                    expect(Object.keys(res).length).to.be.gte(1)
+                })
+                it("Random Whale", async () => {
+                    const res = await wallet.getAllTokens("0xd8db5a6d2448ab29165332eb514a716b3ed8b0b9")
+                    expect(Object.keys(res).length).to.be.gte(1)
+                })
+            })
+        })
 
+        describe("getAllNFTs()", () => {
+            describe("Positive Tests", () => {
+                it("Sanity Test", async () => {
+                    const res = await wallet.getAllNFTs("0x4675C7e5BaAFBFFbca748158bEcBA61ef3b0a263")
+                    expect(Object.keys(res).length).to.be.gte(1)
+                })
+
+                it("Random Whale - n0b0dy.eth", async () => {
+                    const res = await wallet.getAllNFTs("0x7eb413211a9DE1cd2FE8b8Bb6055636c43F7d206")
+                    expect(Object.keys(res).length).to.be.gte(1)
+                })
+            })
+        })
     })
 }
 

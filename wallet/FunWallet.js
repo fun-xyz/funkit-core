@@ -307,6 +307,75 @@ class FunWallet extends FirstClassActions {
         const res = await DataServer.getAllOwnedNFTs(chainId, address)
         return res
     }
+
+    async getAllNFTs(address=null, onlyVerifiedTokens="false") {
+        const supportedChains = ["1", "5", "10", "56", "137", "42161"]
+        let allNFTs = {}
+        for(let key in supportedChains){
+            const nfts = await this.getNFTs(key, address, onlyVerifiedTokens)
+            allNFTs[key] = nfts
+        }
+        return allNFTs
+    }
+
+    /**
+     * Get all tokens on all supported chains. Merge tokens by symbol 
+     * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
+     * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
+     * @returns JSON of all tokens owned by address
+     * {
+     *  "symbol": {
+     *     "balance": "0x",
+     *     "price" : "0.000000000000000000",
+     *     "decimals" : "string",
+     *   }
+     *   // for the native gas token of the network
+     *   "1:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE": {
+     *     "balance": "0.000000000000000000",
+     *     "price" : "0.000000000000000000",
+     *     "decimals" : "string",
+     *  }
+     * }
+     */
+    async getAllTokens(address=null, onlyVerifiedTokens="false") {
+        const supportedChains = ["1", "5", "10", "56", "137", "42161"]
+        const gasSymbol  = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        let allTokensList = await Promise.all(supportedChains.map(async (chainId) => {
+            const tokens = await this.getTokens(chainId, address, onlyVerifiedTokens)
+            delete Object.assign(tokens, {[chainId.toString() + ":" + gasSymbol]: tokens[gasSymbol] })[gasSymbol];
+            return tokens
+        }))
+        allTokensList = allTokensList.reduce((acc, el) => {
+            for (let key in el) {
+              acc[key] = [...acc[key] || [], el[key]];
+            };
+            return acc;
+          }, {})
+        const allTokens = {}
+        for (let key in allTokensList) {
+            if (key.includes(gasSymbol)){
+                allTokens[key] = {
+                    balance: allTokensList[key][0].tokenBalance,
+                    price: allTokensList[key][0].price,
+                    decimals: 18
+                }
+                continue
+            }
+            const symbol = allTokensList[key][0].symbol
+            const decimals = allTokensList[key][0].decimals
+            const price = allTokensList[key][0].price
+            let tokenBalance = BigNumber.from(0)
+            for (let token in allTokensList[key]) {
+                tokenBalance = tokenBalance.add(BigNumber.from(allTokensList[key][token].tokenBalance))
+            }
+            allTokens[symbol] = {
+                balance: tokenBalance.toString(),
+                price: price,
+                decimals: decimals
+            }
+        }
+        return allTokens
+    }
 }
 
 
