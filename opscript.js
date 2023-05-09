@@ -3,21 +3,21 @@ const { FunWallet, configureEnvironment } = require("./index")
 const { Eoa } =  require("./auth")
 const { fundWallet, } = require("./utils")
 const { Token } = require("./data/index")
-const PRIVATE_KEY = "0x69f145cff5f134d4a09d0d7f6da2eef0d01c3b24a95500482f4744a03a774f50"
+const PRIVATE_KEY = "0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064"
 const DEST_ADDR = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
 
 async function main() {
   await configureEnvironment({
-    chain: "36865",
+    chain: 420,
   })
 
   const auth = new Eoa({ privateKey: PRIVATE_KEY })
   const uniqueId = auth.getUniqueId()
 
-  const funWallet = new FunWallet( { uniqueId, index: 3} )
+  const funWallet = new FunWallet( { uniqueId} )
   const addr = await funWallet.getAddress()
   console.log(addr)
-  // await fundWallet(auth,funWallet,500)
+//   await fundWallet(auth,funWallet,0.5)
   
   // const token = new Token("eth")
   // const balBefore = token.getBalance(addr)
@@ -32,8 +32,3 @@ async function main() {
 
 main()
 
-
-const ethers = require('ethers');
-let mnemonic = "deliver witness sustain pigeon fee road adult envelope predict unique regret cash";
-let mnemonicWallet = ethers.Wallet.fromMnemonic(mnemonic);
-// console.log(mnemonicWallet.privateKey, mnemonicWallet.address);
