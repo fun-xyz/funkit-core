@@ -64,7 +64,7 @@ class Eoa extends Auth {
         }
         const { to, value, data, chain } = txData
         const provider = await chain.getProvider()
-        let eoa= this.signer;
+        let eoa = this.signer;
         if (!eoa.provider) {
             eoa = this.signer.connect(provider)
         }
@@ -93,7 +93,7 @@ class Eoa extends Auth {
         return await this.signer.getAddress()
     }
 
-    async getOwnerAddr() { 
+    async getOwnerAddr() {
         return [await this.getUniqueId()]
     }
 

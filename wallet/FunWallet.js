@@ -10,6 +10,7 @@ const { TransakSDK } = require("@transak/transak-sdk")
 
 
 
+
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 
@@ -237,7 +238,7 @@ class FunWallet extends FirstClassActions {
         global.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain)
-        const walletIdentifer = new WalletIdentifier({uniqueId, index})
+        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
         const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
         return await walletOnChainManager.getWalletAddress()
     }
