@@ -308,11 +308,11 @@ class FunWallet extends FirstClassActions {
      *     }
      * }
      */
-    async getTokens(chainId, address=null, onlyVerifiedTokens="false"){
-        if(address === null){
-            address = await this.getAddress()
-        }
-        const res = await DataServer.getTokenBalances(chainId, address, onlyVerifiedTokens)
+    async getTokens(onlyVerifiedTokens = false, txOptions = global) {
+        onlyVerifiedTokens = "true" ? onlyVerifiedTokens : "false"
+        const options = await parseOptions(txOptions, "Wallet.getTokens")
+        const chainId = await this._getFromCache(options.chain)
+        const res = await DataServer.getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
         return res
     }
 
@@ -329,11 +329,10 @@ class FunWallet extends FirstClassActions {
      *     }
      *  ]
      */
-    async getNFTs(chainId, address=null) {
-        if(address === null){
-            address = await this.getAddress()
-        }
-        const res = await DataServer.getAllOwnedNFTs(chainId, address)
+    async getNFTs(txOptions = global) {
+        const options = await parseOptions(txOptions, "Wallet.getTokens")
+        const chainId = await this._getFromCache(options.chain)
+        const res = await DataServer.getNFTs(chainId, await this.getAddress())
         return res
     }
 
@@ -352,14 +351,8 @@ class FunWallet extends FirstClassActions {
      *   ]
      * }
      */
-    async getAllNFTs(address=null, onlyVerifiedTokens="false") {
-        const supportedChains = ["1", "5", "10", "56", "137", "42161"]
-        let allNFTs = {}
-        for(let key in supportedChains){
-            const nfts = await this.getNFTs(key, address, onlyVerifiedTokens)
-            allNFTs[key] = nfts
-        }
-        return allNFTs
+    async getAllNFTs() {
+        return await DataServer.getAllNFTs(await this.getAddress())
     }
 
     /**
@@ -368,57 +361,19 @@ class FunWallet extends FirstClassActions {
      * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
      * @returns JSON of all tokens owned by address
      * {
-     *  "symbol": {
-     *     "balance": "0x",
-     *     "price" : "0.000000000000000000",
-     *     "decimals" : "string",
+     *    1: {
+     *      "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
      *   }
-     *   // for the native gas token of the network
-     *   "1:0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE": {
-     *     "balance": "0.000000000000000000",
-     *     "price" : "0.000000000000000000",
-     *     "decimals" : "string",
-     *  }
      * }
      */
-    async getAllTokens(address=null, onlyVerifiedTokens="false") {
-        const supportedChains = ["1", "5", "10", "56", "137", "42161"]
-        const gasSymbol  = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-        let allTokensList = await Promise.all(supportedChains.map(async (chainId) => {
-            const tokens = await this.getTokens(chainId, address, onlyVerifiedTokens)
-            delete Object.assign(tokens, {[chainId.toString() + ":" + gasSymbol]: tokens[gasSymbol] })[gasSymbol];
-            return tokens
-        }))
-        allTokensList = allTokensList.reduce((acc, el) => {
-            for (let key in el) {
-              acc[key] = [...acc[key] || [], el[key]];
-            };
-            return acc;
-          }, {})
-        const allTokens = {}
-        for (let key in allTokensList) {
-            if (key.includes(gasSymbol)){
-                allTokens[key] = {
-                    balance: allTokensList[key][0].tokenBalance,
-                    price: allTokensList[key][0].price,
-                    decimals: 18
-                }
-                continue
-            }
-            const symbol = allTokensList[key][0].symbol
-            const decimals = allTokensList[key][0].decimals
-            const price = allTokensList[key][0].price
-            let tokenBalance = BigNumber.from(0)
-            for (let token in allTokensList[key]) {
-                tokenBalance = tokenBalance.add(BigNumber.from(allTokensList[key][token].tokenBalance))
-            }
-            allTokens[symbol] = {
-                balance: tokenBalance.toString(),
-                price: price,
-                decimals: decimals
-            }
-        }
-        return allTokens
+    async getAllTokens(onlyVerifiedTokens = false) {
+        return await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
     }
 }
 
