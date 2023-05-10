@@ -21,6 +21,9 @@ const BASE_WRAP_TOKEN_ADDR = {
     },
     "43113": {
         weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
+    },
+    "42161": {
+        weth: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
     }
 }
 

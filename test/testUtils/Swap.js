@@ -22,21 +22,22 @@ const SwapTest = (config) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId, index: 14142 })
+            wallet = new FunWallet({ uniqueId, index: config.index!=null ? config.index : 14142 })
             if (prefund) {
                 await fundWallet(auth, wallet, .5)
             }
         })
-
+        let difference = 0
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(inToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: baseToken,
-                amount: .01,
+                amount: config.amount ? config.amount : .01,
                 out: inToken
             })
             const tokenBalanceAfter = (await Token.getBalance(inToken, walletAddress))
+            difference = tokenBalanceAfter - tokenBalanceBefore
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
@@ -45,7 +46,7 @@ const SwapTest = (config) => {
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: inToken,
-                amount: .1,
+                amount: difference / 2,
                 out: outToken
             })
             const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))

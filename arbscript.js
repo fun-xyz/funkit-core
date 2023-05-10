@@ -8,16 +8,15 @@ const DEST_ADDR = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
 
 async function main() {
   await configureEnvironment({
-    chain: 421613,
+    chain: 42161,
   })
 
   const auth = new Eoa({ privateKey: PRIVATE_KEY })
-  const uniqueId = auth.getUniqueId()
-
-  const funWallet = new FunWallet( { uniqueId} )
+  const uniqueId = await auth.getUniqueId()
+  const funWallet = new FunWallet( { uniqueId,index:0} )
   const addr = await funWallet.getAddress()
   console.log(addr)
-//   await fundWallet(auth,funWallet,0.5)
+  await fundWallet(auth,funWallet,0.012)
   
   // const token = new Token("eth")
   // const balBefore = token.getBalance(addr)

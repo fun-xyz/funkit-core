@@ -49,7 +49,6 @@ class Eoa extends Auth {
     async signHash(hash) {
         await this.init()
         const sig = await this.signer.signMessage(arrayify(hash))
-        // console.log(sig)
         return sig.toLowerCase()
     }
 

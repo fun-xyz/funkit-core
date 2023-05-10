@@ -147,7 +147,7 @@ class Chain {
         // if (!(preVerificationGas || verificationGas || verificationGas)) {
         //     throw new Error(JSON.stringify(res))
         // }
-        let preVerificationGas = 10e5, verificationGas = 10e5, callGasLimit = 10e5
+        let preVerificationGas = 5*10e4, verificationGas = 5*10e4, callGasLimit = 5*10e4  
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
         let verificationGasLimit = Math.ceil(parseInt(verificationGas) * 4.8)
         callGasLimit = Math.ceil(parseInt(callGasLimit) * 4.9)
