@@ -2,6 +2,7 @@ const { verifyFunctionParams } = require("../utils")
 const { _swap } = require("./swap")
 const { _transfer, _approve } = require("./token")
 const { isContract, parseOptions } = require('../utils')
+const { moonPayOnRamp, moonPayOffRamp, transakOnRamp } = require("./fiatramp")
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
@@ -38,6 +39,13 @@ class FirstClassActions {
     async execRawTx(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.execRawTx", input, genCallExpected)
         return await this.execute(auth, genCall(input, input.gasLimit), options, estimate)
+    }
+    async onramp(input){
+        const address = await this.getAddress() 
+        return await transakOnRamp(address)
+    }
+    async offramp(input){
+        return await moonPayOffRamp()
     }
 }
 
