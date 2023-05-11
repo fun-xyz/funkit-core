@@ -24,10 +24,10 @@ const setStoredUniqueId = async (authId, uniqueId, addr = "") => {
     } else {
         method = words[0]
     }
-    await DataServer.setAuth(authId, method, addr, uniqueId)
+    console.log(await DataServer.setAuth(authId, method, addr, uniqueId))
 }
 
-const getUniqueId = async (authId, addr="") => {
+const getUniqueId = async (authId, addr="NO_ADDRESS") => {
     let uniqueId
     const storedUniqueId = await getStoredUniqueId(authId)
     if (storedUniqueId) {

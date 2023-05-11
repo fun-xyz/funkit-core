@@ -5,7 +5,8 @@ const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
-const { BigNumber, constants } = require("ethers")
+const { BigNumber, constants, ethers } = require("ethers")
+const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -230,13 +231,28 @@ class FunWallet extends FirstClassActions {
         return this.address
     }
 
-    static async getAddress(authId, index, chain, apiKey) {
-        global.apiKey = apiKey
-        const uniqueId = await getUniqueId(authId)
-        const chainObj = await getChainFromData(chain)
-        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
-        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-        return await walletOnChainManager.getWalletAddress()
+    static async getAddress(authId, index, chain, apiKey, restore) {
+        try {
+            if (restore?.rpc && restore?.factoryAddress && restore?.uniqueId) { //offline query 
+                global.apiKey = apiKey
+                const provider = new ethers.providers.JsonRpcProvider(restore.rpc)
+                const factoryAbi = require("../abis/FunWalletFactory.json").abi
+                const factory = new ethers.Contract(restore.factoryAddress, factoryAbi, provider)
+                const identifier = keccak256(toUtf8Bytes(`${restore.uniqueId}-${index}`))
+                return await factory.getAddress(identifier)
+            }
+            else {
+                global.apiKey = apiKey
+                const uniqueId = await getUniqueId(authId)
+                const chainObj = await getChainFromData(chain)
+                const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+                const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+                return await walletOnChainManager.getWalletAddress()
+            }
+        }
+        catch (e) {
+            console.log(e)
+        }
     }
 
     async sendTx({ auth, op, call }, txOptions = global) {
