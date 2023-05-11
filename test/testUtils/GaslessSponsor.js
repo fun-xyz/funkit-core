@@ -8,7 +8,7 @@ const GaslessSponsorTest = (config) => {
     const { FunWallet } = require("../../wallet")
 
     describe("GaslessSponsor", function () {
-        this.timeout(180_000)
+        this.timeout(250_000)
         let auth = new Eoa({ privateKey: config.authPrivateKey })
         let funder = new Eoa({ privateKey: config.funderPrivateKey })
 

@@ -28,27 +28,28 @@ const TransferTest = (config) => {
                 await fundWallet(auth, wallet, .3)
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
-            await wallet.swap(auth, {
+            const receipt = await wallet.swap(auth, {
                 in: baseToken,
-                amount: config.amount ? config.amount : .1,
+                amount: config.amount ? config.amount : .01,
                 out: outToken
             })
+            console.log(await wallet.getAddress())
             const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))
             difference = tokenBalanceAfter - tokenBalanceBefore
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
 
 
         })
-        it("transfer eth directly", async () => {
+        it("transfer baseToken directly", async () => {
             var wallet1 = Wallet.createRandom();
             const randomAddress = wallet1.address
             const walletAddress = await wallet.getAddress()
 
-            let b1 = Token.getBalance("eth", randomAddress)
-            let b2 = Token.getBalance("eth", walletAddress)
-            const receipt = await wallet.transfer(auth, { to: randomAddress, amount: config.amount ? config.amount : .1, token: "eth" })
-            let b3 = Token.getBalance("eth", randomAddress)
-            let b4 = Token.getBalance("eth", walletAddress)
+            let b1 = Token.getBalance(baseToken, randomAddress)
+            let b2 = Token.getBalance(baseToken, walletAddress)
+            const receipt = await wallet.transfer(auth, { to: randomAddress, amount: config.amount ? config.amount : .01, token: baseToken })
+            let b3 = Token.getBalance(baseToken, randomAddress)
+            let b4 = Token.getBalance(baseToken, walletAddress)
 
             let [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] = await Promise.all([b1, b2, b3, b4])
 

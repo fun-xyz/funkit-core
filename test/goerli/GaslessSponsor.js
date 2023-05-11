@@ -9,6 +9,6 @@ const config = {
     inToken: "eth",
     outToken: "usdc",
     stakeAmount: 1,
-    prefund: PREFUND
+    prefund: true
 }
 GaslessSponsorTest(config)
