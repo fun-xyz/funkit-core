@@ -23,11 +23,11 @@ const TokenSponsorTest = (config) => {
             }
 
             await configureEnvironment(options)
-            
+
             uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueId, index: 12142 })
-            wallet1 = new FunWallet({ uniqueId, index: 235231 })
+            wallet = new FunWallet({ uniqueId, index: 1223452391856341 })
+            wallet1 = new FunWallet({ uniqueId, index: 2345234 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -93,12 +93,6 @@ const TokenSponsorTest = (config) => {
             }
         }
 
-        it("Blacklist Mode Approved", async () => {
-            const gasSponsor = new TokenSponsor()
-            await funder.sendTx(await gasSponsor.setToBlacklistMode())
-            await runSwap(wallet)
-        })
-
         it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -115,7 +109,11 @@ const TokenSponsorTest = (config) => {
             }
         })
 
-
+        it("Blacklist Mode Approved", async () => {
+            const gasSponsor = new TokenSponsor()
+            await funder.sendTx(await gasSponsor.setToBlacklistMode())
+            await runSwap(wallet)
+        })
     })
 }
 

@@ -26,7 +26,6 @@ const GaslessSponsorTest = (config) => {
             uid = await auth.getUniqueId()
             wallet = new FunWallet({ uid, index: 129856341 })
             wallet1 = new FunWallet({ uid, index: 12341238465411 })
-
             if (config.prefund) {
                 await fundWallet(funder, wallet, 1)
                 await fundWallet(auth, wallet1, 1)
@@ -71,12 +70,6 @@ const GaslessSponsorTest = (config) => {
             }
         }
 
-        it("Blacklist Mode Approved", async () => {
-            const gasSponsor = new GaslessSponsor()
-            await funder.sendTx(await gasSponsor.setToBlacklistMode())
-            await runSwap(wallet)
-        })
-
         it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -93,6 +86,12 @@ const GaslessSponsorTest = (config) => {
             } catch (e) {
                 assert(e.message.includes("AA33"), "Error but not AA33")
             }
+        })
+
+        it("Blacklist Mode Approved", async () => {
+            const gasSponsor = new GaslessSponsor()
+            await funder.sendTx(await gasSponsor.setToBlacklistMode())
+            await runSwap(wallet)
         })
     })
 }

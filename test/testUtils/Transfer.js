@@ -1,4 +1,3 @@
-const { getTestApiKey } = require("../testUtils")
 const TransferTest = (config) => {
     const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
     const { assert } = require("chai")

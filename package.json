@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "env REMOTE_TEST=true mocha test/fork",
-    "test-goerli": "mocha test/goerli",
+    "test-goerli": "env PREFUND=false mocha test/goerli",
     "test-localfork": "env REMOTE_TEST=false mocha test/fork",
     "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
     "load": "node test/loader.js"

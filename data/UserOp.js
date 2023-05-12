@@ -23,7 +23,6 @@ class UserOp {
     }
 
     async getOpHashData(chain) {
-        const chainId = await chain.getActualChainId()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
         const abi = require("../abis/EntryPoint.json").abi

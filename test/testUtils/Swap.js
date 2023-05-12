@@ -45,7 +45,7 @@ const SwapTest = (config) => {
             const tokenBalanceBefore = (await Token.getBalance(outToken, walletAddress))
             const res = await wallet.swap(auth, {
                 in: inToken,
-                amount: .0001,
+                amount: .1,
                 out: outToken
             })
             const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))

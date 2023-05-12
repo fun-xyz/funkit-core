@@ -1,4 +1,4 @@
-const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID, getTestApiKey } = require("../testUtils")
+const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../testUtils")
 
 const FactoryTest = (config) => {
     const { chainId, authPrivateKey } = config
@@ -9,15 +9,12 @@ const FactoryTest = (config) => {
     const { FunWallet } = require("../../wallet")
     const { isContract, fundWallet, getTestApiKey } = require("../../utils")
     
-
-
     describe("Factory", function () {
         let auth
         let wallet
         let uniqueId
         this.timeout(100_000)
         before(async function () {
-
             const apiKey = await getTestApiKey()
             const options = {
                 chain: chainId,
@@ -28,7 +25,6 @@ const FactoryTest = (config) => {
             uniqueId = randomBytes(32).toString();
             wallet = new FunWallet({ uniqueId, index: 3123 })
         })
-
 
         it("wallet should have the same address with a uniqueId-index combination", async () => {
             const wallet1 = new FunWallet({ uniqueId, index: 3123 })

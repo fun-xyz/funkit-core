@@ -17,6 +17,7 @@ const { Chain, Token } = require("../data")
 const { configureEnvironment } = require("../managers")
 const { Eoa } = require("../auth")
 const { TokenSponsor } = require("../sponsors")
+const { Interface, defaultAbiCoder } = require("ethers/lib/utils")
 
 const getOptions = async (chain = 36864) => {
     const apiKey = await getTestApiKey()
@@ -69,17 +70,13 @@ const main = async (chainId, privateKey) => {
 
     const chain = new Chain({ chainId })
     const provider = await chain.getProvider()
-    const entryPointAddr = await chain.getAddress("entryPointAddress")
     const signer = new Wallet(privateKey, provider)
 
-
-    // const factory = await deployFactory(signer)
+    const factory = await deployFactory(signer)
     // const entrypoint = await deploy(signer, entrypointAbi)
     const auth = await deployUserAuth(signer)
     // const swap = await deployApproveAndSwap(signer)
-    // const token = await deployTokenSponsor(signer, entryPointAddr)
 
-    console.log(auth)
 }
 
 const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
@@ -118,6 +115,7 @@ const feeOracleConfig = async (chainId, pkey) => {
     await contract.setValues(10, 2)
     console.log((await contract.getFee(10)).toString())
 }
+
 // main(5, WALLET_PRIVATE_KEY)
 // paymasterConfig(5, WALLET_PRIVATE_KEY)
 
@@ -131,3 +129,7 @@ main(36864, TEST_PRIVATE_KEY)
 
 // paymasterTest()
 // yarn run bundler --network "http://fun-alchemy-fork-eb-2-dev.us-west-2.elasticbeanstalk.com" --entryPoint "0x687F36336FCAB8747be1D41366A416b41E7E1a96" --unsafe
+
+
+
+// const err = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000001741413231206469646e2774207061792070726566756e64000000000000000000"
