@@ -5,8 +5,7 @@ const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
 const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
-const { BigNumber, constants, ethers} = require("ethers")
-const { keccak256, toUtf8Bytes } = require("ethers/lib/utils")
+const { BigNumber, constants } = require("ethers")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -235,11 +234,11 @@ class FunWallet extends FirstClassActions {
         try {
             if (restore?.rpc && restore?.factoryAddress && restore?.uniqueId) { //offline query 
                 global.apiKey = apiKey
-                const provider = new ethers.providers.JsonRpcProvider(restore.rpc)
-                const factoryAbi = require("../abis/FunWalletFactory.json").abi
-                const factory = new ethers.Contract(restore.factoryAddress, factoryAbi, provider)
-                const identifier = keccak256(toUtf8Bytes(`${restore.uniqueId}-${index}`))
-                return await factory.getAddress(identifier)
+                const chainObj = await getChainFromData(restore.rpc)
+                const walletIdentifer = new WalletIdentifier({ uniqueId: restore.uniqueId, index })
+                chainObj.setAddress("factoryAddress", restore.factoryAddress)
+                const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+                return await walletOnChainManager.getWalletAddress()
             }
             else {
                 global.apiKey = apiKey
