@@ -230,24 +230,27 @@ class FunWallet extends FirstClassActions {
         return this.address
     }
 
-    static async getAddress(authId, index, chain, apiKey, restore) {
+    static async getAddress(authId, index, chain, apiKey) {
         try {
-            if (restore?.rpc && restore?.factoryAddress && restore?.uniqueId) { //offline query 
-                global.apiKey = apiKey
-                const chainObj = await getChainFromData(restore.rpc)
-                const walletIdentifer = new WalletIdentifier({ uniqueId: restore.uniqueId, index })
-                chainObj.setAddress("factoryAddress", restore.factoryAddress)
-                const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-                return await walletOnChainManager.getWalletAddress()
-            }
-            else {
-                global.apiKey = apiKey
-                const uniqueId = await getUniqueId(authId)
-                const chainObj = await getChainFromData(chain)
-                const walletIdentifer = new WalletIdentifier({ uniqueId, index })
-                const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-                return await walletOnChainManager.getWalletAddress()
-            }
+            global.apiKey = apiKey
+            const uniqueId = await getUniqueId(authId)
+            const chainObj = await getChainFromData(chain)
+            const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+            const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+            return await walletOnChainManager.getWalletAddress()
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+    static async getAddress(index, apiKey, rpc, uniqueId, factoryAddress) { //offline query
+        try {
+            global.apiKey = apiKey
+            const chainObj = await getChainFromData(rpc)
+            const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+            chainObj.setAddress("factoryAddress", factoryAddress)
+            const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+            return await walletOnChainManager.getWalletAddress()
         }
         catch (e) {
             console.log(e)
