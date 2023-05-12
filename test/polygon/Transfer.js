@@ -6,6 +6,6 @@ const config = {
     authPrivateKey: WALLET_PRIVATE_KEY_2,
     outToken: DAI_POLYGON,
     baseToken: 'matic',
-    prefund: true
+    prefund: false
 }
 TransferTest(config)

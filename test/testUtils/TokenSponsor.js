@@ -99,7 +99,7 @@ const TokenSponsorTest = (config) => {
             await runSwap(wallet)
         })
 
-        it.skip("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
             const gasSponsor = new TokenSponsor()

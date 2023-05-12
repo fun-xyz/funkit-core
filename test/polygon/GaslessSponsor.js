@@ -7,7 +7,7 @@ const config = {
     inToken: "matic",
     outToken: "usdc",
     stakeAmount: 1,
-    prefund: true
+    prefund: false
 }
 
 GaslessSponsorTest(config)
