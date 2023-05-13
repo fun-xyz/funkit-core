@@ -83,7 +83,7 @@ class FunWallet extends FirstClassActions {
                 sponsor = new GaslessSponsor(options)
 
             }
-            paymasterAndData = await sponsor.getPaymasterAndData(options)
+            paymasterAndData = (await sponsor.getPaymasterAndData(options)).toLowerCase()
         }
 
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
@@ -173,9 +173,9 @@ class FunWallet extends FirstClassActions {
         const chain = await this._getFromCache(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
         if (estimate) {
-            return estimatedOp.getMaxTxCost()
+            return estimatedOp
+            // return estimatedOp.getMaxTxCost()
         }
-
         await estimatedOp.sign(auth, chain)
         if (options.sendTxLater) {
             return estimatedOp.op
@@ -197,7 +197,7 @@ class FunWallet extends FirstClassActions {
         const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
             ...partialOp,
-            signature: signature,
+            signature: signature.toLowerCase(),
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
@@ -326,7 +326,6 @@ const modifiedActions = () => {
     const proto = { ...FunWallet.prototype, ...FirstClassActions.prototype }
     Object.assign(proto, { estimateGas: bindedEstimateGasFunction, ...old })
     Object.setPrototypeOf(FunWallet.prototype, proto)
-
     return FunWallet
 }
 
