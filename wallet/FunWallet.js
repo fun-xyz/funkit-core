@@ -231,30 +231,18 @@ class FunWallet extends FirstClassActions {
     }
 
     static async getAddress(authId, index, chain, apiKey) {
-        try {
-            global.apiKey = apiKey
-            const uniqueId = await getUniqueId(authId)
-            const chainObj = await getChainFromData(chain)
-            const walletIdentifer = new WalletIdentifier({ uniqueId, index })
-            const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-            return await walletOnChainManager.getWalletAddress()
-        }
-        catch (e) {
-            console.log(e)
-        }
+        global.apiKey = apiKey
+        const uniqueId = await getUniqueId(authId)
+        const chainObj = await getChainFromData(chain)
+        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
+        return await walletOnChainManager.getWalletAddress()
     }
-    static async getAddress(index, apiKey, rpc, uniqueId, factoryAddress) { //offline query
-        try {
-            global.apiKey = apiKey
-            const chainObj = await getChainFromData(rpc)
-            const walletIdentifer = new WalletIdentifier({ uniqueId, index })
-            chainObj.setAddress("factoryAddress", factoryAddress)
-            const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-            return await walletOnChainManager.getWalletAddress()
-        }
-        catch (e) {
-            console.log(e)
-        }
+
+    static async getAddress(uniqueId, index, rpcUrl, factoryAddress) { //offline query
+        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+        const identifier = await walletIdentifer.getIdentifier()        
+        return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
     }
 
     async sendTx({ auth, op, call }, txOptions = global) {

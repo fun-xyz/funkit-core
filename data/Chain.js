@@ -29,13 +29,13 @@ class Chain {
             await this.loadChainData(bundlerChainId)
             await this.loadBundler()
         }
-        try{
+        try {
             await this.loadBundler()
         }
-        catch{}
-        try{
+        catch { }
+        try {
             await this.loadProvider()
-        }catch{}
+        } catch { }
     }
 
     async loadProvider() {
@@ -66,10 +66,9 @@ class Chain {
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
-            if(!global.offline){
-                console.log(e)
-                throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
-            }
+            console.log(e)
+            throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
+
         }
     }
 
