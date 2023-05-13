@@ -14,7 +14,7 @@ describe("Unit Test: options.js", function () {
         await wallet.transfer(auth, { to: await auth.getUniqueId(), amount: .01, token: 'eth' })
         expect(global.chain.id).to.be.equal('5')
     })
-    it("test offline", async()=>{
+    it("test offline twitter get address", async()=>{
         const addr = await FunWallet.getAddress(
             "2cbc0396-2a16-4b3f-937c-52406a969000",
             0,
