@@ -83,7 +83,7 @@ class FunWallet extends FirstClassActions {
                 sponsor = new GaslessSponsor(options)
 
             }
-            paymasterAndData = await sponsor.getPaymasterAndData(options)
+            paymasterAndData = (await sponsor.getPaymasterAndData(options)).toLowerCase()
         }
 
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
