@@ -29,9 +29,13 @@ class Chain {
             await this.loadChainData(bundlerChainId)
             await this.loadBundler()
         }
-
-        await this.loadBundler()
-        await this.loadProvider()
+        try {
+            await this.loadBundler()
+        }
+        catch { }
+        try {
+            await this.loadProvider()
+        } catch { }
     }
 
     async loadProvider() {
@@ -59,11 +63,11 @@ class Chain {
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
-            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
+
         }
     }
 
@@ -127,6 +131,7 @@ class Chain {
     }
 
     setAddress(name, address) {
+        if (!this.addresses) this.addresses = {}
         this.addresses[name] = address
     }
 
