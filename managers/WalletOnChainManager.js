@@ -32,9 +32,7 @@ class WalletOnChainManager {
     }
 
     async getWalletAddress() {
-        try {
-            await this.init()
-        } catch { }
+        await this.init()
         const uniqueId = await this.walletIdentifier.getIdentifier()
         return await this.factory.getAddress(uniqueId)
     }

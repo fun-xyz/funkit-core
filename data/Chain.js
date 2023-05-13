@@ -66,7 +66,6 @@ class Chain {
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
-            console.log(e)
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
 
         }
