@@ -239,7 +239,7 @@ class FunWallet extends FirstClassActions {
         return await walletOnChainManager.getWalletAddress()
     }
 
-    static async getAddress(uniqueId, index, rpcUrl, factoryAddress) { //offline query
+    static async getAddressOffline(uniqueId, index, rpcUrl, factoryAddress) { //offline query
         const walletIdentifer = new WalletIdentifier({ uniqueId, index })
         const identifier = await walletIdentifer.getIdentifier()        
         return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
