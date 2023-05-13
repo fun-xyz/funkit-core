@@ -308,7 +308,7 @@ const modifiedActions = () => {
     for (const func of funcs) {
         if (func == "constructor") continue
         const callfunc = async function (...args) {
-            if (args.length == 2) {
+            if (args.length <= 2) {
                 return await this.parent._executeSubCall(func, ...args, global, true)
             }
             else if (args.length == 3) {
