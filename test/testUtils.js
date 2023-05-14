@@ -1,9 +1,4 @@
-const TEST_PRIVATE_KEY = "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"
-
-const FUNDER_PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-const WALLET_PRIVATE_KEY = ""
-const GOERLI_FUNDER_PRIVATE_KEY = ""
-const WALLET_PRIVATE_KEY_2 = ""
+require('dotenv').config();
 
 const FUN_TESTNET_CHAIN_ID = 36864
 const LOCAL_FORK_CHAIN_ID = 31337
@@ -22,10 +17,11 @@ async function getTestApiKey() {
     console.error("Error retrieving API key:", error);
     return null;
   }
-}
 
+}
+// use env for pkeys
 module.exports = {
-  TEST_PRIVATE_KEY, FUNDER_PRIVATE_KEY, WALLET_PRIVATE_KEY, FUN_TESTNET_CHAIN_ID, GOERLI_FUNDER_PRIVATE_KEY,
-  LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL, WALLET_PRIVATE_KEY_2,
-  getTestApiKey
+    FUN_TESTNET_CHAIN_ID,
+  LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL,
+  getTestApiKey, ...process.env
 };
