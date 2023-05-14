@@ -173,8 +173,7 @@ class FunWallet extends FirstClassActions {
         const chain = await this._getFromCache(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
         if (estimate) {
-            return estimatedOp
-            // return estimatedOp.getMaxTxCost()
+            return estimatedOp.getMaxTxCost()
         }
         await estimatedOp.sign(auth, chain)
         if (options.sendTxLater) {
