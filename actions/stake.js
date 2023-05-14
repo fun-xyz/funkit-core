@@ -1,17 +1,8 @@
-const LIDO_MATIC_ADDRESS = "0x5f18C75AbDAe578b483E5F43f12a39cF75b973a9"
-const LIDO_ETH_ADDRESS = "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
-
-
 const _stake = ({ amount }) => {
-    return (actionData) => {
+    return async (actionData) => {
         const { wallet, chain, options } = actionData
-        let data, errorData
-        if (chain.id === 1) {
-            data = { LIDO_ETH_ADDRESS, data: "0x", value: parseEther(`${amount}`) }
-        } else if (chain.id === 137) {
-            data = { LIDO_MATIC_ADDRESS, data: "0x", value: parseEther(`${amount}`) }
-        }
-        else {
+        const data = { to: getLidoAddress(chain), data: "0x", value: parseEther(`${amount}`) }
+        if (!lidoAddress) {
             const reasonData = {
                 title: "Possible reasons:",
                 reasons: [
@@ -19,13 +10,26 @@ const _stake = ({ amount }) => {
                 ],
             }
             errorData = {
-                location: "action.transfer.eth",
+                location: "action.stake",
                 error: {
                     reasonData
                 }
             }
         }
         return { data, errorData }
+    }
+}
+
+const getLidoAddress = (chainId) => {
+    switch (chainId) {
+        case 1:
+            return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
+        case 5:
+            return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+        case 137:
+            return "0x5f18C75AbDAe578b483E5F43f12a39cF75b973a9"
+        default:
+            return null
     }
 }
 
