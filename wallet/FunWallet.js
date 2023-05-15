@@ -240,7 +240,7 @@ class FunWallet extends FirstClassActions {
 
     static async getAddressOffline(uniqueId, index, rpcUrl, factoryAddress) { //offline query
         const walletIdentifer = new WalletIdentifier({ uniqueId, index })
-        const identifier = await walletIdentifer.getIdentifier()        
+        const identifier = await walletIdentifer.getIdentifier()
         return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
     }
 
@@ -296,6 +296,113 @@ class FunWallet extends FirstClassActions {
 
     async _executeSubCall(call, ...args) {
         return await this[call](...args)
+    }
+
+    /**
+     * Get all tokens for a specific chain
+     * @param {string} chainId https://chainlist.org/
+     * @param {string} address defaults to the fun wallet address
+     * @param {string} onlyVerifiedTokens If true, only return alchemy tokens that are verified(filters spam) - defaults to false
+     * @returns JSON
+     * {
+     *    "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
+     * }
+     */
+    async getTokens(onlyVerifiedTokens = false, txOptions = global) {
+        onlyVerifiedTokens = "true" ? onlyVerifiedTokens : "false"
+        const options = await parseOptions(txOptions, "Wallet.getTokens")
+        const chainId = options.chain.chainId
+        const res = await DataServer.getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
+        return res
+    }
+
+    /**
+     * Given an address and a chain, returns all NFTs owned by that address
+     * @param {string} chainId Use the string version of the chainId
+     * @param {string} address Defaults to this fun wallet address
+     * @returns array
+     * [
+     *     {
+     *       "address": "string",
+     *       "token_id": "string",
+     *       "floor_price": "string",
+     *     }
+     *  ]
+     */
+    async getNFTs(txOptions = global) {
+        const options = await parseOptions(txOptions, "Wallet.getTokens")
+        const chainId = options.chain.chainId
+        const res = await DataServer.getNFTs(chainId, await this.getAddress())
+        return res
+    }
+
+    /**
+     * Return all NFTs on all supported chains.
+     * @param {*} address 
+     * @param {*} onlyVerifiedTokens 
+     * @returns JSON
+     * {
+     *  "chainId": [
+     *     {
+     *       "address": "string",
+     *       "token_id": "string",
+     *       "floor_price": "string",
+     *     }
+     *   ]
+     * }
+     */
+    async getAllNFTs() {
+        return await DataServer.getAllNFTs(await this.getAddress())
+    }
+
+    /**
+     * Get all tokens on all supported chains. Merge tokens by symbol 
+     * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
+     * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
+     * @returns JSON of all tokens owned by address
+     * {
+     *    1: {
+     *      "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
+     *   }
+     * }
+     */
+    async getAllTokens(onlyVerifiedTokens = false) {
+        return await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+    }
+
+    /**
+    * Get all tokens on all supported chains. Merge tokens by symbol 
+    * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
+    * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
+    * @returns JSON of all tokens owned by address
+    * {
+    *    1: {
+    *      "0xTokenAddress": {
+    *        "tokenBalance": "0x00001",
+    *        "symbol": "USDC",
+    *        "decimals": 6,
+    *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+    *        "price": 1.0001,
+    *     }
+    *   }
+    * }
+    */
+    async getAssets(onlyVerifiedTokens = false) {
+        const tokens = await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+        const nfts = await DataServer.getAllNFTs(await this.getAddress())
+        return { tokens, nfts }
     }
 }
 
