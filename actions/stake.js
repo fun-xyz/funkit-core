@@ -1,4 +1,5 @@
 const { parseEther } = require("ethers/lib/utils")
+const { approveAndExec } = require("./approveAndExec");
 
 const _stake = ({ amount }) => {
     return async (actionData) => {
@@ -14,13 +15,27 @@ const _stake = ({ amount }) => {
             }
         }
         const data = { to: lidoAddress, data: "0x", value: parseEther(`${amount}`) }
-        console.log(data)
         const errorData = {
             location: "action.stake",
             error: {
                 reasonData
             }
         }
+        return { data, errorData }
+    }
+}
+
+const _stakeMatic = ({ amount }) => {
+    return async (actionData) => {
+        const { wallet, chain, options } = actionData
+        const lidoAddress = "0x9ee91F9f426fA633d227f7a9b000E28b9dfd8599"
+        const data = { to: lidoAddress, data: "0x", value: parseEther(`${amount}`) }
+        const errorData = {
+            location: "action.stake",
+        }
+        const swapData = await actionContract.populateTransaction.executeSwapETH(to, amount, data)
+        return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
+
         return { data, errorData }
     }
 }

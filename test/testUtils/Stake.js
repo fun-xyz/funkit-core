@@ -30,12 +30,10 @@ const StakeTest = (config) => {
 
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
-            console.log("Wallet Address: ", walletAddress)
-            const tokenBalanceBefore = (await Token.getBalance(baseToken, walletAddress))
-            const receipt = await wallet.stake(auth, { amount })
-            const tokenBalanceAfter = (await Token.getBalance(baseToken, walletAddress))
-            console.log(tokenBalanceAfter, tokenBalanceBefore)
-            assert(tokenBalanceAfter < tokenBalanceBefore, "unable to stake")
+            const balBefore = (await Token.getBalance(baseToken, walletAddress))
+            const res = await wallet.stake(auth, { amount })
+            const balAfter = (await Token.getBalance(baseToken, walletAddress))
+            assert(balAfter < balBefore, "unable to stake")
         })
 
     })
