@@ -3,7 +3,7 @@ const { parseEther } = require("ethers/lib/utils")
 const _stake = ({ amount }) => {
     return async (actionData) => {
         const { wallet, chain, options } = actionData
-        const lidoAddress = getLidoAddress(chain.chainId)
+        const lidoAddress = getLidoAddress(chain.id)
         let reasonData = null
         if (!lidoAddress) {
             reasonData = {
@@ -14,6 +14,7 @@ const _stake = ({ amount }) => {
             }
         }
         const data = { to: lidoAddress, data: "0x", value: parseEther(`${amount}`) }
+        console.log(data)
         const errorData = {
             location: "action.stake",
             error: {
@@ -25,7 +26,7 @@ const _stake = ({ amount }) => {
 }
 
 const getLidoAddress = (chainId) => {
-    switch (chainId) {
+    switch (parseInt(chainId)) {
         case 1:
             return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
         case 5:
