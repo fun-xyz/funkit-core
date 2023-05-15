@@ -228,7 +228,7 @@ class DataServer {
             authId
         })
     }
-    
+
     /**
      * Get all tokens for a specific chain
      * @param {string} chainId https://chainlist.org/
@@ -246,6 +246,7 @@ class DataServer {
      * }
      */
     static async getTokens(chainId, holderAddr, onlyVerifiedTokens) {
+        console.log("getTokens", chainId, holderAddr, onlyVerifiedTokens)
         return await this.sendPostRequest(APIURL, "getAssets/get-tokens", {
             chain: chainId,
             address: holderAddr,
@@ -267,26 +268,27 @@ class DataServer {
      *  ]
      */
     static async getNFTs(chainId, holderAddr) {
+        console.log("getNFTs", chainId, holderAddr)
         return await this.sendPostRequest(APIURL, "getAssets/get-nfts", {
             chain: chainId,
             address: holderAddr
         })
     }
 
-     /**
-     * Calls the fun api server to get all the NFTs owned by the holder
-     * @param {string} chainId From https://chainlist.org/
-     * @param {string} holderAddr Address of holder
-     * @returns array
-     *  {
-     *     "1" : [{
-     *       "address": "string",
-     *       "token_id": "string",
-     *       "floor_price": "string",
-     *     }],
-     *  }
-     */
-     static async getAllNFTs(holderAddr) {
+    /**
+    * Calls the fun api server to get all the NFTs owned by the holder
+    * @param {string} chainId From https://chainlist.org/
+    * @param {string} holderAddr Address of holder
+    * @returns array
+    *  {
+    *     "1" : [{
+    *       "address": "string",
+    *       "token_id": "string",
+    *       "floor_price": "string",
+    *     }],
+    *  }
+    */
+    static async getAllNFTs(holderAddr) {
         return await this.sendPostRequest(APIURL, "getAssets/get-all-nfts", {
             address: holderAddr
         })

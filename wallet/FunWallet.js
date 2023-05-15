@@ -311,7 +311,7 @@ class FunWallet extends FirstClassActions {
     async getTokens(onlyVerifiedTokens = false, txOptions = global) {
         onlyVerifiedTokens = "true" ? onlyVerifiedTokens : "false"
         const options = await parseOptions(txOptions, "Wallet.getTokens")
-        const chainId = await this._getFromCache(options.chain)
+        const chainId = options.chain.chainId
         const res = await DataServer.getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
         return res
     }
@@ -331,7 +331,7 @@ class FunWallet extends FirstClassActions {
      */
     async getNFTs(txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.getTokens")
-        const chainId = await this._getFromCache(options.chain)
+        const chainId = options.chain.chainId
         const res = await DataServer.getNFTs(chainId, await this.getAddress())
         return res
     }
@@ -374,6 +374,29 @@ class FunWallet extends FirstClassActions {
      */
     async getAllTokens(onlyVerifiedTokens = false) {
         return await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+    }
+
+    /**
+    * Get all tokens on all supported chains. Merge tokens by symbol 
+    * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
+    * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
+    * @returns JSON of all tokens owned by address
+    * {
+    *    1: {
+    *      "0xTokenAddress": {
+    *        "tokenBalance": "0x00001",
+    *        "symbol": "USDC",
+    *        "decimals": 6,
+    *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+    *        "price": 1.0001,
+    *     }
+    *   }
+    * }
+    */
+    async getAssets(onlyVerifiedTokens = false) {
+        const tokens = await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+        const nfts = await DataServer.getAllNFTs(await this.getAddress())
+        return { tokens, nfts }
     }
 }
 
