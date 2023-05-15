@@ -9,7 +9,7 @@ const _stake = ({ amount }) => {
             reasonData = {
                 title: "Possible reasons:",
                 reasons: [
-                    "Incorrect Chain Id",
+                    "Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli",
                 ],
             }
         }
