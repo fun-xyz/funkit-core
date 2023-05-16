@@ -31,8 +31,6 @@ const _bridge = (params) => {
       return { data: data.bridgeTx, errorData }
     }
     else {
-      console.log("-----------------Reached approveAndExec -----------------")
-      console.log(data.approveTx, data.bridgeTx)
       return await approveAndExec({ approve: data.approveTx, exec: data.bridgeTx })(actionData)
     }
   }
@@ -67,11 +65,8 @@ const _socketBridge = async (params, userAddress) => {
         ],
       }
     }
-    return
+    return { approveTx: undefined, bridgeTx: undefined, errorData }
   }
-
-  console.log("--------------------- QUOTE ---------------------")
-  console.log(quote)
 
   // Choosing first route from the returned route results 
   const route = quote.result.routes[0];
@@ -98,8 +93,6 @@ const _socketBridge = async (params, userAddress) => {
       }
     }
   }
-  console.log("--------------------- APPROVE ---------------------")
-  console.log(approveTx)
 
   // --------------------- Bridge ---------------------
   bridgeTx = {
@@ -107,8 +100,6 @@ const _socketBridge = async (params, userAddress) => {
     value: apiReturnData.result.value,
     data: apiReturnData.result.txData,
   }
-  console.log("--------------------- BRIDGE ---------------------")
-  console.log(bridgeTx)
   return { approveTx, bridgeTx }
 }
 

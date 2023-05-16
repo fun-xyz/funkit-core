@@ -3,14 +3,13 @@ const BridgeTest = (config) => {
     const { assert } = require("chai")
     const { ethers, Wallet } = require("ethers")
     const { Eoa } = require("../../auth")
-    const { Token } = require("../../data")
     const { configureEnvironment } = require("../../managers")
     const { fundWallet, getTestApiKey } = require("../../utils")
     const { FunWallet } = require("../../wallet")
     const erc20Abi = require("../../abis/ERC20.json").abi
 
 
-    describe("Bridge", function () {
+    describe("Bridge - if tests failing, set prefund = true in test/polygon/Bridge.js", function () {
         this.timeout(120_000_000_000)
         let auth
         let wallet
@@ -43,16 +42,12 @@ const BridgeTest = (config) => {
             const signer = new Wallet(bridgePrivateKey, provider);
             const usdcContract = new ethers.Contract(fromAssetAddress, erc20Abi, signer);
             const gasPrice = await signer.getGasPrice();
-            console.log("Polygon Gas Price: ", gasPrice);
             let tx = await usdcContract.connect(signer).transfer(walletAddress, amount, { gasPrice: gasPrice })
             const receipt = await tx.wait()
-            console.log(receipt)
 
             const res = await wallet.bridge(auth, { fromChainId, toChainId, fromAssetAddress, toAssetAddress, amount })
-            console.log("--------------------- Res ---------------------")
-            console.log(res)
+            assert(res.txid !== null, "Transaction failed as txid was null")
         })
-
     })
 }
 module.exports = { BridgeTest }
