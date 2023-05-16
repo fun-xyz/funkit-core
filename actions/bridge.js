@@ -2,18 +2,31 @@ const fetch = require('node-fetch');
 const { parseOptions } = require('../utils')
 const { approveAndExec } = require("./approveAndExec");
 
-const API_KEY = '645b2c8c-5825-4930-baf3-d9b997fcd88c'; // SOCKET PUBLIC API KEY
+const API_KEY = '645b2c8c-5825-4930-baf3-d9b997fcd88c'; // SOCKET PUBLIC API KEY - can swap for our key in prod
 
 
 const errorData = {
   location: "actions.bridge"
 }
 
-const _swap = (params) => {
+/**
+ * Given two chains and two addresses on those chains, return an approveAndExec 
+ * transaction that will bridge the asset from one chain to the other.
+ * @param {obj} params should have the following fields
+ * {
+ *   fromChainId: number (chain id you are bridging the asset from)
+ *   toChainId: number (chain id you are bridging the asset to)
+ *   fromAssetAddress: string (address of the asset on fromChainId's chain)
+ *   toAssetAddress: string (address of the asset you want to receive on toChainId's chain)
+ *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
+ * }
+ * @returns {obj} approveAndExec transaction
+ */
+const _bridge = (params) => {
   return async (actionData) => {
     const { wallet, chain, options } = actionData
     const address = await actionData.wallet.getAddress()
-    const data = await _socketBridge(params, address, options)
+    const data = await _socketBridge(params, address)
     if (!data.approveTx) {
       return { data: data.bridgeTx, errorData }
     }
@@ -23,20 +36,23 @@ const _swap = (params) => {
   }
 }
 
-
-const _socketBridge = async (params, userAddress, options = global) => {
-  const { chain } = await parseOptions(options)
-
-  const uniqueRoutesPerBridge = true; // Returns the best route for a given DEX / bridge combination
-  const sort = "output"; // "output" | "gas" | "time"
-  const singleTxOnly = true;
-
-  // For single transaction bridging, mark singleTxOnly flag as true in query params
-  const quote = await getQuote(params.fromChainId,
-    params.fromAssetAddress, params.toChainId,
-    params.toAssetAddress, params.amount,
-    userAddress, uniqueRoutesPerBridge, sort, singleTxOnly
-  );
+/**
+ * Bridge a given asset from one chain to another using the Socket API
+ * @param {obj} params should have the following fields
+ * {
+ *   fromChainId: number (chain id you are bridging the asset from)
+ *   toChainId: number (chain id you are bridging the asset to)
+ *   fromAssetAddress: string (address of the asset on fromChainId's chain)
+ *   toAssetAddress: string (address of the asset you want to receive on toChainId's chain)
+ *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
+ * }
+ * @param {string} userAddress Address that sends the fromAsset and receives the toAsset
+ * @param {obj} options Global options object, unused
+ * @returns {approvalTx: obj, bridgeTx: obj} approveAndExec transactions
+ */
+const _socketBridge = async (params, userAddress) => {
+  const quote = await getQuote(params.fromChainId, params.fromAssetAddress, params.toChainId,
+    params.toAssetAddress, params.amount, userAddress, true, "output", true);
 
   // Choosing first route from the returned route results 
   const route = quote.result.routes[0];
@@ -45,7 +61,6 @@ const _socketBridge = async (params, userAddress, options = global) => {
   const apiReturnData = await getRouteTransactionData(route);
 
   // --------------------- APPROVAL ---------------------
-  // Used to check for ERC-20 approvals
   const approvalData = apiReturnData.result.approvalData;
   const { allowanceTarget, minimumApprovalAmount } = approvalData;
   let approveTx = undefined
@@ -53,13 +68,10 @@ const _socketBridge = async (params, userAddress, options = global) => {
   // approvalData from apiReturnData is null for native tokens 
   // Values are returned for ERC20 tokens but token allowance needs to be checked
   if (approvalData !== null) {
-    // Fetches token allowance given to Socket contracts
     const allowanceCheckStatus = await checkAllowance(params.fromChainId, userAddress, allowanceTarget, params.fromAssetAddress)
     const allowanceValue = allowanceCheckStatus.result?.value;
 
-    // If Socket contracts don't have sufficient allowance, otherwise leave undefined
     if (minimumApprovalAmount > allowanceValue) {
-      // Approval tx data fetched
       const approvalTransactionData = await getApprovalTransactionData(params.fromChainId, userAddress, allowanceTarget, params.fromAssetAddress, params.amount);
       approveTx = {
         to: approvalTransactionData.result?.to,
@@ -77,7 +89,19 @@ const _socketBridge = async (params, userAddress, options = global) => {
   return { approveTx, bridgeTx }
 }
 
-// Makes a GET request to Socket APIs for quote
+/**
+ * Return a quote with socket routes for a given asset from one chain to another
+ * @param {number} fromChainId chain id you are bridging the asset from
+ * @param {string} fromTokenAddress address of the asset on fromChainId's chain
+ * @param {number} toChainId chain id you are bridging the asset to
+ * @param {string} toTokenAddress address of the asset you want to receive on toChainId's chain
+ * @param {number} fromAmount Will there be an issue with decimals? ie 10**18 * 1_000_000
+ * @param {string} userAddress Address that sends the fromAsset and receives the toAsset
+ * @param {boolean} uniqueRoutesPerBridge set to true for single tx bridging
+ * @param {string} sort Can sort routes by "output" | "gas" | "time"
+ * @param {boolean} singleTxOnly set to true for single tx bridging
+ * @returns https://docs.socket.tech/socket-api/v2/quote
+ */
 async function getQuote(fromChainId, fromTokenAddress, toChainId, toTokenAddress, fromAmount, userAddress, uniqueRoutesPerBridge, sort, singleTxOnly) {
   const response = await fetch(`https://api.socket.tech/v2/quote?fromChainId=${fromChainId}&fromTokenAddress=${fromTokenAddress}&toChainId=${toChainId}&toTokenAddress=${toTokenAddress}&fromAmount=${fromAmount}&userAddress=${userAddress}&uniqueRoutesPerBridge=${uniqueRoutesPerBridge}&sort=${sort}&singleTxOnly=${singleTxOnly}`, {
     method: 'GET',
@@ -92,7 +116,11 @@ async function getQuote(fromChainId, fromTokenAddress, toChainId, toTokenAddress
   return json;
 }
 
-// Makes a POST request to Socket APIs for swap/bridge transaction data
+/**
+ * Makes a POST request to Socket APIs for swap/bridge transaction data
+ * @param {*} route Output from getQuote
+ * @returns https://docs.socket.tech/socket-api/v2/app/build-tx-get
+ */
 async function getRouteTransactionData(route) {
   const response = await fetch('https://api.socket.tech/v2/build-tx', {
     method: 'POST',
@@ -108,7 +136,15 @@ async function getRouteTransactionData(route) {
   return json;
 }
 
-// GET request to check token allowance given to allowanceTarget by owner
+/**
+ * GET request to check token allowance given to allowanceTarget by owner
+ * 
+ * @param {string} chainId ID of chain, for example Ethereum Mainnet is 1
+ * @param {string} owner Address of token holder
+ * @param {string} allowanceTarget Address whose spending allowance on behalf of owner is to be checked
+ * @param {string} tokenAddress Contract address of token on the chain specified in chainId
+ * @returns https://docs.socket.tech/socket-api/v2/approvals/check-allowance
+ */
 async function checkAllowance(chainId, owner, allowanceTarget, tokenAddress) {
   const response = await fetch(`https://api.socket.tech/v2/approval/check-allowance?chainID=${chainId}&owner=${owner}&allowanceTarget=${allowanceTarget}&tokenAddress=${tokenAddress}`, {
     method: 'GET',
@@ -123,7 +159,15 @@ async function checkAllowance(chainId, owner, allowanceTarget, tokenAddress) {
   return json;
 }
 
-// Fetches transaction data for token approval 
+/**
+ * Fetches transaction data for token approval 
+ * @param {string} chainId ID of chain, for example Ethereum Mainnet is 1
+ * @param {string} owner Address of token holder
+ * @param {string} allowanceTarget Address whose spending allowance on behalf of owner is to be checked
+ * @param {string} tokenAddress Contract address of token on the chain specified in chainId
+ * @param {string} amount Amount of tokens to be approved for spending. This value needs to be decimal adjusted.
+ * @returns https://docs.socket.tech/socket-api/v2/approvals/approval-build-tx
+ */
 async function getApprovalTransactionData(chainId, owner, allowanceTarget, tokenAddress, amount) {
   const response = await fetch(`https://api.socket.tech/v2/approval/build-tx?chainID=${chainId}&owner=${owner}&allowanceTarget=${allowanceTarget}&tokenAddress=${tokenAddress}&amount=${amount}`, {
     method: 'GET',
@@ -138,19 +182,4 @@ async function getApprovalTransactionData(chainId, owner, allowanceTarget, token
   return json;
 }
 
-// Fetches status of the bridging transaction
-// async function getBridgeStatus(transactionHash, fromChainId, toChainId) {
-//   const response = await fetch(`https://api.socket.tech/v2/bridge-status?transactionHash=${transactionHash}&fromChainId=${fromChainId}&toChainId=${toChainId}`, {
-//     method: 'GET',
-//     headers: {
-//       'API-KEY': API_KEY,
-//       'Accept': 'application/json',
-//       'Content-Type': 'application/json'
-//     }
-//   });
-
-//   const json = await response.json();
-//   return json;
-// }
-
-module.exports = { _swap };
+module.exports = { _bridge };
