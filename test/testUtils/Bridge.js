@@ -48,6 +48,7 @@ const BridgeTest = (config) => {
             const res = await wallet.bridge(auth, { fromChainId, toChainId, fromAssetAddress, toAssetAddress, amount })
             assert(res.txid !== null, "Transaction failed as txid was null")
         })
+
     })
 }
 module.exports = { BridgeTest }

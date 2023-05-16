@@ -74,7 +74,7 @@ const _socketBridge = async (params, userAddress) => {
   // Fetching transaction data for swap/bridge tx
   const apiReturnData = await getRouteTransactionData(route);
 
-  // --------------------- APPROVAL ---------------------
+  // --------------------- approve tokens ---------------------
   const approvalData = apiReturnData.result.approvalData;
   const { allowanceTarget, minimumApprovalAmount } = approvalData;
   let approveTx = undefined
