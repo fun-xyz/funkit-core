@@ -1,11 +1,9 @@
 const fetch = require('node-fetch');
-const { parseOptions } = require('../utils')
 const { approveAndExec } = require("./approveAndExec");
 
 const API_KEY = '645b2c8c-5825-4930-baf3-d9b997fcd88c'; // SOCKET PUBLIC API KEY - can swap for our key in prod
 
-
-const errorData = {
+let errorData = {
   location: "actions.bridge"
 }
 
@@ -24,20 +22,25 @@ const errorData = {
  */
 const _bridge = (params) => {
   return async (actionData) => {
-    const { wallet, chain, options } = actionData
     const address = await actionData.wallet.getAddress()
     const data = await _socketBridge(params, address)
-    if (!data.approveTx) {
+    if (data.approveTx === undefined && data.bridgeTx === undefined) {
+      return { data: undefined, errorData }
+    }
+    else if (!data.approveTx) {
       return { data: data.bridgeTx, errorData }
     }
     else {
+      console.log("-----------------Reached approveAndExec -----------------")
+      console.log(data.approveTx, data.bridgeTx)
       return await approveAndExec({ approve: data.approveTx, exec: data.bridgeTx })(actionData)
     }
   }
 }
 
 /**
- * Bridge a given asset from one chain to another using the Socket API
+ * Bridge a given asset from one chain to another using the Socket API.
+ * Note, use 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee for the native token on a chain (ie eth on Ethereum)
  * @param {obj} params should have the following fields
  * {
  *   fromChainId: number (chain id you are bridging the asset from)
@@ -53,6 +56,22 @@ const _bridge = (params) => {
 const _socketBridge = async (params, userAddress) => {
   const quote = await getQuote(params.fromChainId, params.fromAssetAddress, params.toChainId,
     params.toAssetAddress, params.amount, userAddress, true, "output", true);
+  if (!quote.success || quote.result.routes.length === 0) {
+    errorData = {
+      location: "action.bridge",
+      error: {
+        title: "Possible reasons:",
+        reasons: [
+          "Unable to find a route for the given asset pair",
+          "Socket API is down",
+        ],
+      }
+    }
+    return
+  }
+
+  console.log("--------------------- QUOTE ---------------------")
+  console.log(quote)
 
   // Choosing first route from the returned route results 
   const route = quote.result.routes[0];
@@ -79,6 +98,8 @@ const _socketBridge = async (params, userAddress) => {
       }
     }
   }
+  console.log("--------------------- APPROVE ---------------------")
+  console.log(approveTx)
 
   // --------------------- Bridge ---------------------
   bridgeTx = {
@@ -86,6 +107,8 @@ const _socketBridge = async (params, userAddress) => {
     value: apiReturnData.result.value,
     data: apiReturnData.result.txData,
   }
+  console.log("--------------------- BRIDGE ---------------------")
+  console.log(bridgeTx)
   return { approveTx, bridgeTx }
 }
 
