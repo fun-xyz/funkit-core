@@ -1,6 +1,7 @@
 const { verifyFunctionParams } = require("../utils")
 const { _swap } = require("./swap")
 const { _bridge } = require("./bridge")
+const { _stake } = require("./stake")
 const { _transfer, _approve } = require("./token")
 const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
@@ -8,6 +9,8 @@ const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
 const bridgeExpected = ["fromChainId", "toChainId", "fromAssetAddress", "toAssetAddress", "amount"]
+const stakeExpected = ["amount"]
+
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
 
@@ -29,6 +32,11 @@ class FirstClassActions {
     async swap(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.swap", input, swapExpected)
         return await this.execute(auth, _swap(input), options, estimate)
+    }
+
+    async stake(auth, input, options = global, estimate = false) {
+        verifyFunctionParams("Wallet.stake", input, stakeExpected)
+        return await this.execute(auth, _stake(input), options, estimate)
     }
 
     async create(auth, options = global, estimate = false) {
