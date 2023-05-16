@@ -1,20 +1,26 @@
 const { verifyFunctionParams } = require("../utils")
 const { _swap } = require("./swap")
+const { _bridge } = require("./bridge")
 const { _transfer, _approve } = require("./token")
 const { isContract, parseOptions } = require('../utils')
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
-
+const bridgeExpected = ["fromChainId", "toChainId", "fromAssetAddress", "toAssetAddress", "amount"]
 class FirstClassActions {
     async execute(auth, transactionFunc, txOptions = global, estimate = false) { }
+
+    async bridge(auth, input, options = global, estimate = false) {
+        verifyFunctionParams("Wallet.bridge", input, bridgeExpected)
+        return await this.execute(auth, _bridge(input), options, estimate)
+    }
 
     async transfer(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.transfer", input, transferExpected)
         return await this.execute(auth, _transfer(input), options, estimate)
     }
-    
+
     async approve(auth, input, options = global, estimate = false) {
         verifyFunctionParams("Wallet.approve", input, approveExpected)
         return await this.execute(auth, _approve(input), options, estimate)
@@ -49,7 +55,7 @@ const genCall = (data, callGasLimit = 100_000) => {
         if (!data.data) {
             data.data = "0x"
         }
-        const gasInfo = {  }
+        const gasInfo = {}
         return { gasInfo, data, errorData: { location: "action.genCall" } }
     }
 }
