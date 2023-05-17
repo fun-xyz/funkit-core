@@ -157,7 +157,10 @@ class Chain {
         let verificationGasLimit = Math.ceil(parseInt(verificationGas) + 50_000)
         callGasLimit = Math.ceil(parseInt(callGasLimit))
         if (partialOp.callData.includes("0x4789b97e")) {
-            callGasLimit = 400_000_0
+            callGasLimit = 400_000
+        }
+        if (await this.chainId() == 137) {
+            callGasLimit = 4_000_000
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }

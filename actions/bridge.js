@@ -24,7 +24,7 @@ const _bridge = (params) => {
   return async (actionData) => {
     const address = await actionData.wallet.getAddress()
     const data = await _socketBridge(params, address)
-    if (data.approveTx === undefined && data.bridgeTx === undefined) {
+    if (data.bridgeTx === undefined) {
       return { data: undefined, errorData }
     }
     else if (!data.approveTx) {
