@@ -1,4 +1,4 @@
-require('dotenv').config();
+// require('dotenv').config();
 
 const FUN_TESTNET_CHAIN_ID = 36864
 const LOCAL_FORK_CHAIN_ID = 31337

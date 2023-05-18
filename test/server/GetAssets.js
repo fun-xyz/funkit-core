@@ -18,7 +18,6 @@ const { FunWallet } = require("../../wallet")
 const chai = require('chai')
 const { fundWallet, getTestApiKey } = require("../../utils")
 const { BigNumber } = require("@ethersproject/bignumber")
-chai.use(require('chai-json-schema'))
 
 describe("GetAssets", function () {
   this.timeout(120_000)
