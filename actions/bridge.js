@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const { approveAndExec } = require("./approveAndExec");
 
-const API_KEY = '645b2c8c-5825-4930-baf3-d9b997fcd88c'; // SOCKET PUBLIC API KEY - can swap for our key in prod
+const SOCKET_API_KEY = '04dd4572-e22b-4bd6-beb9-feb73d31d009'; // SOCKET PUBLIC API KEY - can swap for our key in prod
 
 let errorData = {
   location: "actions.bridge"
@@ -124,7 +124,7 @@ async function getQuote(fromChainId, fromTokenAddress, toChainId, toTokenAddress
   const response = await fetch(`https://api.socket.tech/v2/quote?fromChainId=${fromChainId}&fromTokenAddress=${fromTokenAddress}&toChainId=${toChainId}&toTokenAddress=${toTokenAddress}&fromAmount=${fromAmount}&userAddress=${userAddress}&uniqueRoutesPerBridge=${uniqueRoutesPerBridge}&sort=${sort}&singleTxOnly=${singleTxOnly}`, {
     method: 'GET',
     headers: {
-      'API-KEY': API_KEY,
+      'API-KEY': SOCKET_API_KEY,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     }
@@ -143,7 +143,7 @@ async function getRouteTransactionData(route) {
   const response = await fetch('https://api.socket.tech/v2/build-tx', {
     method: 'POST',
     headers: {
-      'API-KEY': API_KEY,
+      'API-KEY': SOCKET_API_KEY,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
@@ -167,7 +167,7 @@ async function checkAllowance(chainId, owner, allowanceTarget, tokenAddress) {
   const response = await fetch(`https://api.socket.tech/v2/approval/check-allowance?chainID=${chainId}&owner=${owner}&allowanceTarget=${allowanceTarget}&tokenAddress=${tokenAddress}`, {
     method: 'GET',
     headers: {
-      'API-KEY': API_KEY,
+      'API-KEY': SOCKET_API_KEY,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     }
@@ -190,7 +190,7 @@ async function getApprovalTransactionData(chainId, owner, allowanceTarget, token
   const response = await fetch(`https://api.socket.tech/v2/approval/build-tx?chainID=${chainId}&owner=${owner}&allowanceTarget=${allowanceTarget}&tokenAddress=${tokenAddress}&amount=${amount}`, {
     method: 'GET',
     headers: {
-      'API-KEY': API_KEY,
+      'API-KEY': SOCKET_API_KEY,
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     }
