@@ -17,6 +17,8 @@ let errorData = {
  *   fromAssetAddress: string (address of the asset on fromChainId's chain)
  *   toAssetAddress: string (address of the asset you want to receive on toChainId's chain)
  *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
+ *   sort: string Can sort routes by "output"(Maximize number of tokens received) | 
+ *         "gas"(Minimize gas costs) | "time"(Minimize bridging time)
  * }
  * @returns {obj} approveAndExec transaction
  */
@@ -46,6 +48,8 @@ const _bridge = (params) => {
  *   fromAssetAddress: string (address of the asset on fromChainId's chain)
  *   toAssetAddress: string (address of the asset you want to receive on toChainId's chain)
  *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
+ *   sort: string Can sort routes by "output"(Maximize number of tokens received) | 
+ *                "gas"(Minimize gas costs) | "time"(Minimize bridging time)
  * }
  * @param {string} userAddress Address that sends the fromAsset and receives the toAsset
  * @param {obj} options Global options object, unused
@@ -53,7 +57,7 @@ const _bridge = (params) => {
  */
 const _socketBridge = async (params, userAddress) => {
   const quote = await getQuote(params.fromChainId, params.fromAssetAddress, params.toChainId,
-    params.toAssetAddress, params.amount, userAddress, true, "output", true);
+    params.toAssetAddress, params.amount, userAddress, true, params.sort, true);
   if (!quote.success || quote.result.routes.length === 0) {
     errorData = {
       location: "action.bridge",

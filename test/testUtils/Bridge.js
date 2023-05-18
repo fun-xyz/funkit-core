@@ -45,7 +45,7 @@ const BridgeTest = (config) => {
             let tx = await usdcContract.connect(signer).transfer(walletAddress, amount, { gasPrice: gasPrice })
             const receipt = await tx.wait()
 
-            const res = await wallet.bridge(auth, { fromChainId, toChainId, fromAssetAddress, toAssetAddress, amount })
+            const res = await wallet.bridge(auth, { fromChainId, toChainId, fromAssetAddress, toAssetAddress, amount, sort: "output" })
             assert(res.txid !== null, "Transaction failed as txid was null")
         })
 

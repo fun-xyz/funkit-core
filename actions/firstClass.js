@@ -8,7 +8,7 @@ const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
-const bridgeExpected = ["fromChainId", "toChainId", "fromAssetAddress", "toAssetAddress", "amount"]
+const bridgeExpected = ["fromChainId", "toChainId", "fromAssetAddress", "toAssetAddress", "amount", "sort"]
 const stakeExpected = ["amount"]
 
 class FirstClassActions {
