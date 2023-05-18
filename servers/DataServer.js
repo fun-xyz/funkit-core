@@ -6,7 +6,8 @@ const { getPromiseFromOp } = require('../utils/userop')
 const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
-const APIURL = 'https://dffw93t17k.execute-api.us-west-2.amazonaws.com/prod'
+// const APIURL = 'https://dffw93t17k.execute-api.us-west-2.amazonaws.com/prod'
+const APIURL = 'https://m2m3k0n2uf.execute-api.us-west-2.amazonaws.com/prod/'
 const TEST_API_KEY = "localtest"
 
 const BASE_WRAP_TOKEN_ADDR = {
@@ -135,6 +136,7 @@ class DataServer {
             return r
 
         } else {
+            console.log("getChainInfo", body, APIURL)
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 if (!r.data) {
                     throw new Error(JSON.stringify(r))

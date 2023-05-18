@@ -2,7 +2,7 @@ const { WALLET_PRIVATE_KEY } = require("../../utils/index.js")
 
 const PREFUND = process.env.PREFUND === 'true' ? true : false
 const config = {
-  chainId: 1, // Doesn't matter for this test
+  chainId: 5, // Doesn't matter for this test
   authPrivateKey: WALLET_PRIVATE_KEY,
   inToken: "dai", // Doesn't matter for this test
   outToken: "weth",
@@ -68,6 +68,7 @@ describe("GetAssets", function () {
 
       it("Mainnet, Binance 8", async () => {
         const res = await wallet.getTokens("true")
+        console.log(res)
         expect(BigNumber.from(Object.values(res)[0].tokenBalance).gte(BigNumber.from(1))).to.be.true
         expect(BigNumber.from(Math.ceil(Object.values(res)[0].price)).gt(0)).to.be.true
         expect(BigNumber.from(Object.values(res)[0].decimals).gte(6)).to.be.true
@@ -136,6 +137,7 @@ describe("GetAssets", function () {
 
       it("Mainnet, Franklinisbored.eth", async () => {
         const res = await wallet.getNFTs()
+        console.log(res)
         expect(res.length).to.be.gte(1)
         expect(res[0]).to.be.jsonSchema(getNFTsSchema)
       })
