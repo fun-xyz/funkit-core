@@ -136,7 +136,6 @@ class DataServer {
             return r
 
         } else {
-            console.log("getChainInfo", body, APIURL)
             return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 if (!r.data) {
                     throw new Error(JSON.stringify(r))
@@ -269,7 +268,6 @@ class DataServer {
      *  ]
      */
     static async getNFTs(chainId, holderAddr) {
-        console.log("getNFTs", chainId, holderAddr)
         return await this.sendPostRequest(APIURL, "getAssets/get-nfts", {
             chain: chainId,
             address: holderAddr
