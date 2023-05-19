@@ -142,15 +142,18 @@ class Chain {
 
     async estimateOpGas(partialOp) {
         await this.init()
-        // const res = await this.bundler.estimateUserOpGas(partialOp)
-        // let { preVerificationGas, verificationGas, callGasLimit } = res
-        // if (!(preVerificationGas || verificationGas || verificationGas)) {
-        //     throw new Error(JSON.stringify(res))
-        // }
-        let preVerificationGas = 5*10e4, verificationGas = 5*10e4, callGasLimit = 5*10e4  
+        const res = await this.bundler.estimateUserOpGas(partialOp)
+        let { preVerificationGas, verificationGas, callGasLimit } = res
+        if (!(preVerificationGas || verificationGas || verificationGas)) {
+            throw new Error(JSON.stringify(res))
+        }
+
         preVerificationGas = Math.ceil(parseInt(preVerificationGas) * 1.2)
-        let verificationGasLimit = Math.ceil(parseInt(verificationGas) * 4.8)
-        callGasLimit = Math.ceil(parseInt(callGasLimit) * 4.9)
+        let verificationGasLimit = Math.ceil(parseInt(verificationGas) + 50_000)
+        callGasLimit = Math.ceil(parseInt(callGasLimit))
+        if (partialOp.callData.includes("0x4789b97e")) {
+            callGasLimit = 400_000
+        }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }

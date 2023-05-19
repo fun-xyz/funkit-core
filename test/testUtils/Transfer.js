@@ -33,7 +33,6 @@ const TransferTest = (config) => {
                 amount: config.amount ? config.amount : .01,
                 out: outToken
             })
-            console.log(await wallet.getAddress())
             const tokenBalanceAfter = (await Token.getBalance(outToken, walletAddress))
             difference = tokenBalanceAfter - tokenBalanceBefore
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
