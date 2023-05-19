@@ -273,7 +273,8 @@ class FunWallet extends FirstClassActions {
         const txid = await onChainDataManager.getTxId(ophash)
         const gas = await gasCalculation(txid, chain)
         const receipt = { ophash, txid, ...gas }
-        DataServer.storeUserOp(userOp, 0, receipt)
+        await DataServer.storeUserOp(userOp, 0, receipt)
+        await DataServer.savePaymasterTransaction(userOp)
         return receipt
     }
 

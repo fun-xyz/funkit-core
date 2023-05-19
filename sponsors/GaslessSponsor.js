@@ -84,6 +84,7 @@ class GaslessSponsor {
     setToBlacklistMode() {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
+            await DataServer.updatePaymasterMode("blacklist")
             return await this.encode(data, options)
         }
     }
@@ -91,6 +92,7 @@ class GaslessSponsor {
     setToWhitelistMode() {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
+            await DataServer.updatePaymasterMode("whitelist")
             return await this.encode(data, options)
         }
     }
@@ -98,12 +100,14 @@ class GaslessSponsor {
     addSpenderToWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
+            await DataServer.addToList(spender, "whitelist")
             return await this.encode(data, options)
         }
     }
     removeSpenderFromWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
+            await DataServer.removeFromList(spender, "whitelist")
             return await this.encode(data, options)
         }
     }
@@ -111,6 +115,7 @@ class GaslessSponsor {
     addSpenderToBlackList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
+            await DataServer.addToList(spender, "blacklist")
             return await this.encode(data, options)
         }
     }
@@ -118,6 +123,7 @@ class GaslessSponsor {
     removeSpenderFromBlackList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
+            await DataServer.removeFromList(spender, "blacklist")
             return await this.encode(data, options)
         }
     }
