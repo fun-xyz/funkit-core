@@ -316,6 +316,70 @@ class DataServer {
             onlyVerifiedTokens: onlyVerifiedTokens
         })
     }
+
+    static async savePaymasterTransaction(transaction) {
+        const type = paymasterType()
+        if(type == 'base') throw new Error("No paymaster in use.")
+        return await this.sendPostRequest(APIURL, "paymasters/add-sponsor-tx", {
+            chain: global.chain?.id,
+            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            type,
+            tx: transaction
+        })
+    }
+
+    static async updatePaymasterMode(mode) {
+        const type = paymasterType()
+        if(type == 'base') throw new Error("No paymaster in use.")
+        return await this.sendPostRequest(APIURL, "paymasters/update-paymasters", {
+            chain: global.chain?.id,
+            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            type,
+            updateObj: {
+                mode
+            }
+        })
+    }
+
+    static async removeFromList(address, list) {
+        const type = paymasterType()
+        if(type == 'base') throw new Error("No paymaster in use.")
+        return await this.sendPostRequest(APIURL, "paymasters/add-to-list", {
+            chain: global.chain?.id,
+            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            type,
+            listType: list,
+            updateAddr: address
+        })
+    }
+    static async addToList(address, list) {
+        const type = paymasterType()
+        if(type == 'base') throw new Error("No paymaster in use.")
+        return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
+            chain: global.chain?.id,
+            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            type,
+            listType: list,
+            updateAddr: address
+        })
+    }
+
+    static async whiteListToken() {
+        return await this.sendPostRequest(APIURL, "paymasters/update-paymasters", {
+
+        })
+    }
+}
+const paymasterType = () => {
+    if (global.gasSponsor?.sponsorAddress && global.gasSponsor?.token) {
+        return 'token'
+    }
+    else if(global.gasSponsor?.sponsorAddress){
+        return 'gasless'
+    }
+    else{
+        return 'base'
+    }
 }
 
 module.exports = { DataServer }
