@@ -2,12 +2,12 @@ const BridgeTest = (config) => {
     const { chainId, bridgePrivateKey, outToken, baseToken, prefund } = config
     const { assert } = require("chai")
     const { ethers, Wallet } = require("ethers")
+    const { Token } = require("../../data")
     const { Eoa } = require("../../auth")
     const { configureEnvironment } = require("../../managers")
     const { fundWallet, getTestApiKey } = require("../../utils")
     const { FunWallet } = require("../../wallet")
     const erc20Abi = require("../../abis/ERC20.json").abi
-
 
     describe("Bridge - if tests failing, set prefund = true in test/polygon/Bridge.js", function () {
         this.timeout(120_000_000_000)
@@ -42,10 +42,13 @@ const BridgeTest = (config) => {
             const signer = new Wallet(bridgePrivateKey, provider);
             const usdcContract = new ethers.Contract(fromAssetAddress, erc20Abi, signer);
             const gasPrice = await signer.getGasPrice();
-            let tx = await usdcContract.connect(signer).transfer(walletAddress, amount, { gasPrice: gasPrice })
+            let tx = await usdcContract.transfer(walletAddress, amount, { gasPrice: gasPrice })
+            const tokenBalanceBefore = (await Token.getBalance("usdc", walletAddress))
             const receipt = await tx.wait()
 
             const res = await wallet.bridge(auth, { fromChainId, toChainId, fromAssetAddress, toAssetAddress, amount, sort: "output" })
+            const tokenBalanceAfter = (await Token.getBalance("usdc", walletAddress))
+            assert(tokenBalanceAfter < tokenBalanceBefore, "Token balance did not decrease")
             assert(res.txid !== null, "Transaction failed as txid was null")
         })
 

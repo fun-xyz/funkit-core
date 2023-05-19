@@ -6,7 +6,6 @@
   "scripts": {
     "test": "env REMOTE_TEST=true mocha test/fork",
     "test-goerli": "env PREFUND=false mocha test/goerli",
-    "test-bridge": "env PREFUND=false mocha test/polygon/Bridge",
     "test-localfork": "env REMOTE_TEST=false mocha test/fork",
     "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
     "load": "node test/loader.js"
