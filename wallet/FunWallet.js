@@ -175,7 +175,6 @@ class FunWallet extends FirstClassActions {
         if (estimate) {
             return estimatedOp.getMaxTxCost()
         }
-
         await estimatedOp.sign(auth, chain)
         if (options.sendTxLater) {
             return estimatedOp.op
@@ -197,7 +196,7 @@ class FunWallet extends FirstClassActions {
         const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
             ...partialOp,
-            signature: signature,
+            signature: signature.toLowerCase(),
             maxFeePerGas: 0,
             maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
@@ -308,7 +307,7 @@ const modifiedActions = () => {
     for (const func of funcs) {
         if (func == "constructor") continue
         const callfunc = async function (...args) {
-            if (args.length == 2) {
+            if (args.length <= 2) {
                 return await this.parent._executeSubCall(func, ...args, global, true)
             }
             else if (args.length == 3) {
@@ -326,7 +325,6 @@ const modifiedActions = () => {
     const proto = { ...FunWallet.prototype, ...FirstClassActions.prototype }
     Object.assign(proto, { estimateGas: bindedEstimateGasFunction, ...old })
     Object.setPrototypeOf(FunWallet.prototype, proto)
-
     return FunWallet
 }
 

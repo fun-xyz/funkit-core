@@ -22,9 +22,10 @@ const SwapTest = (config) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
             uniqueId = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId, index: config.index!=null ? config.index : 14142 })
+            wallet = new FunWallet({ uniqueId, index: config.index!=null ? config.index : 1792811340 })
+
             if (prefund) {
-                await fundWallet(auth, wallet, .5)
+                await fundWallet(auth, wallet, 1)
             }
         })
         let difference = 0
