@@ -4,10 +4,7 @@ const { DataServer, } = require("../servers/DataServer")
 const { Bundler, } = require("../servers/Bundler")
 
 const { verifyFunctionParams, flattenObj, validateClassInstance, getUsedParametersFromOptions } = require("../utils/data")
-const { Contract, constants } = require("ethers")
 const chainExpectedKeys = ["chainId", "rpcUrl", "chainName", "bundlerUrl"]
-
-const factoryAbi = require("../abis/FunWalletFactory.json").abi
 
 class Chain {
     constructor(input) {
