@@ -318,7 +318,7 @@ class DataServer {
     }
 
     static async savePaymasterTransaction(transaction) {
-        const paymasterType = paymasterType()
+        const paymasterType = getPaymasterType()
         if(paymasterType == 'base') throw new Error("No paymaster in use.")
         return await this.sendPostRequest(APIURL, "paymasters/add-sponsor-tx", {
             chain: global.chain?.id,
@@ -329,7 +329,7 @@ class DataServer {
     }
 
     static async updatePaymasterMode(mode) {
-        const paymasterType = paymasterType()
+        const paymasterType = getPaymasterType()
         if(paymasterType == 'base') throw new Error("No paymaster in use.")
         return await this.sendPostRequest(APIURL, "paymasters/update-paymasters", {
             chain: global.chain?.id,
@@ -342,7 +342,7 @@ class DataServer {
     }
 
     static async removeFromList(address, list) {
-        const paymasterType = paymasterType()
+        const paymasterType = getPaymasterType()
         if(paymasterType == 'base') throw new Error("No paymaster in use.")
         return await this.sendPostRequest(APIURL, "paymasters/add-to-list", {
             chain: global.chain?.id,
@@ -354,7 +354,7 @@ class DataServer {
        
     }
     static async addToList(address, list) {
-        const paymasterType = paymasterType()
+        const paymasterType = getPaymasterType()
         if(paymasterType == 'base') throw new Error("No paymaster in use.")
         return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
             chain: global.chain?.id,
@@ -364,14 +364,8 @@ class DataServer {
             updateAddr: address
         })
     }
-
-    static async whiteListToken() {
-        return await this.sendPostRequest(APIURL, "paymasters/update-paymasters", {
-            
-        })
-    }
 }
-const paymasterType = () => {
+const getPaymasterType = () => {
     if (global.gasSponsor?.sponsorAddress && global.gasSponsor?.token) {
         return 'token'
     }

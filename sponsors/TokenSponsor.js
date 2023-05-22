@@ -140,18 +140,19 @@ class TokenSponsor {
 
     addWhitelistTokens(tokens) {
         return async (options = global) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
+            const sendTokens = await Promise.all(tokens.map(async (token) => {
+                await DataServer.addToList(spender, "tokensWhiteList")
                 return Token.getAddress(token, options)
             }))
-            const data = this.interface.encodeFunctionData("useTokens", [sendTokens]) 
-            //TODO: Save PAYMASTER DATA
+            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }
 
     removeWhitelistTokens(tokens) {
         return async (options = global) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
+            const sendTokens = await Promise.all(tokens.map(async (token) => {
+                await DataServer.removeFromList(spender, "tokensWhiteList")
                 return Token.getAddress(token, options)
             }))
             const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
@@ -162,7 +163,7 @@ class TokenSponsor {
     addSpenderToWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
-            await DataServer.addToList(spender,"whitelist")
+            await DataServer.addToList(spender, "whitelist")
             return await this.encode(data, options)
         }
     }
@@ -170,7 +171,7 @@ class TokenSponsor {
     removeSpenderFromWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
-            await DataServer.removeFromList(spender,"whitelist")
+            await DataServer.removeFromList(spender, "whitelist")
             return await this.encode(data, options)
         }
     }
@@ -178,7 +179,7 @@ class TokenSponsor {
     addSpenderToBlackList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
-            await DataServer.addToList(spender,"blacklist")
+            await DataServer.addToList(spender, "blacklist")
             return await this.encode(data, options)
         }
     }
@@ -186,7 +187,7 @@ class TokenSponsor {
     removeSpenderFromBlackList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
-            await DataServer.removeFromList(spender,"blacklist")
+            await DataServer.removeFromList(spender, "blacklist")
             return await this.encode(data, options)
         }
     }
