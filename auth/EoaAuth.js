@@ -49,7 +49,7 @@ class Eoa extends Auth {
     async signHash(hash) {
         await this.init()
         const sig = await this.signer.signMessage(arrayify(hash))
-        return sig.toLowerCase()
+        return sig
     }
 
     async getSigner() {
