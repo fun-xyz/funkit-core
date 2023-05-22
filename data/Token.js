@@ -62,12 +62,12 @@ class Token {
 
     async getBalance(address, options = global) {
         const parsedOptions = await parseOptions(options)
-        const contract = await this.getContract(parsedOptions)
         let amount;
         if (this.isNative) {
             const provider = await parsedOptions.chain.getProvider()
             amount = await provider.getBalance(address)
         } else {
+            const contract = await this.getContract(parsedOptions)
             amount = await contract.balanceOf(address)
         }
         const decimals = await this.getDecimals(parsedOptions)

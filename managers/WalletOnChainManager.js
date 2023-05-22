@@ -1,7 +1,7 @@
 const { Contract } = require("ethers")
 const { WalletIdentifier, Chain } = require("../data")
 const { validateClassInstance } = require("../utils/data")
-
+const { ethers } = require("ethers")
 const factoryAbi = require("../abis/FunWalletFactory.json").abi
 const walletAbi = require("../abis/FunWallet.json").abi
 const entryPointAbi = require("../abis/EntryPoint.json").abi
@@ -35,6 +35,12 @@ class WalletOnChainManager {
         await this.init()
         const uniqueId = await this.walletIdentifier.getIdentifier()
         return await this.factory.getAddress(uniqueId)
+    }
+
+    static async getWalletAddress(identifier, rpcUrl, factoryAddress) {
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+        const factory = new ethers.Contract(factoryAddress, factoryAbi, provider)
+        return await factory.getAddress(identifier)
     }
 
     async getTxId(userOpHash, timeout = 30000, interval = 5000) {
