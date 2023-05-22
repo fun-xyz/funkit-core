@@ -20,7 +20,7 @@ const errorData = {
     location: "actions.swap"
 }
 
-const oneInchSupported = [1, 56, 137, 31337, 36864]
+const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
 
 const _swap = (params) => {
     return async (actionData) => {

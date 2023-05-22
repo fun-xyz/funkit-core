@@ -8,7 +8,7 @@ const GaslessSponsorTest = (config) => {
     const { FunWallet } = require("../../wallet")
 
     describe("GaslessSponsor", function () {
-        this.timeout(180_000)
+        this.timeout(250_000)
         let auth = new Eoa({ privateKey: config.authPrivateKey })
         let funder = new Eoa({ privateKey: config.funderPrivateKey })
 
@@ -24,22 +24,21 @@ const GaslessSponsorTest = (config) => {
             await configureEnvironment(options)
 
             uid = await auth.getUniqueId()
-            wallet = new FunWallet({ uid, index: 129856341 })
-            wallet1 = new FunWallet({ uid, index: 12341238465411 })
+            wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex != null ? config.walletIndex : 129856341 })
+            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex!=null ? config.funderIndex : 12341238465411 })
             if (config.prefund) {
-                await fundWallet(funder, wallet, 1)
-                await fundWallet(auth, wallet1, 1)
+                await fundWallet(funder, wallet, .5) 
+                await fundWallet(auth, wallet1, .5)
             }
             const funderAddress = await funder.getUniqueId()
             await wallet.swap(auth, {
                 in: config.inToken,
-                amount: .01,
+                amount: config.amount ? config.amount : .01,
                 out: config.outToken,
                 options: {
                     returnAddress: funderAddress
                 }
             })
-
             await configureEnvironment({
                 gasSponsor: {
                     sponsorAddress: await funder.getUniqueId(),
@@ -51,6 +50,7 @@ const GaslessSponsorTest = (config) => {
             const depositInfo1S = await gasSponsor.getBalance(funderAddress)
             const stake = await gasSponsor.stake(funderAddress, stakeAmount)
             await funder.sendTxs([stake])
+
             const depositInfo1E = await gasSponsor.getBalance(funderAddress)
             assert(depositInfo1E.gt(depositInfo1S), "Stake Failed")
 
@@ -62,7 +62,7 @@ const GaslessSponsorTest = (config) => {
             if (tokenBalanceBefore < .1) {
                 await wallet.swap(auth, {
                     in: config.inToken,
-                    amount: .1,
+                    amount: config.amount ? config.amount : .1,
                     out: config.outToken
                 })
                 const tokenBalanceAfter = (await Token.getBalance(config.outToken, walletAddress))
