@@ -29,7 +29,7 @@ const GaslessSponsorTest = (config) => {
             if (config.prefund) {
                 await fundWallet(funder, wallet, .5) 
                 await fundWallet(auth, wallet1, .5)
-
+            }
             const funderAddress = await funder.getUniqueId()
             await wallet.swap(auth, {
                 in: config.inToken,
