@@ -1,0 +1,33 @@
+const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager")
+const { retry, DEFAULT_RETRY_OPTIONS } = require('../utils/network')
+
+const SECRET_NAME = "PrivateKeys"
+const REGION = "us-west-2"
+const VERSION_STAGE = "AWSCURRENT"
+
+async function getPrivateKeys() {
+    const client = new SecretsManagerClient({
+        region: REGION
+    })
+
+    let response
+
+    try {
+        response = await retry(() => client.send(
+            new GetSecretValueCommand({
+                SecretId: SECRET_NAME,
+                VersionStage: VERSION_STAGE
+            })
+        ), DEFAULT_RETRY_OPTIONS)
+    } catch (error) {
+        // For a list of exceptions thrown, see
+        // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        throw error
+    }
+
+    const secret = JSON.parse(response.SecretString)
+    return secret
+}
+
+
+module.exports = { getPrivateKeys }
