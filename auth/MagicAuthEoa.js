@@ -13,7 +13,7 @@ class MagicAuthEoa extends Eoa {
         return this.signer
     }
 
-    getUniqueId() {
+    async getUniqueId() {
         return this.uniqueId
     }
 
