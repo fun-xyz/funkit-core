@@ -159,7 +159,7 @@ class Chain {
         if (partialOp.callData.includes("0x4789b97e")) {
             callGasLimit = 400_000
         }
-        if (await this.chainId() == 137) {
+        if (await this.getChainId() == 137) {
             callGasLimit = 4_000_000
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }

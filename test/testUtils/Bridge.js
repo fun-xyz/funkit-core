@@ -34,7 +34,7 @@ const BridgeTest = (config) => {
             const toChainId = 56;
             const fromAssetAddress = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
             const toAssetAddress = "0x55d398326f99059fF775485246999027B3197955";
-            const amount = 10; // 100 USDC, USDC is 6 decimals
+            const amount = 1; // 100 USDC, USDC is 6 decimals
 
             const walletAddress = await wallet.getAddress()
             // send usdc to funwallet

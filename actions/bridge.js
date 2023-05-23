@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const { approveAndExec } = require("./approveAndExec");
+const { Chain, Token } = require("../data")
 
 const SOCKET_API_KEY = '04dd4572-e22b-4bd6-beb9-feb73d31d009'; // SOCKET PUBLIC API KEY - can swap for our key in prod
 
@@ -62,7 +63,7 @@ const _socketBridge = async (params, userAddress) => {
   const fromAssetAddress = await fromTokenObj.getAddress({ chainId: params.fromChainId });
   const toTokenObj = new Token(params.toAssetAddress)
   const toAssetAddress = await toTokenObj.getAddress({ chainId: params.toChainId });
-  const quote = await getQuote(fromChain.getChainId(), fromAssetAddress, toChain.getChainId(),
+  const quote = await getQuote(await fromChain.getChainId(), fromAssetAddress, await toChain.getChainId(),
     toAssetAddress, params.amount, userAddress, true, params.sort, true);
   if (!quote.success || quote.result.routes.length === 0) {
     errorData = {

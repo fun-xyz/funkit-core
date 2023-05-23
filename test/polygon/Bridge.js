@@ -8,6 +8,6 @@ const config = {
   bridgePrivateKey: BRIDGE_PRIVATE_KEY,
   outToken: "dai",
   baseToken: "eth",
-  prefund: false
+  prefund: true
 }
 BridgeTest(config)
