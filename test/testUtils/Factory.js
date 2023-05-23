@@ -34,13 +34,13 @@ const FactoryTest = (config) => {
         })
 
         it("wallet.create should create a wallet", async () => {
-            if (chainId == FUN_TESTNET_CHAIN_ID || chainId == LOCAL_FORK_CHAIN_ID) {
+            if (chainId == FUN_TESTNET_CHAIN_ID || chainId == LOCAL_FORK_CHAIN_ID || config.testCreate) {
                 const index = Math.random() * 10000
                 const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
                 let iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.false
-                await fundWallet(auth, wallet1, .5)
+                await fundWallet(auth, wallet1, config.prefundAmt? config.prefundAmt: .5)
                 await wallet1.create(auth)
                 iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.true
