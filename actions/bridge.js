@@ -56,11 +56,13 @@ const _bridge = (params) => {
  * @returns {approvalTx: obj, bridgeTx: obj} approveAndExec transactions
  */
 const _socketBridge = async (params, userAddress) => {
+  const fromChain = new Chain({ chainId: params.fromChainId })
+  const toChain = new Chain({ chainId: params.toChainId })
   const fromTokenObj = new Token(params.fromAssetAddress)
   const fromAssetAddress = await fromTokenObj.getAddress({ chainId: params.fromChainId });
   const toTokenObj = new Token(params.toAssetAddress)
   const toAssetAddress = await toTokenObj.getAddress({ chainId: params.toChainId });
-  const quote = await getQuote(params.fromChainId, fromAssetAddress, params.toChainId,
+  const quote = await getQuote(fromChain.getChainId(), fromAssetAddress, toChain.getChainId(),
     toAssetAddress, params.amount, userAddress, true, params.sort, true);
   if (!quote.success || quote.result.routes.length === 0) {
     errorData = {
@@ -90,11 +92,11 @@ const _socketBridge = async (params, userAddress) => {
   // approvalData from apiReturnData is null for native tokens 
   // Values are returned for ERC20 tokens but token allowance needs to be checked
   if (approvalData !== null) {
-    const allowanceCheckStatus = await checkAllowance(params.fromChainId, userAddress, allowanceTarget, fromAssetAddress)
+    const allowanceCheckStatus = await checkAllowance(fromChain.getChainId(), userAddress, allowanceTarget, fromAssetAddress)
     const allowanceValue = allowanceCheckStatus.result?.value;
 
     if (minimumApprovalAmount > allowanceValue) {
-      const approvalTransactionData = await getApprovalTransactionData(params.fromChainId, userAddress, allowanceTarget, fromAssetAddress, params.amount);
+      const approvalTransactionData = await getApprovalTransactionData(fromChain.getChainId(), userAddress, allowanceTarget, fromAssetAddress, params.amount);
       approveTx = {
         to: approvalTransactionData.result?.to,
         data: approvalTransactionData.result?.data,
