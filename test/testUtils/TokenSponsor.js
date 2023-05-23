@@ -26,8 +26,8 @@ const TokenSponsorTest = (config) => {
 
             uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueId, index: 1223452391856341 })
-            wallet1 = new FunWallet({ uniqueId, index: 2345234 })
+            wallet = new FunWallet({ uniqueId, index: config.walletIndex!=null? config.walletIndex: 1223452391856341 })
+            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex!=null? config.funderIndex: 2345234 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -54,7 +54,6 @@ const TokenSponsorTest = (config) => {
                     token: paymasterToken,
                 }
             })
-
             const gasSponsor = new TokenSponsor()
 
             const baseStakeAmount = config.baseTokenStakeAmt
@@ -83,9 +82,9 @@ const TokenSponsorTest = (config) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(config.outToken, walletAddress))
             if (tokenBalanceBefore < .1) {
-                await wallet.swap(auth, {
+                const res= await wallet.swap(auth, {
                     in: config.inToken,
-                    amount: .1,
+                    amount: config.swapAmount,
                     out: config.outToken
                 })
                 const tokenBalanceAfter = (await Token.getBalance(config.outToken, walletAddress))
