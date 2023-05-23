@@ -8,7 +8,6 @@
     "test-goerli": "env PREFUND=false mocha test/goerli",
     "test-localfork": "env REMOTE_TEST=false mocha test/fork",
     "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
-    "getAssets": "mocha test/server/GetAssets",
     "load": "node test/loader.js"
   },
   "author": "",
