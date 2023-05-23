@@ -8,6 +8,8 @@ const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
 
 const { getApiKey } = require('./getApiKey');
+const { getPrivateKeys } = require('./getPrivateKeys');
+const sp = require('synchronized-promise')
 
 async function getTestApiKey() {
 
@@ -19,9 +21,11 @@ async function getTestApiKey() {
   }
 
 }
+
+const keys = sp(getPrivateKeys)()
 // use env for pkeys
 module.exports = {
-    FUN_TESTNET_CHAIN_ID,
+  FUN_TESTNET_CHAIN_ID,
   LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_KEY, LOCAL_FORK_CHAIN_KEY, FUN_TESTNET_RPC_URL, LOCAL_FORK_RPC_URL,
-  getTestApiKey, ...process.env
+  getTestApiKey, ...process.env, ...keys
 };
