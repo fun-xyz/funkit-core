@@ -55,6 +55,14 @@ class GaslessSponsor {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "stake",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token:"eth"
+            })
             return await this.encodeValue(data, amountdec, options)
         }
     }
@@ -63,6 +71,14 @@ class GaslessSponsor {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "unstake",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token:"eth"
+            })
             return await this.encode(data, options)
         }
     }

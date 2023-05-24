@@ -86,6 +86,14 @@ class TokenSponsor {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "stake",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token: "eth"
+            })
             return await this.encodeValue(data, amountdec, options)
         }
     }
@@ -94,6 +102,14 @@ class TokenSponsor {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "unstake",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token: "eth"
+            })
             return await this.encode(data, options)
         }
     }
@@ -106,6 +122,15 @@ class TokenSponsor {
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
 
             const data = this.interface.encodeFunctionData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
+
+            await DataServer.addTransaction({
+                action: "stakeToken",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token
+            })
             return await this.encode(data, options)
         }
     }
@@ -118,6 +143,14 @@ class TokenSponsor {
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
 
             const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "unstakeToken",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token
+            })
             return await this.encode(data, options)
         }
     }

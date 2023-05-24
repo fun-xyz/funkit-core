@@ -319,7 +319,7 @@ class DataServer {
 
     static async savePaymasterTransaction(transaction) {
         const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') throw new Error("No paymaster in use.")
+        if(paymasterType == 'base') return;
         return await this.sendPostRequest(APIURL, "paymasters/add-sponsor-tx", {
             chain: global.chain?.id,
             sponsorAddress: global.gasSponsor?.sponsorAddress,
@@ -330,7 +330,7 @@ class DataServer {
 
     static async updatePaymasterMode(mode) {
         const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') throw new Error("No paymaster in use.")
+        if(paymasterType == 'base') return
         return await this.sendPostRequest(APIURL, "paymasters/update-paymasters", {
             chain: global.chain?.id,
             sponsorAddress: global.gasSponsor?.sponsorAddress,
@@ -343,7 +343,7 @@ class DataServer {
 
     static async removeFromList(address, list) {
         const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') throw new Error("No paymaster in use.")
+        if(paymasterType == 'base') return
         return await this.sendPostRequest(APIURL, "paymasters/add-to-list", {
             chain: global.chain?.id,
             sponsorAddress: global.gasSponsor?.sponsorAddress,
@@ -355,13 +355,23 @@ class DataServer {
     }
     static async addToList(address, list) {
         const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') throw new Error("No paymaster in use.")
+        if(paymasterType == 'base') return
         return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
             chain: global.chain?.id,
             sponsorAddress: global.gasSponsor?.sponsorAddress,
             type:paymasterType,
             listType: list,
             updateAddr: address
+        })
+    }
+    static async addTransaction(transaction){
+        const paymasterType = getPaymasterType()
+        if(paymasterType == 'base') return
+        return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
+            chain: global.chain?.id,
+            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            type:paymasterType,
+            transaction
         })
     }
 }
