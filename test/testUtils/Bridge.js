@@ -32,21 +32,21 @@ const BridgeTest = (config) => {
         it("Bridge .000001 USDC from Polygon to BSC", async () => {
             const fromChain = 137;
             const toChain = 56;
-            const fromAssetAddress = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
-            const toAssetAddress = "0x55d398326f99059fF775485246999027B3197955";
+            const fromAsset = "0x2791bca1f2de4661ed88a30c99a7a9449aa84174";
+            const toAsset = "0x55d398326f99059fF775485246999027B3197955";
             const amount = 1; // 100 USDC, USDC is 6 decimals
 
             const walletAddress = await wallet.getAddress()
             // send usdc to funwallet
             const provider = await ethers.getDefaultProvider('https://polygon.llamarpc.com');
             const signer = new Wallet(bridgePrivateKey, provider);
-            const usdcContract = new ethers.Contract(fromAssetAddress, erc20Abi, signer);
+            const usdcContract = new ethers.Contract(fromAsset, erc20Abi, signer);
             const gasPrice = await signer.getGasPrice();
             let tx = await usdcContract.transfer(walletAddress, amount, { gasPrice: gasPrice })
             const tokenBalanceBefore = (await Token.getBalance("usdc", walletAddress))
             const receipt = await tx.wait()
 
-            const res = await wallet.bridge(auth, { fromChain, toChain, fromAssetAddress, toAssetAddress, amount, sort: "output" })
+            const res = await wallet.bridge(auth, { fromChain, toChain, fromAsset, toAsset, amount, sort: "output" })
             const tokenBalanceAfter = (await Token.getBalance("usdc", walletAddress))
             assert(tokenBalanceAfter < tokenBalanceBefore, "Token balance did not decrease")
             assert(res.txid !== null, "Transaction failed as txid was null")

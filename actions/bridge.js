@@ -13,10 +13,10 @@ let errorData = {
  * transaction that will bridge the asset from one chain to the other.
  * @param {obj} params should have the following fields
  * {
- *   fromChainId: number (chain id you are bridging the asset from)
- *   toChainId: number (chain id you are bridging the asset to)
- *   fromAssetAddress: string (address of the asset on fromChainId's chain)
- *   toAssetAddress: string (address of the asset you want to receive on toChainId's chain)
+ *   fromChain: number chainName(ie "ethereum") or chainId(ie 1) or rpcURL (ie "https://mainnet.infura.io/v3/...") or bundlerURL (ie "https://bundler.avax.network")
+ *   toChain: number chainName(ie "ethereum") or chainId(ie 1) or rpcURL (ie "https://mainnet.infura.io/v3/...") or bundlerURL (ie "https://bundler.avax.network")
+ *   fromAsset: string asset symbol(ie "usdc") or asset address(ie "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+ *   toAsset: string asset symbol(ie "usdc") or asset address(ie "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
  *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
  *   sort: string Can sort routes by "output"(Maximize number of tokens received) | 
  *         "gas"(Minimize gas costs) | "time"(Minimize bridging time)
@@ -44,10 +44,10 @@ const _bridge = (params) => {
  * Note, use 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee for the native token on a chain (ie eth on Ethereum)
  * @param {obj} params should have the following fields
  * {
- *   fromChainId: number (chain id you are bridging the asset from)
- *   toChainId: number (chain id you are bridging the asset to)
- *   fromAssetAddress: string (address of the asset on fromChainId's chain)
- *   toAssetAddress: string (address of the asset you want to receive on toChainId's chain)
+ *   fromChain: number chainName(ie "ethereum") or chainId(ie 1) or rpcURL (ie "https://mainnet.infura.io/v3/...") or bundlerURL (ie "https://bundler.avax.network")
+ *   toChain: number chainName(ie "ethereum") or chainId(ie 1) or rpcURL (ie "https://mainnet.infura.io/v3/...") or bundlerURL (ie "https://bundler.avax.network")
+ *   fromAsset: string asset symbol(ie "usdc") or asset address(ie "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+ *   toAsset: string asset symbol(ie "usdc") or asset address(ie "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
  *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
  *   sort: string Can sort routes by "output"(Maximize number of tokens received) | 
  *                "gas"(Minimize gas costs) | "time"(Minimize bridging time)
@@ -59,14 +59,14 @@ const _bridge = (params) => {
 const _socketBridge = async (params, userAddress) => {
   const fromChain = await getChainFromData(params.fromChain)
   const toChain = await getChainFromData(params.toChain)
-  const fromTokenObj = new Token(params.fromAssetAddress)
-  const fromAssetAddress = await fromTokenObj.getAddress({ chainId: await fromChain.getChainId() });
-  const toTokenObj = new Token(params.toAssetAddress)
-  const toAssetAddress = await toTokenObj.getAddress({ chainId: await toChain.getChainId() });
-  console.log(await fromChain.getChainId(), fromAssetAddress, await toChain.getChainId(),
-    toAssetAddress, params.amount);
-  const quote = await getQuote(await fromChain.getChainId(), fromAssetAddress, await toChain.getChainId(),
-    toAssetAddress, params.amount, userAddress, true, params.sort, true);
+  const fromTokenObj = new Token(params.fromAsset)
+  const fromAsset = await fromTokenObj.getAddress({ chainId: await fromChain.getChainId() });
+  const toTokenObj = new Token(params.toAsset)
+  const toAsset = await toTokenObj.getAddress({ chainId: await toChain.getChainId() });
+  console.log(await fromChain.getChainId(), fromAsset, await toChain.getChainId(),
+    toAsset, params.amount);
+  const quote = await getQuote(await fromChain.getChainId(), fromAsset, await toChain.getChainId(),
+    toAsset, params.amount, userAddress, true, params.sort, true);
   if (!quote.success || quote.result.routes.length === 0) {
     errorData = {
       location: "action.bridge",
@@ -95,11 +95,11 @@ const _socketBridge = async (params, userAddress) => {
   // approvalData from apiReturnData is null for native tokens 
   // Values are returned for ERC20 tokens but token allowance needs to be checked
   if (approvalData !== null) {
-    const allowanceCheckStatus = await checkAllowance(fromChain.getChainId(), userAddress, allowanceTarget, fromAssetAddress)
+    const allowanceCheckStatus = await checkAllowance(fromChain.getChainId(), userAddress, allowanceTarget, fromAsset)
     const allowanceValue = allowanceCheckStatus.result?.value;
 
     if (minimumApprovalAmount > allowanceValue) {
-      const approvalTransactionData = await getApprovalTransactionData(fromChain.getChainId(), userAddress, allowanceTarget, fromAssetAddress, params.amount);
+      const approvalTransactionData = await getApprovalTransactionData(fromChain.getChainId(), userAddress, allowanceTarget, fromAsset, params.amount);
       approveTx = {
         to: approvalTransactionData.result?.to,
         data: approvalTransactionData.result?.data,
