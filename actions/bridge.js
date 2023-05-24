@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const { approveAndExec } = require("./approveAndExec");
 const { Chain, Token } = require("../data")
-
+const { getChainFromData } = require("../utils")
 const SOCKET_API_KEY = '04dd4572-e22b-4bd6-beb9-feb73d31d009'; // SOCKET PUBLIC API KEY - can swap for our key in prod
 
 let errorData = {
@@ -57,12 +57,14 @@ const _bridge = (params) => {
  * @returns {approvalTx: obj, bridgeTx: obj} approveAndExec transactions
  */
 const _socketBridge = async (params, userAddress) => {
-  const fromChain = new Chain({ chainId: params.fromChainId })
-  const toChain = new Chain({ chainId: params.toChainId })
+  const fromChain = await getChainFromData(params.fromChain)
+  const toChain = await getChainFromData(params.toChain)
   const fromTokenObj = new Token(params.fromAssetAddress)
-  const fromAssetAddress = await fromTokenObj.getAddress({ chainId: params.fromChainId });
+  const fromAssetAddress = await fromTokenObj.getAddress({ chainId: await fromChain.getChainId() });
   const toTokenObj = new Token(params.toAssetAddress)
-  const toAssetAddress = await toTokenObj.getAddress({ chainId: params.toChainId });
+  const toAssetAddress = await toTokenObj.getAddress({ chainId: await toChain.getChainId() });
+  console.log(await fromChain.getChainId(), fromAssetAddress, await toChain.getChainId(),
+    toAssetAddress, params.amount);
   const quote = await getQuote(await fromChain.getChainId(), fromAssetAddress, await toChain.getChainId(),
     toAssetAddress, params.amount, userAddress, true, params.sort, true);
   if (!quote.success || quote.result.routes.length === 0) {
