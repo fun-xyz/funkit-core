@@ -190,7 +190,6 @@ class DataServer {
         if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
             return await provider.send('eth_estimateUserOperationGas', [body.userOp, body.entryPointAddress]);
         } else {
-            console.log(APIURL, "bundler/estimate-user-op-gas", body)
             return await this.sendPostRequest(APIURL, "bundler/estimate-user-op-gas", body)
         }
     }
