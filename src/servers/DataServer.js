@@ -1,5 +1,5 @@
 const { DataFormatError, Helper } = require('../errors')
-const { FUN_TESTNET_CHAIN_ID } = require('../test/testUtils')
+const { FUN_TESTNET_CHAIN_ID } = require('../../tests/testUtils')
 const { sendRequest } = require('../utils/network')
 const { getPromiseFromOp } = require('../utils/userop')
 
@@ -133,7 +133,7 @@ class DataServer {
                 chain: chainId,
                 rpcUrl: "http://localhost:8545"
             }
-            const defaultAddresses = require("../test/forkDefaults").defaultAddresses
+            const defaultAddresses = require("../../tests/forkDefaults").defaultAddresses
             r.moduleAddresses = { ...r.moduleAddresses, defaultAddresses }
             return r
 

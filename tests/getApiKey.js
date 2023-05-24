@@ -1,5 +1,5 @@
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager")
-const { retry, DEFAULT_RETRY_OPTIONS } = require('../utils/network')
+const { retry, DEFAULT_RETRY_OPTIONS } = require('../src/utils/network')
 
 const SECRET_NAME = "FunApiServer/ApiGateway"
 const REGION = "us-west-2"
@@ -26,7 +26,7 @@ async function getApiKey() {
     }
 
     const secret = JSON.parse(response.SecretString)
-    const apiKey = secret.staging
+    const apiKey = secret.apigw
     return apiKey
 }
 

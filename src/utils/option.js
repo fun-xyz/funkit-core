@@ -2,7 +2,7 @@ const { Chain } = require("../data/Chain")
 const { verifyFunctionParams } = require("./data")
 const { JsonRpcProvider } = require("@ethersproject/providers")
 const { constants } = require("ethers")
-const { getOrgInfo } = require("../utils/dashboard")
+const { getOrgInfo } = require("./dashboard")
 const testApiKey = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 const paymasterExpectedKeys = ["sponsorAddress", "token"]
 

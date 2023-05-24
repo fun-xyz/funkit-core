@@ -2,7 +2,7 @@ const { Eoa } = require("../auth/EoaAuth")
 const { Interface, defaultAbiCoder, parseEther } = require("ethers/lib/utils")
 const { orderParams, validateClassInstance, formatMissingForError } = require("./data")
 const { Helper, DataFormatError, MissingParameterError } = require("../errors")
-const { parseOptions } = require("../utils/option")
+const { parseOptions } = require("./option")
 
 const getFunctionParamOrderFromInterface = (interf, func) => {
     for (const field of interf.fragments) {
