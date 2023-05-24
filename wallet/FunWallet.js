@@ -319,8 +319,7 @@ class FunWallet extends FirstClassActions {
         onlyVerifiedTokens = "true" ? onlyVerifiedTokens : "false"
         const options = await parseOptions(txOptions, "Wallet.getTokens")
         const chainId = options.chain.chainId
-        const res = await DataServer.getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
-        return res
+        return await DataServer.getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
     }
 
     /**
@@ -339,8 +338,7 @@ class FunWallet extends FirstClassActions {
     async getNFTs(txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.getTokens")
         const chainId = options.chain.chainId
-        const res = await DataServer.getNFTs(chainId, await this.getAddress())
-        return res
+        return await DataServer.getNFTs(chainId, await this.getAddress())
     }
 
     /**

@@ -1,22 +1,16 @@
 const { WALLET_PRIVATE_KEY } = require("../../utils/index.js")
 
-const PREFUND = process.env.PREFUND === 'true' ? true : false
 const config = {
   chainId: 5, // Doesn't matter for this test
-  authPrivateKey: WALLET_PRIVATE_KEY,
-  inToken: "dai", // Doesn't matter for this test
-  outToken: "weth",
-  baseToken: "eth",
-  prefund: PREFUND
+  authPrivateKey: WALLET_PRIVATE_KEY
 }
 
-const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
+const { chainId, authPrivateKey } = config
 const { expect } = require("chai")
 const { Eoa } = require("../../auth")
 const { configureEnvironment } = require("../../managers")
 const { FunWallet } = require("../../wallet")
-const chai = require('chai')
-const { fundWallet, getTestApiKey } = require("../../utils")
+const { getTestApiKey } = require("../../utils")
 const { BigNumber } = require("@ethersproject/bignumber")
 
 describe("GetAssets", function () {

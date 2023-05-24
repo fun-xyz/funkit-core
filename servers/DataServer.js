@@ -6,7 +6,7 @@ const { getPromiseFromOp } = require('../utils/userop')
 const LOCAL_FORK_CHAIN_ID = 31337
 const LOCAL_URL = "http://127.0.0.1:3000"
 const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
-const APIURL = 'https://m2m3k0n2uf.execute-api.us-west-2.amazonaws.com/prod' // New staging api server
+const APIURL = 'https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod'
 const TEST_API_KEY = "localtest"
 
 const BASE_WRAP_TOKEN_ADDR = {
@@ -21,6 +21,9 @@ const BASE_WRAP_TOKEN_ADDR = {
     },
     "43113": {
         weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
+    },
+    "42161": {
+        weth: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
     }
 }
 
