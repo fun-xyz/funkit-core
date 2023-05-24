@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const { approveAndExec } = require("./approveAndExec");
-const { Chain, Token } = require("../data")
+const { Token } = require("../data")
 const { getChainFromData } = require("../utils")
 const SOCKET_API_KEY = '04dd4572-e22b-4bd6-beb9-feb73d31d009'; // SOCKET PUBLIC API KEY - can swap for our key in prod
 
@@ -49,8 +49,7 @@ const _bridge = (params) => {
  *   fromAsset: string asset symbol(ie "usdc") or asset address(ie "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
  *   toAsset: string asset symbol(ie "usdc") or asset address(ie "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
  *   amount: number (amount of the from asset you want to input - make sure to take decimals into account)
- *   sort: string Can sort routes by "output"(Maximize number of tokens received) | 
- *                "gas"(Minimize gas costs) | "time"(Minimize bridging time)
+ *   sort: string Can sort routes by "output"(Maximize number of tokens received) | "gas"(Minimize gas costs) | "time"(Minimize bridging time)
  * }
  * @param {string} userAddress Address that sends the fromAsset and receives the toAsset
  * @param {obj} options Global options object, unused
@@ -63,8 +62,6 @@ const _socketBridge = async (params, userAddress) => {
   const fromAsset = await fromTokenObj.getAddress({ chainId: await fromChain.getChainId() });
   const toTokenObj = new Token(params.toAsset)
   const toAsset = await toTokenObj.getAddress({ chainId: await toChain.getChainId() });
-  console.log(await fromChain.getChainId(), fromAsset, await toChain.getChainId(),
-    toAsset, params.amount);
   const quote = await getQuote(await fromChain.getChainId(), fromAsset, await toChain.getChainId(),
     toAsset, params.amount, userAddress, true, params.sort, true);
   if (!quote.success || quote.result.routes.length === 0) {
