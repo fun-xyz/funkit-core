@@ -93,7 +93,7 @@ class TokenSponsor {
                 timestamp: Date.now(),
                 to: await this.getPaymasterAddress(),
                 token: "eth"
-            })
+            }, "token", walletAddress)
             return await this.encodeValue(data, amountdec, options)
         }
     }
@@ -109,7 +109,7 @@ class TokenSponsor {
                 timestamp: Date.now(),
                 to: await this.getPaymasterAddress(),
                 token: "eth"
-            })
+            }, "token", walletAddress)
             return await this.encode(data, options)
         }
     }
@@ -130,7 +130,7 @@ class TokenSponsor {
                 timestamp: Date.now(),
                 to: await this.getPaymasterAddress(),
                 token
-            })
+            }, "token", walletAddress)
             return await this.encode(data, options)
         }
     }
@@ -150,7 +150,7 @@ class TokenSponsor {
                 timestamp: Date.now(),
                 to: await this.getPaymasterAddress(),
                 token
-            })
+            }, "token", walletAddress)
             return await this.encode(data, options)
         }
     }
@@ -158,7 +158,7 @@ class TokenSponsor {
     setToBlacklistMode() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
-            await DataServer.updatePaymasterMode("blacklist")
+            await DataServer.updatePaymasterMode("blacklist", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -166,7 +166,7 @@ class TokenSponsor {
     setToWhitelistMode() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
-            await DataServer.updatePaymasterMode("whitelist")
+            await DataServer.updatePaymasterMode("whitelist", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -174,7 +174,7 @@ class TokenSponsor {
     addWhitelistTokens(tokens) {
         return async (wallet, options = global) => {
             const sendTokens = await Promise.all(tokens.map(async (token) => {
-                await DataServer.addToList(spender, "tokensWhiteList")
+                await DataServer.addToList(spender, "tokensWhiteList", "token", await wallet.getAddress())
                 return Token.getAddress(token, options)
             }))
             const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
@@ -185,7 +185,7 @@ class TokenSponsor {
     removeWhitelistTokens(tokens) {
         return async (wallet, options = global) => {
             const sendTokens = await Promise.all(tokens.map(async (token) => {
-                await DataServer.removeFromList(spender, "tokensWhiteList")
+                await DataServer.removeFromList(spender, "tokensWhiteList", "token", await wallet.getAddress())
                 return Token.getAddress(token, options)
             }))
             const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
@@ -196,7 +196,7 @@ class TokenSponsor {
     addSpenderToWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
-            await DataServer.addToList(spender, "whitelist")
+            await DataServer.addToList(spender, "whitelist", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -204,7 +204,7 @@ class TokenSponsor {
     removeSpenderFromWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
-            await DataServer.removeFromList(spender, "whitelist")
+            await DataServer.removeFromList(spender, "whitelist", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -212,7 +212,7 @@ class TokenSponsor {
     addSpenderToBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
-            await DataServer.addToList(spender, "blacklist")
+            await DataServer.addToList(spender, "blacklist", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -220,7 +220,7 @@ class TokenSponsor {
     removeSpenderFromBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
-            await DataServer.removeFromList(spender, "blacklist")
+            await DataServer.removeFromList(spender, "blacklist", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }

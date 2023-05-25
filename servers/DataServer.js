@@ -320,6 +320,8 @@ class DataServer {
         })
     }
 
+    
+    //paymaster stuff
     static async savePaymasterTransaction(transaction) {
         const paymasterType = getPaymasterType()
         if(paymasterType == 'base') return;
@@ -331,12 +333,10 @@ class DataServer {
         })
     }
 
-    static async updatePaymasterMode(mode) {
-        const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') return
+    static async updatePaymasterMode(mode, paymasterType, sponsorAddress) {
         return await this.sendPostRequest(APIURL, "paymasters/update-paymasters", {
             chain: global.chain?.id,
-            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            sponsorAddress,
             type:paymasterType,
             updateObj: {
                 mode
@@ -344,24 +344,21 @@ class DataServer {
         })
     }
 
-    static async removeFromList(address, list) {
-        const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') return
+    static async removeFromList(address, list, paymasterType, sponsorAddress) {
         return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
             chain: global.chain?.id,
-            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            sponsorAddress,
             type:paymasterType,
             listType: list,
             updateAddr: address
         })
        
     }
-    static async addToList(address, list) {
-        const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') return
+    static async addToList(address, list, paymasterType, sponsorAddress) {
+      
         return await this.sendPostRequest(APIURL, "paymasters/add-to-list", {
             chain: global.chain?.id,
-            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            sponsorAddress,
             type:paymasterType,
             listType: list,
             updateAddr: address
