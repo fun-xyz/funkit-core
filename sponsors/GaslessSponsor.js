@@ -116,14 +116,14 @@ class GaslessSponsor {
     addSpenderToWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
-            await DataServer.addToList(spender, "whitelist", "gasless", await wallet.getAddress())
+            await DataServer.addToList(spender, "walletsWhiteList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
     removeSpenderFromWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
-            await DataServer.removeFromList(spender, "whitelist", "gasless", await wallet.getAddress())
+            await DataServer.removeFromList(spender, "walletsWhiteList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -131,7 +131,7 @@ class GaslessSponsor {
     addSpenderToBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
-            await DataServer.addToList(spender, "blacklist", "gasless", await wallet.getAddress())
+            await DataServer.addToList(spender, "walletsBlackList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -139,7 +139,7 @@ class GaslessSponsor {
     removeSpenderFromBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
-            await DataServer.removeFromList(spender, "blacklist", "gasless", await wallet.getAddress())
+            await DataServer.removeFromList(spender, "walletsBlackList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }

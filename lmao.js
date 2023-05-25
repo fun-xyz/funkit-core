@@ -19,11 +19,12 @@ async function main() {
             sponsorAddress: addr
         }
     })
-
+    console.log(await funWallet.getAddress())
     // await funWallet.create(auth)
     const sponsor = new GaslessSponsor({ gasSponsor: { sponsorAddress: await auth.getUniqueId() } })
 
-    const deposit=await sponsor.setToWhitelistMode()
+    // const deposit=await sponsor.setToWhitelistMode()
+    const deposit= await sponsor.removeSpenderFromWhiteList("0xE8448945F00bf10EfFa2Ddf935B74B3527F29DB9")
     // const deposit = await sponsor.stake(addr, .01)
     // console.log(await deposit())
     await funWallet.sendTx({ auth, call: deposit },{ apiKey: API_KEY, gasSponsor:null })

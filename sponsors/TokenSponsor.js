@@ -196,7 +196,7 @@ class TokenSponsor {
     addSpenderToWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
-            await DataServer.addToList(spender, "whitelist", "token", await wallet.getAddress())
+            await DataServer.addToList(spender, "walletWhiteList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -204,7 +204,7 @@ class TokenSponsor {
     removeSpenderFromWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
-            await DataServer.removeFromList(spender, "whitelist", "token", await wallet.getAddress())
+            await DataServer.removeFromList(spender, "walletWhiteList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -212,7 +212,7 @@ class TokenSponsor {
     addSpenderToBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
-            await DataServer.addToList(spender, "blacklist", "token", await wallet.getAddress())
+            await DataServer.addToList(spender, "walletBlackList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -220,7 +220,7 @@ class TokenSponsor {
     removeSpenderFromBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
-            await DataServer.removeFromList(spender, "blacklist", "token", await wallet.getAddress())
+            await DataServer.removeFromList(spender, "walletBlackList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
