@@ -347,7 +347,7 @@ class DataServer {
     static async removeFromList(address, list) {
         const paymasterType = getPaymasterType()
         if(paymasterType == 'base') return
-        return await this.sendPostRequest(APIURL, "paymasters/add-to-list", {
+        return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
             chain: global.chain?.id,
             sponsorAddress: global.gasSponsor?.sponsorAddress,
             type:paymasterType,
@@ -359,7 +359,7 @@ class DataServer {
     static async addToList(address, list) {
         const paymasterType = getPaymasterType()
         if(paymasterType == 'base') return
-        return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
+        return await this.sendPostRequest(APIURL, "paymasters/add-to-list", {
             chain: global.chain?.id,
             sponsorAddress: global.gasSponsor?.sponsorAddress,
             type:paymasterType,
@@ -367,12 +367,11 @@ class DataServer {
             updateAddr: address
         })
     }
-    static async addTransaction(transaction){
-        const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') return
-        return await this.sendPostRequest(APIURL, "paymasters/remove-from-list", {
+
+    static async addTransaction(transaction, paymasterType, sponsorAddress){
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/add-transaction", {
             chain: global.chain?.id,
-            sponsorAddress: global.gasSponsor?.sponsorAddress,
+            sponsorAddress,
             type:paymasterType,
             transaction
         })
