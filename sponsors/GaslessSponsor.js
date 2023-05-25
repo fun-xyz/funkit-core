@@ -52,7 +52,7 @@ class GaslessSponsor {
     }
 
     stake(walletAddress, amount) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
             await DataServer.addTransaction({
@@ -68,7 +68,7 @@ class GaslessSponsor {
     }
 
     unstake(walletAddress, amount) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])
             await DataServer.addTransaction({
@@ -84,21 +84,21 @@ class GaslessSponsor {
     }
 
     lock() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("lockDeposit", [])
             return await this.encode(data, options)
         }
     }
 
     unlock(num) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("unlockDepositAfter", [num])
             return await this.encode(data, options)
         }
     }
 
     setToBlacklistMode() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
             await DataServer.updatePaymasterMode("blacklist")
             return await this.encode(data, options)
@@ -106,7 +106,7 @@ class GaslessSponsor {
     }
 
     setToWhitelistMode() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
             await DataServer.updatePaymasterMode("whitelist")
             return await this.encode(data, options)
@@ -114,14 +114,14 @@ class GaslessSponsor {
     }
 
     addSpenderToWhiteList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
             await DataServer.addToList(spender, "whitelist")
             return await this.encode(data, options)
         }
     }
     removeSpenderFromWhiteList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
             await DataServer.removeFromList(spender, "whitelist")
             return await this.encode(data, options)
@@ -129,7 +129,7 @@ class GaslessSponsor {
     }
 
     addSpenderToBlackList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
             await DataServer.addToList(spender, "blacklist")
             return await this.encode(data, options)
@@ -137,7 +137,7 @@ class GaslessSponsor {
     }
 
     removeSpenderFromBlackList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
             await DataServer.removeFromList(spender, "blacklist")
             return await this.encode(data, options)

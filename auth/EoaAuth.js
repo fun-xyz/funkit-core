@@ -60,7 +60,7 @@ class Eoa extends Auth {
     async sendTx(txData, options = global) {
         await this.init()
         if (typeof txData == "function") {
-            txData = await txData(options)
+            txData = await txData(this.signer, options)
         }
         const { to, value, data, chain } = txData
         const provider = await chain.getProvider()

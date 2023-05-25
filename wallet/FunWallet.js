@@ -250,7 +250,7 @@ class FunWallet extends FirstClassActions {
             userOp = new UserOp(op)
         } catch (e) {
             if (typeof call == "function") {
-                call = await call(txOptions)
+                call = await call(this, txOptions)
             }
             const { to, value, data } = call
             return await this.execute(auth, genCall({ to, value, data }), txOptions)
