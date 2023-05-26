@@ -243,6 +243,14 @@ class TokenSponsor {
     approve(token, amount) {
         return async (wallet, options = global) => {
             const gasSponsorAddress = await this.getPaymasterAddress(options)
+            await DataServer.addTransaction({
+                action: "approve",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token
+            }, "token", walletAddress)
             return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
