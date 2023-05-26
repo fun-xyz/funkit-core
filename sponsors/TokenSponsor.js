@@ -78,6 +78,7 @@ class TokenSponsor {
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.interface.encodeFunctionData("setTokenData", [data])
+            await DataServer.addPaymasterToken(token)
             return await this.encode(calldata, options)
         }
     }

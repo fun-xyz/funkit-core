@@ -373,6 +373,13 @@ class DataServer {
             transaction
         })
     }
+    
+    static async addPaymasterToken(tokenAddress){
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/add-supported-token", {
+            chain: global.chain?.id,
+            tokenAddress
+        })
+    }
 }
 const getPaymasterType = () => {
     if (global.gasSponsor?.sponsorAddress && global.gasSponsor?.token) {
