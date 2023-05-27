@@ -322,16 +322,7 @@ class DataServer {
 
     
     //paymaster stuff
-    static async savePaymasterTransaction(transaction) {
-        const paymasterType = getPaymasterType()
-        if(paymasterType == 'base') return;
-        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/add-sponsor-tx", {
-            chain: global.chain?.id,
-            sponsorAddress: global.gasSponsor?.sponsorAddress,
-            type:paymasterType,
-            tx: transaction
-        })
-    }
+ 
 
     static async updatePaymasterMode(mode, paymasterType, sponsorAddress) {
         return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/update-paymaster", {
@@ -381,16 +372,6 @@ class DataServer {
         })
     }
 }
-const getPaymasterType = () => {
-    if (global.gasSponsor?.sponsorAddress && global.gasSponsor?.token) {
-        return 'token'
-    }
-    else if(global.gasSponsor?.sponsorAddress){
-        return 'gasless'
-    }
-    else{
-        return 'base'
-    }
-}
+
 
 module.exports = { DataServer }

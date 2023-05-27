@@ -67,7 +67,31 @@ const getChainFromData = async (chainIdentifier) => {
     return chain
 }
 
+const getPaymasterType = (txOptions) => {
+    if (txOptions.gasSponsor?.sponsorAddress && txOptions.gasSponsor?.token) {
+        return 'token'
+    }
+    else if(txOptions.gasSponsor?.sponsorAddress){
+        return 'gasless'
+    }
+    else{
+        return 'base'
+    }
+}
+const getPaymasterAddress = async (paymasterType, txOptions) =>{
+    const { TokenSponsor, GaslessSponsor } = require("../sponsors")
+    let sponsor
+    switch(paymasterType){
+        case "token":
+            sponsor = new TokenSponsor(txOptions)
+            return await sponsor.getPaymasterAddress(txOptions)
+        case "gasless":
+            sponsor = new GaslessSponsor(txOptions)
+            return await sponsor.getPaymasterAddress(txOptions)
+        
+    }
+}
 
 module.exports = {
-    getChainFromData, getChainsFromList, parseOptions
+    getChainFromData, getChainsFromList, parseOptions, getPaymasterType, getPaymasterAddress
 };
