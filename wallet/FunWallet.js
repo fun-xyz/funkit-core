@@ -275,12 +275,12 @@ class FunWallet extends FirstClassActions {
         const receipt = { ophash, txid, ...gas }
         await DataServer.storeUserOp(userOp, 0, receipt)
 
-        if (txOptions.gasSponsor.sponsorAddress) { //log paymaster
+        if (txOptions?.gasSponsor?.sponsorAddress) { //log paymaster
             const paymasterType = getPaymasterType(txOptions)
             const paymasterAddress= await getPaymasterAddress(paymasterType, txOptions)
             await DataServer.addTransaction({
                 action: "sponsor",
-                amount:-1, //Get amount from lazy processing
+                amount:"Querying from block.", //Get amount from lazy processing
                 from: txOptions.gasSponsor.sponsorAddress,
                 timestamp: Date.now(),
                 to: paymasterAddress,
