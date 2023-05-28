@@ -11,7 +11,7 @@
         "strict": true,
         "noUnusedLocals": true,
         "noImplicitAny": true,
-        "noImplicitThis": true,
+        "noImplicitThis": false,
         "noImplicitOverride": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,

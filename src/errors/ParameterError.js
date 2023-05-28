@@ -8,13 +8,13 @@ class ParameterError extends BaseError {
 }
 
 class MissingParameterError extends ParameterError {
-    constructor(location, helper = "", isInternal = false) {
+    constructor(location, helper, isInternal = false) {
         super("Missing", location, helper, isInternal);
     }
 }
 
 class ParameterFormatError extends DataFormatError {
-    constructor(location, helper = "", isInternal = false) {
+    constructor(location, helper, isInternal = false) {
         super(location, "parameter", "", helper, isInternal);
     }
 }

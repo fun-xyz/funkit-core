@@ -16,20 +16,32 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.315.0",
     "@lifeomic/attempt": "^3.0.3",
+    "@metamask/providers": "^11.0.0",
     "@uniswap/sdk": "^3.0.3",
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-sdk": "^3.9.0",
     "dotenv": "^16.0.3",
     "ethers": "5.7.2",
-    "node-fetch": "2.0.0"
+    "node-fetch": "2.0.0",
+    "uuid": "^9.0.0",
+    "viem": "^0.3.37"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/expect": "^24.3.0",
+    "@types/jest": "^29.5.1",
+    "@types/mocha": "^10.0.1",
+    "@types/node-fetch": "^2.6.4",
+    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.59.7",
     "@typescript-eslint/parser": "^5.59.7",
     "chai": "^4.3.7",
     "eslint": "^8.41.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "repository": {

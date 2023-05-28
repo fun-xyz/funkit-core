@@ -1,11 +1,11 @@
-const { DataServer } = require("../servers")
 const { FirstClassActions, genCall } = require("../actions")
 const { ParameterFormatError, Helper } = require("../errors")
-const { UserOp, WalletIdentifier, Token } = require("../data")
+const { UserOp, WalletIdentifier, Token, getChainFromData } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, gasCalculation, getUniqueId } = require("../utils")
 const { BigNumber, constants } = require("ethers")
+const { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } = require("../apis")
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
@@ -23,9 +23,9 @@ class FunWallet extends FirstClassActions {
     constructor(params) {
         super()
         this.estimateGas.parent = this
-        this.identifier = new WalletIdentifier(params)
+        const {uniqueId, index} = params
+        this.identifier = new WalletIdentifier(uniqueId, index)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
-        this.dataServer = new DataServer()
     }
 
     /**
@@ -49,17 +49,16 @@ class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth, transactionFunc, txOptions = global) {
-        const options = await parseOptions(txOptions, "Wallet.execute")
-        const chain = await this._getFromCache(options.chain)
+    async _generatePartialUserOp(auth, transactionFunc, txOptions = globalEnvOption) {
+        const chain = await getChainFromData(txOptions)
         const actionData = {
             wallet: this,
             chain,
-            options
+            txOptions
         }
         const { data, errorData, optionalParams } = await transactionFunc(actionData)
         {
-            const { chain, apiKey } = options
+            const { chain, apiKey } = txOptions
             verifyFunctionParams(errorData.location, { chain, apiKey }, executeExpectedKeys)
         }
 
@@ -87,7 +86,7 @@ class FunWallet extends FirstClassActions {
         }
 
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
-        const nonce = await auth.getNonce(partialOp)
+        const nonce = await auth.getNonce(partialOp.sender)
         return { ...partialOp, nonce }
     }
 
@@ -221,10 +220,10 @@ class FunWallet extends FirstClassActions {
      * @param {*} options
      * @returns
      */
-    async getAddress(options = global) {
+    async getAddress(options = globalEnvOption) {
         if (!this.address) {
-            const parsedOptions = await parseOptions(options, "Wallet.getAddress")
-            this.address = await (new WalletOnChainManager(parsedOptions.chain, this.identifier)).getWalletAddress()
+            const chain = await getChainFromData(options.chain)
+            this.address = await (new WalletOnChainManager(chain, this.identifier)).getWalletAddress()
         }
         return this.address
     }
@@ -273,7 +272,7 @@ class FunWallet extends FirstClassActions {
         const txid = await onChainDataManager.getTxId(ophash)
         const gas = await gasCalculation(txid, chain)
         const receipt = { ophash, txid, ...gas }
-        DataServer.storeUserOp(userOp, 0, receipt)
+        await storeUserOp(userOp, 0, receipt)
         return receipt
     }
 
@@ -318,7 +317,7 @@ class FunWallet extends FirstClassActions {
         onlyVerifiedTokens = "true" ? onlyVerifiedTokens : "false"
         const options = await parseOptions(txOptions, "Wallet.getTokens")
         const chainId = options.chain.chainId
-        return await DataServer.getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
+        return await getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
     }
 
     /**
@@ -337,7 +336,7 @@ class FunWallet extends FirstClassActions {
     async getNFTs(txOptions = global) {
         const options = await parseOptions(txOptions, "Wallet.getTokens")
         const chainId = options.chain.chainId
-        return await DataServer.getNFTs(chainId, await this.getAddress())
+        return await getNFTs(chainId, await this.getAddress())
     }
 
     /**
@@ -356,7 +355,7 @@ class FunWallet extends FirstClassActions {
      * }
      */
     async getAllNFTs() {
-        return await DataServer.getAllNFTs(await this.getAddress())
+        return await getAllNFTs(await this.getAddress())
     }
 
     /**
@@ -377,7 +376,7 @@ class FunWallet extends FirstClassActions {
      * }
      */
     async getAllTokens(onlyVerifiedTokens = false) {
-        return await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+        return await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
     }
 
     /**
@@ -398,45 +397,10 @@ class FunWallet extends FirstClassActions {
     * }
     */
     async getAssets(onlyVerifiedTokens = false) {
-        const tokens = await DataServer.getAllTokens(await this.getAddress(), onlyVerifiedTokens)
-        const nfts = await DataServer.getAllNFTs(await this.getAddress())
+        const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+        const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
     }
 }
 
-
-/**
- * This is a hack to bind the functions of the FirstClassActions class to the FunWallet class
- * @returns {FunWallet}
- */
-const modifiedActions = () => {
-    const funcs = Object.getOwnPropertyNames(FirstClassActions.prototype)
-    const bindedEstimateGasFunction = FunWallet.prototype.estimateGas
-
-    const old = {}
-
-    for (const func of funcs) {
-        if (func == "constructor") continue
-        const callfunc = async function (...args) {
-            if (args.length <= 2) {
-                return await this.parent._executeSubCall(func, ...args, global, true)
-            }
-            else if (args.length == 3) {
-                return await this.parent._executeSubCall(func, ...args, true)
-            }
-            else {
-                const helper = new Helper("Invalid number of parameters", args, "Invalid number of parameters")
-                throw new ParameterFormatError("Wallet.estimateGas", helper)
-            }
-        }
-        Object.assign(bindedEstimateGasFunction, { [func]: callfunc })
-        old[func] = FirstClassActions.prototype[func]
-    }
-
-    const proto = { ...FunWallet.prototype, ...FirstClassActions.prototype }
-    Object.assign(proto, { estimateGas: bindedEstimateGasFunction, ...old })
-    Object.setPrototypeOf(FunWallet.prototype, proto)
-    return FunWallet
-}
-
-module.exports = { FunWallet: modifiedActions() }
+module.exports = { FunWallet }

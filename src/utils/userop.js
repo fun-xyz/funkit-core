@@ -1,3 +1,4 @@
+const { BigNumber } = require("ethers");
 const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/utils");
 
 const calcPreVerificationGas = (userOp) => {
@@ -11,7 +12,7 @@ const calcPreVerificationGas = (userOp) => {
         ov.fixed / ov.bundleSize +
         ov.perUserOp +
         ov.perUserOpWord * packed.length);
-    return ret;
+    return BigNumber.from(ret);
 }
 
 function encode(typevalues, forSignature) {

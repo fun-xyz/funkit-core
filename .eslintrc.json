@@ -27,7 +27,9 @@
             "error",
             "double"
         ],
-        "eqeqeq": "error"
+        "eqeqeq": "error",
+        "unused-imports/no-unused-imports": "error",
+        "@typescript-eslint/no-unused-vars": "error"
     },
     "ignorePatterns": [
         "node_modules",

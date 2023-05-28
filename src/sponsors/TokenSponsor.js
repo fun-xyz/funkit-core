@@ -2,7 +2,7 @@ const { Contract, constants } = require("ethers");
 const { Interface } = require("ethers/lib/utils");
 const { Token } = require("../data");
 const { DataServer } = require("../servers");
-const { parseOptions } = require("../utils/option");
+// const { parseOptions } = require("../utils/option");
 
 const paymasterAbi = require("../abis/TokenPaymaster.json").abi
 

@@ -1,0 +1,45 @@
+import { OPTION_TEST_API_KEY } from "../common/constants"
+import { Chain, getChainFromData } from "../data"
+import { getOrgInfo } from "../apis"
+
+export interface EnvOption {
+    chain?: string | Chain
+    gasSponsor?: {
+        sponsorAddress?: string
+        token?: string
+    }
+    fee?: {
+        token?: string
+        gasPercent?: string
+        recipient?: string
+    }
+    sendTxLater?: boolean
+}
+
+export interface GlobalEnvOption extends EnvOption {
+    apiKey?: string
+    orgInfo?: {
+        name?: string
+        id?: string
+    }
+}
+
+export async function configureEnvironment(option: GlobalEnvOption) {
+    global.globalEnvOption = global.globalEnvOption ? global.globalEnvOption : {}
+    if (!option.chain && !globalEnvOption.chain) {
+        globalEnvOption.chain = await getChainFromData(5)
+    } else {
+        globalEnvOption.chain = option.chain ? await getChainFromData(option.chain) : globalEnvOption.chain
+    }
+
+    if (!option.apiKey && !globalEnvOption.apiKey) {
+        globalEnvOption.apiKey = OPTION_TEST_API_KEY
+    } else {
+        globalEnvOption.apiKey = option.apiKey ? option.apiKey : globalEnvOption.apiKey
+    }
+
+    globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
+    globalEnvOption.gasSponsor = option.gasSponsor ? option.gasSponsor : globalEnvOption.gasSponsor
+    globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
+    globalEnvOption.sendTxLater = option.sendTxLater ? option.sendTxLater : globalEnvOption.sendTxLater
+}

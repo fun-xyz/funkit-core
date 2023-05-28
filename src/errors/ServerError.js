@@ -7,14 +7,14 @@ class ServerError extends BaseError {
 }
 
 class ServerMissingDataError extends ServerError {
-    constructor(location, serverType, helper = "", isInternal = false) {
+    constructor(location, serverType, helper, isInternal = false) {
         super(`Data not found during ${serverType} call`, location, helper, isInternal);
     }
 }
 
 
 class NoServerConnectionError extends ServerError {
-    constructor(location, serverType, helper = "", isInternal = false) {
+    constructor(location, serverType, helper, isInternal = false) {
         super(`Server not found during ${serverType} call`, location, helper, isInternal);
     }
 }

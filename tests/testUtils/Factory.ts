@@ -1,23 +1,33 @@
-const { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } = require("../testUtils")
+import { Eoa } from "../../src/auth"
+import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../src/common/constants"
+import { expect } from "chai"
 
-const FactoryTest = (config) => {
+import { randomBytes } from "ethers/lib/utils";
+import { GlobalEnvOption, configureEnvironment } from "../../src/config";
+import { FunWallet } from "../../src/wallet";
+import { isContract, fundWallet } from "../../src/utils/chain";
+import { getTestApiKey } from "../testUtils";
+
+export interface FactoryTestConfig {
+    chainId: number
+    authPrivateKey: string
+    testCreate?: boolean
+    prefundAmt?: number
+}
+
+export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId, authPrivateKey } = config
-    const { expect } = require("chai")
-    const { randomBytes } = require("ethers/lib/utils")
-    const { Eoa } = require("../../auth")
-    const { configureEnvironment } = require("../../managers")
-    const { FunWallet } = require("../../wallet")
-    const { isContract, fundWallet, getTestApiKey } = require("../../utils")
-    
+
     describe("Factory", function () {
-        let auth
-        let wallet
-        let uniqueId
+        let auth: Eoa
+        let wallet: FunWallet
+        let uniqueId: string
+        
         this.timeout(100_000)
         before(async function () {
             const apiKey = await getTestApiKey()
-            const options = {
-                chain: chainId,
+            const options: GlobalEnvOption = {
+                chain: chainId.toString(),
                 apiKey: apiKey,
             }
             await configureEnvironment(options)
@@ -63,5 +73,3 @@ const FactoryTest = (config) => {
         })
     })
 }
-
-module.exports = { FactoryTest }
