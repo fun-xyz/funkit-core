@@ -175,7 +175,7 @@ class TokenSponsor {
     addWhitelistTokens(tokens) {
         return async (wallet, options = global) => {
             const sendTokens = await Promise.all(tokens.map(async (token) => {
-                await DataServer.addToList(spender, "tokensWhiteList", "token", await wallet.getAddress())
+                await DataServer.addToList(token, "tokensWhiteList", "token", await wallet.getAddress())
                 return Token.getAddress(token, options)
             }))
             const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
@@ -186,7 +186,7 @@ class TokenSponsor {
     removeWhitelistTokens(tokens) {
         return async (wallet, options = global) => {
             const sendTokens = await Promise.all(tokens.map(async (token) => {
-                await DataServer.removeFromList(spender, "tokensWhiteList", "token", await wallet.getAddress())
+                await DataServer.removeFromList(token, "tokensWhiteList", "token", await wallet.getAddress())
                 return Token.getAddress(token, options)
             }))
             const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
