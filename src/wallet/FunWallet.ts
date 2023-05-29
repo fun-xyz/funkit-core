@@ -1,45 +1,34 @@
-const { FirstClassActions, genCall } = require("../actions")
-const { ParameterFormatError, Helper } = require("../errors")
-const { UserOp, WalletIdentifier, Token, getChainFromData } = require("../data")
-const { TokenSponsor, GaslessSponsor } = require("../sponsors")
-const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, gasCalculation, getUniqueId } = require("../utils")
-const { BigNumber, constants } = require("ethers")
-const { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } = require("../apis")
+import { FirstClassActions, ExecutionReceipt } from "../actions"
+import { ParameterFormatError, Helper } from "../errors"
+import { UserOp, WalletIdentifier, Token, getChainFromData, Chain, UserOperation } from "../data"
+import { TokenSponsor, GaslessSponsor } from "../sponsors"
+import { WalletAbiManager, WalletOnChainManager } from "../managers"
+import { verifyFunctionParams, validateClassInstance, gasCalculation, getUniqueId } from "../utils"
+import { BigNumber, constants } from "ethers"
+import { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } from "../apis"
+import { Auth } from "../auth"
+import { EnvOption, GlobalEnvOption } from "src/config"
 
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../abis/FunWalletFactory.json")
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
-class FunWallet extends FirstClassActions {
-    objCache = {}
+export class FunWallet extends FirstClassActions {
+    identifier: WalletIdentifier
+    abiManager: WalletAbiManager
+    address?: string
 
     /**
      * Creates FunWallet object
      * @constructor
      * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
-    constructor(params) {
+    constructor(params: any) {
         super()
-        this.estimateGas.parent = this
-        const {uniqueId, index} = params
+        const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
         this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
-    }
-
-    /**
-     * Gets cached class instances
-     * @param {Class} obj Class object stored in cache
-     * @returns
-     */
-    async _getFromCache(obj) {
-        const storekey = `${obj.constructor.name}:${obj[obj.key]}`
-        if (!this.objCache[storekey]) {
-            await obj.init()
-            this.objCache[storekey] = obj
-        }
-        return this.objCache[storekey]
     }
 
     /**
@@ -49,8 +38,8 @@ class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth, transactionFunc, txOptions = globalEnvOption) {
-        const chain = await getChainFromData(txOptions)
+    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: GlobalEnvOption = globalEnvOption) {
+        const chain = await getChainFromData(txOptions.chain)
         const actionData = {
             wallet: this,
             chain,
@@ -65,24 +54,23 @@ class FunWallet extends FirstClassActions {
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
-        const callData = await this._getCallData(onChainDataManager, data, sender, auth, options)
+        const callData = await this._getCallData(onChainDataManager, data, sender, auth, txOptions)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
 
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : (await this._getThisInitCode(chain, auth))
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
         let paymasterAndData = "0x"
-        if (options.gasSponsor) {
+        if (txOptions.gasSponsor) {
             let sponsor
             // gas payment method check
-            switch (options.gasSponsor.token) {
+            switch (txOptions.gasSponsor.token) {
                 case "gasless":
             }
-            if (options.gasSponsor.token) {
-                sponsor = new TokenSponsor(options)
+            if (txOptions.gasSponsor.token) {
+                sponsor = new TokenSponsor(txOptions)
             } else {
-                sponsor = new GaslessSponsor(options)
-
+                sponsor = new GaslessSponsor(txOptions)
             }
-            paymasterAndData = (await sponsor.getPaymasterAndData(options)).toLowerCase()
+            paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
         }
 
         let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
@@ -90,39 +78,41 @@ class FunWallet extends FirstClassActions {
         return { ...partialOp, nonce }
     }
 
-    async _getCallData(onChainDataManager, data, sender, auth, options) {
-        let tempCallData;
+    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, sender: string, auth: Auth, options: GlobalEnvOption) {
+        let tempCallData
         let fee = { ...options.fee }
         if (options.fee) {
-            if (!(fee.token || options.gasSponsor.token)) {
+            if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
                 const helper = new Helper("Fee", fee, "fee.token or gasSponsor.token is required")
                 throw new ParameterFormatError("Wallet.execute", helper)
             }
-            if (!fee.token && options.gasSponsor.token) {
+            if (!fee.token && options.gasSponsor && options.gasSponsor.token) {
                 fee.token = options.gasSponsor.token
             }
 
-            const token = new Token(fee.token)
+            const token = new Token(fee.token!)
             if (token.isNative) {
                 fee.token = constants.AddressZero
-            }
-            else {
+            } else {
                 fee.token = await token.getAddress()
             }
 
             if (fee.amount) {
-                fee.amount = (await token.getDecimalAmount(fee.amount)).toString()
+                fee.amount = (await token.getDecimalAmount(BigNumber.from(fee.amount))).toNumber()
             } else if (fee.gasPercent) {
                 const emptyFunc = async () => {
                     return {
-                        data, errorData: { location: "Wallet.execute" }
+                        data,
+                        errorData: { location: "Wallet.execute" }
                     }
                 }
-                const actualGas = await this.estimateGas(auth, emptyFunc, { ...options, fee: false })
+                let estimateGasOptions = options
+                estimateGasOptions.fee = undefined
+                const actualGas = await this.estimateGas(auth, emptyFunc, estimateGasOptions)
                 let eth = actualGas.getMaxTxCost()
 
                 let percentNum = fee.gasPercent
-                let percentBase = 100;
+                let percentBase = 100
                 while (percentNum % 1 != 0) {
                     percentNum *= 10
                     percentBase *= 10
@@ -131,13 +121,13 @@ class FunWallet extends FirstClassActions {
                 if (!token.isNative) {
                     const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token)
                     const decimals = await token.getDecimals()
-                    const numerator = BigNumber.from(10).pow(decimals);
-                    const denominator = BigNumber.from(10).pow(18); // eth decimals
-                    const price = ethTokenPairing.mul(numerator).div(denominator);
+                    const numerator = BigNumber.from(10).pow(decimals)
+                    const denominator = BigNumber.from(10).pow(18) // eth decimals
+                    const price = ethTokenPairing.mul(numerator).div(denominator)
                     eth = price.mul(numerator).div(eth).mul(percentNum).div(percentBase)
                 }
 
-                fee.amount = eth
+                fee.amount = eth.toNumber()
             } else {
                 const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execute", helper)
@@ -152,8 +142,7 @@ class FunWallet extends FirstClassActions {
             } else {
                 tempCallData = this.abiManager.encodeCall(data)
             }
-        }
-        else {
+        } else {
             tempCallData = this.abiManager.encodeCall(data)
         }
         return tempCallData
@@ -167,30 +156,33 @@ class FunWallet extends FirstClassActions {
      * @param {bool} estimate Whether to estimate gas or not
      * @returns {UserOp || receipt}
      */
-    async execute(auth, transactionFunc, txOptions = global, estimate = false) {
-        const options = await parseOptions(txOptions, "Wallet.execute")
-        const chain = await this._getFromCache(options.chain)
-        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
+    async execute(
+        auth: Auth,
+        transactionFunc: Function,
+        txOptions: EnvOption = globalEnvOption,
+        estimate = false
+    ): Promise<ExecutionReceipt | UserOp> {
+        const chain = await getChainFromData(txOptions.chain)
+        const estimatedOp = await this.estimateGas(auth, transactionFunc, txOptions)
         if (estimate) {
-            return estimatedOp.getMaxTxCost()
+            return estimatedOp
         }
         await estimatedOp.sign(auth, chain)
-        if (options.sendTxLater) {
-            return estimatedOp.op
+        if (txOptions.sendTxLater) {
+            return estimatedOp
         }
-        return await this.sendTx(estimatedOp, options)
+        return await this.sendTx(estimatedOp, txOptions)
     }
 
     /**
-    * Estimates gas for a transaction
-    * @param {Auth} auth Auth class instance that signs the transaction
-    * @param {function} transactionFunc Function that returns the data to be used in the transaction
-    * @param {Options} txOptions Options for the transaction
-    * @returns
-    */
-    async estimateGas(auth, transactionFunc, txOptions = global) {
-        const options = await parseOptions(txOptions, "Wallet.estimateGas")
-        const chain = await this._getFromCache(options.chain)
+     * Estimates gas for a transaction
+     * @param {Auth} auth Auth class instance that signs the transaction
+     * @param {function} transactionFunc Function that returns the data to be used in the transaction
+     * @param {Options} txOptions Options for the transaction
+     * @returns
+     */
+    async estimateGas(auth: Auth, transactionFunc: Function, txOptions: EnvOption = globalEnvOption): Promise<UserOp> {
+        const chain = await getChainFromData(txOptions.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const signature = await auth.getEstimateGasSignature()
         const res = await chain.estimateOpGas({
@@ -202,10 +194,23 @@ class FunWallet extends FirstClassActions {
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
-        return new UserOp({ ...partialOp, ...res, signature: signature, }, true)
+
+        return new UserOp(
+            partialOp.sender,
+            partialOp.nonce,
+            partialOp.callData,
+            res.callGasLimit,
+            res.verificationGasLimit,
+            partialOp.maxFeePerGas,
+            partialOp.maxPriorityFeePerGas,
+            partialOp.initCode,
+            res.preVerificationGas,
+            partialOp.paymasterAndData,
+            signature
+        )
     }
 
-    async _getThisInitCode(chain, auth) {
+    async _getThisInitCode(chain: Chain, auth: Auth) {
         const owner = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
@@ -220,41 +225,43 @@ class FunWallet extends FirstClassActions {
      * @param {*} options
      * @returns
      */
-    async getAddress(options = globalEnvOption) {
+    async getAddress(options: EnvOption = globalEnvOption): Promise<string> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
-            this.address = await (new WalletOnChainManager(chain, this.identifier)).getWalletAddress()
+            this.address = await new WalletOnChainManager(chain, this.identifier).getWalletAddress()
         }
-        return this.address
+        return this.address!
     }
 
-    static async getAddress(authId, index, chain, apiKey) {
-        global.apiKey = apiKey
+    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
+        globalEnvOption.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain)
-        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+        const walletIdentifer = new WalletIdentifier(uniqueId, index)
         const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
         return await walletOnChainManager.getWalletAddress()
     }
 
-    static async getAddressOffline(uniqueId, index, rpcUrl, factoryAddress) { //offline query
-        const walletIdentifer = new WalletIdentifier({ uniqueId, index })
+    static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: string) {
+        //offline query
+        const walletIdentifer = new WalletIdentifier(uniqueId, index)
         const identifier = await walletIdentifer.getIdentifier()
         return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
     }
 
-    async sendTx({ auth, op, call }, txOptions = global) {
-        let userOp
-        try {
-            userOp = new UserOp(op)
-        } catch (e) {
-            if (typeof call == "function") {
-                call = await call(options)
-            }
-            const { to, value, data } = call
-            return await this.execute(auth, genCall({ to, value, data }), txOptions)
-        }
-        return await this.sendUserOp(userOp, txOptions)
+    async sendTx(userOp: UserOp, txOptions: EnvOption = globalEnvOption): Promise<ExecutionReceipt> {
+        // let userOp
+        // try {
+        //     console.log()
+        //     userOp = new UserOp(op)
+        // } catch (e) {
+        //     if (typeof call == "function") {
+        //         call = await call(options)
+        //     }
+        //     const { to, value, data } = call
+        //     return await this.execute(auth, genCall({ to, value, data }), txOptions)
+        // }
+        return await this.sendUserOp(userOp.op, txOptions)
     }
 
     /**
@@ -263,15 +270,19 @@ class FunWallet extends FirstClassActions {
      * @param {Options} txOptions Options for the transaction
      * @returns
      */
-    async sendUserOp(userOp, txOptions = global) {
-        validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
-        const options = await parseOptions(txOptions, "Wallet.execute")
-        const chain = await this._getFromCache(options.chain)
-        const ophash = await chain.sendOpToBundler(userOp)
+    async sendUserOp(userOp: UserOperation, txOptions: GlobalEnvOption = globalEnvOption): Promise<ExecutionReceipt> {
+        // validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
+        const chain = await getChainFromData(txOptions.chain)
+        const opHash = await chain.sendOpToBundler(userOp)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-        const txid = await onChainDataManager.getTxId(ophash)
-        const gas = await gasCalculation(txid, chain)
-        const receipt = { ophash, txid, ...gas }
+        const txid = await onChainDataManager.getTxId(opHash)
+        const { gasUsed, gasUSD } = await gasCalculation(txid, chain)
+        const receipt: ExecutionReceipt = {
+            opHash,
+            txid,
+            gasUsed,
+            gasUSD
+        }
         await storeUserOp(userOp, 0, receipt)
         return receipt
     }
@@ -283,19 +294,15 @@ class FunWallet extends FirstClassActions {
      * @param {*} txOptions
      * @returns
      */
-    async sendTxs({ auth, ops }, txOptions = global) {
-        const options = await parseOptions(txOptions, "Wallet.execute")
-        const receipts = []
-        for (let op of ops) {
-            let receipt = await this.sendTx({ auth, op }, options)
-            receipts.push(receipt)
-        }
-        return receipts
-    }
-
-    async _executeSubCall(call, ...args) {
-        return await this[call](...args)
-    }
+    // TODO: implement this
+    // async sendTxs({ auth, ops }, txOptions = globalEnvOption) {
+    //     const receipts = []
+    //     for (let op of ops) {
+    //         let receipt = await this.sendTx({ auth, op }, txOptions)
+    //         receipts.push(receipt)
+    //     }
+    //     return receipts
+    // }
 
     /**
      * Get all tokens for a specific chain
@@ -313,11 +320,10 @@ class FunWallet extends FirstClassActions {
      *     }
      * }
      */
-    async getTokens(onlyVerifiedTokens = false, txOptions = global) {
-        onlyVerifiedTokens = "true" ? onlyVerifiedTokens : "false"
-        const options = await parseOptions(txOptions, "Wallet.getTokens")
-        const chainId = options.chain.chainId
-        return await getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
+    async getTokens(onlyVerifiedTokens: boolean = false, txOptions: EnvOption = globalEnvOption) {
+        onlyVerifiedTokens = true ? onlyVerifiedTokens : false
+        const chain = await getChainFromData(txOptions.chain)
+        return await getTokens(chain.chainId!, await this.getAddress(), onlyVerifiedTokens)
     }
 
     /**
@@ -333,16 +339,15 @@ class FunWallet extends FirstClassActions {
      *     }
      *  ]
      */
-    async getNFTs(txOptions = global) {
-        const options = await parseOptions(txOptions, "Wallet.getTokens")
-        const chainId = options.chain.chainId
-        return await getNFTs(chainId, await this.getAddress())
+    async getNFTs(txOptions = globalEnvOption) {
+        const chain = await getChainFromData(txOptions.chain)
+        return await getNFTs(chain.chainId!, await this.getAddress())
     }
 
     /**
      * Return all NFTs on all supported chains.
-     * @param {*} address 
-     * @param {*} onlyVerifiedTokens 
+     * @param {*} address
+     * @param {*} onlyVerifiedTokens
      * @returns JSON
      * {
      *  "chainId": [
@@ -359,7 +364,7 @@ class FunWallet extends FirstClassActions {
     }
 
     /**
-     * Get all tokens on all supported chains. Merge tokens by symbol 
+     * Get all tokens on all supported chains. Merge tokens by symbol
      * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
      * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
      * @returns JSON of all tokens owned by address
@@ -380,27 +385,25 @@ class FunWallet extends FirstClassActions {
     }
 
     /**
-    * Get all tokens on all supported chains. Merge tokens by symbol 
-    * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
-    * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
-    * @returns JSON of all tokens owned by address
-    * {
-    *    1: {
-    *      "0xTokenAddress": {
-    *        "tokenBalance": "0x00001",
-    *        "symbol": "USDC",
-    *        "decimals": 6,
-    *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-    *        "price": 1.0001,
-    *     }
-    *   }
-    * }
-    */
+     * Get all tokens on all supported chains. Merge tokens by symbol
+     * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
+     * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
+     * @returns JSON of all tokens owned by address
+     * {
+     *    1: {
+     *      "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
+     *   }
+     * }
+     */
     async getAssets(onlyVerifiedTokens = false) {
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
     }
 }
-
-module.exports = { FunWallet }

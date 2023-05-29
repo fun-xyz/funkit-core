@@ -9,7 +9,7 @@ const LOCAL_FORK_CHAIN_ID = 31337
 
 export interface EstimateUserOpGasResult {
     callGasLimit: BigNumber
-    verificationGasLimit: BigNumber
+    verificationGas: BigNumber
     preVerificationGas: BigNumber
 }
 
@@ -50,7 +50,12 @@ export class Bundler {
 
     async estimateUserOpGas(userOp: UserOperation): Promise<EstimateUserOpGasResult> {
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp));
-        return await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId, this.userOpJsonRpcProvider);
+        const res = await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId, this.userOpJsonRpcProvider);
+        return {
+            callGasLimit: BigNumber.from(res.callGasLimit),
+            verificationGas: BigNumber.from(res.verificationGas),
+            preVerificationGas: BigNumber.from(res.preVerificationGas)
+        }
     }
 
     static async getChainId(bundlerUrl: string): Promise<string> {

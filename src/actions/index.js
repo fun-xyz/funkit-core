@@ -1,5 +1,4 @@
-const transfers = require("./token")
-const swap = require("./swap")
-const firstClass = require("./firstClass")
-
-module.exports = { ...transfers, ...swap, ...firstClass };
+export * from "./firstClass"
+export * from "./swap"
+export * from "./token"
+export * from "./stake"

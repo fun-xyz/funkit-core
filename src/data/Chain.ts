@@ -147,13 +147,13 @@ export class Chain {
     async estimateOpGas(partialOp: UserOperation): Promise<any> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        let { preVerificationGas, verificationGasLimit, callGasLimit } = res
-        if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
+        let { preVerificationGas, verificationGas, callGasLimit } = res
+        if (!(preVerificationGas || verificationGas || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
 
-        preVerificationGas = preVerificationGas.mul(1.2)
-        verificationGasLimit = verificationGasLimit.add(50_000)
+        preVerificationGas = preVerificationGas.mul(2)
+        let verificationGasLimit = verificationGas.add(50_000)
         if (partialOp.initCode != "0x") {
             callGasLimit = BigNumber.from(10e6)
         }

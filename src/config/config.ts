@@ -10,8 +10,10 @@ export interface EnvOption {
     }
     fee?: {
         token?: string
-        gasPercent?: string
+        amount?: number
+        gasPercent?: number
         recipient?: string
+        oracle?: string
     }
     sendTxLater?: boolean
 }

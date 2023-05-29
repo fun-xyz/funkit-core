@@ -8,7 +8,7 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
 
     body = {
         symbol,
-        chain: Number(chainId)
+        chain: chainId
     }
     if (Number(chainId) == LOCAL_FORK_CHAIN_ID || Number(chainId) == FUN_TESTNET_CHAIN_ID) {
         const addr = (LOCAL_TOKEN_ADDRS as any)[symbol]
@@ -17,7 +17,7 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
         }
         body = {
             symbol,
-            chain: 1
+            chain: "1"
         }
     }
     if ((symbol == "weth" || symbol == "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {

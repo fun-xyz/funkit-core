@@ -1,19 +1,17 @@
-const { parseEther } = require("ethers/lib/utils")
+import { parseEther } from "ethers/lib/utils"
 
-const _stake = ({ amount }) => {
-    return async (actionData) => {
-        const { wallet, chain, options } = actionData
-        const lidoAddress = getLidoAddress(chain.id)
+export const _stake = (input: any) => {
+    return async (actionData: any) => {
+        const { chain } = actionData
+        const lidoAddress = getLidoAddress(chain.id.toString())
         let reasonData = null
         if (!lidoAddress) {
             reasonData = {
                 title: "Possible reasons:",
-                reasons: [
-                    "Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli",
-                ],
+                reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
             }
         }
-        const data = { to: lidoAddress, data: "0x", value: parseEther(`${amount}`) }
+        const data = { to: lidoAddress, data: "0x", value: parseEther(`${input.amount}`) }
         const errorData = {
             location: "action.stake",
             error: {
@@ -24,7 +22,7 @@ const _stake = ({ amount }) => {
     }
 }
 
-const getLidoAddress = (chainId) => {
+export const getLidoAddress = (chainId: string) => {
     switch (parseInt(chainId)) {
         case 1:
             return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
@@ -34,6 +32,3 @@ const getLidoAddress = (chainId) => {
             return null
     }
 }
-
-
-module.exports = { _stake };

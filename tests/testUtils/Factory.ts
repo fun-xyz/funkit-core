@@ -1,7 +1,6 @@
 import { Eoa } from "../../src/auth"
 import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../src/common/constants"
 import { expect } from "chai"
-
 import { randomBytes } from "ethers/lib/utils";
 import { GlobalEnvOption, configureEnvironment } from "../../src/config";
 import { FunWallet } from "../../src/wallet";

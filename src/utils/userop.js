@@ -58,7 +58,7 @@ async function gasCalculation(txid, chain) {
         const gasPrice = txReceipt.effectiveGasPrice.toNumber() * 1e-18
         const gasTotal = gasUsed * gasPrice
         const chainPrice = await getPriceData(currency)
-        const gasUSD = gasTotal * chainPrice
+        const gasUSD = (gasTotal * chainPrice.toNumber()).toNumber()
         return { gasUsed, gasUSD }
     }
     catch {

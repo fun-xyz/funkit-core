@@ -53,7 +53,7 @@ class WalletOnChainManager {
             }
             await new Promise(resolve => setTimeout(resolve, interval));
         }
-        return null;
+        return undefined;
     }
 
     async getReceipt(transactionHash) {
