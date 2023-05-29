@@ -7,21 +7,23 @@ export abstract class Sponsor {
     sponsorAddress: string
     interface: Interface
     abi: any
+    name: string
     paymasterAddress?: string
     chainId?: string
     contract?: Contract
 
-    constructor(options: EnvOption = globalEnvOption, abi: any) {
+    constructor(options: EnvOption = globalEnvOption, abi: any, name: string) {
         this.sponsorAddress = options.gasSponsor!.sponsorAddress!
         this.interface = new Interface(abi)
         this.abi = abi
+        this.name = name
     }
 
     async getPaymasterAddress(options: EnvOption = globalEnvOption): Promise<string> {
         const chain = await getChainFromData(options.chain)
         const chainId = await chain.getChainId()
         if (!this.paymasterAddress && chainId != this.chainId) {
-            this.paymasterAddress = await chain.getAddress("gaslessSponsorAddress")
+            this.paymasterAddress = await chain.getAddress(this.name)
             this.chainId = chainId
         }
         return this.paymasterAddress!
@@ -49,9 +51,9 @@ export abstract class Sponsor {
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>
 
-    abstract stake(walletAddress: string, amount: BigNumber): Function
+    abstract stake(walletAddress: string, amount: number): Function
 
-    abstract unstake(walletAddress: string, amount: BigNumber): Function
+    abstract unstake(walletAddress: string, amount: number): Function
 
     setToBlacklistMode(): Function {
         return async (options: EnvOption = globalEnvOption) => {

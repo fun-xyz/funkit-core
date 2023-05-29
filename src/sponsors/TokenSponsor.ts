@@ -1,8 +1,7 @@
-import { Token } from "../data";
-import { EnvOption } from "../config";
-import { Sponsor } from "./Sponsor";
-import { BigNumber } from "ethers";
-const { constants } = require("ethers");
+import { Token } from "../data"
+import { EnvOption } from "../config"
+import { Sponsor } from "./Sponsor"
+import { constants } from "ethers"
 
 const paymasterAbi = require("../abis/TokenPaymaster.json").abi
 
@@ -10,16 +9,16 @@ export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = globalEnvOption) {
-        super(options, paymasterAbi)
+        super(options, paymasterAbi, "tokenSponsorAddress")
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
     async getPaymasterAndData(options: EnvOption = globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
-        return await this.getPaymasterAddress(options) + this.sponsorAddress.slice(2) + tokenAddress.slice(2);
+        return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2)
     }
 
-    stake(walletAddress: string, amount: BigNumber): Function {
+    stake(walletAddress: string, amount: number): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
@@ -27,7 +26,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    unstake(walletAddress: string, amount: BigNumber): Function {
+    unstake(walletAddress: string, amount: number): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
@@ -44,7 +43,7 @@ export class TokenSponsor extends Sponsor {
     async getTokenBalance(token: string, spender: string, options: EnvOption = globalEnvOption) {
         const contract = await this.getContract(options)
         const tokenData = new Token(token)
-        let tokenAddress;
+        let tokenAddress
         if (tokenData.isNative) {
             tokenAddress = constants.AddressZero
         } else {
@@ -68,7 +67,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    stakeToken(token: string, walletAddress: string, amount: BigNumber) {
+    stakeToken(token: string, walletAddress: string, amount: number) {
         return async (options: EnvOption = globalEnvOption) => {
             const tokenObj = new Token(token)
 
@@ -80,7 +79,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    unstakeToken(token: string, walletAddress: string, amount: BigNumber) {
+    unstakeToken(token: string, walletAddress: string, amount: number) {
         return async (options: EnvOption = globalEnvOption) => {
             const tokenObj = new Token(token)
 
@@ -94,9 +93,11 @@ export class TokenSponsor extends Sponsor {
 
     addWhitelistTokens(tokens: string[]) {
         return async (options: EnvOption = globalEnvOption) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
-                return Token.getAddress(token, options)
-            }))
+            const sendTokens = await Promise.all(
+                tokens.map((token) => {
+                    return Token.getAddress(token, options)
+                })
+            )
             const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
             return await this.encode(data, options)
         }
@@ -104,9 +105,11 @@ export class TokenSponsor extends Sponsor {
 
     removeWhitelistTokens(tokens: string[]) {
         return async (options: EnvOption = globalEnvOption) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
-                return Token.getAddress(token, options)
-            }))
+            const sendTokens = await Promise.all(
+                tokens.map((token) => {
+                    return Token.getAddress(token, options)
+                })
+            )
             const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
             return await this.encode(data, options)
         }
@@ -126,7 +129,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    approve(token: string, amount: BigNumber) {
+    approve(token: string, amount: number) {
         return async (options: EnvOption = globalEnvOption) => {
             const gasSponsorAddress = await this.getPaymasterAddress(options)
             return await Token.approve(token, gasSponsorAddress, amount)

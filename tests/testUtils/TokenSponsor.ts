@@ -1,33 +1,49 @@
-const TokenSponsorTest = (config) => {
-    const { assert } = require("chai")
-    const { Eoa } = require("../../auth")
-    const { Token } = require("../../data")
-    const { configureEnvironment } = require("../../managers")
-    const { TokenSponsor } = require("../../sponsors")
-    const { fundWallet, getTestApiKey } = require("../../utils")
-    const { FunWallet } = require("../../wallet")
+import { assert } from "chai"
+import { Eoa } from "../../src/auth"
+import { Token } from "../../src/data"
+import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { TokenSponsor } from "../../src/sponsors"
+import { fundWallet, getTestApiKey } from "../../src/utils"
+import { FunWallet } from "../../src/wallet"
 
+export interface TokenSponsorTestConfig {
+    chainId: number
+    authPrivateKey: string
+    funderPrivateKey: string
+    inToken: string
+    outToken: string
+    paymasterToken: string
+    baseTokenStakeAmt: number
+    paymasterTokenStakeAmt: number
+    prefund: boolean
+    swapAmount: number
+    stake: boolean
+    walletIndex?: number
+    funderIndex?: number
+}
+
+export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
 
     describe("TokenSponsor", function () {
-        this.timeout(200_000)
+        this.timeout(300_000)
         let auth = new Eoa({ privateKey: config.authPrivateKey })
         let funder = new Eoa({ privateKey: config.funderPrivateKey })
-        let wallet
-        let wallet1
+        let wallet: FunWallet
+        let wallet1: FunWallet
         before(async function () {
             const apiKey = await getTestApiKey()
-            const options = {
-                chain: config.chainId,
-                apiKey: apiKey,
+            const options: GlobalEnvOption = {
+                chain: config.chainId.toString(),
+                apiKey: apiKey
             }
 
             await configureEnvironment(options)
 
-            uniqueId = await auth.getUniqueId()
+            let uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueId, index: config.walletIndex!=null? config.walletIndex: 1223452391856341 })
-            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex!=null? config.funderIndex: 2345234 })
+            wallet = new FunWallet({ uniqueId, index: config.walletIndex != null ? config.walletIndex : 1223452391856341 })
+            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex != null ? config.funderIndex : 2345234 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -35,8 +51,8 @@ const TokenSponsorTest = (config) => {
             const funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, .5)
-                await fundWallet(auth, wallet1, .5)
+                await fundWallet(funder, wallet, 0.5)
+                await fundWallet(auth, wallet1, 0.5)
             }
 
             await wallet.swap(auth, {
@@ -51,9 +67,10 @@ const TokenSponsorTest = (config) => {
             await configureEnvironment({
                 gasSponsor: {
                     sponsorAddress: funderAddress,
-                    token: paymasterToken,
+                    token: paymasterToken
                 }
             })
+
             const gasSponsor = new TokenSponsor()
 
             const baseStakeAmount = config.baseTokenStakeAmt
@@ -75,19 +92,18 @@ const TokenSponsorTest = (config) => {
 
             assert(depositInfo1E.gt(depositInfo1S), "Base Stake Failed")
             assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
-
         })
 
-        const runSwap = async (wallet) => {
+        const runSwap = async (wallet: FunWallet) => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = (await Token.getBalance(config.outToken, walletAddress))
-            if (tokenBalanceBefore < .1) {
-                const res= await wallet.swap(auth, {
+            const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
+            if (Number(tokenBalanceBefore) < 0.1) {
+                await wallet.swap(auth, {
                     in: config.inToken,
                     amount: config.swapAmount,
                     out: config.outToken
                 })
-                const tokenBalanceAfter = (await Token.getBalance(config.outToken, walletAddress))
+                const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
                 assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
             }
         }
@@ -95,6 +111,7 @@ const TokenSponsorTest = (config) => {
         it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
+
             const gasSponsor = new TokenSponsor()
             await funder.sendTx(await gasSponsor.setToWhitelistMode())
             await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
@@ -103,8 +120,8 @@ const TokenSponsorTest = (config) => {
             try {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
-            } catch (e) {
-                assert(e.message.includes("AA33"), "Error but not AA33")
+            } catch (error: any) {
+                assert(error.message.includes("AA33"), "Error but not AA33")
             }
         })
 
@@ -115,5 +132,3 @@ const TokenSponsorTest = (config) => {
         })
     })
 }
-
-module.exports = { TokenSponsorTest }

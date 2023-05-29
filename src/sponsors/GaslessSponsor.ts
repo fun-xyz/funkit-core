@@ -7,14 +7,14 @@ const paymasterAbi = require("../abis/GaslessPaymaster.json").abi
 
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = globalEnvOption) {
-        super(options, paymasterAbi)
+        super(options, paymasterAbi, "gaslessSponsorAddress")
     }
 
     async getPaymasterAndData(options: EnvOption = globalEnvOption): Promise<string> {
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2)
     }
 
-    stake(walletAddress: string, amount: BigNumber): Function {
+    stake(walletAddress: string, amount: number): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
@@ -22,7 +22,7 @@ export class GaslessSponsor extends Sponsor {
         }
     }
 
-    unstake(walletAddress: string, amount: BigNumber): Function {
+    unstake(walletAddress: string, amount: number): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])

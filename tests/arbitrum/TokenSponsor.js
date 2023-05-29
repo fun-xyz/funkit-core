@@ -16,6 +16,5 @@ const config = {
     stake: true,
     walletIndex: 0,
     funderIndex: 1
-    
 }
 TokenSponsorTest(config)

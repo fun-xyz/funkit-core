@@ -87,12 +87,12 @@ export class Token {
         return await contract.allowance(owner, spender)
     }
 
-    async getDecimalAmount(amount: BigNumber, options: EnvOption = globalEnvOption): Promise<BigNumber> {
+    async getDecimalAmount(amount: number, options: EnvOption = globalEnvOption): Promise<BigNumber> {
         const decimals = await this.getDecimals(options)
         return parseUnits(`${amount}`, decimals)
     }
 
-    async approve(spender: string, amount: BigNumber, options: EnvOption = globalEnvOption): Promise<any> {
+    async approve(spender: string, amount: number, options: EnvOption = globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const amountDec = await this.getDecimalAmount(amount)
@@ -100,7 +100,7 @@ export class Token {
         return { ...data, chain }
     }
 
-    async transfer(spender: string, amount: BigNumber, options: EnvOption = globalEnvOption): Promise<any> {
+    async transfer(spender: string, amount: number, options: EnvOption = globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const amountDec = await this.getDecimalAmount(amount)
@@ -127,17 +127,17 @@ export class Token {
         const token = new Token(data)
         return await token.getApproval(owner, spender, options)
     }
-    static async getDecimalAmount(data: string, amount: BigNumber, options: EnvOption = globalEnvOption): Promise<BigNumber> {
+    static async getDecimalAmount(data: string, amount: number, options: EnvOption = globalEnvOption): Promise<BigNumber> {
         const token = new Token(data)
         return await token.getDecimalAmount(amount, options)
     }
 
-    static async approve(data: string, spender: string, amount: BigNumber, options: EnvOption = globalEnvOption): Promise<any> {
+    static async approve(data: string, spender: string, amount: number, options: EnvOption = globalEnvOption): Promise<any> {
         const token = new Token(data)
         return await token.approve(spender, amount, options)
     }
 
-    static async transfer(data: string, spender: string, amount: BigNumber, options: EnvOption = globalEnvOption): Promise<any> {
+    static async transfer(data: string, spender: string, amount: number, options: EnvOption = globalEnvOption): Promise<any> {
         const token = new Token(data)
         return await token.transfer(spender, amount, options)
     }

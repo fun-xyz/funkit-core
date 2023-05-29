@@ -5,7 +5,6 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet, getTestApiKey } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { BigNumber } from "ethers"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
@@ -61,7 +60,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
             const stakeAmount = config.stakeAmount
             const depositInfo1S = await gasSponsor.getBalance(funderAddress)
-            const stake = await gasSponsor.stake(funderAddress, BigNumber.from(stakeAmount))
+            const stake = await gasSponsor.stake(funderAddress, stakeAmount)
             await funder.sendTxs([stake])
 
             const depositInfo1E = await gasSponsor.getBalance(funderAddress)
