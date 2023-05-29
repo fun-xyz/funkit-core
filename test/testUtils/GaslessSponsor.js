@@ -95,7 +95,7 @@ const GaslessSponsorTest = (config) => {
         })
 
         describe("Use Batch Actions", function () {
-            it.only("call all functions", async () => {
+            it("call all functions", async () => {
                 const gasSponsor = new GaslessSponsor()
                 const walletAddress = await wallet.getAddress()
                 const walletAddress1 = await wallet1.getAddress()

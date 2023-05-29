@@ -99,6 +99,7 @@ const TokenSponsorTest = (config) => {
             await funder.sendTx(await gasSponsor.setToWhitelistMode())
             await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
             await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
+
             await runSwap(wallet)
             try {
                 await runSwap(wallet1)
@@ -117,9 +118,10 @@ const TokenSponsorTest = (config) => {
         describe("Set Whitelist and Blacklist Modes", function () {
             it("addTokenToBlacklist", async () => {
                 const gasSponsor = new TokenSponsor()
-                await funder.sendTx(await gasSponsor.addTokenToBlackList(paymasterToken))
-                expect(await gasSponsor.getTokenBlacklisted(paymasterToken)).to.equal(true)
-                await funder.sendTx(await gasSponsor.removeTokenFromBlackList(paymasterToken))
+                let token = "0xEbe50bb8aF4527F1DafE950328f90007866722C6"
+                await funder.sendTx(await gasSponsor.addTokenToBlackList(token))
+                assert(await gasSponsor.getTokenBlacklisted(token), "token not blacklisted")
+                await funder.sendTx(await gasSponsor.removeTokenFromBlackList(token))
             })
 
             it("call all functions", async () => {
