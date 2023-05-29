@@ -12,9 +12,9 @@ export abstract class Auth {
     abstract getSigner(): Promise<Signer>
     abstract getOwnerAddr(): Promise<string[]>
     abstract getEstimateGasSignature(): Promise<string>
-    abstract sendTx(txData: TransactionData): Promise<TransactionReceipt>
+    abstract sendTx(txData: TransactionData|Function): Promise<TransactionReceipt>
 
-    async sendTxs(txs: TransactionData[]): Promise<TransactionReceipt[]> {
+    async sendTxs(txs: TransactionData[]|Function[]): Promise<TransactionReceipt[]> {
         const receipts = []
         for (let tx of txs) {
             receipts.push(await this.sendTx(tx))

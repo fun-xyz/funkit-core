@@ -1,11 +1,11 @@
-import { Signer } from 'ethers';
+import { Signer, Wallet } from 'ethers';
 import { BytesLike, arrayify } from 'ethers/lib/utils';
 import { verifyFunctionParams, verifyPrivateKey } from '../utils/data';
 import { TransactionReceipt, Web3Provider } from '@ethersproject/providers'
 import { TransactionData } from 'src/common/types/TransactionData';
 import { storeEVMCall } from '../apis';
 import { Auth } from './Auth';
-const { Wallet } = require("ethers")
+import { EnvOption } from 'src/config';
 
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
 const gasSpecificChain = { "137": 850_000_000_000 }
@@ -69,9 +69,12 @@ export class Eoa extends Auth {
         return await this.getUniqueId()
     }
 
-    async sendTx(txData: TransactionData): Promise<TransactionReceipt> {
+    async sendTx(txData: TransactionData|Function, options: EnvOption = globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
-        const { to, value, data, chain } = txData
+        if (typeof txData === "function") {
+            txData = await txData(options)
+        }
+        const { to, value, data, chain } = txData as TransactionData
         const provider = await chain.getProvider()
         let eoa = this.signer!;
         if (!eoa.provider) {

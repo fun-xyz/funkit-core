@@ -53,42 +53,42 @@ export abstract class Sponsor {
 
     abstract unstake(walletAddress: string, amount: BigNumber): Function
 
-    setToBlacklistMode() {
+    setToBlacklistMode(): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
             return await this.encode(data, options)
         }
     }
 
-    setToWhitelistMode() {
+    setToWhitelistMode(): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
             return await this.encode(data, options)
         }
     }
 
-    addSpenderToWhiteList(spender: string) {
+    addSpenderToWhiteList(spender: string): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
-    removeSpenderFromWhiteList(spender: string) {
+    removeSpenderFromWhiteList(spender: string): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
             return await this.encode(data, options)
         }
     }
 
-    addSpenderToBlackList(spender: string) {
+    addSpenderToBlackList(spender: string): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
-    removeSpenderFromBlackList(spender: string) {
+    removeSpenderFromBlackList(spender: string): Function {
         return async (options: EnvOption = globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
             return await this.encode(data, options)
