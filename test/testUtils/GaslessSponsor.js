@@ -25,9 +25,9 @@ const GaslessSponsorTest = (config) => {
 
             uid = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex != null ? config.walletIndex : 129856341 })
-            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex!=null ? config.funderIndex : 12341238465411 })
+            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex != null ? config.funderIndex : 12341238465411 })
             if (config.prefund) {
-                await fundWallet(funder, wallet, .5) 
+                await fundWallet(funder, wallet, .5)
                 await fundWallet(auth, wallet1, .5)
             }
             const funderAddress = await funder.getUniqueId()
@@ -92,6 +92,16 @@ const GaslessSponsorTest = (config) => {
             const gasSponsor = new GaslessSponsor()
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
             await runSwap(wallet)
+        })
+
+        describe("Use Batch Actions", function () {
+            it("call all functions", async () => {
+                const gasSponsor = new TokenSponsor()
+                const walletAddress = await wallet.getAddress()
+                const walletAddress1 = await wallet1.getAddress()
+                await funder.sendTx(await gasSponsor.batchBlacklistUsers([walletAddress, walletAddress1], [true, true]))
+                await funder.sendTx(await gasSponsor.batchWhitelistUsers([walletAddress, walletAddress1], [true, true]))
+            })
         })
     })
 }

@@ -52,7 +52,6 @@ class TokenSponsor {
     }
 
     async getContract(options = global) {
-
         if (!this.contract) {
             const parsedOptions = await parseOptions(options)
             const provider = await parsedOptions.chain.getProvider()
@@ -70,6 +69,26 @@ class TokenSponsor {
     async encodeValue(data, value, options = global) {
         const to = await this.getPaymasterAddress(options)
         return { to, value, data, chain: options.chain }
+    }
+
+    async getSpenderBlacklisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderBlacklisted(spender)
+    }
+
+    async getSpenderWhitelisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderWhitelisted(spender)
+    }
+
+    async getTokenWhitelisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getTokenWhitelisted(spender)
+    }
+
+    async getTokenBlacklisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getTokenBlacklisted(spender)
     }
 
     addUsableToken(oracle, token, aggregator) {

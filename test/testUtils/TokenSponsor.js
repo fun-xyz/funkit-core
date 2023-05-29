@@ -26,8 +26,8 @@ const TokenSponsorTest = (config) => {
 
             uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueId, index: config.walletIndex!=null? config.walletIndex: 1223452391856341 })
-            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex!=null? config.funderIndex: 2345234 })
+            wallet = new FunWallet({ uniqueId, index: config.walletIndex != null ? config.walletIndex : 1223452391856341 })
+            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex != null ? config.funderIndex : 2345234 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
@@ -82,7 +82,7 @@ const TokenSponsorTest = (config) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = (await Token.getBalance(config.outToken, walletAddress))
             if (tokenBalanceBefore < .1) {
-                const res= await wallet.swap(auth, {
+                const res = await wallet.swap(auth, {
                     in: config.inToken,
                     amount: config.swapAmount,
                     out: config.outToken
@@ -112,6 +112,33 @@ const TokenSponsorTest = (config) => {
             const gasSponsor = new TokenSponsor()
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
             await runSwap(wallet)
+        })
+
+        describe("Set Whitelist and Blacklist Modes", function () {
+            it("addTokenToBlacklist", async () => {
+                const gasSponsor = new TokenSponsor()
+                await funder.sendTx(await gasSponsor.addTokenToBlackList(paymasterToken))
+                expect(await gasSponsor.getTokenBlacklisted(paymasterToken)).to.equal(true)
+                await funder.sendTx(await gasSponsor.removeTokenFromBlackList(paymasterToken))
+            })
+
+            it("call all functions", async () => {
+                const gasSponsor = new TokenSponsor()
+                await funder.sendTx(await gasSponsor.setTokenBlackListMode())
+                await funder.sendTx(await gasSponsor.setTokenWhiteListMode())
+            })
+        })
+
+        describe("Use Batch Actions", function () {
+            it("call all functions", async () => {
+                const gasSponsor = new TokenSponsor()
+                await funder.sendTx(await gasSponsor.batchBlacklistTokens([paymasterToken], [true]))
+                await funder.sendTx(await gasSponsor.batchWhitelistTokens([paymasterToken], [true]))
+                const walletAddress = await wallet.getAddress()
+                const walletAddress1 = await wallet1.getAddress()
+                await funder.sendTx(await gasSponsor.batchBlacklistUsers([walletAddress, walletAddress1], [true, true]))
+                await funder.sendTx(await gasSponsor.batchWhitelistUsers([walletAddress, walletAddress1], [true, true]))
+            })
         })
     })
 }

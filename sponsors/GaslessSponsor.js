@@ -51,6 +51,16 @@ class GaslessSponsor {
         return { to, value, data, chain: options.chain }
     }
 
+    async getSpenderBlacklistMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderBlacklistMode(spender)
+    }
+
+    async getSpenderWhitelistMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderWhitelistMode(spender)
+    }
+
     stake(walletAddress, amount) {
         return async (options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
