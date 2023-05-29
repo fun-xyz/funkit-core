@@ -198,6 +198,13 @@ class TokenSponsor {
         }
     }
 
+    approve(token, amount) {
+        return async (options = global) => {
+            const gasSponsorAddress = await this.getPaymasterAddress(options)
+            return await Token.approve(token, gasSponsorAddress, amount)
+        }
+    }
+
     addTokenToBlackList(token) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [token, true])
@@ -223,13 +230,6 @@ class TokenSponsor {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [token, false])
             return await this.encode(data, options)
-        }
-    }
-
-    approve(token, amount) {
-        return async (options = global) => {
-            const gasSponsorAddress = await this.getPaymasterAddress(options)
-            return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
 
