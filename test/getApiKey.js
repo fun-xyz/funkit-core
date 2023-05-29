@@ -26,7 +26,7 @@ async function getApiKey() {
     }
 
     const secret = JSON.parse(response.SecretString)
-    const apiKey = secret.staging
+    const apiKey = secret.prod
     return apiKey
 }
 

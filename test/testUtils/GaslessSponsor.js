@@ -95,8 +95,8 @@ const GaslessSponsorTest = (config) => {
         })
 
         describe("Use Batch Actions", function () {
-            it("call all functions", async () => {
-                const gasSponsor = new TokenSponsor()
+            it.only("call all functions", async () => {
+                const gasSponsor = new GaslessSponsor()
                 const walletAddress = await wallet.getAddress()
                 const walletAddress1 = await wallet1.getAddress()
                 await funder.sendTx(await gasSponsor.batchBlacklistUsers([walletAddress, walletAddress1], [true, true]))

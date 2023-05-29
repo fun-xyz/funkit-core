@@ -134,9 +134,9 @@ class GaslessSponsor {
 
     batchBlacklistUsers(users, modes) {
         return async (options = global) => {
-            let calldata
+            let calldata = []
             for (let i = 0; i < users.length; i++) {
-                this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]])
+                calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
             return await this.encode(data, options)
@@ -145,9 +145,9 @@ class GaslessSponsor {
 
     batchWhitelistUsers(users, modes) {
         return async (options = global) => {
-            let calldata
+            let calldata = []
             for (let i = 0; i < users.length; i++) {
-                this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]])
+                calldata.push(this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
             return await this.encode(data, options)
