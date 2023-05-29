@@ -121,6 +121,28 @@ class GaslessSponsor {
             return await this.encode(data, options)
         }
     }
+
+    batchBlacklistUsers(users, modes) {
+        return async (options = global) => {
+            let calldata
+            for (let i = 0; i < users.length; i++) {
+                this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]])
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
+    batchWhitelistUsers(users, modes) {
+        return async (options = global) => {
+            let calldata
+            for (let i = 0; i < users.length; i++) {
+                this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]])
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
 }
 
 module.exports = { GaslessSponsor };
