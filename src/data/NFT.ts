@@ -50,13 +50,11 @@ export class NFT {
   }
 
   async getBalance(address: string, options: EnvOption = globalEnvOption): Promise<string> {
-    const chain = await getChainFromData(options.chain)
     const contract = await this.getContract(options)
-    const data = await contract.balanceOf(address)
-    return { ...data, chain }
+    return await contract.balanceOf(address)
   }
 
-  async getApproval(tokenId: string, options: EnvOption = globalEnvOption): Promise<string> {
+  async getApproved(tokenId: string, options: EnvOption = globalEnvOption): Promise<string> {
     const contract = await this.getContract(options)
     return await contract.getApproved(tokenId)
   }
@@ -72,7 +70,7 @@ export class NFT {
     const chain = await getChainFromData(options.chain)
     const contract = await this.getContract(options)
     const addr = await this.getAddress()
-    const data = await contract.populateTransaction.safeTransferFrom(addr, spender, tokenId)
+    const data = await contract.populateTransaction.transferFrom(addr, spender, tokenId)
     return { ...data, chain }
   }
 
@@ -91,9 +89,9 @@ export class NFT {
     return await nft.getAddress(options)
   }
 
-  static async getApproval(data: string, tokenId: string, options: EnvOption = globalEnvOption): Promise<any> {
+  static async getApproved(data: string, tokenId: string, options: EnvOption = globalEnvOption): Promise<any> {
     const nft = new NFT(data)
-    return await nft.getApproval(tokenId, options)
+    return await nft.getApproved(tokenId, options)
   }
 
   static async getBalance(data: string, address: string, options: EnvOption = globalEnvOption): Promise<string> {
