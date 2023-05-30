@@ -6,6 +6,7 @@ import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getTestApiKey } from "../testUtils"
 import { BigNumber } from "ethers"
+import { StatusError } from "../../src/errors"
 export interface StakeTestConfig {
     chainId: number
     authPrivateKey: string
@@ -46,7 +47,13 @@ export const StakeTest = (config: StakeTestConfig) => {
         })
 
         it("Should be able to finish unstaking if ready", async () => {
-            await wallet.finishUnstake(auth, {})
+            try {
+                await wallet.finishUnstake(auth, {})
+            } catch (error: StatusError) {
+                assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
+                return
+            }
+            assert(false, "Did not throw error")
         })
     })
 }

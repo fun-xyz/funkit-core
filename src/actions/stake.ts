@@ -1,8 +1,10 @@
 import { ActionData } from "./FirstClass"
 import { Token } from "../data"
-import { Interface, parseEther } from "ethers/lib/utils"
 import { approveAndExec, ApproveParams, ExecParams } from "./ApproveAndExec"
+
+import { Interface, parseEther } from "ethers/lib/utils"
 import { BigNumber, ethers } from "ethers"
+import { Helper, StatusError } from "../errors"
 
 const WITHDRAW_QUEUE_ABI = [{
     "inputs": [
@@ -198,16 +200,9 @@ export const _requestUnstake = (params: any) => {
         const { chain, wallet } = actionData
         const steth: string = getSteth(chain.chainId.toString())
         const withdrawalQueue: string = getWithdrawalQueue(chain.chainId.toString())
-        let errorData
         if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
-            errorData = {
-                location: "action.requestUnstake",
-                error: {
-                    title: "Possible reasons:",
-                    reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
-                }
-            }
-            return { errorData }
+            const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
+            throw new StatusError("Lido Finance", "action.requestUnstake", helper)
         }
         let token = new Token(steth)
         const approveData: ApproveParams = await token.approve(withdrawalQueue, params.amount, { chain: actionData.chain })
@@ -239,14 +234,8 @@ export const _finishUnstake = () => {
             return a.gt(b) ? 1 : -1
         })
         if (readyToWithdrawRequestIds.length === 0) {
-            errorData = {
-                location: "action.requestUnstake",
-                error: {
-                    title: "Possible reasons:",
-                    reasons: ["No ready to withdraw requests"]
-                }
-            }
-            return { errorData };
+            const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
+            throw new StatusError("Lido Finance", "action.finishUnstake", helper)
         }
 
         // claim batch withdrawal
