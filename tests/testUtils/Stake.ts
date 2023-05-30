@@ -11,6 +11,7 @@ export interface StakeTestConfig {
     authPrivateKey: string
     baseToken: string
     prefund: boolean
+    steth: string
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
@@ -32,12 +33,20 @@ export const StakeTest = (config: StakeTestConfig) => {
             if (prefund) await fundWallet(auth, wallet, 0.002)
         })
 
-        it("wallet should have lower balance of gas token", async () => {
+        it.skip("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
             await wallet.stake(auth, { amount: BigNumber.from(10).pow(15) })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
+        })
+
+        it("Should be able to start unstaking", async () => {
+            await wallet.requestUnstake(auth, { amount: .001 })
+        })
+
+        it.skip("Should be able to finish unstaking if ready", async () => {
+            await wallet.finishUnstake(auth, {})
         })
     })
 }

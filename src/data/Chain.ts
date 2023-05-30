@@ -56,10 +56,10 @@ export class Chain {
         }
         try {
             await this.loadBundler()
-        } catch {}
+        } catch { }
         try {
             await this.loadProvider()
-        } catch {}
+        } catch { }
     }
 
     async loadProvider() {
