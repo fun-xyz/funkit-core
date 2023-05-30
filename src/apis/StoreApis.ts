@@ -4,8 +4,10 @@ import { UserOperation, getChainFromData } from "../data"
 import { TEST_API_KEY, TRANSACTION_TYPE, API_URL } from "../common/constants"
 import { sendPostRequest } from "../utils/Api"
 import { TransactionReceipt } from '@ethersproject/providers'
+import { GlobalEnvOption } from "src/config"
 
 export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) {
+    const globalEnvOption: GlobalEnvOption = (globalThis as any).globalEnvOption
     if (!globalEnvOption.apiKey) {
         throw new DataFormatError("apiKey", "string", "configureEnvironment")
     }
@@ -27,6 +29,7 @@ export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) 
 }
 
 export async function storeEVMCall(receipt: TransactionReceipt) {
+    const globalEnvOption: GlobalEnvOption = (globalThis as any).globalEnvOption
     if (!globalEnvOption.apiKey) {
         throw new DataFormatError("apiKey", "string", "configureEnvironment")
     }

@@ -69,7 +69,7 @@ export class Eoa extends Auth {
         return await this.getUniqueId()
     }
 
-    async sendTx(txData: TransactionData|Function, options: EnvOption = globalEnvOption): Promise<TransactionReceipt> {
+    async sendTx(txData: TransactionData|Function, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
         if (typeof txData === "function") {
             txData = await txData(options)
