@@ -1,13 +1,12 @@
 import { Signer, Wallet } from "ethers"
 import { BytesLike, arrayify } from "ethers/lib/utils"
-import { verifyFunctionParams, verifyPrivateKey } from "../utils/data"
+import { verifyPrivateKey } from "../utils/DataUtils"
 import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
 import { TransactionData } from "src/common/types/TransactionData"
 import { storeEVMCall } from "../apis"
 import { Auth } from "./Auth"
 import { EnvOption } from "src/config"
 
-const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
 const gasSpecificChain = { "137": 850_000_000_000 }
 
 export interface EoaAuthInput {
@@ -23,10 +22,8 @@ export class Eoa extends Auth {
 
     constructor(eoaAuthInput: EoaAuthInput) {
         super()
-        const currentLocation = "EoaAuth constructor"
-        verifyFunctionParams(currentLocation, eoaAuthInput, eoaAuthConstructorExpectedKeys)
         if (eoaAuthInput.privateKey) {
-            verifyPrivateKey(eoaAuthInput.privateKey, currentLocation)
+            verifyPrivateKey(eoaAuthInput.privateKey, "EoaAuth constructor")
             this.privateKey = eoaAuthInput.privateKey
         } else if (eoaAuthInput.signer) {
             this.signer = eoaAuthInput.signer

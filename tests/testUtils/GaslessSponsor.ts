@@ -48,9 +48,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 in: config.inToken,
                 amount: config.amount ? config.amount : 0.01,
                 out: config.outToken,
-                options: {
-                    returnAddress: funderAddress
-                }
+                returnAddress: funderAddress
             })
             await configureEnvironment({
                 gasSponsor: {

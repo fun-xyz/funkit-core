@@ -17,7 +17,7 @@ export const setStoredUniqueId = async (authId: string, uniqueId: string, addr =
     await setAuth(authId, method, addr, uniqueId)
 }
 
-export const getUniqueId = async (authId: string, addr: string = "NO_ADDRESS") => {
+export const getUniqueId = async (authId: string, addr = "NO_ADDRESS") => {
     let uniqueId
     const storedUniqueId = await getStoredUniqueId(authId)
     if (storedUniqueId) {

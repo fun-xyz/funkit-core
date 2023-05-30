@@ -4,7 +4,7 @@ import { expect } from "chai"
 import { randomBytes } from "ethers/lib/utils"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
-import { isContract, fundWallet } from "../../src/utils/chain"
+import { isContract, fundWallet } from "../../src/utils/ChainUtils"
 import { getTestApiKey } from "../testUtils"
 
 export interface FactoryTestConfig {

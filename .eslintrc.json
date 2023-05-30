@@ -4,9 +4,7 @@
         "sourceType": "module",
         "ecmaVersion": "latest"
     },
-    "plugins": [
-        "@typescript-eslint"
-    ],
+    "plugins": ["@typescript-eslint", "unused-imports"],
     "env": {
         "browser": true,
         "commonjs": true,
@@ -21,7 +19,7 @@
         "quotes": ["error", "double"],
         "eqeqeq": "error",
         "unused-imports/no-unused-imports": "error",
-        "@typescript-eslint/no-unused-vars": "error"
+        "@typescript-eslint/no-unused-vars": "error",
     },
     "ignorePatterns": ["node_modules", "build", "dist", "public"]
 }

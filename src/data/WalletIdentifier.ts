@@ -5,7 +5,7 @@ export class WalletIdentifier {
     index: number
     identifier?: string
 
-    constructor(uniqueId: string, index: number = 0) {
+    constructor(uniqueId: string, index = 0) {
         this.uniqueId = uniqueId
         this.index = index
     }
