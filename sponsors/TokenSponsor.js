@@ -226,7 +226,8 @@ class TokenSponsor {
 
     addTokenToBlackList(token) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [token, true])
+            const tokenAddress = await Token.getAddress(token, options)
+            const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, true])
             return await this.encode(data, options)
         }
     }
@@ -247,7 +248,8 @@ class TokenSponsor {
 
     removeTokenFromBlackList(token) {
         return async (options = global) => {
-            const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [token, false])
+            const tokenAddress = await Token.getAddress(token, options)
+            const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, false])
             return await this.encode(data, options)
         }
     }
@@ -256,7 +258,8 @@ class TokenSponsor {
         return async (options = global) => {
             let calldata = []
             for (let i = 0; i < tokens.length; i++) {
-                calldata.push(this.interface.encodeFunctionData("setTokenBlacklistMode", [tokens[i], modes[i]]))
+                const tokenAddress = await Token.getAddress(tokens[i], options)
+                calldata.push(this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
             return await this.encode(data, options)
@@ -267,7 +270,8 @@ class TokenSponsor {
         return async (options = global) => {
             let calldata = []
             for (let i = 0; i < tokens.length; i++) {
-                calldata.push(this.interface.encodeFunctionData("setTokenWhitelistMode", [tokens[i], modes[i]]))
+                const tokenAddress = await Token.getAddress(tokens[i], options)
+                calldata.push(this.interface.encodeFunctionData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
             return await this.encode(data, options)
@@ -278,7 +282,7 @@ class TokenSponsor {
         return async (options = global) => {
             let calldata = []
             for (let i = 0; i < users.length; i++) {
-                calldata(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
+                calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
             return await this.encode(data, options)
