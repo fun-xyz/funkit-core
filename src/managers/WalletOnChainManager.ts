@@ -1,8 +1,11 @@
-import { Contract, ethers } from "ethers"
+import { constants, Contract, ethers } from "ethers"
 import { WalletIdentifier, Chain } from "../data"
 import { TransactionReceipt } from "@ethersproject/providers"
+import { defaultAbiCoder } from "ethers/lib/utils"
 
-const factoryAbi = require("../abis/FunWalletFactory.json").abi
+// const factoryAbi = require("../abis/FunWalletFactory.json").abi
+const factoryAbi = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json").abi
+
 const walletAbi = require("../abis/FunWallet.json").abi
 const entryPointAbi = require("../abis/EntryPoint.json").abi
 
@@ -34,7 +37,8 @@ export class WalletOnChainManager {
     async getWalletAddress(): Promise<string> {
         await this.init()
         const uniqueId = await this.walletIdentifier.getIdentifier()
-        return await this.factory!.getAddress(uniqueId)
+        const data = defaultAbiCoder.encode(["tuple(uint8,address,bytes32,uint256,bytes)"], [[0, constants.AddressZero, uniqueId, 0, ethers.utils.toUtf8Bytes("")]])
+        return await this.factory!.getAddress(data)
     }
 
     static async getWalletAddress(identifier: string, rpcUrl: string, factoryAddress: string): Promise<string> {

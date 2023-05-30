@@ -2,7 +2,7 @@
 export const LOCAL_FORK_CHAIN_ID = 31337
 export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
-export const LOCAL_API_URL = "http://127.0.0.1:3000"
+export const LOCAL_API_URL = "http://127.0.0.1:3001"
 export const LOCAL_TOKEN_ADDRS = {
     usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     usdt: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
@@ -16,7 +16,8 @@ export const FUN_TESTNET_CHAIN_KEY = "fun-testnet"
 export const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 
 // prod
-export const API_URL = "https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod"
+export const API_URL = LOCAL_API_URL
+// export const API_URL = "https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod"
 export const DASHBOARD_API_URL = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 export const BASE_WRAP_TOKEN_ADDR = {
     "1": {

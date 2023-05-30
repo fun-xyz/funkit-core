@@ -44,7 +44,7 @@ export abstract class FirstClassActions {
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
-    async swap(auth: Auth, input: SwapParams, options: EnvOption = (globalThis as any).globalEnvOption, , estimate = false): Promise<ExecutionReceipt | UserOp> {
+    async swap(auth: Auth, input: SwapParams, options: EnvOption = (globalThis as any).globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
