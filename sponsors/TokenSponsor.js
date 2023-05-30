@@ -52,7 +52,6 @@ class TokenSponsor {
     }
 
     async getContract(options = global) {
-
         if (!this.contract) {
             const parsedOptions = await parseOptions(options)
             const provider = await parsedOptions.chain.getProvider()
@@ -72,13 +71,33 @@ class TokenSponsor {
         return { to, value, data, chain: options.chain }
     }
 
+    async getSpenderBlacklisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderBlacklisted(spender)
+    }
+
+    async getSpenderWhitelisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderWhitelisted(spender)
+    }
+
+    async getTokenWhitelisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getTokenWhitelisted(spender)
+    }
+
+    async getTokenBlacklisted(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getTokenBlacklisted(spender)
+    }
+
     addUsableToken(oracle, token, aggregator) {
         return async (wallet, options = global) => {
             const decimals = await Token.getDecimals(token, options)
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.interface.encodeFunctionData("setTokenData", [data])
-            console.log(await DataServer.addPaymasterToken(token))
+            await DataServer.addPaymasterToken(token)
             return await this.encode(calldata, options)
         }
     }
@@ -172,28 +191,6 @@ class TokenSponsor {
         }
     }
 
-    addWhitelistTokens(tokens) {
-        return async (wallet, options = global) => {
-            const sendTokens = await Promise.all(tokens.map(async (token) => {
-                await DataServer.addToList(token, "tokensWhiteList", "token", await wallet.getAddress())
-                return Token.getAddress(token, options)
-            }))
-            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
-    removeWhitelistTokens(tokens) {
-        return async (wallet, options = global) => {
-            const sendTokens = await Promise.all(tokens.map(async (token) => {
-                await DataServer.removeFromList(token, "tokensWhiteList", "token", await wallet.getAddress())
-                return Token.getAddress(token, options)
-            }))
-            const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
     addSpenderToWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
@@ -255,6 +252,67 @@ class TokenSponsor {
             return await Token.approve(token, gasSponsorAddress, amount)
         }
     }
+
+    setTokenToBlackListMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setTokenListMode", [true])
+            return await this.encode(data, options)
+        }
+    }
+
+    setTokenToWhiteListMode() {
+        return async (options = global) => {
+            const data = this.interface.encodeFunctionData("setTokenListMode", [false])
+            return await this.encode(data, options)
+        }
+    }
+
+    batchBlacklistTokens(tokens, modes) {
+        return async (options = global) => {
+            let calldata = []
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenAddress = await Token.getAddress(tokens[i], options)
+                calldata.push(this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, modes[i]]))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
+    batchWhitelistTokens(tokens, modes) {
+        return async (options = global) => {
+            let calldata = []
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenAddress = await Token.getAddress(tokens[i], options)
+                calldata.push(this.interface.encodeFunctionData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
+    batchBlacklistUsers(users, modes) {
+        return async (options = global) => {
+            let calldata = []
+            for (let i = 0; i < users.length; i++) {
+                calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
+    batchWhitelistUsers(users, modes) {
+        return async (options = global) => {
+            let calldata = []
+            for (let i = 0; i < users.length; i++) {
+                calldata.push(this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]]))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
 }
 
 module.exports = { TokenSponsor };

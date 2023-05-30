@@ -24,7 +24,6 @@ async function main() {
     // await funWallet.create(auth)
     const sponsor = new TokenSponsor({ gasSponsor: { sponsorAddress: await auth.getUniqueId(), token:"asdfdasf"} })
     // const deposit = await sponsor.approve("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", 0.4)
-
     // const deposit = sponsor.stakeToken("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767",addr,0.3)
     // const deposit=await sponsor.setToWhitelistMode()
     // const deposit= await sponsor.removeSpenderFromWhiteList("0xE8448945F00bf10EfFa2Ddf935B74B3527F29DB9")

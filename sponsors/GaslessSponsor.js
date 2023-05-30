@@ -51,6 +51,16 @@ class GaslessSponsor {
         return { to, value, data, chain: options.chain }
     }
 
+    async getSpenderBlacklistMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderBlacklistMode(spender)
+    }
+
+    async getSpenderWhitelistMode(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getSpenderWhitelistMode(spender)
+    }
+
     stake(walletAddress, amount) {
         return async (wallet, options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
@@ -140,6 +150,28 @@ class GaslessSponsor {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
             await DataServer.removeFromList(spender, "walletsBlackList", "gasless", await wallet.getAddress())
+            return await this.encode(data, options)
+        }
+    }
+
+    batchBlacklistUsers(users, modes) {
+        return async (options = global) => {
+            let calldata = []
+            for (let i = 0; i < users.length; i++) {
+                calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
+    batchWhitelistUsers(users, modes) {
+        return async (options = global) => {
+            let calldata = []
+            for (let i = 0; i < users.length; i++) {
+                calldata.push(this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]]))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
             return await this.encode(data, options)
         }
     }

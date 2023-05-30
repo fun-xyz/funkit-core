@@ -8,7 +8,7 @@ const config = {
     funderPrivateKey: WALLET_PRIVATE_KEY,
     inToken: "eth",
     outToken: "dai",
-    paymasterToken: "usdc",
+    paymasterToken: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
     baseTokenStakeAmt: .61,
     paymasterTokenStakeAmt: 100,
     prefund: PREFUND,
