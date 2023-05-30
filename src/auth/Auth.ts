@@ -15,8 +15,8 @@ export abstract class Auth {
     abstract sendTx(txData: TransactionData | Function): Promise<TransactionReceipt>
 
     async sendTxs(txs: TransactionData[] | Function[]): Promise<TransactionReceipt[]> {
-        const receipts = []
-        for (let tx of txs) {
+        const receipts: TransactionReceipt[] = []
+        for (const tx of txs) {
             receipts.push(await this.sendTx(tx))
         }
         return receipts

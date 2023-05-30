@@ -1,6 +1,6 @@
 import { resolveProperties } from "ethers/lib/utils"
 import { JsonRpcProvider } from "@ethersproject/providers"
-import { deepHexlify } from "../utils/data"
+import { deepHexlify } from "../utils/DataUtils"
 import { Helper, NoServerConnectionError } from "../errors"
 import { BigNumber } from "ethers"
 import { validateChainId, sendUserOpToBundler, estimateUserOpGas, getChainId } from "../apis"

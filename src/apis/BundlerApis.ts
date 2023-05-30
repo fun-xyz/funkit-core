@@ -1,5 +1,5 @@
 import { API_URL, LOCAL_FORK_CHAIN_ID } from "../common/constants"
-import { sendPostRequest, sendGetRequest } from "../utils/Api"
+import { sendPostRequest, sendGetRequest } from "../utils/ApiUtils"
 import { JsonRpcProvider } from "@ethersproject/providers"
 
 export async function sendUserOpToBundler(

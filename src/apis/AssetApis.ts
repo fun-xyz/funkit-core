@@ -1,5 +1,5 @@
 import { API_URL } from "../common/constants"
-import { sendPostRequest } from "../utils/Api"
+import { sendPostRequest } from "../utils/ApiUtils"
 
 /**
  * Get all tokens for a specific chain

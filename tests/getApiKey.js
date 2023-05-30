@@ -1,5 +1,5 @@
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager")
-const { DEFAULT_RETRY_OPTIONS } = require("../src/utils/Api")
+const { DEFAULT_RETRY_OPTIONS } = require("../src/utils/ApiUtils")
 import { retry } from "@lifeomic/attempt"
 
 const SECRET_NAME = "FunApiServer/ApiGateway"

@@ -60,9 +60,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 in: config.inToken,
                 amount: config.swapAmount,
                 out: paymasterToken,
-                options: {
-                    returnAddress: funderAddress
-                }
+                returnAddress: funderAddress
             })
 
             await configureEnvironment({

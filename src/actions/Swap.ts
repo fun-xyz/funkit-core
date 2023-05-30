@@ -1,8 +1,8 @@
 import { Contract, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
 import { Token } from "../data/Token"
-import { swapExec, fromReadableAmount } from "../utils/swap"
-import { oneInchAPIRequest } from "../utils/swap"
+import { swapExec, fromReadableAmount } from "../utils/SwapUtils"
+import { oneInchAPIRequest } from "../utils/SwapUtils"
 import { sendRequest } from "../utils"
 import { approveAndExec } from "./ApproveAndExec"
 import { ActionData } from "./FirstClass"
@@ -136,7 +136,7 @@ const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, option
 }
 
 const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption) => {
-    let inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, options)
+    const inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, options)
     tokenAddress = await Token.getAddress(tokenAddress, options)
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
     const url = await oneInchAPIRequest("/approve/transaction", amount ? { tokenAddress, amount } : { tokenAddress })
@@ -145,7 +145,7 @@ const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: 
 }
 
 const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, address: string, options: EnvOption) => {
-    let inTokenDecimals = await _get1inchTokenDecimals(swapParams.in, options)
+    const inTokenDecimals = await _get1inchTokenDecimals(swapParams.in, options)
     const fromTokenAddress = await Token.getAddress(swapParams.in, options)
     const toTokenAddress = await Token.getAddress(swapParams.out, options)
     const amount = fromReadableAmount(swapParams.amount, inTokenDecimals)

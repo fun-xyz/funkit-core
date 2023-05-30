@@ -3,7 +3,7 @@ import { Web3Provider } from "@ethersproject/providers"
 import { ParameterFormatError, Helper } from "../errors"
 import { v4 as uuidv4 } from "uuid"
 import { Signer } from "ethers"
-import { getStoredUniqueId, setStoredUniqueId } from "../utils/Auth"
+import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
 
 export class MultiAuthEoa extends Eoa {
     authIds = []
@@ -15,7 +15,7 @@ export class MultiAuthEoa extends Eoa {
     }
 
     override async getUniqueId(): Promise<string> {
-        let uniqueIds = new Set<string>()
+        const uniqueIds = new Set<string>()
         for (const authId of this.authIds) {
             const storedUniqueId = await getStoredUniqueId(authId[0])
             if (storedUniqueId) {
