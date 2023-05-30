@@ -23,7 +23,7 @@ export class Bundler {
         this.chainId = chainId
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
-        this.userOpJsonRpcProvider = Number(chainId) == LOCAL_FORK_CHAIN_ID ? new JsonRpcProvider(this.bundlerUrl) : undefined
+        this.userOpJsonRpcProvider = Number(chainId) === LOCAL_FORK_CHAIN_ID ? new JsonRpcProvider(this.bundlerUrl) : undefined
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid
@@ -36,7 +36,7 @@ export class Bundler {
             throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, true)
         }
 
-        if (Number(response) != Number(this.chainId)) {
+        if (Number(response) !== Number(this.chainId)) {
             throw new Error(`Bundler chainId ${response} does not match expected chainId ${this.chainId}`)
         }
     }

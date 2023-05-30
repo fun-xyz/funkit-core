@@ -1,10 +1,9 @@
 import { Interface } from "ethers/lib/utils"
 import { constants, Transaction } from "ethers"
 import { ActionData } from "./FirstClass"
+import approveAndExecContract from "../abis/ApproveAndExec.json"
 
-const approveAndExecAbi = require("../abis/ApproveAndExec.json").abi
-const approveAndExecInterface = new Interface(approveAndExecAbi)
-
+const approveAndExecInterface = new Interface(approveAndExecContract.abi)
 const errorData = {
     location: "actions.approveAndExec"
 }

@@ -4,7 +4,7 @@ import { getChainFromData } from "../data"
 import { BytesLike } from "ethers/lib/utils"
 import { TransactionReceipt } from "@ethersproject/providers"
 import { TransactionData } from "src/common/types/TransactionData"
-const entrypointAbi = require("../abis/EntryPoint.json").abi
+import entryPointContract from "../abis/EntryPoint.json"
 
 export abstract class Auth {
     abstract signHash(hash: BytesLike): Promise<string>
@@ -26,7 +26,7 @@ export abstract class Auth {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
-        const entrypointContract = new Contract(entryPointAddress, entrypointAbi, provider)
+        const entrypointContract = new Contract(entryPointAddress, entryPointContract.abi, provider)
         return await entrypointContract.getNonce(sender, key)
     }
 }

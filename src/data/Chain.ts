@@ -56,10 +56,14 @@ export class Chain {
         }
         try {
             await this.loadBundler()
-        } catch {}
+        } catch {
+            // ignore
+        }
         try {
             await this.loadProvider()
-        } catch {}
+        } catch {
+            // ignore
+        }
     }
 
     async loadProvider() {
@@ -145,14 +149,15 @@ export class Chain {
     async estimateOpGas(partialOp: UserOperation): Promise<any> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        let { preVerificationGas, verificationGas, callGasLimit } = res
+        const { verificationGas } = res
+        let { preVerificationGas, callGasLimit } = res
         if (!(preVerificationGas || verificationGas || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
 
         preVerificationGas = preVerificationGas.mul(2)
         const verificationGasLimit = verificationGas.add(50_000)
-        if (partialOp.initCode != "0x") {
+        if (partialOp.initCode !== "0x") {
             callGasLimit = BigNumber.from(10e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }

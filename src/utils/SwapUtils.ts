@@ -6,8 +6,7 @@ import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/I
 import { Provider } from "@ethersproject/providers"
 import { getChainFromData } from "../data"
 import { EnvOption } from "../config"
-
-const ERC20 = require("../abis/ERC20.json")
+import ERC20 from "../abis/ERC20.json"
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
 export function fromReadableAmount(amount: number, decimals: number) {
