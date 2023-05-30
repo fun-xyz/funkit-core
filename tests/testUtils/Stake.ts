@@ -23,6 +23,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         this.timeout(120_000)
         let auth: Auth
         let wallet: FunWallet
+        const amount = .001
         before(async function () {
             let apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -38,7 +39,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: .001 })
+            await wallet.stake(auth, { amount })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })
