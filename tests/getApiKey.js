@@ -1,5 +1,5 @@
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager")
-const { DEFAULT_RETRY_OPTIONS } = require('../src/utils/Api')
+const { DEFAULT_RETRY_OPTIONS } = require("../src/utils/Api")
 import { retry } from "@lifeomic/attempt"
 
 const SECRET_NAME = "FunApiServer/ApiGateway"
@@ -14,12 +14,16 @@ async function getApiKey() {
     let response
 
     try {
-        response = await retry(() => client.send(
-            new GetSecretValueCommand({
-                SecretId: SECRET_NAME,
-                VersionStage: VERSION_STAGE
-            })
-        ), DEFAULT_RETRY_OPTIONS)
+        response = await retry(
+            () =>
+                client.send(
+                    new GetSecretValueCommand({
+                        SecretId: SECRET_NAME,
+                        VersionStage: VERSION_STAGE
+                    })
+                ),
+            DEFAULT_RETRY_OPTIONS
+        )
     } catch (error) {
         // For a list of exceptions thrown, see
         // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html

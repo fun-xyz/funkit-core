@@ -1,7 +1,7 @@
 const { ethers, Wallet } = require("ethers")
 const { ContractFactory, Contract } = ethers
 const fs = require("fs")
-const { parseUnits } = require("ethers/lib/utils");
+const { parseUnits } = require("ethers/lib/utils")
 
 const oracleAbi = require("../abis/TokenPriceOracle.json")
 const tokenSponsorAbi = require("../abis/TokenPaymaster.json")
@@ -24,13 +24,13 @@ const getOptions = async (chain = 36864) => {
     const apiKey = await getTestApiKey()
     return {
         chain,
-        apiKey: apiKey,
+        apiKey: apiKey
     }
 }
 
 const deploy = async (signer, obj, params = []) => {
-    const factory = new ContractFactory(obj.abi, obj.bytecode, signer);
-    const contract = await factory.deploy(...params, { gasPrice: parseUnits(".1", "gwei") });
+    const factory = new ContractFactory(obj.abi, obj.bytecode, signer)
+    const contract = await factory.deploy(...params, { gasPrice: parseUnits(".1", "gwei") })
     return contract.address
 }
 
@@ -65,7 +65,6 @@ const deployApproveAndSwap = async (signer) => {
     return await deploy(signer, approveAndSwapAbi)
 }
 
-
 const main = async (chainId, privateKey) => {
     await configureEnvironment(getOptions(chainId))
 
@@ -79,7 +78,6 @@ const main = async (chainId, privateKey) => {
     console.log(oracle)
     // const entrypoint = await deploy(signer, entrypointAbi)
     // const swap = await deployApproveAndSwap(signer)
-
 }
 
 const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
@@ -89,7 +87,7 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
     const sponsor = new TokenSponsor({
         gasSponsor: {
             sponsorAddress: "0x175C5611402815Eba550Dad16abd2ac366a63329",
-            token: "0x53589543A64408AA03ba709EFCD1a7f03AA6880D",
+            token: "0x53589543A64408AA03ba709EFCD1a7f03AA6880D"
         }
     })
 
@@ -131,8 +129,7 @@ const feeOracleConfig = async (chainId, pkey) => {
 // paymasterConfig(5, WALLET_PRIVATE_KEY)
 
 // main(31337, TEST_PRIVATE_KEY)
-// feeOracleConfig(31337, TEST_PRIVATE_KEY) 
-
+// feeOracleConfig(31337, TEST_PRIVATE_KEY)
 
 // main(42161, WALLET_PRIVATE_KEY)
 paymasterConfig(42161, WALLET_PRIVATE_KEY)
@@ -140,7 +137,5 @@ paymasterConfig(42161, WALLET_PRIVATE_KEY)
 
 // paymasterTest()
 // yarn run bundler --network "http://fun-alchemy-fork-eb-2-dev.us-west-2.elasticbeanstalk.com" --entryPoint "0x687F36336FCAB8747be1D41366A416b41E7E1a96" --unsafe
-
-
 
 // const err = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000001741413231206469646e2774207061792070726566756e64000000000000000000"

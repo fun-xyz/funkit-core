@@ -1,11 +1,11 @@
-import { Signer, Wallet } from 'ethers';
-import { BytesLike, arrayify } from 'ethers/lib/utils';
-import { verifyFunctionParams, verifyPrivateKey } from '../utils/data';
-import { TransactionReceipt, Web3Provider } from '@ethersproject/providers'
-import { TransactionData } from 'src/common/types/TransactionData';
-import { storeEVMCall } from '../apis';
-import { Auth } from './Auth';
-import { EnvOption } from 'src/config';
+import { Signer, Wallet } from "ethers"
+import { BytesLike, arrayify } from "ethers/lib/utils"
+import { verifyFunctionParams, verifyPrivateKey } from "../utils/data"
+import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
+import { TransactionData } from "src/common/types/TransactionData"
+import { storeEVMCall } from "../apis"
+import { Auth } from "./Auth"
+import { EnvOption } from "src/config"
 
 const eoaAuthConstructorExpectedKeys = [["privateKey", "signer", "provider"]]
 const gasSpecificChain = { "137": 850_000_000_000 }
@@ -64,27 +64,25 @@ export class Eoa extends Auth {
         return [await this.getUniqueId()]
     }
 
-
     async getEstimateGasSignature(): Promise<string> {
         return await this.getUniqueId()
     }
 
-    async sendTx(txData: TransactionData|Function, options: EnvOption = globalEnvOption): Promise<TransactionReceipt> {
+    async sendTx(txData: TransactionData|Function, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
         if (typeof txData === "function") {
             txData = await txData(options)
         }
         const { to, value, data, chain } = txData as TransactionData
         const provider = await chain.getProvider()
-        let eoa = this.signer!;
+        let eoa = this.signer!
         if (!eoa.provider) {
             eoa = this.signer!.connect(provider!)
         }
-        let tx;
+        let tx
         if ((gasSpecificChain as any)[chain.id!]) {
             tx = await eoa.sendTransaction({ to, value, data, gasPrice: (gasSpecificChain as any)[chain.id!] })
-        }
-        else {
+        } else {
             tx = await eoa.sendTransaction({ to, value, data })
         }
         const receipt = await tx.wait()
@@ -93,7 +91,7 @@ export class Eoa extends Auth {
     }
 
     async getSignerFromProvider(provider: Web3Provider): Promise<Signer> {
-        await provider.send('eth_requestAccounts', [])
+        await provider.send("eth_requestAccounts", [])
         return provider.getSigner()
     }
 }

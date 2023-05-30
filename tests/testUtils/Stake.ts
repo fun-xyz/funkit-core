@@ -2,8 +2,9 @@ import { assert } from "chai"
 import { Auth, Eoa } from "../../src/auth"
 import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { fundWallet, getTestApiKey } from "../../src/utils"
+import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
+import { getTestApiKey } from "../testUtils"
 
 export interface StakeTestConfig {
     chainId: number

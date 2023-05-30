@@ -3,7 +3,7 @@ const logHelper = (tabwith, logData) => {
         return `${"\t".repeat(tabwith)}${logData}`
     }
     if (Array.isArray(logData)) {
-        return logData.map(log => (`${"\t".repeat(tabwith)}${log}`)).join("\n")
+        return logData.map((log) => `${"\t".repeat(tabwith)}${log}`).join("\n")
     }
 }
 
@@ -18,7 +18,7 @@ class Helper {
         const lines = []
         this.msgs.length ? lines.push(logHelper(width, this.msgs)) : ""
         lines.push(logHelper(width, `${this.title}: ${JSON.stringify(this.data, null, "\t")}`))
-        return (lines.join("\n") + "\n")
+        return lines.join("\n") + "\n"
     }
 
     pushMessage(msg) {
@@ -37,4 +37,4 @@ class Helper {
     }
 }
 
-module.exports = { Helper };
+module.exports = { Helper }

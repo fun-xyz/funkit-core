@@ -17,18 +17,18 @@ export const DEFAULT_RETRY_OPTIONS = {
     calculateDelay: null
 }
 
-const sendRequest = async (uri: string, method: string, apiKey: string, body?: object) => {
+export const sendRequest = async (uri: string, method: string, apiKey: string, body?: object) => {
     try {
         return retry(async function () {
             return await fetch(uri, {
                 method,
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-Api-Key': apiKey
+                    "Content-Type": "application/json",
+                    "X-Api-Key": apiKey
                 },
-                redirect: 'follow',
+                redirect: "follow",
                 body: JSON.stringify(body)
-            }).then(r => r.json())
+            }).then((r) => r.json())
         }, DEFAULT_RETRY_OPTIONS)
     } catch (e) {
         console.log(e)

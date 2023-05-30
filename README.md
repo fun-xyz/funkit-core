@@ -6,9 +6,9 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 ## **Features**
 
-- 💰 Automate Defi Actions for an EOA
-- ⛽ Sponsor/Gasless Transactions
-- 🔄 Swap tokens with Uniswap
+-   💰 Automate Defi Actions for an EOA
+-   ⛽ Sponsor/Gasless Transactions
+-   🔄 Swap tokens with Uniswap
 
 ## **Table of Contents**
 
@@ -28,7 +28,6 @@ The FunWallet SDK empowers developers to access all of web3's features while wor
 
 ## **Quickstart**
 
-
 FunWallet is the simplest way to create a wallet in your React.js web application. It comes with sensible defaults out of the box so you can focus on building.
 
 Find a live demo [here](http://demo.fun.xyz).
@@ -37,7 +36,7 @@ Find a live demo [here](http://demo.fun.xyz).
 
 Download our package. If necessary, also download [ethers.js](https://docs.ethers.org/v5/getting-started/#installing).
 
-```npm install @fun-wallet/sdk ethers@5.7.2```
+`npm install @fun-wallet/sdk ethers@5.7.2`
 
 <Alert tone="info">
 
@@ -49,31 +48,30 @@ If you do not have an API Key, request to join our [private beta](https://app.fu
 
 First, set your environment variables for how your FunWallet will interact with blockchains. This information includes your API_KEY.
 
-
 ```js
 const options = {
-  chain: CHAIN_ID,
-  apiKey: API_KEY,
-  gasSponsor: {
-    sponsorAddress: SPONSOR_ADDRESS,
-    token: "USDC",
-  },
-};
+    chain: CHAIN_ID,
+    apiKey: API_KEY,
+    gasSponsor: {
+        sponsorAddress: SPONSOR_ADDRESS,
+        token: "USDC"
+    }
+}
 ```
 
- ```js
+```js
 import { ethers } from "ethers"
 import { FunWallet, TokenSponsor, configureEnvironment } from "@fun-wallet/sdk"
 import { Eoa } from "@fun-wallet/sdk/auth"
 
 // Configure gas mechanics to pay gas in USDC
 const options = {
-  chain: CHAIN_ID,
-  apiKey: API_KEY,
-  gasSponsor: {
-    sponsorAddress: SPONSOR_ADDRESS,
-    token: "USDC"
-  }
+    chain: CHAIN_ID,
+    apiKey: API_KEY,
+    gasSponsor: {
+        sponsorAddress: SPONSOR_ADDRESS,
+        token: "USDC"
+    }
 }
 await configureEnvironment(options)
 
@@ -83,26 +81,25 @@ Get the user's EOA. This is used to:
 - Stake USDC in the Paymaster on behalf of the FunWallet
 */
 const provider = new ethers.providers.Web3Provider(window.ethereum, "any")
-await provider.send('eth_requestAccounts', [])
+await provider.send("eth_requestAccounts", [])
 const eoa = provider.getSigner()
 const auth = new Eoa({ signer: eoa })
 
 // Get FunWallet associated with EOA
 const uniqueId = await auth.getUniqueId()
 const wallet = new FunWallet({ uniqueId })
-
 ```
+
 ## 3. Run Transactions
 
 Execute transactions or swaps in one line of code.
 
 ```js
 // Transfer 5 USDC to TO_ADDR.
-const transferReceipt = await wallet.transfer(auth, TO_ADDR, 5, "USDC");
+const transferReceipt = await wallet.transfer(auth, TO_ADDR, 5, "USDC")
 // Swap 5 USDC for ETH
-const swapReceipt = await wallet.swap(auth, "ETH", "USDC", 5, swapOptions);
+const swapReceipt = await wallet.swap(auth, "ETH", "USDC", 5, swapOptions)
 ```
-
 
 ```js
 import { ethers } from "ethers"
@@ -159,9 +156,11 @@ console.log(sponsor.getTokenBalance("USDC", wallet.getAddress()))
 You can run any file inside of the test/fork folder and see the result. By default, the tests will run with Fun managed bundler and on the Fun testnet, which is a fork from ethereum mainnet.
 
 Starting point: `/fun-wallet-sdk`
+
 ```
 npm run test-funtestnet
 ```
+
 or
 
 ```
@@ -179,6 +178,7 @@ Starting point: `~/{HOME_DIR}`
 ```
 git clone https://github.com/TheFunGroup/bundler.git
 ```
+
 ### <a id="testwithlocalbundler"></a> **2. Set Up the Fork and Bundler Locally**
 
 Once the bundler is cloned, follow the instructions in https://github.com/TheFunGroup/bundler/blob/main/README.md before moving onto the following steps
@@ -192,7 +192,9 @@ Starting point: `/fun-wallet-sdk`
 ```
 npm run test-localfork
 ```
-or 
+
+or
+
 ```
 env REMOTE_TEST=false npx mocha test/fork/Swap.js
 ```
@@ -202,11 +204,13 @@ env REMOTE_TEST=false npx mocha test/fork/Swap.js
 You can run any file inside of the test/goerli folder and see the result.
 
 Starting point: `/fun-wallet-sdk`
+
 ```
 npm run test-goerli
 ```
 
-or 
+or
+
 ```
 npx mocha test/goerli/Factory.js
 ```

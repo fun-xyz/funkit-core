@@ -1,10 +1,10 @@
-import { JsonRpcProvider } from "@ethersproject/providers";
-import { MissingParameterError, Helper, ServerMissingDataError } from "../errors";
-import { Bundler } from "../servers/Bundler";
-import { flattenObj } from "../utils/data";
-import { UserOperation } from "./UserOp";
-import { BigNumber } from "ethers";
-import { getChainInfo, getModuleInfo } from "../apis";
+import { JsonRpcProvider } from "@ethersproject/providers"
+import { MissingParameterError, Helper, ServerMissingDataError } from "../errors"
+import { Bundler } from "../servers/Bundler"
+import { flattenObj } from "../utils/data"
+import { UserOperation } from "./UserOp"
+import { BigNumber } from "ethers"
+import { getChainInfo, getModuleInfo } from "../apis"
 
 export interface ChainInput {
     chainId?: string
@@ -56,11 +56,10 @@ export class Chain {
         }
         try {
             await this.loadBundler()
-        }
-        catch { }
+        } catch {}
         try {
             await this.loadProvider()
-        } catch { }
+        } catch {}
     }
 
     async loadProvider() {
@@ -77,12 +76,12 @@ export class Chain {
     }
 
     async loadChainData(chainId: string) {
-        let chain;
+        let chain
         try {
             if (!this.id) {
                 chain = await getChainInfo(chainId)
-                this.id = chain.chain;
-                this.name = chain.key;
+                this.id = chain.chain
+                this.name = chain.key
                 this.currency = chain.currency
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
@@ -92,7 +91,6 @@ export class Chain {
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
             throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
-
         }
     }
 
@@ -141,7 +139,7 @@ export class Chain {
 
     async getFeeData(): Promise<any> {
         await this.init()
-        return await this.provider!.getFeeData();
+        return await this.provider!.getFeeData()
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<any> {
@@ -164,7 +162,7 @@ export class Chain {
 const verifyBundlerUrl = async (url: string) => {
     const provider = new JsonRpcProvider(url)
     const data = await provider.send("web3_clientVersion", [])
-    return (data.indexOf("aa-bundler") + 1)
+    return data.indexOf("aa-bundler") + 1
 }
 
 export const getChainFromData = async (chainIdentifier: any): Promise<Chain> => {
@@ -176,15 +174,13 @@ export const getChainFromData = async (chainIdentifier: any): Promise<Chain> => 
 
     if (Number(chainIdentifier)) {
         chain = new Chain({ chainId: chainIdentifier })
-    }
-    else if (chainIdentifier.indexOf("http") + 1) {
+    } else if (chainIdentifier.indexOf("http") + 1) {
         if (await verifyBundlerUrl(chainIdentifier)) {
             chain = new Chain({ bundlerUrl: chainIdentifier })
         } else {
             chain = new Chain({ rpcUrl: chainIdentifier })
         }
-    }
-    else {
+    } else {
         chain = new Chain({ chainName: chainIdentifier })
     }
     return chain

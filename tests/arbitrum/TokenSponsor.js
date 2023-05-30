@@ -1,7 +1,7 @@
-const { TokenSponsorTest } = require('../testUtils/TokenSponsor.js')
+const { TokenSponsorTest } = require("../testUtils/TokenSponsor.js")
 const { WALLET_PRIVATE_KEY, WALLET_PRIVATE_KEY_2 } = require("../../utils/index.js")
 
-const PREFUND = process.env.PREFUND === 'true' ? true : false
+const PREFUND = process.env.PREFUND === "true" ? true : false
 const config = {
     chainId: 42161,
     authPrivateKey: WALLET_PRIVATE_KEY,
@@ -12,7 +12,7 @@ const config = {
     baseTokenStakeAmt: 0.02,
     paymasterTokenStakeAmt: 1000,
     prefund: PREFUND,
-    swapAmount: .00001,
+    swapAmount: 0.00001,
     stake: true,
     walletIndex: 0,
     funderIndex: 1
