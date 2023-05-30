@@ -1,7 +1,7 @@
 import { Auth } from "../auth"
 import { verifyFunctionParams, isContract } from "../utils"
 import { _swap } from "./Swap"
-import { _stake } from "./Stake"
+import { _finishUnstake, _requestUnstake, _stake } from "./Stake"
 import { _transfer, _approve } from "./Token"
 import { EnvOption } from "../config"
 import { Chain, UserOp } from "../data"
@@ -12,6 +12,8 @@ const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
 const stakeExpected = ["amount"]
+const requestUnstakeExpected = ["amount"]
+const finishUnstakeExpected: string[] = []
 
 export interface ActionData {
     wallet: FunWallet
@@ -48,6 +50,16 @@ export abstract class FirstClassActions {
     async stake(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         verifyFunctionParams("Wallet.stake", input, stakeExpected)
         return await this.execute(auth, _stake(input), options, estimate)
+    }
+
+    async requestUnstake(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
+        verifyFunctionParams("Wallet.requestUnstake", input, requestUnstakeExpected)
+        return await this.execute(auth, _requestUnstake(input), options, estimate)
+    }
+
+    async finishUnstake(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
+        verifyFunctionParams("Wallet.finishUnstake", input, finishUnstakeExpected)
+        return await this.execute(auth, _finishUnstake(input), options, estimate)
     }
 
     async create(auth: Auth, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
