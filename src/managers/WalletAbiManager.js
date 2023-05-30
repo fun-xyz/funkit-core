@@ -58,8 +58,7 @@ class WalletAbiManager {
         verifyIsArray(data, location)
         if (value) {
             verifyIsArray(value, location)
-        }
-        else {
+        } else {
             value = [0, 0]
         }
         const encodeObj = { dest, data, value }
@@ -72,15 +71,13 @@ class WalletAbiManager {
         verifyIsArray(data, location)
         if (value) {
             verifyIsArray(value, location)
-        }
-        else {
+        } else {
             value = [0, 0]
         }
         const feedata = [token, recipient, amount]
         const encodeObj = { dest, data, value, feedata }
         return encodeContractCall(this.walletInterface, "initAndExec", encodeObj, location, isInternal)
     }
-
 
     encodeWalletCall(encodeFunctionName, input, location = "WalletAbiManager.encodeWalletCall", isInternal = false) {
         return encodeContractCall(this.walletInterface, encodeFunctionName, input, location, isInternal)
@@ -96,7 +93,10 @@ class WalletAbiManager {
         const { uniqueId, entryPointAddress, verificationAddress, owner, implementation } = input
 
         const initCodeParams = {
-            salt: uniqueId, _entryPointAddr: entryPointAddress, _userAuthAddr: verificationAddress, _owner: owner
+            salt: uniqueId,
+            _entryPointAddr: entryPointAddress,
+            _userAuthAddr: verificationAddress,
+            _owner: owner
         }
         if (!implementation) {
             initCodeParams.implementation = constants.AddressZero
@@ -111,6 +111,5 @@ class WalletAbiManager {
         return hexConcat([input.factoryAddress, data])
     }
 }
-
 
 module.exports = { WalletAbiManager }

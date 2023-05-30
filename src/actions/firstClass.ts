@@ -1,16 +1,23 @@
 import { Auth } from "../auth"
 import { verifyFunctionParams, isContract } from "../utils"
-import { _swap } from "./swap"
-import { _stake } from "./stake"
-import { _transfer, _approve } from "./token"
-import { EnvOption } from "src/config"
-import { UserOp } from "src/data"
+import { _swap } from "./Swap"
+import { _stake } from "./Stake"
+import { _transfer, _approve } from "./Token"
+import { EnvOption } from "../config"
+import { Chain, UserOp } from "../data"
+import { FunWallet } from "../wallet"
 
 const transferExpected = ["to", "amount"]
 const genCallExpected = ["to"]
 const approveExpected = ["spender", "amount", "token"]
 const swapExpected = ["in", "out", "amount"]
 const stakeExpected = ["amount"]
+
+export interface ActionData {
+    wallet: FunWallet
+    chain: Chain
+    options: EnvOption
+}
 
 export interface ExecutionReceipt {
     opHash: string

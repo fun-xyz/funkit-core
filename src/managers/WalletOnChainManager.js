@@ -6,7 +6,6 @@ const factoryAbi = require("../abis/FunWalletFactory.json").abi
 const walletAbi = require("../abis/FunWallet.json").abi
 const entryPointAbi = require("../abis/EntryPoint.json").abi
 
-
 class WalletOnChainManager {
     constructor(chain, walletIdentifier) {
         const currentLocation = "WalletOnChainManager constructor"
@@ -45,23 +44,23 @@ class WalletOnChainManager {
 
     async getTxId(userOpHash, timeout = 30000, interval = 5000) {
         await this.init()
-        const endtime = Date.now() + timeout;
+        const endtime = Date.now() + timeout
         while (Date.now() < endtime) {
-            const events = await this.entrypoint.queryFilter(this.entrypoint.filters.UserOperationEvent(userOpHash));
+            const events = await this.entrypoint.queryFilter(this.entrypoint.filters.UserOperationEvent(userOpHash))
             if (events.length > 0) {
-                return events[0].transactionHash;
+                return events[0].transactionHash
             }
-            await new Promise(resolve => setTimeout(resolve, interval));
+            await new Promise((resolve) => setTimeout(resolve, interval))
         }
-        return undefined;
+        return undefined
     }
 
     async getReceipt(transactionHash) {
         await this.init()
         const provider = await this.chain.getProvider()
-        const txReceipt = await provider.getTransactionReceipt(transactionHash);
+        const txReceipt = await provider.getTransactionReceipt(transactionHash)
         if (txReceipt && txReceipt.blockNumber) {
-            return txReceipt;
+            return txReceipt
         }
     }
 
@@ -72,8 +71,7 @@ class WalletOnChainManager {
         try {
             const data = await contract.getModuleStateVal(moduleAddress)
             return data != "0x"
-        }
-        catch (e) {
+        } catch (e) {
             return false
         }
     }
@@ -91,12 +89,11 @@ class WalletOnChainManager {
 
     async getEthTokenPairing(token) {
         const OffChainOracleAbi = require("../abis/OffChainOracle.json").abi
-        const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress");
+        const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress")
         const provider = await this.chain.getProvider()
         const oracle = new Contract(offChainOracleAddress, OffChainOracleAbi, provider)
         return await oracle.getRateToEth(token, true)
     }
 }
-
 
 module.exports = { WalletOnChainManager }

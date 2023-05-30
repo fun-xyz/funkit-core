@@ -98,7 +98,7 @@ export class FunWallet extends FirstClassActions {
             }
 
             if (fee.amount) {
-                fee.amount = (await token.getDecimalAmount(BigNumber.from(fee.amount).toNumber())).toNumber()
+                fee.amount = (await token.getDecimalAmount(fee.amount)).toNumber()
             } else if (fee.gasPercent) {
                 const emptyFunc = async () => {
                     return {

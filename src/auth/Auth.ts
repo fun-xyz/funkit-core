@@ -1,10 +1,10 @@
-import { BigNumber, Contract, Signer } from 'ethers';
-import { EnvOption } from 'src/config/config';
-import { getChainFromData } from '../data';
-import { BytesLike } from 'ethers/lib/utils';
-import { TransactionReceipt } from '@ethersproject/providers'
-import { TransactionData } from 'src/common/types/TransactionData';
-const entrypointAbi = require("../abis/EntryPoint.json").abi;
+import { BigNumber, Contract, Signer } from "ethers"
+import { EnvOption } from "src/config/config"
+import { getChainFromData } from "../data"
+import { BytesLike } from "ethers/lib/utils"
+import { TransactionReceipt } from "@ethersproject/providers"
+import { TransactionData } from "src/common/types/TransactionData"
+const entrypointAbi = require("../abis/EntryPoint.json").abi
 
 export abstract class Auth {
     abstract signHash(hash: BytesLike): Promise<string>
@@ -12,9 +12,9 @@ export abstract class Auth {
     abstract getSigner(): Promise<Signer>
     abstract getOwnerAddr(): Promise<string[]>
     abstract getEstimateGasSignature(): Promise<string>
-    abstract sendTx(txData: TransactionData|Function): Promise<TransactionReceipt>
+    abstract sendTx(txData: TransactionData | Function): Promise<TransactionReceipt>
 
-    async sendTxs(txs: TransactionData[]|Function[]): Promise<TransactionReceipt[]> {
+    async sendTxs(txs: TransactionData[] | Function[]): Promise<TransactionReceipt[]> {
         const receipts = []
         for (let tx of txs) {
             receipts.push(await this.sendTx(tx))

@@ -3,5 +3,5 @@ const WalletAbiManager = require("./WalletAbiManager")
 
 module.exports = {
     ...WalletOnChainManager,
-    ...WalletAbiManager,
+    ...WalletAbiManager
 }

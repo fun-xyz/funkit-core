@@ -235,9 +235,7 @@
     "ast": {
         "absolutePath": "@aave/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol",
         "exportedSymbols": {
-            "IERC20": [
-                174
-            ]
+            "IERC20": [174]
         },
         "id": 175,
         "license": "AGPL-3.0",
@@ -245,11 +243,7 @@
         "nodes": [
             {
                 "id": 98,
-                "literals": [
-                    "solidity",
-                    "0.8",
-                    ".10"
-                ],
+                "literals": ["solidity", "0.8", ".10"],
                 "nodeType": "PragmaDirective",
                 "src": "37:23:2"
             },
@@ -267,9 +261,7 @@
                 },
                 "fullyImplemented": false,
                 "id": 174,
-                "linearizedBaseContracts": [
-                    174
-                ],
+                "linearizedBaseContracts": [174],
                 "name": "IERC20",
                 "nameLocation": "143:6:2",
                 "nodeType": "ContractDefinition",

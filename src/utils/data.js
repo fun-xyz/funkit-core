@@ -3,7 +3,7 @@ const { isHexString, hexlify } = require("ethers/lib/utils")
 const { MissingParameterError, Helper, DataFormatError } = require("../errors")
 
 const compareToExpectedParams = (input, expected) => {
-    return expected.filter(key => {
+    return expected.filter((key) => {
         if (typeof key == "string") {
             return !input[key]
         }
@@ -29,18 +29,18 @@ const verifyFunctionParams = (location, input, expected) => {
 
 const validateClassInstance = (data, dataName, classObj, location = "", isInternal = false) => {
     if (data instanceof classObj || data.constructor.toString() == classObj.toString()) {
-        return;
+        return
     }
     const helper = new Helper(dataName, data)
-    throw new DataFormatError(dataName, classObj.name, location, helper, isInternal);
+    throw new DataFormatError(dataName, classObj.name, location, helper, isInternal)
 }
 
 const validateDataType = (data, dataName, type, location = "", isInternal = false) => {
     if (typeof data == type) {
-        return;
+        return
     }
     const helper = new Helper(dataName, data)
-    throw new DataFormatError(dataName, type, location, helper, isInternal);
+    throw new DataFormatError(dataName, type, location, helper, isInternal)
 }
 
 const formatMissingForError = (missing) => {
@@ -64,17 +64,17 @@ const formatMissingForErrorOrMode = (missing) => {
     return out.slice(0, -4) + ")"
 }
 const orderParams = (paramOrder, input) => {
-    return paramOrder.map(item => (input[item]))
+    return paramOrder.map((item) => input[item])
 }
 
 const getUsedParametersFromOptions = (input, options) => {
-    return options.filter(key => (!!input[key]))
+    return options.filter((key) => !!input[key])
 }
 
 const objectValuesToBigNumber = (obj) => {
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
         const val = obj[key]
-        if (typeof val == 'object' && val.type == "BigNumber") {
+        if (typeof val == "object" && val.type == "BigNumber") {
             obj[key] = BigNumber.from(val.hex)
         }
     })
@@ -102,11 +102,10 @@ const verifyIsArray = (value, location = "", isInternal = false) => {
 
 const flattenObj = (obj) => {
     let out = {}
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
         if (typeof obj[key] == "object" && !Array.isArray(obj[key])) {
             out = { ...out, ...flattenObj(obj[key]) }
-        }
-        else {
+        } else {
             out[key] = obj[key]
         }
     })
@@ -122,20 +121,33 @@ const objValToArray = (obj) => {
 }
 
 const deepHexlify = (obj) => {
-    if (typeof obj === 'function') {
-        return undefined;
+    if (typeof obj === "function") {
+        return undefined
     }
-    if (obj == null || typeof obj === 'string' || typeof obj === 'boolean') {
-        return obj;
-    }
-    else if (obj._isBigNumber != null || typeof obj !== 'object') {
-        return hexlify(obj).replace(/^0x0/, '0x');
+    if (obj == null || typeof obj === "string" || typeof obj === "boolean") {
+        return obj
+    } else if (obj._isBigNumber != null || typeof obj !== "object") {
+        return hexlify(obj).replace(/^0x0/, "0x")
     }
     if (Array.isArray(obj)) {
-        return obj.map(member => deepHexlify(member));
+        return obj.map((member) => deepHexlify(member))
     }
-    return Object.keys(obj).reduce((set, key) => (Object.assign(Object.assign({}, set), { [key]: deepHexlify(obj[key]) })), {});
+    return Object.keys(obj).reduce((set, key) => Object.assign(Object.assign({}, set), { [key]: deepHexlify(obj[key]) }), {})
 }
 
-
-module.exports = { formatMissingForError, formatMissingForErrorOrMode, verifyIsArray, objectValuesToBigNumber, deepHexlify, objValToArray, flattenObj, getUsedParametersFromOptions, validateDataType, validateClassInstance, compareToExpectedParams, orderParams, verifyFunctionParams, verifyPrivateKey };
+module.exports = {
+    formatMissingForError,
+    formatMissingForErrorOrMode,
+    verifyIsArray,
+    objectValuesToBigNumber,
+    deepHexlify,
+    objValToArray,
+    flattenObj,
+    getUsedParametersFromOptions,
+    validateDataType,
+    validateClassInstance,
+    compareToExpectedParams,
+    orderParams,
+    verifyFunctionParams,
+    verifyPrivateKey
+}

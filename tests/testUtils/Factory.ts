@@ -1,11 +1,11 @@
 import { Eoa } from "../../src/auth"
 import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../src/common/constants"
 import { expect } from "chai"
-import { randomBytes } from "ethers/lib/utils";
-import { GlobalEnvOption, configureEnvironment } from "../../src/config";
-import { FunWallet } from "../../src/wallet";
-import { isContract, fundWallet } from "../../src/utils/chain";
-import { getTestApiKey } from "../testUtils";
+import { randomBytes } from "ethers/lib/utils"
+import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { FunWallet } from "../../src/wallet"
+import { isContract, fundWallet } from "../../src/utils/chain"
+import { getTestApiKey } from "../testUtils"
 
 export interface FactoryTestConfig {
     chainId: number
@@ -21,17 +21,17 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         let auth: Eoa
         let wallet: FunWallet
         let uniqueId: string
-        
+
         this.timeout(100_000)
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
-                apiKey: apiKey,
+                apiKey: apiKey
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            uniqueId = randomBytes(32).toString();
+            uniqueId = randomBytes(32).toString()
             wallet = new FunWallet({ uniqueId, index: 3123 })
         })
 
@@ -49,7 +49,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
                 const walletAddress = await wallet1.getAddress()
                 let iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.false
-                await fundWallet(auth, wallet1, config.prefundAmt? config.prefundAmt: .5)
+                await fundWallet(auth, wallet1, config.prefundAmt ? config.prefundAmt : 0.5)
                 await wallet1.create(auth)
                 iscontract = await isContract(walletAddress)
                 expect(iscontract).to.be.true
@@ -64,7 +64,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         })
 
         it("wallet should not have the same address with a different uniqueId", async () => {
-            let uniqueId1 = randomBytes(32).toString();
+            let uniqueId1 = randomBytes(32).toString()
             const wallet1 = new FunWallet({ uniqueId: uniqueId1, index: 3923 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
