@@ -1,19 +1,15 @@
 import { Auth } from "../auth"
-import { verifyFunctionParams, isContract } from "../utils"
+import { isContract } from "../utils"
 import { _swap } from "./Swap"
 import { _finishUnstake, _requestUnstake, _stake } from "./Stake"
 import { _transfer, _approve } from "./Token"
 import { EnvOption } from "../config"
 import { Chain, UserOp } from "../data"
 import { FunWallet } from "../wallet"
-
-const transferExpected = ["to", "amount"]
-const genCallExpected = ["to"]
-const approveExpected = ["spender", "amount", "token"]
-const swapExpected = ["in", "out", "amount"]
-const stakeExpected = ["amount"]
-const requestUnstakeExpected = ["amount"]
-const finishUnstakeExpected: string[] = []
+import { BigNumber } from "ethers"
+import { ApproveParams, TransferParams } from "./Token"
+import { SwapParams } from "./Swap"
+import { StakeParams, RequestUnstakeParams } from "./Stake"
 
 export interface ActionData {
     wallet: FunWallet
@@ -32,34 +28,28 @@ export abstract class FirstClassActions {
     abstract execute(auth: Auth, transactionFunc: Function, txOptions: EnvOption, estimate: boolean): Promise<ExecutionReceipt | UserOp>
     abstract getAddress(options?: EnvOption): Promise<string>
 
-    async transfer(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.transfer", input, transferExpected)
+    async transfer(auth: Auth, input: TransferParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _transfer(input), options, estimate)
     }
 
-    async approve(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.approve", input, approveExpected)
+    async approve(auth: Auth, input: ApproveParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
-    async swap(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.swap", input, swapExpected)
+    async swap(auth: Auth, input: SwapParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
-    async stake(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.stake", input, stakeExpected)
+    async stake(auth: Auth, input: StakeParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _stake(input), options, estimate)
     }
 
-    async requestUnstake(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.requestUnstake", input, requestUnstakeExpected)
+    async requestUnstake(auth: Auth, input: RequestUnstakeParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _requestUnstake(input), options, estimate)
     }
 
     async finishUnstake(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.finishUnstake", input, finishUnstakeExpected)
-        return await this.execute(auth, _finishUnstake(input), options, estimate)
+        return await this.execute(auth, _finishUnstake(), options, estimate)
     }
 
     async create(auth: Auth, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
@@ -67,20 +57,25 @@ export abstract class FirstClassActions {
         if (await isContract(address)) {
             throw new Error("Wallet already exists as contract.")
         } else {
-            return await this.execRawTx(auth, { to: address, data: "0x" }, options, estimate)
+            return await this.execRawTx(auth, { to: address, data: "0x", value: BigNumber.from(0) }, options, estimate)
         }
     }
 
-    async execRawTx(auth: Auth, input: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        verifyFunctionParams("Wallet.execRawTx", input, genCallExpected)
+    async execRawTx(auth: Auth, input: GenCallParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, genCall(input), options, estimate)
     }
 }
 
-export const genCall = (data: any) => {
+export interface GenCallParams {
+    to: string
+    data: string
+    value: BigNumber
+}
+
+export const genCall = (data: GenCallParams) => {
     return async () => {
         if (!data.value) {
-            data.value = 0
+            data.value = BigNumber.from(0)
         }
         if (!data.data) {
             data.data = "0x"

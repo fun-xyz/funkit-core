@@ -165,10 +165,17 @@ const WITHDRAW_QUEUE_ABI = [{
     "stateMutability": "nonpayable",
     "type": "function"
 }]
+export interface StakeParams {
+    amount: BigNumber
+}
 
+export interface RequestUnstakeParams {
+    token: string
+    amount: BigNumber
+}
 const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
-export const _stake = (input: any) => {
+export const _stake = (input: StakeParams) => {
     return async (actionData: any) => {
         const { chain } = actionData
         const lidoAddress = getLidoAddress(chain.id.toString())
@@ -215,7 +222,7 @@ export const _requestUnstake = (params: any) => {
     }
 }
 
-export const _finishUnstake = (input: any) => {
+export const _finishUnstake = () => {
     return async (actionData: any) => {
         const { chain, wallet } = actionData
         const provider = await actionData.chain.getProvider()
