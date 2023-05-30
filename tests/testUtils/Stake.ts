@@ -4,7 +4,7 @@ import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../testUtils"
+import { getTestApiKey } from "../getTestApiKey"
 
 export interface StakeTestConfig {
     chainId: number
