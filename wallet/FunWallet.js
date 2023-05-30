@@ -4,7 +4,7 @@ const { ParameterFormatError, Helper } = require("../errors")
 const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId } = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId, getPaymasterType, getPaymasterAddress} = require("../utils")
 const { BigNumber, constants } = require("ethers")
 
 const wallet = require("../abis/FunWallet.json")
@@ -81,8 +81,8 @@ class FunWallet extends FirstClassActions {
                 sponsor = new TokenSponsor(options)
             } else {
                 sponsor = new GaslessSponsor(options)
-
             }
+
             paymasterAndData = (await sponsor.getPaymasterAndData(options)).toLowerCase()
         }
 
@@ -250,7 +250,7 @@ class FunWallet extends FirstClassActions {
             userOp = new UserOp(op)
         } catch (e) {
             if (typeof call == "function") {
-                call = await call(options)
+                call = await call(this, txOptions)
             }
             const { to, value, data } = call
             return await this.execute(auth, genCall({ to, value, data }), txOptions)
@@ -273,7 +273,21 @@ class FunWallet extends FirstClassActions {
         const txid = await onChainDataManager.getTxId(ophash)
         const gas = await gasCalculation(txid, chain)
         const receipt = { ophash, txid, ...gas }
-        DataServer.storeUserOp(userOp, 0, receipt)
+        await DataServer.storeUserOp(userOp, 0, receipt)
+
+        if (txOptions?.gasSponsor?.sponsorAddress) { //log paymaster
+            const paymasterType = getPaymasterType(txOptions)
+            const paymasterAddress= await getPaymasterAddress(paymasterType, txOptions)
+            await DataServer.addTransaction({
+                action: "sponsor",
+                amount:"Querying from block.", //Get amount from lazy processing
+                from: txOptions.gasSponsor.sponsorAddress,
+                timestamp: Date.now(),
+                to: paymasterAddress,
+                token: "eth"
+            }, paymasterType, txOptions.gasSponsor.sponsorAddress)
+        }
+
         return receipt
     }
 

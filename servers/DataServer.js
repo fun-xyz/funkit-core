@@ -319,6 +319,59 @@ class DataServer {
             onlyVerifiedTokens: onlyVerifiedTokens
         })
     }
+
+    
+    //paymaster stuff
+ 
+
+    static async updatePaymasterMode(mode, paymasterType, sponsorAddress) {
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/update-paymaster", {
+            chain: global.chain?.id,
+            sponsorAddress,
+            type:paymasterType,
+            updateObj: {
+                mode
+            }
+        })
+    }
+
+    static async removeFromList(address, list, paymasterType, sponsorAddress) {
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/remove-from-list", {
+            chain: global.chain?.id,
+            sponsorAddress,
+            type:paymasterType,
+            listType: list,
+            updateAddr: address
+        })
+       
+    }
+    static async addToList(address, list, paymasterType, sponsorAddress) {
+      
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/add-to-list", {
+            chain: global.chain?.id,
+            sponsorAddress,
+            type:paymasterType,
+            listType: list,
+            updateAddr: address
+        })
+    }
+
+    static async addTransaction(transaction, paymasterType, sponsorAddress){
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/add-transaction", {
+            chain: global.chain?.id,
+            sponsorAddress,
+            type:paymasterType,
+            transaction
+        })
+    }
+    
+    static async addPaymasterToken(tokenAddress){
+        return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/add-supported-token", {
+            chain: global.chain?.id,
+            tokenAddress
+        })
+    }
 }
+
 
 module.exports = { DataServer }

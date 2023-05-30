@@ -62,72 +62,94 @@ class GaslessSponsor {
     }
 
     stake(walletAddress, amount) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "stake",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token:"eth"
+            }, "gasless", walletAddress)
             return await this.encodeValue(data, amountdec, options)
         }
     }
 
     unstake(walletAddress, amount) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])
+            await DataServer.addTransaction({
+                action: "unstake",
+                amount,
+                from: walletAddress,
+                timestamp: Date.now(),
+                to: await this.getPaymasterAddress(),
+                token:"eth"
+            }, "gasless", walletAddress)
             return await this.encode(data, options)
         }
     }
 
     lock() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("lockDeposit", [])
             return await this.encode(data, options)
         }
     }
 
     unlock(num) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("unlockDepositAfter", [num])
             return await this.encode(data, options)
         }
     }
 
     setToBlacklistMode() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
+            await DataServer.updatePaymasterMode("blacklist", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     setToWhitelistMode() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
+            await DataServer.updatePaymasterMode("whitelist", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     addSpenderToWhiteList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
+            await DataServer.addToList(spender, "walletsWhiteList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
     removeSpenderFromWhiteList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
+            await DataServer.removeFromList(spender, "walletsWhiteList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     addSpenderToBlackList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
+            await DataServer.addToList(spender, "walletsBlackList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     removeSpenderFromBlackList(spender) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
+            await DataServer.removeFromList(spender, "walletsBlackList", "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
