@@ -56,10 +56,10 @@ export class Chain {
         }
         try {
             await this.loadBundler()
-        } catch {}
+        } catch { }
         try {
             await this.loadProvider()
-        } catch {}
+        } catch { }
     }
 
     async loadProvider() {
@@ -83,7 +83,7 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...this.addresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
@@ -96,7 +96,7 @@ export class Chain {
 
     async getAddress(name: string): Promise<string> {
         await this.init()
-        const res = this.addresses[name]
+        const res = this.addresses![name]
         if (!res) {
             const currentLocation = "Chain.getAddress"
             const helperMainMessage = "Search key does not exist"

@@ -64,7 +64,7 @@ export const _swap = (params: SwapParams) => {
     }
 }
 
-const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption = globalEnvOption) => {
+const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
     return async (actionData: ActionData) => {
         const provider = await actionData.chain.getProvider()
 
@@ -120,7 +120,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
     }
 }
 
-const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption = globalEnvOption) => {
+const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
     let approveTx = undefined
     const chain = await getChainFromData(options.chain)
     if (swapParams.in.toUpperCase() == chain.currency) {

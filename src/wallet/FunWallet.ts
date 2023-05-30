@@ -10,7 +10,8 @@ import { Auth } from "../auth"
 import { EnvOption, GlobalEnvOption } from "src/config"
 
 const wallet = require("../abis/FunWallet.json")
-const factory = require("../abis/FunWalletFactory.json")
+const factory = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json")
+
 
 const executeExpectedKeys = ["chain", "apiKey"]
 
@@ -234,7 +235,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
-        globalEnvOption.apiKey = apiKey
+        (globalThis as any).globalEnvOption.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain)
         const walletIdentifer = new WalletIdentifier(uniqueId, index)
@@ -339,7 +340,7 @@ export class FunWallet extends FirstClassActions {
      *     }
      *  ]
      */
-    async getNFTs(txOptions = globalEnvOption) {
+    async getNFTs(txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         return await getNFTs(chain.chainId!, await this.getAddress())
     }
