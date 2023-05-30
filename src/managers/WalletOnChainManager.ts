@@ -1,18 +1,19 @@
-const { Contract } = require("ethers")
-const { WalletIdentifier, Chain } = require("../data")
-const { validateClassInstance } = require("../utils/data")
-const { ethers } = require("ethers")
+import { Contract, ethers } from "ethers"
+import { WalletIdentifier, Chain } from "../data"
+import { TransactionReceipt } from "@ethersproject/providers"
+
 const factoryAbi = require("../abis/FunWalletFactory.json").abi
 const walletAbi = require("../abis/FunWallet.json").abi
 const entryPointAbi = require("../abis/EntryPoint.json").abi
 
-class WalletOnChainManager {
-    constructor(chain, walletIdentifier) {
-        const currentLocation = "WalletOnChainManager constructor"
-        validateClassInstance(walletIdentifier, "walletIdentifier", WalletIdentifier, currentLocation)
-        validateClassInstance(chain, "chain", Chain, currentLocation)
+export class WalletOnChainManager {
+    chain: Chain
+    walletIdentifier: WalletIdentifier
+    factory?: Contract
+    entrypoint?: Contract
+
+    constructor(chain: Chain, walletIdentifier: WalletIdentifier) {
         this.chain = chain
-        this.key = chain.key
         this.walletIdentifier = walletIdentifier
     }
 
@@ -30,24 +31,23 @@ class WalletOnChainManager {
         }
     }
 
-    async getWalletAddress() {
+    async getWalletAddress(): Promise<string> {
         await this.init()
         const uniqueId = await this.walletIdentifier.getIdentifier()
-
-        return await this.factory.getAddress(uniqueId)
+        return await this.factory!.getAddress(uniqueId)
     }
 
-    static async getWalletAddress(identifier, rpcUrl, factoryAddress) {
+    static async getWalletAddress(identifier: string, rpcUrl: string, factoryAddress: string): Promise<string> {
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
         const factory = new ethers.Contract(factoryAddress, factoryAbi, provider)
         return await factory.getAddress(identifier)
     }
 
-    async getTxId(userOpHash, timeout = 30000, interval = 5000) {
+    async getTxId(userOpHash: string, timeout = 30000, interval = 5000): Promise<string | undefined> {
         await this.init()
         const endtime = Date.now() + timeout
         while (Date.now() < endtime) {
-            const events = await this.entrypoint.queryFilter(this.entrypoint.filters.UserOperationEvent(userOpHash))
+            const events = await this.entrypoint!.queryFilter(this.entrypoint!.filters.UserOperationEvent(userOpHash))
             if (events.length > 0) {
                 return events[0].transactionHash
             }
@@ -56,16 +56,17 @@ class WalletOnChainManager {
         return undefined
     }
 
-    async getReceipt(transactionHash) {
+    async getReceipt(txHash: string): Promise<TransactionReceipt | undefined> {
         await this.init()
         const provider = await this.chain.getProvider()
-        const txReceipt = await provider.getTransactionReceipt(transactionHash)
+        const txReceipt = await provider.getTransactionReceipt(txHash)
         if (txReceipt && txReceipt.blockNumber) {
             return txReceipt
         }
+        return undefined
     }
 
-    async getModuleIsInit(walletAddress, moduleAddress) {
+    async getModuleIsInit(walletAddress: string, moduleAddress: string) {
         await this.init()
         const provider = await this.chain.getProvider()
         const contract = new Contract(walletAddress, walletAbi, provider)
@@ -77,18 +78,14 @@ class WalletOnChainManager {
         }
     }
 
-    async addressIsContract(address) {
+    async addressIsContract(address: string) {
         await this.init()
         const provider = await this.chain.getProvider()
         const addressCode = await provider.getCode(address)
         return !(addressCode.length == 2)
     }
 
-    async getOpErrors() {
-        await this.init()
-    }
-
-    async getEthTokenPairing(token) {
+    async getEthTokenPairing(token: string) {
         const OffChainOracleAbi = require("../abis/OffChainOracle.json").abi
         const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress")
         const provider = await this.chain.getProvider()
@@ -96,5 +93,3 @@ class WalletOnChainManager {
         return await oracle.getRateToEth(token, true)
     }
 }
-
-module.exports = { WalletOnChainManager }

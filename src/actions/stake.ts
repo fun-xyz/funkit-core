@@ -1,17 +1,21 @@
 import { parseEther } from "ethers/lib/utils"
+import { ActionData } from "./FirstClass"
 
-export const _stake = (input: any) => {
-    return async (actionData: any) => {
-        const { chain } = actionData
-        const lidoAddress = getLidoAddress(chain.id.toString())
-        let reasonData = null
+export interface StakeParams {
+    amount: number
+}
+
+export const _stake = (params: StakeParams) => {
+    return async (actionData: ActionData) => {
+        const lidoAddress = getLidoAddress(actionData.chain.id!.toString())
+        let reasonData: any = null
         if (!lidoAddress) {
             reasonData = {
                 title: "Possible reasons:",
                 reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
             }
         }
-        const data = { to: lidoAddress, data: "0x", value: parseEther(`${input.amount}`) }
+        const data = { to: lidoAddress, data: "0x", value: parseEther(`${params.amount}`) }
         const errorData = {
             location: "action.stake",
             error: {

@@ -7,7 +7,7 @@ import {
     LOCAL_API_URL,
     LOCAL_FORK_CHAIN_KEY
 } from "../common/constants"
-import { sendPostRequest } from "../utils/Api"
+import { sendPostRequest } from "../utils/ApiUtils"
 import { ServerMissingDataError, Helper } from "../errors"
 
 export async function getTokenInfo(symbol: string, chainId: string): Promise<any> {
@@ -49,7 +49,7 @@ export async function getChainInfo(chainId: string): Promise<any> {
     const body = { chain: chainId }
 
     if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
-        let req = await sendPostRequest(LOCAL_API_URL, "get-chain-info", body)
+        const req = await sendPostRequest(LOCAL_API_URL, "get-chain-info", body)
             .then((r) => {
                 return r
             })

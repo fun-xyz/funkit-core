@@ -1,5 +1,5 @@
 const logHelper = (tabwith, logData) => {
-    if (typeof logData == "string") {
+    if (typeof logData === "string") {
         return `${"\t".repeat(tabwith)}${logData}`
     }
     if (Array.isArray(logData)) {
@@ -8,7 +8,7 @@ const logHelper = (tabwith, logData) => {
 }
 
 class Helper {
-    constructor(title, data, message = "") {
+    constructor(title, data, message) {
         this.title = title
         this.data = data
         this.msgs = message ? [message] : []

@@ -35,7 +35,7 @@ const ethTransfer = (params: TransferParams) => {
 }
 
 const erc20Transfer = (params: TransferParams) => {
-    let { to, amount, token } = params
+    const { to, amount, token } = params
     return async (actionData: ActionData) => {
         const transferData = await Token.transfer(token!, to, amount, { chain: actionData.chain })
 
@@ -64,7 +64,7 @@ const erc20Transfer = (params: TransferParams) => {
 
 export const _approve = (params: ApproveParams) => {
     return async (actionData: ActionData) => {
-        let token = new Token(params.token)
+        const token = new Token(params.token)
         const approveData = await token.approve(params.spender, params.amount, { chain: actionData.chain })
         const tokenAddress = await token.getAddress()
         const txDetails = {

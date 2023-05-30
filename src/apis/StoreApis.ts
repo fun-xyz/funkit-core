@@ -1,8 +1,8 @@
-import { getPromiseFromOp } from "../utils/userop"
+import { getPromiseFromOp } from "../utils"
 import { DataFormatError } from "../errors"
 import { UserOperation, getChainFromData } from "../data"
 import { TEST_API_KEY, TRANSACTION_TYPE, API_URL } from "../common/constants"
-import { sendPostRequest } from "../utils/Api"
+import { sendPostRequest } from "../utils/ApiUtils"
 import { TransactionReceipt } from '@ethersproject/providers'
 import { GlobalEnvOption } from "src/config"
 

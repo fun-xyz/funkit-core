@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from "@ethersproject/providers"
 import { MissingParameterError, Helper, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
-import { flattenObj } from "../utils/data"
+import { flattenObj } from "../utils/DataUtils"
 import { UserOperation } from "./UserOp"
 import { BigNumber } from "ethers"
 import { getChainInfo, getModuleInfo } from "../apis"
@@ -151,7 +151,7 @@ export class Chain {
         }
 
         preVerificationGas = preVerificationGas.mul(2)
-        let verificationGasLimit = verificationGas.add(50_000)
+        const verificationGasLimit = verificationGas.add(50_000)
         if (partialOp.initCode != "0x") {
             callGasLimit = BigNumber.from(10e6)
         }

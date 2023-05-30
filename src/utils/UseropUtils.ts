@@ -1,7 +1,9 @@
-const { BigNumber } = require("ethers")
-const { defaultAbiCoder, arrayify, hexlify, keccak256 } = require("ethers/lib/utils")
+import { BigNumber } from "ethers"
+import { defaultAbiCoder, arrayify, hexlify, keccak256 } from "ethers/lib/utils"
+import { Chain, UserOperation } from "../data"
+import { sendRequest } from "./ApiUtils"
 
-const calcPreVerificationGas = (userOp) => {
+export const calcPreVerificationGas = (userOp: UserOperation) => {
     const ov = DefaultGasOverheads
     const p = Object.assign(
         {
@@ -16,15 +18,17 @@ const calcPreVerificationGas = (userOp) => {
     return BigNumber.from(ret)
 }
 
-function encode(typevalues, forSignature) {
-    const types = typevalues.map((typevalue) => (typevalue.type === "bytes" && forSignature ? "bytes32" : typevalue.type))
-    const values = typevalues.map((typevalue) => (typevalue.type === "bytes" && forSignature ? keccak256(typevalue.val) : typevalue.val))
+function encode(typevalues: any, forSignature: any) {
+    const types = typevalues.map((typevalue: any) => (typevalue.type === "bytes" && forSignature ? "bytes32" : typevalue.type))
+    const values = typevalues.map((typevalue: any) =>
+        typevalue.type === "bytes" && forSignature ? keccak256(typevalue.val) : typevalue.val
+    )
     return defaultAbiCoder.encode(types, values)
 }
 
-function packUserOp(op, forSignature = true) {
+function packUserOp(op: any, forSignature = true) {
     if (forSignature) {
-        let encoded = defaultAbiCoder.encode([userOpTypeSig], [{ ...op, signature: "0x" }])
+        let encoded = defaultAbiCoder.encode([userOpTypeSig as any], [{ ...op, signature: "0x" }])
         encoded = "0x" + encoded.slice(66, encoded.length - 64)
         return encoded
     }
@@ -35,42 +39,35 @@ function packUserOp(op, forSignature = true) {
     return encode(typevalues, forSignature)
 }
 
-const getOpHash = (op, chainId, entryPoint) => {
-    const userOpHash = keccak256(packUserOp(op, true))
-    const enc = defaultAbiCoder.encode(["bytes32", "address", "uint256"], [userOpHash, entryPoint, chainId])
-    return keccak256(enc)
-}
-
-const getPromiseFromOp = async (op) => {
-    const out = {}
+export const getPromiseFromOp = async (op: UserOperation) => {
+    const out: any = {}
     await Promise.all(
         Object.keys(op).map(async (key) => {
-            out[key] = await op[key]
+            out[key] = await (op as any)[key]
         })
     )
     return out
 }
 
-async function gasCalculation(txid, chain) {
+export async function gasCalculation(txid: string, chain: Chain) {
     try {
         const provider = await chain.getProvider()
-        const currency = chain.currency
         const txReceipt = await provider.getTransactionReceipt(txid)
         const gasUsed = txReceipt.gasUsed.toNumber()
         const gasPrice = txReceipt.effectiveGasPrice.toNumber() * 1e-18
         const gasTotal = gasUsed * gasPrice
-        const chainPrice = await getPriceData(currency)
-        const gasUSD = (gasTotal * chainPrice.toNumber()).toNumber()
+        const chainPrice = await getPriceData(chain.currency!)
+        const gasUSD = gasTotal * chainPrice.toNumber()
         return { gasUsed, gasUSD }
     } catch {
-        return { gasUsed: "Gas cannot be calculated", gasUSD: "Gas cannot be calculated" }
+        return { gasUsed: 0, gasUSD: 0 }
     }
 }
 
 const PRICE_URL = "https://min-api.cryptocompare.com/data/price"
 
-async function getPriceData(chainCurrency) {
-    const data = await sendRequest(`${PRICE_URL}?fsym=${chainCurrency}&tsyms=USD`, "GET", "", "")
+async function getPriceData(chainCurrency: string) {
+    const data = await sendRequest(`${PRICE_URL}?fsym=${chainCurrency}&tsyms=USD`, "GET", "", {})
     const price = await data.json()
     return price.USD
 }
@@ -168,5 +165,3 @@ const userOpTypeSig = {
     name: "userOp",
     type: "tuple"
 }
-
-module.exports = { calcPreVerificationGas, getOpHash, getPromiseFromOp, gasCalculation }

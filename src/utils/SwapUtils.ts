@@ -1,24 +1,31 @@
-const { ethers } = require("ethers")
-const { CurrencyAmount, Percent, Token, TradeType } = require("@uniswap/sdk-core")
-const { Pool, Route, SwapQuoter, SwapRouter, Trade, FeeAmount, computePoolAddress } = require("@uniswap/v3-sdk")
-const { JSBI } = require("@uniswap/sdk")
+import { ethers } from "ethers"
+import { CurrencyAmount, Percent, Token, TradeType, Currency } from "@uniswap/sdk-core"
+import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
+import { JSBI } from "@uniswap/sdk"
+import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
+import { Provider } from "@ethersproject/providers"
+import { getChainFromData } from "../data"
+import { EnvOption } from "../config"
+
 const ERC20 = require("../abis/ERC20.json")
-const IUniswapV3PoolABI = require("@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json")
-const { parseOptions } = require(".")
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
-function fromReadableAmount(amount, decimals) {
+export function fromReadableAmount(amount: number, decimals: number) {
     return ethers.utils.parseUnits(amount.toString(), decimals)
 }
 
 class SwapToken {
-    constructor(provider, quoterContractAddr, poolFactoryContractAddr) {
+    provider: Provider
+    quoterContractAddr: string
+    poolFactoryContractAddr: string
+
+    constructor(provider: Provider, quoterContractAddr: string, poolFactoryContractAddr: string) {
         this.provider = provider
         this.quoterContractAddr = quoterContractAddr
         this.poolFactoryContractAddr = poolFactoryContractAddr
     }
 
-    async getOutputQuote(route, token0, amountIn) {
+    async getOutputQuote(route: Route<Currency, Currency>, token0: Token, amountIn: number) {
         const { calldata } = await SwapQuoter.quoteCallParameters(
             route,
             CurrencyAmount.fromRawAmount(token0, fromReadableAmount(amountIn, token0.decimals).toString()),
@@ -35,7 +42,7 @@ class SwapToken {
         return ethers.utils.defaultAbiCoder.decode(["uint256"], quoteCallReturnData)
     }
 
-    async getPoolInfo(tokenIn, tokenOut, poolFee) {
+    async getPoolInfo(tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
         const currentPoolAddress = computePoolAddress({
             factoryAddress: this.poolFactoryContractAddr,
             tokenA: tokenIn,
@@ -65,12 +72,12 @@ class SwapToken {
         }
     }
 
-    async getTokenDecimals(tokenAddr) {
+    async getTokenDecimals(tokenAddr: string) {
         const contract = new ethers.Contract(tokenAddr, ERC20.abi, this.provider)
         return await contract.decimals()
     }
 
-    async createTrade(amountIn, tokenIn, tokenOut, poolFee) {
+    async createTrade(amountIn: number, tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
         const poolInfo = await this.getPoolInfo(tokenIn, tokenOut, poolFee)
         const pool = new Pool(tokenIn, tokenOut, poolFee, poolInfo.sqrtPriceX96.toString(), poolInfo.liquidity.toString(), poolInfo.tick)
         const swapRoute = new Route([pool], tokenIn, tokenOut)
@@ -87,7 +94,13 @@ class SwapToken {
         return { uncheckedTrade, tokenInAmount }
     }
 
-    executeTrade(trade, routerAddr, walletAddress, slippage = 5000, percentDec = 10000) {
+    executeTrade(
+        trade: Trade<Currency, Currency, TradeType>,
+        routerAddr: string,
+        walletAddress: string,
+        slippage = 5000,
+        percentDec = 10000
+    ) {
         const options = {
             slippageTolerance: new Percent(slippage, percentDec), // 50 bips, or 0.50%
             deadline: Date.now() + 1800, // 20 minutes from the current Unix time
@@ -110,11 +123,11 @@ const fees = {
     high: 10000
 }
 
-async function swapExec(provider, uniswapAddrs, swapParams) {
+export async function swapExec(provider: Provider, uniswapAddrs: any, swapParams: any) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
 
     const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
-    const _poolFee = fees[poolFee]
+    const _poolFee = (fees as any)[poolFee]
 
     const swapper = new SwapToken(provider, univ3quoter, univ3factory)
     const { chainId } = await provider.getNetwork()
@@ -130,10 +143,8 @@ async function swapExec(provider, uniswapAddrs, swapParams) {
 }
 
 const testIds = [36864, 31337]
-async function oneInchAPIRequest(methodName, queryParams, options = global) {
-    const { chain } = await parseOptions(options)
+export async function oneInchAPIRequest(methodName: string, queryParams: any, options: EnvOption = globalEnvOption) {
+    const chain = await getChainFromData(options.chain)
     const chainId = testIds.includes(Number(chain.id)) ? 1 : chain.id
     return apiBaseUrl + chainId + methodName + "?" + new URLSearchParams(queryParams).toString()
 }
-
-module.exports = { swapExec, fromReadableAmount, oneInchAPIRequest }

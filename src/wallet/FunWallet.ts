@@ -3,7 +3,7 @@ import { ParameterFormatError, Helper } from "../errors"
 import { UserOp, WalletIdentifier, Token, getChainFromData, Chain, UserOperation } from "../data"
 import { TokenSponsor, GaslessSponsor } from "../sponsors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
-import { verifyFunctionParams, gasCalculation, getUniqueId } from "../utils"
+import { gasCalculation, getUniqueId } from "../utils"
 import { BigNumber, constants } from "ethers"
 import { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } from "../apis"
 import { Auth } from "../auth"
@@ -12,8 +12,6 @@ import { EnvOption, GlobalEnvOption } from "src/config"
 const wallet = require("../abis/FunWallet.json")
 const factory = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json")
 
-
-const executeExpectedKeys = ["chain", "apiKey"]
 
 export class FunWallet extends FirstClassActions {
     identifier: WalletIdentifier
@@ -46,11 +44,7 @@ export class FunWallet extends FirstClassActions {
             chain,
             txOptions
         }
-        const { data, errorData, optionalParams } = await transactionFunc(actionData)
-        {
-            const { chain, apiKey } = txOptions
-            verifyFunctionParams(errorData.location, { chain, apiKey }, executeExpectedKeys)
-        }
+        const { data, optionalParams } = await transactionFunc(actionData)
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
@@ -74,14 +68,14 @@ export class FunWallet extends FirstClassActions {
             paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
         }
 
-        let partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+        const partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
         const nonce = await auth.getNonce(partialOp.sender)
         return { ...partialOp, nonce }
     }
 
     async _getCallData(onChainDataManager: WalletOnChainManager, data: any, sender: string, auth: Auth, options: GlobalEnvOption) {
         let tempCallData
-        let fee = { ...options.fee }
+        const fee = { ...options.fee }
         if (options.fee) {
             if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
                 const helper = new Helper("Fee", fee, "fee.token or gasSponsor.token is required")
@@ -107,7 +101,7 @@ export class FunWallet extends FirstClassActions {
                         errorData: { location: "Wallet.execute" }
                     }
                 }
-                let estimateGasOptions = options
+                const estimateGasOptions = options
                 estimateGasOptions.fee = undefined
                 const actualGas = await this.estimateGas(auth, emptyFunc, estimateGasOptions)
                 let eth = actualGas.getMaxTxCost()
@@ -120,7 +114,7 @@ export class FunWallet extends FirstClassActions {
                 }
 
                 if (!token.isNative) {
-                    const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token)
+                    const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token!)
                     const decimals = await token.getDecimals()
                     const numerator = BigNumber.from(10).pow(decimals)
                     const denominator = BigNumber.from(10).pow(18) // eth decimals
@@ -277,7 +271,7 @@ export class FunWallet extends FirstClassActions {
         const opHash = await chain.sendOpToBundler(userOp)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const txid = await onChainDataManager.getTxId(opHash)
-        const { gasUsed, gasUSD } = await gasCalculation(txid, chain)
+        const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
         const receipt: ExecutionReceipt = {
             opHash,
             txid,
