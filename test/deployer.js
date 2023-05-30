@@ -89,14 +89,17 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
     const sponsor = new TokenSponsor({
         gasSponsor: {
             sponsorAddress: "0x175C5611402815Eba550Dad16abd2ac366a63329",
-            token: "0x53589543A64408AA03ba709EFCD1a7f03AA6880D",
+            token: "0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093",
         }
     })
 
-    const oracle = "0x601cD9fdF44EcE68bA5FF7b9273b5231d019e301"
-    const aggergator = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"
-    // await eoa.sendTx(await sponsor.addUsableToken("0x40251E36b8c3ddea0cA8F8b1b2d79d0C36e7E799", "0x53589543A64408AA03ba709EFCD1a7f03AA6880D", "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"))
+    const oracleGOERLI = "0x601cD9fdF44EcE68bA5FF7b9273b5231d019e301"
+    const aggergatorGOERLI = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"
+    const tokenToAddGOERLI="0x07865c6e87b9f70255377e024ace6630c1eaa37f"
 
+    // await eoa.sendTx(await sponsor.addUsableToken("0x40251E36b8c3ddea0cA8F8b1b2d79d0C36e7E799", "0x53589543A64408AA03ba709EFCD1a7f03AA6880D", "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"))
+    await eoa.sendTx(await sponsor.addUsableToken(oracleGOERLI, tokenToAddGOERLI, aggergatorGOERLI))
+    console.log(await sponsor.getTokenInfo(tokenToAddGOERLI))
     // fun dai
     // await eoa.sendTx(await sponsor.addUsableToken(oracle, "0x855af47cdf980a650ade1ad47c78ec1deebe9093", aggergator))
     // fun usdc
@@ -105,16 +108,16 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
     // await eoa.sendTx(await sponsor.addUsableToken(oracle, "0x3e1ff16b9a94ebde6968206706bcd473aa3da767", aggergator))
     // await eoa.sendTx(await sponsor.addUsableToken(oracle, tokenAddress, aggergator))
 
-    const funDai = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
-    const funUsdc = "0xaa8958047307da7bb00f0766957edec0435b46b5"
-    const funUsdt = "0x3e1ff16b9a94ebde6968206706bcd473aa3da767"
+    // const funDai = "0x855af47cdf980a650ade1ad47c78ec1deebe9093"
+    // const funUsdc = "0xaa8958047307da7bb00f0766957edec0435b46b5"
+    // const funUsdt = "0x3e1ff16b9a94ebde6968206706bcd473aa3da767"
 
-    // await eoa.sendTx(await sponsor.addUsableToken(oracle, funDai, aggergator))
-    // await eoa.sendTx(await sponsor.addUsableToken(oracle, funUsdc, aggergator))
-    // await eoa.sendTx(await sponsor.addUsableToken(oracle, funUsdt, aggergator))
-    console.log(await sponsor.getTokenInfo(funDai))
-    console.log(await sponsor.getTokenInfo(funUsdc))
-    console.log(await sponsor.getTokenInfo(funUsdt))
+    // // await eoa.sendTx(await sponsor.addUsableToken(oracle, funDai, aggergator))
+    // // await eoa.sendTx(await sponsor.addUsableToken(oracle, funUsdc, aggergator))
+    // // await eoa.sendTx(await sponsor.addUsableToken(oracle, funUsdt, aggergator))
+    // console.log(await sponsor.getTokenInfo(funDai))
+    // console.log(await sponsor.getTokenInfo(funUsdc))
+    // console.log(await sponsor.getTokenInfo(funUsdt))
 }
 
 const feeOracleConfig = async (chainId, pkey) => {
@@ -128,14 +131,14 @@ const feeOracleConfig = async (chainId, pkey) => {
 }
 
 // main(5, WALLET_PRIVATE_KEY)
-// paymasterConfig(5, WALLET_PRIVATE_KEY)
+paymasterConfig(5, WALLET_PRIVATE_KEY)
 
 // main(31337, TEST_PRIVATE_KEY)
 // feeOracleConfig(31337, TEST_PRIVATE_KEY) 
 
 
 // main(42161, WALLET_PRIVATE_KEY)
-paymasterConfig(42161, WALLET_PRIVATE_KEY)
+// paymasterConfig(42161, WALLET_PRIVATE_KEY)
 // feeOracleConfig(36864, TEST_PRIVATE_KEY)
 
 // paymasterTest()

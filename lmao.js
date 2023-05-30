@@ -24,14 +24,16 @@ async function main() {
     // await funWallet.create(auth)
     const sponsor = new TokenSponsor({ gasSponsor: { sponsorAddress: await auth.getUniqueId(), token:"asdfdasf"} })
     // const deposit = await sponsor.approve("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", 0.4)
-    
-    const deposit = sponsor.stakeToken("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767",addr,0.3)
+    // const deposit = sponsor.stakeToken("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767",addr,0.3)
     // const deposit=await sponsor.setToWhitelistMode()
     // const deposit= await sponsor.removeSpenderFromWhiteList("0xE8448945F00bf10EfFa2Ddf935B74B3527F29DB9")
-    // const deposit = await sponsor.stake(addr, .01)
+    const deposit = await sponsor.stake(addr, .01)
     // console.log(await deposit())
     // await auth.sendTx(deposit)
-    await funWallet.sendTx({ auth, call: deposit },{ apiKey: API_KEY, gasSponsor:{sponsorAddress:"0xaF2AaA57eA1693C741be62D6a0b416D3e8d641DF"} })
+    await funWallet.sendTx({ auth, call: deposit },{ apiKey: API_KEY, gasSponsor:{
+        sponsorAddress:"0xa80eC6B84aa3E52b8D0eB364fc3c1D9f685aD531",
+        // token: "0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767"
+    }})
     //  console.log(await sponsor.getTokenBalance("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", addr))
 
 
