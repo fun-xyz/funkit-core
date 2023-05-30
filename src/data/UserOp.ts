@@ -3,6 +3,7 @@ import { BigNumber, Contract } from "ethers"
 import { Chain, getChainFromData } from "./Chain"
 import { EnvOption } from "src/config/config"
 import { Auth } from "../auth/Auth"
+import entryPoint from "../abis/EntryPoint.json"
 
 export interface UserOperation {
     sender: string
@@ -57,20 +58,19 @@ export class UserOp {
     async getOpHashData(chain: Chain) {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
-        const abi = require("../abis/EntryPoint.json").abi
-        const contract = new Contract(entryPointAddress, abi, provider)
+        const contract = new Contract(entryPointAddress, entryPoint.abi, provider)
         return await contract.getUserOpHash(this.op)
     }
 
     getMaxTxCost() {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
-        const mul = this.op.paymasterAndData != "0x" ? 3 : 1
+        const mul = this.op.paymasterAndData !== "0x" ? 3 : 1
         const requiredGas = callGasLimit.add(verificationGasLimit.mul(mul)).add(preVerificationGas!)
         return maxFeePerGas.mul(requiredGas)
     }
 
     async estimateGas(auth: Auth, option: EnvOption = globalEnvOption): Promise<UserOp> {
-        if (!this.op.signature || this.op.signature == "0x") {
+        if (!this.op.signature || this.op.signature === "0x") {
             this.op.signature = await auth.getEstimateGasSignature()
         }
         const chain = await getChainFromData(option.chain)

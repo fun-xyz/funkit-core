@@ -7,7 +7,7 @@ import { FunWallet } from "../wallet"
 
 const getFunctionParamOrderFromInterface = (interf: Interface, func: string) => {
     for (const field of interf.fragments) {
-        if (field.name == func && field.type == "function") {
+        if (field.name === func && field.type === "function") {
             return field.inputs.map((input) => input.name)
         }
     }
@@ -31,7 +31,7 @@ export const checkAbi = (abi: any, name: string, location: string, isInternal = 
 
 export const verifyValidParamsFromAbi = (abi: any, func: string, params: any, location: string, isInternal = false) => {
     for (const field of abi) {
-        if (field.type == "function" && field.name == func) {
+        if (field.type === "function" && field.name === func) {
             const missing = field.inputs
                 .filter((input: any) => {
                     const data = params[input.name]
@@ -63,7 +63,7 @@ const verifyParamIsSolidityType = (param: any, location: string, isInternal = fa
     try {
         defaultAbiCoder.encode([param.type], [param.data])
     } catch {
-        const helper = new Helper(param.name, param.data)
+        const helper = new Helper(param.name, param.data, "")
         throw new DataFormatError(param.name, `{solidity ${param.type}}`, location, helper, isInternal)
     }
 }
@@ -93,7 +93,7 @@ export const isContract = async (address: string, txOptions = globalEnvOption) =
     const provider = await chain.getProvider()
     try {
         const code = await provider.getCode(address)
-        if (code != "0x") return true
+        if (code !== "0x") return true
     } catch (error) {
         return false
     }

@@ -5,20 +5,21 @@ import {
     LOCAL_TOKEN_ADDRS,
     BASE_WRAP_TOKEN_ADDR,
     LOCAL_API_URL,
-    LOCAL_FORK_CHAIN_KEY
+    LOCAL_FORK_CHAIN_KEY,
+    FORK_DEFAULT_ADDRESSES
 } from "../common/constants"
 import { sendPostRequest } from "../utils/ApiUtils"
 import { ServerMissingDataError, Helper } from "../errors"
 
 export async function getTokenInfo(symbol: string, chainId: string): Promise<any> {
     symbol = symbol.toLowerCase()
-    let body, tokenInfo
+    let body
 
     body = {
         symbol,
         chain: chainId
     }
-    if (Number(chainId) == LOCAL_FORK_CHAIN_ID || Number(chainId) == FUN_TESTNET_CHAIN_ID) {
+    if (Number(chainId) === LOCAL_FORK_CHAIN_ID || Number(chainId) === FUN_TESTNET_CHAIN_ID) {
         const addr = (LOCAL_TOKEN_ADDRS as any)[symbol]
         if (addr) {
             return addr
@@ -28,11 +29,11 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
             chain: "1"
         }
     }
-    if ((symbol == "weth" || symbol == "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
+    if ((symbol === "weth" || symbol === "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
         return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
 
-    tokenInfo = await sendPostRequest(API_URL, "get-erc-token", body).then((r) => {
+    const tokenInfo = await sendPostRequest(API_URL, "get-erc-token", body).then((r) => {
         return r.data
     })
     if (tokenInfo.contract_address) {
@@ -48,20 +49,14 @@ export async function getChainInfo(chainId: string): Promise<any> {
     }
     const body = { chain: chainId }
 
-    if (Number(chainId) == LOCAL_FORK_CHAIN_ID) {
+    if (Number(chainId) === LOCAL_FORK_CHAIN_ID) {
         const req = await sendPostRequest(LOCAL_API_URL, "get-chain-info", body)
             .then((r) => {
                 return r
             })
             .catch(() => undefined)
-        const r = req
-            ? req
-            : {
-                  chain: chainId,
-                  rpcUrl: "http://localhost:8545"
-              }
-        const defaultAddresses = require("../../tests/forkDefaults").defaultAddresses
-        r.moduleAddresses = { ...r.moduleAddresses, defaultAddresses }
+        const r = req ? req : { chain: chainId, rpcUrl: "http://localhost:8545" }
+        r.moduleAddresses = { ...r.moduleAddresses, FORK_DEFAULT_ADDRESSES }
         return r
     } else {
         return await sendPostRequest(API_URL, "get-chain-info", body).then((r) => {
@@ -74,7 +69,7 @@ export async function getChainInfo(chainId: string): Promise<any> {
 }
 
 export async function getChainFromName(name: string): Promise<any> {
-    if (name == LOCAL_FORK_CHAIN_KEY) {
+    if (name === LOCAL_FORK_CHAIN_KEY) {
         return await sendPostRequest(LOCAL_API_URL, "get-chain-info", { chain: name }).then((r) => {
             return r
         })
@@ -91,7 +86,7 @@ export async function getModuleInfo(moduleName: string, chainId: string): Promis
         chain: chainId
     }
 
-    if (Number(chainId) != LOCAL_FORK_CHAIN_ID) {
+    if (Number(chainId) !== LOCAL_FORK_CHAIN_ID) {
         return await sendPostRequest(API_URL, "get-module-info", body).then((r) => {
             return r.data
         })

@@ -8,9 +8,13 @@ import { BigNumber, constants } from "ethers"
 import { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } from "../apis"
 import { Auth } from "../auth"
 import { EnvOption, GlobalEnvOption } from "src/config"
+import wallet from "../abis/FunWallet.json"
+import factory from "../abis/FunWalletFactory.json"
 
-const wallet = require("../abis/FunWallet.json")
-const factory = require("../abis/FunWalletFactory.json")
+export interface FunWalletParams {
+    uniqueId: string
+    index?: number
+}
 
 export class FunWallet extends FirstClassActions {
     identifier: WalletIdentifier
@@ -22,7 +26,7 @@ export class FunWallet extends FirstClassActions {
      * @constructor
      * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
-    constructor(params: any) {
+    constructor(params: FunWalletParams) {
         super()
         const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
@@ -56,9 +60,6 @@ export class FunWallet extends FirstClassActions {
         if (txOptions.gasSponsor) {
             let sponsor
             // gas payment method check
-            switch (txOptions.gasSponsor.token) {
-                case "gasless":
-            }
             if (txOptions.gasSponsor.token) {
                 sponsor = new TokenSponsor(txOptions)
             } else {
@@ -107,7 +108,7 @@ export class FunWallet extends FirstClassActions {
 
                 let percentNum = fee.gasPercent
                 let percentBase = 100
-                while (percentNum % 1 != 0) {
+                while (percentNum % 1 !== 0) {
                     percentNum *= 10
                     percentBase *= 10
                 }
@@ -314,7 +315,6 @@ export class FunWallet extends FirstClassActions {
      * }
      */
     async getTokens(onlyVerifiedTokens = false, txOptions: EnvOption = globalEnvOption) {
-        onlyVerifiedTokens = true ? onlyVerifiedTokens : false
         const chain = await getChainFromData(txOptions.chain)
         return await getTokens(chain.chainId!, await this.getAddress(), onlyVerifiedTokens)
     }
