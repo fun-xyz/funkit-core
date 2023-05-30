@@ -12,7 +12,8 @@
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx 'src/**'",
-        "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx 'src/**' --fix"
+        "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx 'src/**' --fix",
+        "prepare": "husky install"
     },
     "author": "",
     "license": "ISC",
@@ -43,6 +44,7 @@
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-unused-imports": "^2.0.0",
+        "husky": "^8.0.3",
         "mocha": "^10.2.0",
         "prettier": "^2.8.8",
         "ts-mocha": "^10.0.0",
