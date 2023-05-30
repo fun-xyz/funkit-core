@@ -324,14 +324,12 @@ class DataServer {
     //paymaster stuff
  
 
-    static async updatePaymasterMode(mode, paymasterType, sponsorAddress) {
+    static async updatePaymasterMode(updateObj, paymasterType, sponsorAddress) {
         return await this.sendPostRequest('http://127.0.0.1:3003', "paymasters/update-paymaster", {
             chain: global.chain?.id,
             sponsorAddress,
             type:paymasterType,
-            updateObj: {
-                mode
-            }
+            updateObj
         })
     }
 
@@ -341,7 +339,7 @@ class DataServer {
             sponsorAddress,
             type:paymasterType,
             listType: list,
-            updateAddr: address
+            updateAddrs: address
         })
        
     }
@@ -352,7 +350,7 @@ class DataServer {
             sponsorAddress,
             type:paymasterType,
             listType: list,
-            updateAddr: address
+            updateAddrs: address
         })
     }
 
@@ -370,6 +368,18 @@ class DataServer {
             chain: global.chain?.id,
             tokenAddress
         })
+    }
+
+    static async addBatch(addresses, modes,list, paymasterType, sponsorAddress){
+        const addList = addresses.filter((address,i)=>{
+            return modes[i]
+        })
+        const removeList = addresses.filter((address,i)=>{
+            return !modes[i]
+        })
+
+        await this.addToList(addList, list, paymasterType, sponsorAddress)
+        await this.removeFromList(removeList, list, paymasterType, sponsorAddress)
     }
 }
 

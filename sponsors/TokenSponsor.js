@@ -178,7 +178,7 @@ class TokenSponsor {
     setToBlacklistMode() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
-            await DataServer.updatePaymasterMode("blacklist", "token", await wallet.getAddress())
+            await DataServer.updatePaymasterMode({ mode: "blacklist" }, "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -186,7 +186,7 @@ class TokenSponsor {
     setToWhitelistMode() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
-            await DataServer.updatePaymasterMode("whitelist", "token", await wallet.getAddress())
+            await DataServer.updatePaymasterMode({ mode: "whitelist" }, "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -194,7 +194,7 @@ class TokenSponsor {
     addSpenderToWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
-            await DataServer.addToList(spender, "walletWhiteList", "token", await wallet.getAddress())
+            await DataServer.addToList([spender], "walletsWhiteList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -202,7 +202,7 @@ class TokenSponsor {
     removeSpenderFromWhiteList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
-            await DataServer.removeFromList(spender, "walletWhiteList", "token", await wallet.getAddress())
+            await DataServer.removeFromList(spender, "walletsWhiteList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -210,7 +210,7 @@ class TokenSponsor {
     addSpenderToBlackList(spender) {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
-            await DataServer.addToList(spender, "walletBlackList", "token", await wallet.getAddress())
+            await DataServer.addToList([spender], "walletsBlackList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -254,61 +254,68 @@ class TokenSponsor {
     }
 
     setTokenToBlackListMode() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setTokenListMode", [true])
+            await DataServer.updatePaymasterMode({ tokenMode: "blacklist" }, "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     setTokenToWhiteListMode() {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setTokenListMode", [false])
+            await DataServer.updatePaymasterMode({ tokenMode: "whitelist" }, "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     batchBlacklistTokens(tokens, modes) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             let calldata = []
             for (let i = 0; i < tokens.length; i++) {
                 const tokenAddress = await Token.getAddress(tokens[i], options)
                 calldata.push(this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
+           
+            await DataServer.addBatch(tokens, modes, "tokensBlackList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     batchWhitelistTokens(tokens, modes) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             let calldata = []
             for (let i = 0; i < tokens.length; i++) {
                 const tokenAddress = await Token.getAddress(tokens[i], options)
                 calldata.push(this.interface.encodeFunctionData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            await DataServer.addBatch(tokens, modes, "tokensWhiteList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     batchBlacklistUsers(users, modes) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             let calldata = []
             for (let i = 0; i < users.length; i++) {
                 calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            await DataServer.addBatch(users, modes, "walletsBlackList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
 
     batchWhitelistUsers(users, modes) {
-        return async (options = global) => {
+        return async (wallet, options = global) => {
             let calldata = []
             for (let i = 0; i < users.length; i++) {
                 calldata.push(this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            await DataServer.addBatch(users, modes, "walletsWhiteList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
