@@ -116,13 +116,6 @@ const TokenSponsorTest = (config) => {
         })
 
         describe("Set Whitelist and Blacklist Modes", function () {
-            it("add and remove TokenToBlacklist", async () => {
-                const gasSponsor = new TokenSponsor()
-                await funder.sendTx(await gasSponsor.removeTokenFromBlackList(paymasterToken))
-                await funder.sendTx(await gasSponsor.addTokenToBlackList(paymasterToken))
-                await funder.sendTx(await gasSponsor.removeTokenFromBlackList(paymasterToken))
-            })
-
             it("setTokenBlacklistMode and setTokenWhitelistMode", async () => {
                 const gasSponsor = new TokenSponsor()
                 await funder.sendTx(await gasSponsor.setTokenBlackListMode())

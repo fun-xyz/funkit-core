@@ -155,26 +155,6 @@ class TokenSponsor {
         }
     }
 
-    addWhitelistTokens(tokens) {
-        return async (options = global) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
-                return Token.getAddress(token, options)
-            }))
-            const data = this.interface.encodeFunctionData("addTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
-    removeWhitelistTokens(tokens) {
-        return async (options = global) => {
-            const sendTokens = await Promise.all(tokens.map(token => {
-                return Token.getAddress(token, options)
-            }))
-            const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
     addSpenderToWhiteList(spender) {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
@@ -224,32 +204,16 @@ class TokenSponsor {
         }
     }
 
-    addTokenToBlackList(token) {
-        return async (options = global) => {
-            const tokenAddress = await Token.getAddress(token, options)
-            const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, true])
-            return await this.encode(data, options)
-        }
-    }
-
-    setTokenBlackListMode() {
+    setTokenToBlackListMode() {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setTokenListMode", [true])
             return await this.encode(data, options)
         }
     }
 
-    setTokenWhiteListMode() {
+    setTokenToWhiteListMode() {
         return async (options = global) => {
             const data = this.interface.encodeFunctionData("setTokenListMode", [false])
-            return await this.encode(data, options)
-        }
-    }
-
-    removeTokenFromBlackList(token) {
-        return async (options = global) => {
-            const tokenAddress = await Token.getAddress(token, options)
-            const data = this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, false])
             return await this.encode(data, options)
         }
     }
