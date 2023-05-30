@@ -18,6 +18,15 @@ const compareToExpectedParams = (input, expected) => {
     })
 }
 
+const verifyFunctionParams = (location, input, expected) => {
+    const missing = compareToExpectedParams(input, expected)
+    if (missing.length) {
+        const helperMainMessage = "Missing these parameters: " + formatMissingForError(missing)
+        const helper = new Helper(`${location} was given these parameters`, input, helperMainMessage)
+        throw new MissingParameterError(location, helper)
+    }
+}
+
 const validateClassInstance = (data, dataName, classObj, location = "", isInternal = false) => {
     if (data instanceof classObj || data.constructor.toString() == classObj.toString()) {
         return

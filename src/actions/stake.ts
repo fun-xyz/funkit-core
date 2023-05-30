@@ -165,14 +165,15 @@ const WITHDRAW_QUEUE_ABI = [{
     "stateMutability": "nonpayable",
     "type": "function"
 }]
+
 export interface StakeParams {
-    amount: BigNumber
+    amount: number
 }
 
 export interface RequestUnstakeParams {
-    token: string
-    amount: BigNumber
+    amount: number
 }
+
 const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
 export const _stake = (input: StakeParams) => {
@@ -215,6 +216,7 @@ export const _requestUnstake = (params: any) => {
         }
         let token = new Token(params.token)
         const approveData: ApproveParams = await token.approve(withdrawalQueue, params.amount, { chain: actionData.chain })
+        console.log(approveData)
         // Request Withdrawal
         const requestWithdrawal = withdrawQueueInterface.encodeFunctionData("requestWithdrawals", [[params.amount], await wallet.getAddress()])
         const requestWithdrawalData: ExecParams = { to: withdrawalQueue, data: requestWithdrawal, value: BigNumber.from(0) }
@@ -251,6 +253,17 @@ export const _finishUnstake = () => {
         const readyToWithdrawRequestIds = [...readyToWithdraw].sort((a, b) => {
             return a.sub(b)
         })
+        if (readyToWithdrawRequestIds.length === 0) {
+            errorData = {
+                location: "action.requestUnstake",
+                error: {
+                    title: "Possible reasons:",
+                    reasons: ["No ready to withdraw requests"]
+                }
+            }
+            return { data: { to: "", data: "" }, errorData };
+        }
+
         // claim batch withdrawal
         const lastCheckpoint = await withdrawalQueue.getLastCheckpointIndex()
         const hints = await withdrawalQueue.findCheckpointHints(readyToWithdrawRequestIds, 1, lastCheckpoint)
