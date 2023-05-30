@@ -4,6 +4,9 @@
         "sourceType": "module",
         "ecmaVersion": "latest"
     },
+    "plugins": [
+        "@typescript-eslint"
+    ],
     "env": {
         "browser": true,
         "commonjs": true,
@@ -12,29 +15,13 @@
         "mocha": true,
         "jest": true
     },
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:prettier/recommended",
-        "prettier"
-    ],
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended", "prettier"],
     "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "quotes": [
-            "error",
-            "double"
-        ],
+        "indent": ["error", 4],
+        "quotes": ["error", "double"],
         "eqeqeq": "error",
         "unused-imports/no-unused-imports": "error",
         "@typescript-eslint/no-unused-vars": "error"
     },
-    "ignorePatterns": [
-        "node_modules",
-        "build",
-        "dist",
-        "public"
-    ]
+    "ignorePatterns": ["node_modules", "build", "dist", "public"]
 }

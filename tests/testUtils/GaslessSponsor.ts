@@ -3,7 +3,8 @@ import { Eoa } from "../../src/auth"
 import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { GaslessSponsor } from "../../src/sponsors"
-import { fundWallet, getTestApiKey } from "../../src/utils"
+import { fundWallet } from "../../src/utils"
+import { getTestApiKey } from "../testUtils"
 import { FunWallet } from "../../src/wallet"
 
 export interface GaslessSponsorTestConfig {

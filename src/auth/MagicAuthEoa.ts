@@ -1,6 +1,6 @@
 import { Eoa, EoaAuthInput } from "./EoaAuth"
-import { Signer } from 'ethers'
-import { Web3Provider } from '@ethersproject/providers'
+import { Signer } from "ethers"
+import { Web3Provider } from "@ethersproject/providers"
 
 export class MagicAuthEoa extends Eoa {
     uniqueId: string
@@ -14,7 +14,7 @@ export class MagicAuthEoa extends Eoa {
         return this.uniqueId
     }
 
-    override async getOwnerAddr():  Promise<string[]> {
+    override async getOwnerAddr(): Promise<string[]> {
         const signer = await this.getSigner()
         return [await signer.getAddress()]
     }

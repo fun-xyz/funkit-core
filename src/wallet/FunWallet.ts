@@ -3,7 +3,7 @@ import { ParameterFormatError, Helper } from "../errors"
 import { UserOp, WalletIdentifier, Token, getChainFromData, Chain, UserOperation } from "../data"
 import { TokenSponsor, GaslessSponsor } from "../sponsors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
-import { verifyFunctionParams, validateClassInstance, gasCalculation, getUniqueId } from "../utils"
+import { verifyFunctionParams, gasCalculation, getUniqueId } from "../utils"
 import { BigNumber, constants } from "ethers"
 import { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } from "../apis"
 import { Auth } from "../auth"
@@ -98,7 +98,7 @@ export class FunWallet extends FirstClassActions {
             }
 
             if (fee.amount) {
-                fee.amount = (await token.getDecimalAmount(BigNumber.from(fee.amount))).toNumber()
+                fee.amount = (await token.getDecimalAmount(fee.amount)).toNumber()
             } else if (fee.gasPercent) {
                 const emptyFunc = async () => {
                     return {

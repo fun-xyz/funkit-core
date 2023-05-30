@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs")
 
 const loadAbis = () => {
     const entryPointPath = "eip-4337/EntryPoint.sol/EntryPoint.json"
@@ -12,7 +12,19 @@ const loadAbis = () => {
     const gaslessPaymasterPaymasterpath = "paymaster/GaslessPaymaster.sol/GaslessPaymaster.json"
     const tokenOracle = "oracles/TokenPriceOracle.sol/TokenPriceOracle.json"
     const feeOracle = "oracles/FeePercentOracle.sol/FeePercentOracle.json"
-    const abis = [entryPointPath,feeOracle, authContractPath, gaslessPaymasterPaymasterpath, approveAndExecPath, approveAndSwapPath, factoryPath, walletPath, tokenPaymasterpath, tokenOracle, aaveWithdrawPath]
+    const abis = [
+        entryPointPath,
+        feeOracle,
+        authContractPath,
+        gaslessPaymasterPaymasterpath,
+        approveAndExecPath,
+        approveAndSwapPath,
+        factoryPath,
+        walletPath,
+        tokenPaymasterpath,
+        tokenOracle,
+        aaveWithdrawPath
+    ]
     abis.forEach(moveFile)
 }
 
@@ -25,13 +37,12 @@ const moveFile = (path) => {
         const data = require(basePath + path)
         fs.writeFileSync(newPath, JSON.stringify(data))
         console.log("SUCCESS: ", fileName)
-    }
-    catch (e) {
+    } catch (e) {
         console.log(e)
         console.log("ERROR: ", fileName)
     }
 }
 
-if (typeof require !== 'undefined' && require.main === module) {
+if (typeof require !== "undefined" && require.main === module) {
     loadAbis()
 }
