@@ -1,8 +1,8 @@
-import { parseEther } from "ethers/lib/utils"
 import { ActionData } from "./FirstClass"
+import { BigNumber } from "ethers"
 
 export interface StakeParams {
-    amount: number
+    amount: BigNumber // denominated in wei
 }
 
 export const _stake = (params: StakeParams) => {
@@ -15,7 +15,7 @@ export const _stake = (params: StakeParams) => {
                 reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
             }
         }
-        const data = { to: lidoAddress, data: "0x", value: parseEther(`${params.amount}`) }
+        const data = { to: lidoAddress, data: "0x", value: `${params.amount}` }
         const errorData = {
             location: "action.stake",
             error: {

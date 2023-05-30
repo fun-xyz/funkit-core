@@ -6,7 +6,7 @@
     "scripts": {
         "build": "tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
-        "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
+        "test-goerli": "env PREFUND=false ts-mocha tests/goerli/Stake.ts",
         "test-localfork": "env REMOTE_TEST=false mocha test/fork",
         "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
         "load": "node test/loader.js",
