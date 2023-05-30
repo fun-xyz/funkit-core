@@ -207,6 +207,7 @@ export const _requestUnstake = (params: any) => {
                     reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
                 }
             }
+            return { errorData }
         }
         let token = new Token(steth)
         const approveData: ApproveParams = await token.approve(withdrawalQueue, params.amount, { chain: actionData.chain })
@@ -222,8 +223,9 @@ export const _finishUnstake = () => {
         const { chain, wallet } = actionData
         const provider = await actionData.chain.getProvider()
         const withdrawalQueue = new ethers.Contract(getWithdrawalQueue(chain.id.toString()), WITHDRAW_QUEUE_ABI, provider)
+
         // check withdrawal requests
-        const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(wallet.getAddress())
+        const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
         // get the state of a particular nft
         const withdrawalStatusTx = await withdrawalQueue.getWithdrawalStatus(withdrawalRequests)
         const readyToWithdraw: BigNumber[] = []
@@ -231,16 +233,6 @@ export const _finishUnstake = () => {
         for (let i = 0; i < withdrawalStatusTx.length; i++) {
             if (withdrawalStatusTx[i].isFinalized) {
                 readyToWithdraw.push(withdrawalRequests[i])
-            }
-        }
-        if (readyToWithdraw.length === 0) {
-            // return error
-            errorData = {
-                location: "action.requestUnstake",
-                error: {
-                    title: "Possible reasons:",
-                    reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
-                }
             }
         }
         const readyToWithdrawRequestIds = [...readyToWithdraw].sort((a, b) => {
@@ -254,7 +246,7 @@ export const _finishUnstake = () => {
                     reasons: ["No ready to withdraw requests"]
                 }
             }
-            return { data: { to: "", data: "" }, errorData };
+            return { errorData };
         }
 
         // claim batch withdrawal
@@ -271,6 +263,7 @@ export const _finishUnstake = () => {
         } else {
             data = { to: "", data: "", value: BigNumber.from(0) }
         }
+        console.log("data", data)
         return { data, errorData }
     }
 }
