@@ -11,4 +11,4 @@ const getOrgInfo = async (apiKey) => {
         return r.data
     })
 }
-module.exports =  { getOrgInfo }
+module.exports = { getOrgInfo }
