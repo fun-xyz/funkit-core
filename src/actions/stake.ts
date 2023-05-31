@@ -11,7 +11,7 @@ export interface StakeParams {
 }
 
 export interface RequestUnstakeParams {
-    amount: BigNumber // denominated in wei
+    amount: number // denominated in wei
 }
 const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
@@ -36,12 +36,12 @@ export const _stake = (params: StakeParams) => {
     }
 }
 
-export const _requestUnstake = (params: any) => {
-    return async (actionData: any) => {
+export const _requestUnstake = (params: RequestUnstakeParams) => {
+    return async (actionData: ActionData) => {
         // Approve steth
         const { chain, wallet } = actionData
-        const steth: string = getSteth(chain.chainId.toString())
-        const withdrawalQueue: string = getWithdrawalQueue(chain.chainId.toString())
+        const steth: string = getSteth(await chain.getChainId())
+        const withdrawalQueue: string = getWithdrawalQueue(await chain.getChainId())
         if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
             const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
             throw new StatusError("Lido Finance", "action.requestUnstake", helper)
@@ -56,10 +56,10 @@ export const _requestUnstake = (params: any) => {
 }
 
 export const _finishUnstake = () => {
-    return async (actionData: any) => {
+    return async (actionData: ActionData) => {
         const { chain, wallet } = actionData
         const provider = await actionData.chain.getProvider()
-        const withdrawalQueue = new ethers.Contract(getWithdrawalQueue(chain.id.toString()), WITHDRAW_QUEUE_ABI, provider)
+        const withdrawalQueue = new ethers.Contract(getWithdrawalQueue(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
 
         // check withdrawal requests
         const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
