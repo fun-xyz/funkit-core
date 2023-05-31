@@ -57,7 +57,12 @@ export abstract class FirstClassActions {
         return await this.execute(auth, _stake(input), options, estimate)
     }
 
-    async requestUnstake(auth: Auth, input: RequestUnstakeParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
+    async requestUnstake(
+        auth: Auth,
+        input: RequestUnstakeParams,
+        options: EnvOption = globalEnvOption,
+        estimate = false
+    ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _requestUnstake(input), options, estimate)
     }
 

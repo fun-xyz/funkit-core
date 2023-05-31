@@ -49,7 +49,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("Should be able to finish unstaking if ready", async () => {
             try {
                 await wallet.finishUnstake(auth, {})
-            } catch (error: StatusError) {
+            } catch (error: any) {
                 assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
                 return
             }

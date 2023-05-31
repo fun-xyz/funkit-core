@@ -46,10 +46,13 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
             const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
             throw new StatusError("Lido Finance", "action.requestUnstake", helper)
         }
-        let token = new Token(steth)
+        const token = new Token(steth)
         const approveData: ApproveParams = await token.approve(withdrawalQueue, params.amount, { chain: actionData.chain })
         // Request Withdrawal
-        const requestWithdrawal = withdrawQueueInterface.encodeFunctionData("requestWithdrawals", [[parseEther(params.amount.toString())], await wallet.getAddress()])
+        const requestWithdrawal = withdrawQueueInterface.encodeFunctionData("requestWithdrawals", [
+            [parseEther(params.amount.toString())],
+            await wallet.getAddress()
+        ])
         const requestWithdrawalData: ExecParams = { to: withdrawalQueue, data: requestWithdrawal, value: BigNumber.from(0) }
         return await approveAndExec({ approve: approveData, exec: requestWithdrawalData })(actionData)
     }
