@@ -1,10 +1,10 @@
 import { assert } from "chai"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { NFT } from "../../src/data/NFT"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../testUtils"
-import { NFT } from "../../src/data/NFT"
+import { getTestApiKey } from "../getTestApiKey"
 export interface NFTTestConfig {
     chainId: number
     authPrivateKey: string

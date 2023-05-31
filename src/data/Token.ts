@@ -3,7 +3,7 @@ import { formatUnits, parseUnits } from "ethers/lib/utils"
 import { getChainFromData } from "./Chain"
 import erc20 from "../abis/ERC20.json"
 import { getTokenInfo } from "../apis"
-import { EnvOption } from "../config/config"
+import { EnvOption } from "../config/Config"
 import { Helper, MissingParameterError, TransactionError } from "../errors"
 
 const nativeTokens = ["eth", "matic"]

@@ -3,7 +3,7 @@ import { BigNumber, Contract, Signer } from "ethers"
 import { BytesLike } from "ethers/lib/utils"
 import entryPointContract from "../abis/EntryPoint.json"
 import { TransactionData } from "../common/types/TransactionData"
-import { EnvOption } from "../config/config"
+import { EnvOption } from "../config/Config"
 import { getChainFromData } from "../data"
 
 export abstract class Auth {

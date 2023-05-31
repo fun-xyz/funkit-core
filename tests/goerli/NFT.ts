@@ -1,5 +1,5 @@
-import { NFTTest, NFTTestConfig } from "../testUtils/NFT"
 import * as dotenv from "dotenv"
+import { NFTTest, NFTTestConfig } from "../testUtils/NFT"
 dotenv.config()
 
 const config: NFTTestConfig = {

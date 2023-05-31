@@ -1,9 +1,8 @@
 import { Contract, ethers } from "ethers"
-import { MissingParameterError } from "../errors"
+import { Chain, getChainFromData } from "./Chain"
 import erc721_abi from "../abis/ERC721.json"
-import { getChainFromData } from "./Chain"
-import { EnvOption } from "src/config/config"
-import { Chain } from "./Chain"
+import { EnvOption } from "../config"
+import { MissingParameterError } from "../errors"
 
 type TransactionData = {
     data: ethers.PopulatedTransaction

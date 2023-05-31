@@ -2,7 +2,7 @@ import { BigNumber, Contract } from "ethers"
 import { Chain, getChainFromData } from "./Chain"
 import entryPoint from "../abis/EntryPoint.json"
 import { Auth } from "../auth/Auth"
-import { EnvOption } from "../config/config"
+import { EnvOption } from "../config/Config"
 import { calcPreVerificationGas } from "../utils"
 
 export interface UserOperation {
