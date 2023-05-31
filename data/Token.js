@@ -138,6 +138,10 @@ class Token {
         const token = new Token(data)
         return await token.transfer(spender, amount, options)
     }
+    
+    static async isNative(token){
+        return nativeTokens.includes(token.toLowerCase())
+    }
 }
 
 module.exports = {

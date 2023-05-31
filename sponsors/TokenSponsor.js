@@ -34,6 +34,12 @@ class TokenSponsor {
         return await contract.getToken(tokenAddress)
     }
 
+    async getAllTokenData(token, spender, options = global) {
+        const contract = await this.getContract(options)
+        const tokenAddress = await Token.getAddress(token, options)
+        return await contract.getAllTokenData(tokenAddress, spender)
+    }
+
     async getTokenBalance(token, spender, options = global) {
         const contract = await this.getContract(options)
         const tokenData = new Token(token)
@@ -91,13 +97,26 @@ class TokenSponsor {
         return await contract.getTokenBlacklisted(spender)
     }
 
+    //false means unlocked, true means locked
+    async getLockState(token, spender, options = global) {
+        const unlockBlock = Number((await this.getAllTokenData(Token.isNative(token) ? constants.AddressZero : tokenAddress, spender)).unlockBlock.toString())
+        const parsedOptions = await parseOptions(options)
+        const provider = await parsedOptions.chain.getProvider()
+        const currentBlock = await provider.getBlockNumber()
+        console.log(unlockBlock, currentBlock)
+        if (1 <= unlockBlock && unlockBlock <= currentBlock) {
+            return false
+        }
+        else return true
+    }
+
     addUsableToken(oracle, token, aggregator) {
         return async (wallet, options = global) => {
             const decimals = await Token.getDecimals(token, options)
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.interface.encodeFunctionData("setTokenData", [data])
-            await DataServer.addPaymasterToken(token)
+            console.log(await DataServer.addPaymasterToken(token))
             return await this.encode(calldata, options)
         }
     }
@@ -158,10 +177,8 @@ class TokenSponsor {
     unstakeToken(token, walletAddress, amount) {
         return async (wallet, options = global) => {
             const tokenObj = new Token(token)
-
             const tokenAddress = await tokenObj.getAddress(options)
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
-
             const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             await DataServer.addTransaction({
                 action: "unstakeToken",
@@ -237,6 +254,20 @@ class TokenSponsor {
         }
     }
 
+    lockDeposit() {
+        return async (wallet, options = global) => {
+            const data = this.interface.encodeFunctionData("lockTokenDeposit", [constants.AddressZero])
+            return await this.encode(data, options)
+        }
+    }
+
+    unlockDepositAfter(blocksToWait) {
+        return async (wallet, options = global) => {
+            const data = this.interface.encodeFunctionData("unlockTokenDepositAfter", [constants.AddressZero, blocksToWait])
+            return await this.encode(data, options)
+        }
+    }
+
     approve(token, amount) {
         return async (wallet, options = global) => {
             const gasSponsorAddress = await this.getPaymasterAddress(options)
@@ -277,7 +308,7 @@ class TokenSponsor {
                 calldata.push(this.interface.encodeFunctionData("setTokenBlacklistMode", [tokenAddress, modes[i]]))
             }
             const data = this.interface.encodeFunctionData("batchActions", [calldata])
-           
+
             await DataServer.addBatch(tokens, modes, "tokensBlackList", "token", await wallet.getAddress())
             return await this.encode(data, options)
         }

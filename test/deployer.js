@@ -24,7 +24,7 @@ const getOptions = async (chain = 36864) => {
     const apiKey = await getTestApiKey()
     return {
         chain,
-        apiKey: apiKey,
+        apiKey: 'hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf',
     }
 }
 
@@ -95,11 +95,20 @@ const paymasterConfig = async (chainId, privateKey = TEST_PRIVATE_KEY) => {
 
     const oracleGOERLI = "0x601cD9fdF44EcE68bA5FF7b9273b5231d019e301"
     const aggergatorGOERLI = "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e"
-    const tokenToAddGOERLI="0x07865c6e87b9f70255377e024ace6630c1eaa37f"
+    // const tokenToAddGOERLI = "0xAA8958047307Da7Bb00F0766957edeC0435b46B5"
+    const tokenToAddGOERLI = ["0x07865c6e87b9f70255377e024ace6630c1eaa37f",
+        "0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767",
+        "0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093",
+        "0xAA8958047307Da7Bb00F0766957edeC0435b46B5"]
+        // await eoa.sendTx(await sponsor.addUsableToken(oracleGOERLI, tokenToAddGOERLI[3], aggergatorGOERLI))
+         console.log(await sponsor.getTokenInfo(tokenToAddGOERLI[3]))
 
     // await eoa.sendTx(await sponsor.addUsableToken("0x40251E36b8c3ddea0cA8F8b1b2d79d0C36e7E799", "0x53589543A64408AA03ba709EFCD1a7f03AA6880D", "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"))
-    await eoa.sendTx(await sponsor.addUsableToken(oracleGOERLI, tokenToAddGOERLI, aggergatorGOERLI))
-    console.log(await sponsor.getTokenInfo(tokenToAddGOERLI))
+    // for (let i of tokenToAddGOERLI) {
+    //     await eoa.sendTx(await sponsor.addUsableToken(oracleGOERLI, tokenToAddGOERLI[i], aggergatorGOERLI))
+    //     console.log(await sponsor.getTokenInfo(tokenToAddGOERLI[i]))
+    // }
+
     // fun dai
     // await eoa.sendTx(await sponsor.addUsableToken(oracle, "0x855af47cdf980a650ade1ad47c78ec1deebe9093", aggergator))
     // fun usdc

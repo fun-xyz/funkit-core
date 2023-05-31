@@ -61,6 +61,23 @@ class GaslessSponsor {
         return await contract.getSpenderWhitelistMode(spender)
     }
 
+    async getUnlockBlock(spender, options = global) {
+        const contract = await this.getContract(options)
+        return await contract.getUnlockBlock(spender)
+    }
+
+    async getLockState(spender, options = global) {
+        const unlockBlock = (await this.getUnlockBlock(spender)).toNumber()
+        const parsedOptions = await parseOptions(options)
+        const provider = await parsedOptions.chain.getProvider()
+        const currentBlock = await provider.getBlockNumber()
+        console.log(unlockBlock)
+        if (1 <= unlockBlock && unlockBlock <= currentBlock) {
+            return false
+        }
+        else return true
+    }
+
     stake(walletAddress, amount) {
         return async (wallet, options = global) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
@@ -71,7 +88,7 @@ class GaslessSponsor {
                 from: walletAddress,
                 timestamp: Date.now(),
                 to: await this.getPaymasterAddress(),
-                token:"eth"
+                token: "eth"
             }, "gasless", walletAddress)
             return await this.encodeValue(data, amountdec, options)
         }
@@ -87,22 +104,22 @@ class GaslessSponsor {
                 from: walletAddress,
                 timestamp: Date.now(),
                 to: await this.getPaymasterAddress(),
-                token:"eth"
+                token: "eth"
             }, "gasless", walletAddress)
             return await this.encode(data, options)
         }
     }
 
-    lock() {
+    lockDeposit() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("lockDeposit", [])
             return await this.encode(data, options)
         }
     }
 
-    unlock(num) {
+    unlockDepositAfter(blocksToWait) {
         return async (wallet, options = global) => {
-            const data = this.interface.encodeFunctionData("unlockDepositAfter", [num])
+            const data = this.interface.encodeFunctionData("unlockDepositAfter", [blocksToWait])
             return await this.encode(data, options)
         }
     }
@@ -110,7 +127,7 @@ class GaslessSponsor {
     setToBlacklistMode() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
-            await DataServer.updatePaymasterMode({mode:"blacklist"}, "gasless", await wallet.getAddress())
+            await DataServer.updatePaymasterMode({ mode: "blacklist" }, "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
@@ -118,7 +135,7 @@ class GaslessSponsor {
     setToWhitelistMode() {
         return async (wallet, options = global) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
-            await DataServer.updatePaymasterMode({mode:"whitelist"}, "gasless", await wallet.getAddress())
+            await DataServer.updatePaymasterMode({ mode: "whitelist" }, "gasless", await wallet.getAddress())
             return await this.encode(data, options)
         }
     }
