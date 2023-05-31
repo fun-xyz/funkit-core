@@ -1,5 +1,5 @@
-import { StakeTest, StakeTestConfig } from "../testUtils/Stake"
 import * as dotenv from "dotenv"
+import { StakeTest, StakeTestConfig } from "../testUtils/Stake"
 dotenv.config()
 
 const PREFUND = process.env.PREFUND === "true" ? true : false

@@ -1,5 +1,5 @@
-import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
 import * as dotenv from "dotenv"
+import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
 dotenv.config()
 
 const PREFUND = process.env.PREFUND === "true" ? true : false

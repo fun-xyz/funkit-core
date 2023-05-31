@@ -1,5 +1,5 @@
-import { GaslessSponsorTest, GaslessSponsorTestConfig } from "../testUtils/GaslessSponsor"
 import * as dotenv from "dotenv"
+import { GaslessSponsorTest, GaslessSponsorTestConfig } from "../testUtils/GaslessSponsor"
 dotenv.config()
 
 const PREFUND = process.env.PREFUND === "true" ? true : false

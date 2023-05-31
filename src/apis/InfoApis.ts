@@ -1,15 +1,15 @@
 import {
     API_URL,
-    LOCAL_FORK_CHAIN_ID,
-    FUN_TESTNET_CHAIN_ID,
-    LOCAL_TOKEN_ADDRS,
     BASE_WRAP_TOKEN_ADDR,
+    FORK_DEFAULT_ADDRESSES,
+    FUN_TESTNET_CHAIN_ID,
     LOCAL_API_URL,
+    LOCAL_FORK_CHAIN_ID,
     LOCAL_FORK_CHAIN_KEY,
-    FORK_DEFAULT_ADDRESSES
+    LOCAL_TOKEN_ADDRS
 } from "../common/constants"
+import { Helper, ServerMissingDataError } from "../errors"
 import { sendPostRequest } from "../utils/ApiUtils"
-import { ServerMissingDataError, Helper } from "../errors"
 
 export async function getTokenInfo(symbol: string, chainId: string): Promise<any> {
     symbol = symbol.toLowerCase()

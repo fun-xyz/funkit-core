@@ -1,9 +1,9 @@
-import { calcPreVerificationGas } from "../utils"
 import { BigNumber, Contract } from "ethers"
 import { Chain, getChainFromData } from "./Chain"
-import { EnvOption } from "src/config/config"
-import { Auth } from "../auth/Auth"
 import entryPoint from "../abis/EntryPoint.json"
+import { Auth } from "../auth/Auth"
+import { EnvOption } from "../config/Config"
+import { calcPreVerificationGas } from "../utils"
 
 export interface UserOperation {
     sender: string

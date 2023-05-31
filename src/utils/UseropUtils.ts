@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers"
-import { defaultAbiCoder, arrayify, hexlify, keccak256 } from "ethers/lib/utils"
-import { Chain, UserOperation } from "../data"
+import { arrayify, defaultAbiCoder, hexlify, keccak256 } from "ethers/lib/utils"
 import { sendRequest } from "./ApiUtils"
+import { Chain, UserOperation } from "../data"
 
 export const calcPreVerificationGas = (userOp: UserOperation) => {
     const ov = DefaultGasOverheads

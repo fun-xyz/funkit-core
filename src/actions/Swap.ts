@@ -1,14 +1,13 @@
 import { Contract, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { Token } from "../data/Token"
-import { swapExec, fromReadableAmount } from "../utils/SwapUtils"
-import { oneInchAPIRequest } from "../utils/SwapUtils"
-import { sendRequest } from "../utils"
 import { approveAndExec } from "./ApproveAndExec"
 import { ActionData } from "./FirstClass"
+import approveAndSwapContract from "../abis/ApproveAndSwap.json"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
-import approveAndSwapContract from "../abis/ApproveAndSwap.json"
+import { Token } from "../data/Token"
+import { sendRequest } from "../utils"
+import { fromReadableAmount, oneInchAPIRequest, swapExec } from "../utils/SwapUtils"
 
 const approveAndSwapInterface = new Interface(approveAndSwapContract.abi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])

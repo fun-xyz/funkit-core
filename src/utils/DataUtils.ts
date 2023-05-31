@@ -1,6 +1,6 @@
 import { constants } from "ethers"
-import { isHexString, hexlify } from "ethers/lib/utils"
-import { MissingParameterError, Helper, DataFormatError } from "../errors"
+import { hexlify, isHexString } from "ethers/lib/utils"
+import { DataFormatError, Helper, MissingParameterError } from "../errors"
 
 const compareToExpectedParams = (input: any, expected: string[]) => {
     return expected.filter((key: any) => {

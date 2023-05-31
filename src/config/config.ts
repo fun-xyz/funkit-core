@@ -1,6 +1,6 @@
+import { getOrgInfo } from "../apis"
 import { OPTION_TEST_API_KEY } from "../common/constants"
 import { Chain, getChainFromData } from "../data"
-import { getOrgInfo } from "../apis"
 
 export interface EnvOption {
     chain?: string | Chain

@@ -1,11 +1,11 @@
+import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
 import { Signer, Wallet } from "ethers"
 import { BytesLike, arrayify } from "ethers/lib/utils"
-import { verifyPrivateKey } from "../utils/DataUtils"
-import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
-import { TransactionData } from "src/common/types/TransactionData"
-import { storeEVMCall } from "../apis"
 import { Auth } from "./Auth"
-import { EnvOption } from "src/config"
+import { storeEVMCall } from "../apis"
+import { TransactionData } from "../common/types/TransactionData"
+import { EnvOption } from "../config"
+import { verifyPrivateKey } from "../utils/DataUtils"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
 

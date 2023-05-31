@@ -1,8 +1,8 @@
-import { Eoa, EoaAuthInput } from "./EoaAuth"
 import { Web3Provider } from "@ethersproject/providers"
-import { ParameterFormatError, Helper } from "../errors"
-import { v4 as uuidv4 } from "uuid"
 import { Signer } from "ethers"
+import { v4 as uuidv4 } from "uuid"
+import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { Helper, ParameterFormatError } from "../errors"
 import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
 
 export class MultiAuthEoa extends Eoa {

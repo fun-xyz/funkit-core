@@ -1,10 +1,10 @@
-import { getTestApiKey } from "../getTestApiKey"
 import { assert } from "chai"
 import { Eoa } from "../../src/auth"
-import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { FunWallet } from "../../src/wallet"
+import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
+import { FunWallet } from "../../src/wallet"
+import { getTestApiKey } from "../getTestApiKey"
 
 export interface SwapTestConfig {
     chainId: number
@@ -25,14 +25,14 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth: Eoa
         let wallet: FunWallet
         before(async function () {
-            let apiKey = await getTestApiKey()
+            const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index != null ? config.index : 1792811340 })
+            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {
                 await fundWallet(auth, wallet, 1)

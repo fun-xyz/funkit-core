@@ -1,13 +1,12 @@
 import { Auth } from "../auth"
-import { _swap } from "./Swap"
 import { RequestUnstakeParams, StakeParams, _stake, _requestUnstake, _finishUnstake, FinishUnstakeParams } from "./Stake"
-import { _transfer, _approve, TransferParams, ApproveParams } from "./Token"
+import { BigNumber, Transaction } from "ethers"
+import { SwapParams, _swap } from "./Swap"
+import { ApproveParams, TransferParams, _approve, _transfer } from "./Token"
 import { EnvOption } from "../config"
 import { Chain, UserOp, getChainFromData } from "../data"
-import { FunWallet } from "../wallet"
-import { SwapParams } from "./Swap"
-import { BigNumber, Transaction } from "ethers"
 import { isContract } from "../utils"
+import { FunWallet } from "../wallet"
 
 export interface ActionData {
     wallet: FunWallet

@@ -1,10 +1,10 @@
-import { Contract, ethers } from "ethers"
-import { WalletIdentifier, Chain } from "../data"
 import { TransactionReceipt } from "@ethersproject/providers"
-import factory from "../abis/FunWalletFactory.json"
-import wallet from "../abis/FunWallet.json"
+import { Contract, ethers } from "ethers"
 import entryPoint from "../abis/EntryPoint.json"
+import wallet from "../abis/FunWallet.json"
+import factory from "../abis/FunWalletFactory.json"
 import offChainOracle from "../abis/OffChainOracle.json"
+import { Chain, WalletIdentifier } from "../data"
 
 const factoryAbi = factory.abi
 const walletAbi = wallet.abi

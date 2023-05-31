@@ -1,6 +1,6 @@
-import { Eoa, EoaAuthInput } from "./EoaAuth"
-import { Signer } from "ethers"
 import { Web3Provider } from "@ethersproject/providers"
+import { Signer } from "ethers"
+import { Eoa, EoaAuthInput } from "./EoaAuth"
 
 export class MagicAuthEoa extends Eoa {
     uniqueId: string

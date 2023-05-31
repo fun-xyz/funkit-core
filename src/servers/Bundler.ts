@@ -1,11 +1,11 @@
-import { resolveProperties } from "ethers/lib/utils"
 import { JsonRpcProvider } from "@ethersproject/providers"
-import { deepHexlify } from "../utils/DataUtils"
-import { Helper, NoServerConnectionError } from "../errors"
 import { BigNumber } from "ethers"
-import { validateChainId, sendUserOpToBundler, estimateUserOpGas, getChainId } from "../apis"
-import { UserOperation } from "../data/UserOp"
+import { resolveProperties } from "ethers/lib/utils"
+import { estimateUserOpGas, getChainId, sendUserOpToBundler, validateChainId } from "../apis"
 import { LOCAL_FORK_CHAIN_ID } from "../common/constants"
+import { UserOperation } from "../data/UserOp"
+import { Helper, NoServerConnectionError } from "../errors"
+import { deepHexlify } from "../utils/DataUtils"
 
 export interface EstimateUserOpGasResult {
     callGasLimit: BigNumber

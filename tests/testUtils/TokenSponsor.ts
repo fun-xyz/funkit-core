@@ -1,7 +1,7 @@
 import { assert } from "chai"
 import { Eoa } from "../../src/auth"
-import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -28,8 +28,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
     describe("TokenSponsor", function () {
         this.timeout(300_000)
-        let auth = new Eoa({ privateKey: config.authPrivateKey })
-        let funder = new Eoa({ privateKey: config.funderPrivateKey })
+        const auth = new Eoa({ privateKey: config.authPrivateKey })
+        const funder = new Eoa({ privateKey: config.funderPrivateKey })
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
@@ -41,10 +41,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await configureEnvironment(options)
 
-            let uniqueId = await auth.getUniqueId()
+            const uniqueId = await auth.getUniqueId()
 
-            wallet = new FunWallet({ uniqueId, index: config.walletIndex != null ? config.walletIndex : 1223452391856341 })
-            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex != null ? config.funderIndex : 2345234 })
+            wallet = new FunWallet({ uniqueId, index: config.walletIndex ? config.walletIndex : 1223452391856341 })
+            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex ? config.funderIndex : 2345234 })
 
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
