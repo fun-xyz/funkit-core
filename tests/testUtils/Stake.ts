@@ -43,12 +43,12 @@ export const StakeTest = (config: StakeTestConfig) => {
         })
 
         it("Should be able to start unstaking", async () => {
-            await wallet.requestUnstake(auth, { amount: 0.001 })
+            await wallet.requestUnstake(auth, { amounts: [0.001, 0.001] })
         })
 
         it("Should be able to finish unstaking if ready", async () => {
             try {
-                await wallet.finishUnstake(auth, {})
+                await wallet.finishUnstake(auth, { recipient: await wallet.getAddress() })
             } catch (error: any) {
                 assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
                 return

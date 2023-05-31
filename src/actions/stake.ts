@@ -11,7 +11,11 @@ export interface StakeParams {
 }
 
 export interface RequestUnstakeParams {
-    amount: number // denominated in wei
+    amounts: number[] // denominated in wei
+}
+
+export interface FinishUnstakeParams {
+    recipient: string
 }
 const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
@@ -47,10 +51,11 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
             throw new StatusError("Lido Finance", "action.requestUnstake", helper)
         }
         const token = new Token(steth)
-        const approveData: ApproveParams = await token.approve(withdrawalQueue, params.amount, { chain: actionData.chain })
+        const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
+        const approveData: ApproveParams = await token.approve(withdrawalQueue, approveAmount, { chain: actionData.chain })
         // Request Withdrawal
         const requestWithdrawal = withdrawQueueInterface.encodeFunctionData("requestWithdrawals", [
-            [parseEther(params.amount.toString())],
+            params.amounts.map((amount) => parseEther(amount.toString())),
             await wallet.getAddress()
         ])
         const requestWithdrawalData: ExecParams = { to: withdrawalQueue, data: requestWithdrawal, value: BigNumber.from(0) }
@@ -58,7 +63,7 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
     }
 }
 
-export const _finishUnstake = () => {
+export const _finishUnstake = (params: FinishUnstakeParams) => {
     return async (actionData: ActionData) => {
         const { chain, wallet } = actionData
         const provider = await actionData.chain.getProvider()
@@ -86,7 +91,11 @@ export const _finishUnstake = () => {
         // claim batch withdrawal
         const lastCheckpoint = await withdrawalQueue.getLastCheckpointIndex()
         const hints = await withdrawalQueue.findCheckpointHints(readyToWithdrawRequestIds, 1, lastCheckpoint)
-        const claimBatchWithdrawalTx = await withdrawalQueue.populateTransaction.claimWithdrawals(readyToWithdrawRequestIds, hints)
+        const claimBatchWithdrawalTx = await withdrawalQueue.populateTransaction.claimWithdrawalsTo(
+            readyToWithdrawRequestIds,
+            hints,
+            params.recipient
+        )
         let data: ExecParams
         if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to && claimBatchWithdrawalTx.value) {
             data = {

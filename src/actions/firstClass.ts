@@ -1,6 +1,6 @@
 import { Auth } from "../auth"
 import { _swap } from "./Swap"
-import { RequestUnstakeParams, StakeParams, _stake, _requestUnstake, _finishUnstake } from "./Stake"
+import { RequestUnstakeParams, StakeParams, _stake, _requestUnstake, _finishUnstake, FinishUnstakeParams } from "./Stake"
 import { _transfer, _approve, TransferParams, ApproveParams } from "./Token"
 import { EnvOption } from "../config"
 import { Chain, UserOp, getChainFromData } from "../data"
@@ -66,8 +66,13 @@ export abstract class FirstClassActions {
         return await this.execute(auth, _requestUnstake(input), options, estimate)
     }
 
-    async finishUnstake(auth: Auth, _: any, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
-        return await this.execute(auth, _finishUnstake(), options, estimate)
+    async finishUnstake(
+        auth: Auth,
+        input: FinishUnstakeParams,
+        options: EnvOption = globalEnvOption,
+        estimate = false
+    ): Promise<ExecutionReceipt | UserOp> {
+        return await this.execute(auth, _finishUnstake(input), options, estimate)
     }
 
     async create(auth: Auth, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
