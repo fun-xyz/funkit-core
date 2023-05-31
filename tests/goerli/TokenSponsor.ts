@@ -1,5 +1,5 @@
-import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSponsor"
 import * as dotenv from "dotenv"
+import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSponsor"
 dotenv.config()
 
 const PREFUND = process.env.PREFUND === "true" ? true : false

@@ -1,5 +1,5 @@
-import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 import * as dotenv from "dotenv"
+import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 dotenv.config()
 
 const PREFUND = process.env.PREFUND === "true" ? true : false

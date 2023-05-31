@@ -1,8 +1,8 @@
 import { assert } from "chai"
 import { Wallet } from "ethers"
 import { Auth, Eoa } from "../../src/auth"
-import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getTestApiKey } from "../getTestApiKey"
@@ -33,7 +33,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index != null ? config.index : 1792811340 })
+            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) await fundWallet(auth, wallet, 0.7)
             const walletAddress = await wallet.getAddress()

@@ -1,5 +1,5 @@
-import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 import * as dotenv from "dotenv"
+import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 dotenv.config()
 
 const DAI_POLYGON = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063"

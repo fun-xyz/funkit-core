@@ -11,8 +11,8 @@
         "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
         "load": "node test/loader.js",
         "format": "prettier --write .",
-        "lint": "eslint -c .eslintrc.json --ext .ts,.tsx 'src/**'",
-        "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx 'src/**' --fix",
+        "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
+        "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
         "prepare": "husky install"
     },
     "author": "",

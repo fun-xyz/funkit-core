@@ -1,10 +1,10 @@
-import { Eoa } from "../../src/auth"
-import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../src/common/constants"
 import { expect } from "chai"
 import { randomBytes } from "ethers/lib/utils"
+import { Eoa } from "../../src/auth"
+import { FUN_TESTNET_CHAIN_ID, LOCAL_FORK_CHAIN_ID } from "../../src/common/constants"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { fundWallet, isContract } from "../../src/utils/ChainUtils"
 import { FunWallet } from "../../src/wallet"
-import { isContract, fundWallet } from "../../src/utils/ChainUtils"
 import { getTestApiKey } from "../getTestApiKey"
 
 export interface FactoryTestConfig {
@@ -43,7 +43,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         })
 
         it("wallet.create should create a wallet", async () => {
-            if (chainId == FUN_TESTNET_CHAIN_ID || chainId == LOCAL_FORK_CHAIN_ID || config.testCreate) {
+            if (chainId === FUN_TESTNET_CHAIN_ID || chainId === LOCAL_FORK_CHAIN_ID || config.testCreate) {
                 const index = Math.random() * 10000
                 const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
@@ -64,7 +64,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         })
 
         it("wallet should not have the same address with a different uniqueId", async () => {
-            let uniqueId1 = randomBytes(32).toString()
+            const uniqueId1 = randomBytes(32).toString()
             const wallet1 = new FunWallet({ uniqueId: uniqueId1, index: 3923 })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()

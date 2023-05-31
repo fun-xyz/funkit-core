@@ -1,6 +1,6 @@
-import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager"
-import { DEFAULT_RETRY_OPTIONS } from "../src/utils"
+import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager"
 import { retry } from "@lifeomic/attempt"
+import { DEFAULT_RETRY_OPTIONS } from "../src/utils"
 
 const SECRET_NAME = "FunApiServer/ApiGateway"
 const REGION = "us-west-2"

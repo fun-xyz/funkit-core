@@ -1,6 +1,6 @@
-import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
-import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../src/common/constants"
 import * as dotenv from "dotenv"
+import { FUN_TESTNET_CHAIN_ID, LOCAL_FORK_CHAIN_ID } from "../../src/common/constants"
+import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 dotenv.config()
 
 var REMOTE_TEST = process.env.REMOTE_TEST

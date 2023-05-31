@@ -1,5 +1,5 @@
-import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
 import * as dotenv from "dotenv"
+import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
 dotenv.config()
 
 const DAI_POLYGON = "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063"

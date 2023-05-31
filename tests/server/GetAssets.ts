@@ -1,10 +1,10 @@
+import { BigNumber } from "@ethersproject/bignumber"
 import { expect } from "chai"
+import * as dotenv from "dotenv"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
 import { getTestApiKey } from "../getTestApiKey"
-import { BigNumber } from "@ethersproject/bignumber"
-import * as dotenv from "dotenv"
 dotenv.config()
 
 const chainId = 5

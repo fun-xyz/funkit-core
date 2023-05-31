@@ -1,7 +1,7 @@
 import { assert } from "chai"
 import { Auth, Eoa } from "../../src/auth"
-import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getTestApiKey } from "../getTestApiKey"
@@ -22,7 +22,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         let wallet: FunWallet
         const amount = 0.001
         before(async function () {
-            let apiKey = await getTestApiKey()
+            const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
                 apiKey: apiKey

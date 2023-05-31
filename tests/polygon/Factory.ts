@@ -1,5 +1,5 @@
-import { FactoryTestConfig, FactoryTest } from "../testUtils/Factory"
 import * as dotenv from "dotenv"
+import { FactoryTest, FactoryTestConfig } from "../testUtils/Factory"
 dotenv.config()
 
 const config: FactoryTestConfig = {
