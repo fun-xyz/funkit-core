@@ -72,7 +72,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             it("getContract", async () => {
                 const nft = new NFT(nftAddress)
                 const nftContract = await nft.getContract()
-                assert(nftContract.address === "0xdFb5778fDbD15d8cb0e37d278CcC2ba9751aa5fc", "Contract is not correct")
+                assert(nftContract.address === nftAddress, "Contract is not correct")
             })
             it("getBalance", async () => {
                 const nft = new NFT(nftAddress)
