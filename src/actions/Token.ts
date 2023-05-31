@@ -134,11 +134,11 @@ const erc721Transfer = (params: ERC721TransferParams) => {
 
 export const _approve = (params: ApproveParams) => {
     // Handle ERC20 Approves
-    if (params.amount) {
-        return erc20Approve({ spender: params.spender, amount: params.amount, token: params.token })
-    }
     if (params.tokenId) {
         return erc721Approve({ spender: params.spender, tokenId: params.tokenId, token: params.token })
+    }
+    if (params.amount) {
+        return erc20Approve({ spender: params.spender, amount: params.amount, token: params.token })
     }
     const currentLocation = "action.approve"
     const helperMainMessage = "params were missing or incorrect"

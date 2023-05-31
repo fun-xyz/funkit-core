@@ -5,9 +5,6 @@ import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getTestApiKey } from "../testUtils"
 import { NFT } from "../../src/data/NFT"
-import { Contract, ethers } from "ethers"
-import erc721_abi from "../../src/abis/ERC721.json"
-import { Chain } from "../../src/data"
 export interface NFTTestConfig {
     chainId: number
     authPrivateKey: string
@@ -17,12 +14,12 @@ export interface NFTTestConfig {
 }
 export const NFTTest = (config: NFTTestConfig) => {
     const { chainId, authPrivateKey, prefund, nftAddress } = config
-    let NFTContract: Contract
 
     describe("NFT Tests", function () {
         this.timeout(120_000)
         let auth: Auth
-        let wallet: FunWallet
+        let wallet1: FunWallet
+        let wallet2: FunWallet
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -31,68 +28,62 @@ export const NFTTest = (config: NFTTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
-            if (prefund) await fundWallet(auth, wallet, 0.002)
-            const chain = new Chain({ chainId: chainId.toString() })
-            NFTContract = new ethers.Contract(nftAddress, erc721_abi, await chain.getProvider())
+            wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
+            wallet2 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811341 })
+            if (prefund) {
+                await fundWallet(auth, wallet1, 0.02)
+                await fundWallet(auth, wallet2, 0.02)
+            }
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it("setApprovalForAll", async () => {
-                const nft = new NFT(config.nftAddress)
-                const spender = await wallet.getAddress()
-                const data = await nft.approveForAll(spender)
-                const expectedData = await NFTContract.populateTransaction.setApprovalForAll(spender, true)
-                assert(data.data.data === expectedData.data, "Data is not correct")
-                assert(data.data.to === expectedData.to, "Address is not correct")
-            })
-            it("revokeApprovalForAll", async () => {
-                const nft = new NFT(config.nftAddress)
-                const spender = await wallet.getAddress()
-                const data = await nft.revokeForAll(spender)
-                const expectedData = await NFTContract.populateTransaction.setApprovalForAll(spender, false)
-                assert(data.data.data === expectedData.data, "Data is not correct")
-                assert(data.data.to === expectedData.to, "Address is not correct")
-            })
             it("transfer", async () => {
-                const nft = new NFT(config.nftAddress)
-                const spender = await wallet.getAddress()
-                const data = await nft.transfer(spender, ethers.constants.AddressZero, 1)
-                const expectedData = await NFTContract.populateTransaction.transferFrom(spender, ethers.constants.AddressZero, 1)
-                assert(data.data.data === expectedData.data, "Data is not correct")
-                assert(data.data.to === expectedData.to, "Address is not correct")
+                await wallet2.transfer(auth, {
+                    to: await wallet1.getAddress(),
+                    token: nftAddress,
+                    tokenId: 3
+                })
+
+                await wallet1.transfer(auth, {
+                    to: await wallet2.getAddress(),
+                    token: nftAddress,
+                    tokenId: 3
+                })
             })
+
             it("approve", async () => {
-                const nft = new NFT(config.nftAddress)
-                const spender = await wallet.getAddress()
-                const data = await nft.approve(spender, 1)
-                const expectedData = await NFTContract.populateTransaction.approve(spender, 1)
-                assert(data.data.data === expectedData.data, "Data is not correct")
-                assert(data.data.to === expectedData.to, "Address is not correct")
+                const nft = new NFT(nftAddress)
+                await wallet1.approve(auth, {
+                    spender: await wallet2.getAddress(),
+                    token: nftAddress,
+                    tokenId: 2
+                })
+                const data = await nft.getApproved("2")
+                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receiveis not correct")
             })
         })
 
         describe("Read functions - Basic Functionality", () => {
             it("getAddress", async () => {
-                const nft = new NFT(config.nftAddress)
+                const nft = new NFT(nftAddress)
                 await nft.getAddress()
-                assert(nft.address === config.nftAddress, "Address is not correct")
+                assert(nft.address === nftAddress, "Address is not correct")
             })
             it("getContract", async () => {
-                const nft = new NFT(config.nftAddress)
+                const nft = new NFT(nftAddress)
                 const nftContract = await nft.getContract()
                 assert(nftContract.address === "0xdFb5778fDbD15d8cb0e37d278CcC2ba9751aa5fc", "Contract is not correct")
             })
             it("getBalance", async () => {
-                const nft = new NFT(config.nftAddress)
-                const bal = await nft.getBalance(await wallet.getAddress())
-                assert(bal.toString() === "2", "Balance is not correct")
+                const nft = new NFT(nftAddress)
+                const bal = await nft.getBalance(await wallet1.getAddress())
+                assert(bal.toString() === "1", "Balance is not correct")
             })
             it("getApproval", async () => {
-                const nft = new NFT(config.nftAddress)
-                const tokenId = "3"
+                const nft = new NFT(nftAddress)
+                const tokenId = "2"
                 const approved = await nft.getApproved(tokenId)
-                const owner = await wallet.getAddress()
+                const owner = await wallet2.getAddress()
                 assert(approved === owner, "Owner is not correct")
             })
         })

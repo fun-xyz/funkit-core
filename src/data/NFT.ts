@@ -23,18 +23,18 @@ export class NFT {
         }
     }
 
-    async approve(spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    async approve(spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.approve(spender, tokenId)
-        return { data, chain }
+        return { ...data, chain }
     }
 
-    async approveForAll(spender: string, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    async approveForAll(spender: string, options: EnvOption = globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.setApprovalForAll(spender, true)
-        return { data, chain }
+        return { ...data, chain }
     }
 
     async getAddress(): Promise<string> {
@@ -61,18 +61,18 @@ export class NFT {
         return await contract.getApproved(tokenId)
     }
 
-    async revokeForAll(spender: string, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    async revokeForAll(spender: string, options: EnvOption = globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.setApprovalForAll(spender, false)
-        return { data, chain }
+        return { ...data, chain }
     }
 
-    async transfer(sender: string, spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    async transfer(sender: string, spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.transferFrom(sender, spender, tokenId)
-        return { data, chain }
+        return { ...data, chain }
     }
 
     static async approve(data: string, spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<TransactionData> {
