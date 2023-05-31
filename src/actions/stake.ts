@@ -7,7 +7,7 @@ import { BigNumber, ethers } from "ethers"
 import { Helper, StatusError } from "../errors"
 import WITHDRAW_QUEUE_ABI from "../abis/LidoWithdrawQueue.json"
 export interface StakeParams {
-    amount: BigNumber // denominated in wei
+    amount: number // denominated in wei
 }
 
 export interface RequestUnstakeParams {
@@ -45,7 +45,7 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
         // Approve steth
         const { chain, wallet } = actionData
         const steth: string = getSteth(await chain.getChainId())
-        const withdrawalQueue: string = getWithdrawalQueue(await chain.getChainId())
+        const withdrawalQueue: string = getWithdrawalQueueAddr(await chain.getChainId())
         if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
             const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
             throw new StatusError("Lido Finance", "action.requestUnstake", helper)
@@ -67,7 +67,7 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
     return async (actionData: ActionData) => {
         const { chain, wallet } = actionData
         const provider = await actionData.chain.getProvider()
-        const withdrawalQueue = new ethers.Contract(getWithdrawalQueue(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
+        const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
 
         // check withdrawal requests
         const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
@@ -121,7 +121,7 @@ export const getLidoAddress = (chainId: string) => {
     }
 }
 
-export const getWithdrawalQueue = (chainId: string): string => {
+export const getWithdrawalQueueAddr = (chainId: string): string => {
     switch (parseInt(chainId)) {
         case 1:
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
