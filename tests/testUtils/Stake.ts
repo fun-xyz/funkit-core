@@ -4,9 +4,9 @@ import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../testUtils"
 import { BigNumber } from "ethers"
-import { StatusError } from "../../src/errors"
+import { getTestApiKey } from "../getTestApiKey"
+
 export interface StakeTestConfig {
     chainId: number
     authPrivateKey: string
@@ -23,7 +23,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         let auth: Auth
         let wallet: FunWallet
         before(async function () {
-            let apiKey = await getTestApiKey()
+            const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
                 apiKey: apiKey
@@ -43,7 +43,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         })
 
         it("Should be able to start unstaking", async () => {
-            await wallet.requestUnstake(auth, { amount: .001 })
+            await wallet.requestUnstake(auth, { amount: 0.001 })
         })
 
         it("Should be able to finish unstaking if ready", async () => {

@@ -5,7 +5,7 @@ import { randomBytes } from "ethers/lib/utils"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
 import { isContract, fundWallet } from "../../src/utils/ChainUtils"
-import { getTestApiKey } from "../testUtils"
+import { getTestApiKey } from "../getTestApiKey"
 
 export interface FactoryTestConfig {
     chainId: number

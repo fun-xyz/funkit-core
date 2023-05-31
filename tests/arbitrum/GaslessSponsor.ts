@@ -1,11 +1,12 @@
-const { GaslessSponsorTest } = require("../testUtils/GaslessSponsor.js")
-const { WALLET_PRIVATE_KEY, WALLET_PRIVATE_KEY_2 } = require("../../utils/index.js")
+import { GaslessSponsorTest, GaslessSponsorTestConfig } from "../testUtils/GaslessSponsor"
+import * as dotenv from "dotenv"
+dotenv.config()
 
 const PREFUND = process.env.PREFUND === "true" ? true : false
-const config = {
+const config: GaslessSponsorTestConfig = {
     chainId: 42161,
-    authPrivateKey: WALLET_PRIVATE_KEY,
-    funderPrivateKey: WALLET_PRIVATE_KEY_2,
+    authPrivateKey: process.env.WALLET_PRIVATE_KEY!,
+    funderPrivateKey: process.env.WALLET_PRIVATE_KEY_2!,
     inToken: "eth",
     outToken: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
     stakeAmount: 0.01,
@@ -14,4 +15,5 @@ const config = {
     walletIndex: 0,
     funderIndex: 1
 }
+
 GaslessSponsorTest(config)

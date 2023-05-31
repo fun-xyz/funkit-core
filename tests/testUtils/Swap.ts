@@ -1,4 +1,4 @@
-import { getTestApiKey } from "../testUtils"
+import { getTestApiKey } from "../getTestApiKey"
 import { assert } from "chai"
 import { Eoa } from "../../src/auth"
 import { Token } from "../../src/data"

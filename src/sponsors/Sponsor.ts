@@ -22,7 +22,7 @@ export abstract class Sponsor {
     async getPaymasterAddress(options: EnvOption = globalEnvOption): Promise<string> {
         const chain = await getChainFromData(options.chain)
         const chainId = await chain.getChainId()
-        if (!this.paymasterAddress && chainId != this.chainId) {
+        if (!this.paymasterAddress && chainId !== this.chainId) {
             this.paymasterAddress = await chain.getAddress(this.name)
             this.chainId = chainId
         }

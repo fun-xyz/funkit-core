@@ -4,7 +4,7 @@ import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
-import { getTestApiKey } from "../testUtils"
+import { getTestApiKey } from "../getTestApiKey"
 import { FunWallet } from "../../src/wallet"
 
 export interface GaslessSponsorTestConfig {

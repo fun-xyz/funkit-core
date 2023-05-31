@@ -1,10 +1,15 @@
 import { Contract, ethers } from "ethers"
 import { WalletIdentifier, Chain } from "../data"
 import { TransactionReceipt } from "@ethersproject/providers"
+import factory from "../abis/FunWalletFactory.json"
+import wallet from "../abis/FunWallet.json"
+import entryPoint from "../abis/EntryPoint.json"
+import offChainOracle from "../abis/OffChainOracle.json"
 
-const factoryAbi = require("../abis/FunWalletFactory.json").abi
-const walletAbi = require("../abis/FunWallet.json").abi
-const entryPointAbi = require("../abis/EntryPoint.json").abi
+const factoryAbi = factory.abi
+const walletAbi = wallet.abi
+const entryPointAbi = entryPoint.abi
+const offChainOracleAbi = offChainOracle.abi
 
 export class WalletOnChainManager {
     chain: Chain
@@ -72,7 +77,7 @@ export class WalletOnChainManager {
         const contract = new Contract(walletAddress, walletAbi, provider)
         try {
             const data = await contract.getModuleStateVal(moduleAddress)
-            return data != "0x"
+            return data !== "0x"
         } catch (e) {
             return false
         }
@@ -82,14 +87,13 @@ export class WalletOnChainManager {
         await this.init()
         const provider = await this.chain.getProvider()
         const addressCode = await provider.getCode(address)
-        return !(addressCode.length == 2)
+        return !(addressCode.length === 2)
     }
 
     async getEthTokenPairing(token: string) {
-        const OffChainOracleAbi = require("../abis/OffChainOracle.json").abi
         const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress")
         const provider = await this.chain.getProvider()
-        const oracle = new Contract(offChainOracleAddress, OffChainOracleAbi, provider)
+        const oracle = new Contract(offChainOracleAddress, offChainOracleAbi, provider)
         return await oracle.getRateToEth(token, true)
     }
 }

@@ -8,9 +8,9 @@ import { approveAndExec } from "./ApproveAndExec"
 import { ActionData } from "./FirstClass"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
+import approveAndSwapContract from "../abis/ApproveAndSwap.json"
 
-const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
-const approveAndSwapInterface = new Interface(approveAndSwapAbi)
+const approveAndSwapInterface = new Interface(approveAndSwapContract.abi)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
 const DEFAULT_SLIPPAGE = 0.5 // .5%
@@ -73,7 +73,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
         const univ3factory = await actionData.chain.getAddress("univ3factory")
         const univ3router = await actionData.chain.getAddress("univ3router")
 
-        const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
+        const actionContract = new Contract(tokenSwapAddress, approveAndSwapContract.abi, provider)
 
         const tokenIn = new Token(params.in)
         const tokenOut = new Token(params.out)
@@ -93,7 +93,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
 
         let percentDecimal = 100
         let slippage = params.slippage ? params.slippage : DEFAULT_SLIPPAGE
-        while (slippage < 1 || Math.trunc(slippage) != slippage) {
+        while (slippage < 1 || Math.trunc(slippage) !== slippage) {
             percentDecimal *= 10
             slippage *= 10
         }
@@ -123,12 +123,12 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
 const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption = globalEnvOption) => {
     let approveTx = undefined
     const chain = await getChainFromData(options.chain)
-    if (swapParams.in.toUpperCase() == chain.currency) {
+    if (swapParams.in.toUpperCase() === chain.currency) {
         swapParams.in = eth1InchAddress
     } else {
         approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, options)
     }
-    if (swapParams.out.toUpperCase() == chain.currency) {
+    if (swapParams.out.toUpperCase() === chain.currency) {
         swapParams.out = eth1InchAddress
     }
     const swapTx = await _getOneInchSwapTx(swapParams, address, options)
@@ -166,7 +166,7 @@ const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, address: string,
 }
 
 const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) => {
-    if (tokenAddress != eth1InchAddress) {
+    if (tokenAddress !== eth1InchAddress) {
         const inToken = new Token(tokenAddress)
         return await inToken.getDecimals(options)
     }

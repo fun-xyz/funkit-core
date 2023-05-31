@@ -9,7 +9,7 @@ export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) 
     if (!globalEnvOption.apiKey) {
         throw new DataFormatError("apiKey", "string", "configureEnvironment")
     }
-    if (globalEnvOption.apiKey == TEST_API_KEY) {
+    if (globalEnvOption.apiKey === TEST_API_KEY) {
         return
     }
     const userOp = await getPromiseFromOp(op)
@@ -30,7 +30,7 @@ export async function storeEVMCall(receipt: TransactionReceipt) {
     if (!globalEnvOption.apiKey) {
         throw new DataFormatError("apiKey", "string", "configureEnvironment")
     }
-    if (globalEnvOption.apiKey == TEST_API_KEY) {
+    if (globalEnvOption.apiKey === TEST_API_KEY) {
         return
     }
 

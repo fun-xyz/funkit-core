@@ -2,14 +2,13 @@ import { Token } from "../data"
 import { EnvOption } from "../config"
 import { Sponsor } from "./Sponsor"
 import { constants } from "ethers"
-
-const paymasterAbi = require("../abis/TokenPaymaster.json").abi
+import paymaster from "../abis/TokenPaymaster.json"
 
 export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = globalEnvOption) {
-        super(options, paymasterAbi, "tokenSponsorAddress")
+        super(options, paymaster.abi, "tokenSponsorAddress")
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 

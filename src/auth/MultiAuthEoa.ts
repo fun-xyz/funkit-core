@@ -28,7 +28,7 @@ export class MultiAuthEoa extends Eoa {
             throw new ParameterFormatError("MultiAuthEoa.getUniqueId", helper)
         }
 
-        if (uniqueIds.size == 1) {
+        if (uniqueIds.size === 1) {
             ;[this.uniqueId] = uniqueIds
         } else {
             this.uniqueId = uuidv4()

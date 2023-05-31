@@ -1,25 +1,24 @@
 import { Interface } from "ethers/lib/utils"
-import { constants, Transaction } from "ethers"
+import { constants } from "ethers"
 import { ActionData } from "./FirstClass"
 import { BigNumber } from "ethers"
+import approveAndExecContract from "../abis/ApproveAndExec.json"
 
-const approveAndExecAbi = require("../abis/ApproveAndExec.json").abi
-const approveAndExecInterface = new Interface(approveAndExecAbi)
-
+const approveAndExecInterface = new Interface(approveAndExecContract.abi)
 const errorData = {
     location: "actions.approveAndExec"
 }
 
 export type ApproveParams = {
-    to: string;
-    data: string;
-};
+    to: string
+    data: string
+}
 
 export type ExecParams = {
-    to: string;
-    value: BigNumber;
-    data: string;
-};
+    to: string
+    value: BigNumber
+    data: string
+}
 
 const initData = approveAndExecInterface.encodeFunctionData("init", [constants.HashZero])
 
