@@ -38,6 +38,17 @@ export const NFTTest = (config: NFTTestConfig) => {
 
         describe("Write functions - Basic Functionality", () => {
             it("transfer", async () => {
+                let transferError = false
+                try {
+                    await wallet1.transfer(auth, {
+                        to: await wallet2.getAddress(),
+                        token: nftAddress,
+                        tokenId: 3
+                    })
+                } catch (error) {
+                    transferError = true
+                }
+                assert(transferError, "Transfer should have failed")
                 await wallet2.transfer(auth, {
                     to: await wallet1.getAddress(),
                     token: nftAddress,
