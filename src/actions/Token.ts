@@ -1,6 +1,6 @@
+import { parseEther } from "ethers/lib/utils"
 import { ActionData } from "./FirstClass"
 import { NFT, Token } from "../data"
-import { parseEther } from "ethers/lib/utils"
 import { Helper, MissingParameterError } from "../errors"
 
 export interface TransferParams {

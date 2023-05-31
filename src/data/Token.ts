@@ -1,10 +1,10 @@
 import { BigNumber, Contract, ethers } from "ethers"
-import { parseUnits, formatUnits } from "ethers/lib/utils"
-import { MissingParameterError, TransactionError, Helper } from "../errors"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
+import { getChainFromData } from "./Chain"
 import erc20 from "../abis/ERC20.json"
 import { getTokenInfo } from "../apis"
-import { getChainFromData } from "./Chain"
-import { EnvOption } from "src/config/config"
+import { EnvOption } from "../config/config"
+import { Helper, MissingParameterError, TransactionError } from "../errors"
 
 const nativeTokens = ["eth", "matic"]
 const wrappedNativeTokens = { eth: "weth", matic: "wmatic" }

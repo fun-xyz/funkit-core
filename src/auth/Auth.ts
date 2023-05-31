@@ -1,10 +1,10 @@
-import { BigNumber, Contract, Signer } from "ethers"
-import { EnvOption } from "src/config/config"
-import { getChainFromData } from "../data"
-import { BytesLike } from "ethers/lib/utils"
 import { TransactionReceipt } from "@ethersproject/providers"
-import { TransactionData } from "src/common/types/TransactionData"
+import { BigNumber, Contract, Signer } from "ethers"
+import { BytesLike } from "ethers/lib/utils"
 import entryPointContract from "../abis/EntryPoint.json"
+import { TransactionData } from "../common/types/TransactionData"
+import { EnvOption } from "../config/config"
+import { getChainFromData } from "../data"
 
 export abstract class Auth {
     abstract signHash(hash: BytesLike): Promise<string>

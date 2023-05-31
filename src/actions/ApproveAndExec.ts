@@ -1,5 +1,5 @@
+import { Transaction, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { constants, Transaction } from "ethers"
 import { ActionData } from "./FirstClass"
 import approveAndExecContract from "../abis/ApproveAndExec.json"
 

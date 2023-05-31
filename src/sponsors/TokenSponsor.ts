@@ -1,8 +1,8 @@
-import { Token } from "../data"
-import { EnvOption } from "../config"
-import { Sponsor } from "./Sponsor"
 import { constants } from "ethers"
+import { Sponsor } from "./Sponsor"
 import paymaster from "../abis/TokenPaymaster.json"
+import { EnvOption } from "../config"
+import { Token } from "../data"
 
 export class TokenSponsor extends Sponsor {
     token: string

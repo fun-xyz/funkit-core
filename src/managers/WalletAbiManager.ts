@@ -1,7 +1,7 @@
 import { constants } from "ethers"
-import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
-import { verifyValidParamsFromAbi, checkAbi, encodeContractCall } from "../utils/ChainUtils"
 import { Interface, hexConcat } from "ethers/lib/utils"
+import { checkAbi, encodeContractCall, verifyValidParamsFromAbi } from "../utils/ChainUtils"
+import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
 
 const encodeCallExpectedKeys = ["to", "data"]
 const initCodeExpectedKeys = ["uniqueId", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]

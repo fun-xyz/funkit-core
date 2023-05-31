@@ -1,8 +1,8 @@
+import { Interface, defaultAbiCoder, parseEther } from "ethers/lib/utils"
+import { formatMissingForError, orderParams } from "./DataUtils"
 import { Auth } from "../auth"
 import { getChainFromData } from "../data"
-import { Interface, defaultAbiCoder, parseEther } from "ethers/lib/utils"
-import { orderParams, formatMissingForError } from "./DataUtils"
-import { Helper, DataFormatError, MissingParameterError } from "../errors"
+import { DataFormatError, Helper, MissingParameterError } from "../errors"
 import { FunWallet } from "../wallet"
 
 const getFunctionParamOrderFromInterface = (interf: Interface, func: string) => {

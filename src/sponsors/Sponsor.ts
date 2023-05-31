@@ -1,7 +1,7 @@
 import { BigNumber, Contract } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { getChainFromData } from "../data"
 import { EnvOption } from "../config"
+import { getChainFromData } from "../data"
 
 export abstract class Sponsor {
     sponsorAddress: string
