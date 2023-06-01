@@ -12,6 +12,7 @@ export interface StakeParams {
 
 export interface RequestUnstakeParams {
     amounts: number[] // denominated in wei
+    recipient?: string
 }
 
 export interface FinishUnstakeParams {
@@ -56,7 +57,7 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
         // Request Withdrawal
         const requestWithdrawal = withdrawQueueInterface.encodeFunctionData("requestWithdrawals", [
             params.amounts.map((amount) => parseEther(amount.toString())),
-            await wallet.getAddress()
+            params.recipient ? params.recipient : await wallet.getAddress()
         ])
         const requestWithdrawalData: ExecParams = { to: withdrawalQueue, data: requestWithdrawal, value: BigNumber.from(0) }
         return await approveAndExec({ approve: approveData, exec: requestWithdrawalData })(actionData)
