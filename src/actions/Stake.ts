@@ -21,7 +21,7 @@ const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
 export const _stake = (params: StakeParams) => {
     return async (actionData: ActionData) => {
-        const lidoAddress = getLidoAddress(actionData.chain.id!.toString())
+        const lidoAddress = getLidoAddress(actionData.chain.chainId!.toString())
         let reasonData: any = null
         if (!lidoAddress) {
             reasonData = {
@@ -63,7 +63,7 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
     }
 }
 
-const getReadyToWithdrawRequests = async (actionData: ActionData) => {
+export const getReadyToWithdrawRequests = async (actionData: ActionData) => {
     const { chain, wallet } = actionData
     const provider = await actionData.chain.getProvider()
     const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)

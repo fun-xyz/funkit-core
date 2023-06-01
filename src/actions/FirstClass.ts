@@ -23,7 +23,12 @@ export interface ExecutionReceipt {
 }
 
 export abstract class FirstClassActions {
-    abstract execute(auth: Auth, transactionFunc: Function, txOptions: EnvOption, estimate: boolean): Promise<ExecutionReceipt | UserOp>
+    abstract execute(
+        auth: Auth,
+        transactionFunc: Function,
+        txOptions: EnvOption,
+        estimate: boolean
+    ): Promise<ExecutionReceipt | UserOp | BigNumber>
     abstract getAddress(options?: EnvOption): Promise<string>
 
     async transfer(
@@ -31,7 +36,7 @@ export abstract class FirstClassActions {
         input: TransferParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         return await this.execute(auth, _transfer(input), options, estimate)
     }
 
@@ -40,7 +45,7 @@ export abstract class FirstClassActions {
         input: ApproveParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
@@ -49,7 +54,7 @@ export abstract class FirstClassActions {
         input: SwapParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
@@ -58,7 +63,7 @@ export abstract class FirstClassActions {
         input: StakeParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         return await this.execute(auth, _stake(input), options, estimate)
     }
 
@@ -67,7 +72,7 @@ export abstract class FirstClassActions {
         input: RequestUnstakeParams | FinishUnstakeParams,
         options: EnvOption = globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         const isRequestUnstakeParams = (input: any) => {
             return input.amounts !== undefined
         }
@@ -87,7 +92,7 @@ export abstract class FirstClassActions {
         auth: Auth,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         const address = await this.getAddress()
         if (await isContract(address)) {
             throw new Error("Wallet already exists as contract.")
@@ -107,7 +112,7 @@ export abstract class FirstClassActions {
         input: Transaction,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
         return await this.execute(auth, genCall(input), options, estimate)
     }
 }
