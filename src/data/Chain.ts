@@ -1,3 +1,5 @@
+import fs from "fs"
+import path from "path"
 import { JsonRpcProvider } from "@ethersproject/providers"
 import { BigNumber } from "ethers"
 import { UserOperation } from "./UserOp"
@@ -87,8 +89,12 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+                // const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+                // Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+                const abisAddresses = this.loadAddressesFromAbis(chainId)
+                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+                console.log("addresses, ", addresses)
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -161,6 +167,24 @@ export class Chain {
             callGasLimit = BigNumber.from(10e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
+    }
+
+    private loadAddressesFromAbis(chainId: string): { [key: string]: string } {
+        const abisDir = path.join(__dirname, "src/abis")
+        const fileNames = fs.readdirSync(abisDir)
+        const addresses: { [key: string]: string } = {}
+
+        for (const fileName of fileNames) {
+            const filePath = path.join(abisDir, fileName)
+            const fileContent = fs.readFileSync(filePath, "utf8")
+            const jsonContent = JSON.parse(fileContent)
+
+            if (jsonContent.addresses && jsonContent.addresses[chainId]) {
+                addresses[jsonContent.name] = jsonContent.addresses[chainId]
+            }
+        }
+
+        return addresses
     }
 }
 
