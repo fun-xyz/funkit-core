@@ -8,7 +8,7 @@ export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, paymaster.abi, "tokenSponsorAddress")
+        super(options, paymaster.abi, "TokenPaymaster")
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 

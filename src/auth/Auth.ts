@@ -24,7 +24,7 @@ export abstract class Auth {
 
     async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
         const chain = await getChainFromData(option.chain)
-        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        const entryPointAddress = await chain.getAddress("EntryPoint")
         const provider = await chain.getProvider()
         const entrypointContract = new Contract(entryPointAddress, entryPointContract.abi, provider)
         return await entrypointContract.getNonce(sender, key)

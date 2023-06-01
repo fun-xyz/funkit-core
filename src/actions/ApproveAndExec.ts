@@ -28,14 +28,14 @@ export interface ApproveAndExecParams {
 
 export const approveAndExec = (params: ApproveAndExecParams) => {
     return async (actionData: ActionData) => {
-        const approveAndExecAddress = await actionData.chain.getAddress("approveAndExecAddress")
+        const ApproveAndExec = await actionData.chain.getAddress("ApproveAndExec")
         const dest = params.exec.to
         const value = params.exec.value
         const executeData = params.exec.data
         const token = params.approve.to
         const approveData = params.approve.data
         const calldata = approveAndExecInterface.encodeFunctionData("approveAndExecute", [dest, value, executeData, token, approveData])
-        const txData = { to: approveAndExecAddress, data: [initData, calldata], initAndExec: true }
+        const txData = { to: ApproveAndExec, data: [initData, calldata], initAndExec: true }
         return { data: txData, errorData }
     }
 }

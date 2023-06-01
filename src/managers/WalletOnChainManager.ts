@@ -24,13 +24,13 @@ export class WalletOnChainManager {
 
     async init() {
         if (!this.factory) {
-            const factoryAddress = await this.chain.getAddress("factoryAddress")
+            const factoryAddress = await this.chain.getAddress("FunWalletFactory")
             const provider = await this.chain.getProvider()
             this.factory = new Contract(factoryAddress, factoryAbi, provider)
         }
 
         if (!this.entrypoint) {
-            const entryPointAddress = await this.chain.getAddress("entryPointAddress")
+            const entryPointAddress = await this.chain.getAddress("EntryPoint")
             const provider = await this.chain.getProvider()
             this.entrypoint = new Contract(entryPointAddress, entryPointAbi, provider)
         }

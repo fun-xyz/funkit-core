@@ -7,7 +7,7 @@ import { GlobalEnvOption, configureEnvironment } from "../src/config"
 async function setGlobal() {
     const apiKey = await getTestApiKey()
     const options: GlobalEnvOption = {
-        chain: "5",
+        chain: "31337",
         apiKey: apiKey
     }
     await configureEnvironment(options)
@@ -15,15 +15,6 @@ async function setGlobal() {
 
 const loadAbis = async (): Promise<void> => {
     await setGlobal()
-    const apiKey = await getTestApiKey()
-
-    // Mocking the global variable
-    global["globalEnvOption"] = {
-        chain: "5",
-        apiKey: apiKey
-    }
-
-    console.log("apiKey: ", apiKey)
 
     const contracts = [
         "EntryPoint",
@@ -35,7 +26,7 @@ const loadAbis = async (): Promise<void> => {
         "FunWallet",
         "TokenPaymaster",
         "GaslessPaymaster",
-        "TokenPriceTokenPriceOracle",
+        "TokenPriceOracle",
         "FeePercentTokenPriceOracle"
     ]
 
