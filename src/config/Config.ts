@@ -27,7 +27,9 @@ export interface GlobalEnvOption extends EnvOption {
 }
 
 export async function configureEnvironment(option: GlobalEnvOption) {
+    const global = globalThis as any
     global.globalEnvOption = global.globalEnvOption ? global.globalEnvOption : {}
+    const globalEnvOption = global.globalEnvOption as GlobalEnvOption
     if (!option.chain && !globalEnvOption.chain) {
         globalEnvOption.chain = await getChainFromData(5)
     } else {

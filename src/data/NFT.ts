@@ -22,14 +22,14 @@ export class NFT {
         }
     }
 
-    async approve(spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<any> {
+    async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.approve(spender, tokenId)
         return { ...data, chain }
     }
 
-    async approveForAll(spender: string, options: EnvOption = globalEnvOption): Promise<any> {
+    async approveForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.setApprovalForAll(spender, true)
@@ -40,7 +40,7 @@ export class NFT {
         return this.address
     }
 
-    async getContract(options: EnvOption = globalEnvOption): Promise<Contract> {
+    async getContract(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Contract> {
         const chain = await getChainFromData(options.chain)
         if (!this.contract) {
             const provider = await chain.getProvider()
@@ -50,36 +50,50 @@ export class NFT {
         return this.contract
     }
 
-    async getBalance(address: string, options: EnvOption = globalEnvOption): Promise<string> {
+    async getBalance(address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const contract = await this.getContract(options)
         return await contract.balanceOf(address)
     }
 
-    async getApproved(tokenId: string, options: EnvOption = globalEnvOption): Promise<string> {
+    async getApproved(tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const contract = await this.getContract(options)
         return await contract.getApproved(tokenId)
     }
 
-    async revokeForAll(spender: string, options: EnvOption = globalEnvOption): Promise<any> {
+    async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.setApprovalForAll(spender, false)
         return { ...data, chain }
     }
 
-    async transfer(sender: string, spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<any> {
+    async transfer(
+        sender: string,
+        spender: string,
+        tokenId: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const data = await contract.populateTransaction.transferFrom(sender, spender, tokenId)
         return { ...data, chain }
     }
 
-    static async approve(data: string, spender: string, tokenId: number, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    static async approve(
+        data: string,
+        spender: string,
+        tokenId: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionData> {
         const nft = new NFT(data)
         return await nft.approve(spender, tokenId, options)
     }
 
-    static async approveForAll(data: string, spender: string, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    static async approveForAll(
+        data: string,
+        spender: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionData> {
         const nft = new NFT(data)
         return await nft.approveForAll(spender, options)
     }
@@ -89,17 +103,21 @@ export class NFT {
         return await nft.getAddress()
     }
 
-    static async getApproved(data: string, tokenId: string, options: EnvOption = globalEnvOption): Promise<string> {
+    static async getApproved(data: string, tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const nft = new NFT(data)
         return await nft.getApproved(tokenId, options)
     }
 
-    static async getBalance(data: string, address: string, options: EnvOption = globalEnvOption): Promise<string> {
+    static async getBalance(data: string, address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const nft = new NFT(data)
         return await nft.getBalance(address, options)
     }
 
-    static async revokeForAll(data: string, spender: string, options: EnvOption = globalEnvOption): Promise<TransactionData> {
+    static async revokeForAll(
+        data: string,
+        spender: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionData> {
         const nft = new NFT(data)
         return await nft.revokeForAll(spender, options)
     }
@@ -109,7 +127,7 @@ export class NFT {
         sender: string,
         spender: string,
         tokenId: number,
-        options: EnvOption = globalEnvOption
+        options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionData> {
         const nft = new NFT(data)
         return await nft.transfer(sender, spender, tokenId, options)
