@@ -69,7 +69,7 @@ export class UserOp {
         return maxFeePerGas.mul(requiredGas)
     }
 
-    async estimateGas(auth: Auth, option: EnvOption = globalEnvOption): Promise<UserOp> {
+    async estimateGas(auth: Auth, option: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
         if (!this.op.signature || this.op.signature === "0x") {
             this.op.signature = await auth.getEstimateGasSignature()
         }

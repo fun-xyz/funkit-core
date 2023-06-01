@@ -40,7 +40,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: GlobalEnvOption = globalEnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: GlobalEnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         const actionData = {
             wallet: this,
@@ -154,7 +154,7 @@ export class FunWallet extends FirstClassActions {
     async execute(
         auth: Auth,
         transactionFunc: Function,
-        txOptions: EnvOption = globalEnvOption,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
         const chain = await getChainFromData(txOptions.chain)
@@ -176,7 +176,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Options} txOptions Options for the transaction
      * @returns
      */
-    async estimateGas(auth: Auth, transactionFunc: Function, txOptions: EnvOption = globalEnvOption): Promise<UserOp> {
+    async estimateGas(auth: Auth, transactionFunc: Function, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
         const chain = await getChainFromData(txOptions.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const signature = await auth.getEstimateGasSignature()
@@ -220,7 +220,7 @@ export class FunWallet extends FirstClassActions {
      * @param {*} options
      * @returns
      */
-    async getAddress(options: EnvOption = globalEnvOption): Promise<string> {
+    async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
             this.address = await new WalletOnChainManager(chain, this.identifier).getWalletAddress()
@@ -244,7 +244,7 @@ export class FunWallet extends FirstClassActions {
         return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
     }
 
-    async sendTx(userOp: UserOp, txOptions: EnvOption = globalEnvOption): Promise<ExecutionReceipt> {
+    async sendTx(userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         // let userOp
         // try {
         //     console.log()
@@ -265,7 +265,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Options} txOptions Options for the transaction
      * @returns
      */
-    async sendUserOp(userOp: UserOperation, txOptions: GlobalEnvOption = globalEnvOption): Promise<ExecutionReceipt> {
+    async sendUserOp(userOp: UserOperation, txOptions: GlobalEnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const chain = await getChainFromData(txOptions.chain)
         const opHash = await chain.sendOpToBundler(userOp)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
@@ -314,7 +314,7 @@ export class FunWallet extends FirstClassActions {
      *     }
      * }
      */
-    async getTokens(onlyVerifiedTokens = false, txOptions: EnvOption = globalEnvOption) {
+    async getTokens(onlyVerifiedTokens = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         return await getTokens(chain.chainId!, await this.getAddress(), onlyVerifiedTokens)
     }

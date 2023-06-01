@@ -69,7 +69,7 @@ const verifyParamIsSolidityType = (param: any, location: string, isInternal = fa
 }
 
 const gasSpecificChain = { 137: 350_000_000_000 }
-export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number, txOptions = globalEnvOption) => {
+export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number, txOptions = (globalThis as any).globalEnvOption) => {
     const chain = await getChainFromData(txOptions.chain)
     const to = await wallet.getAddress()
     const signer = await auth.getSigner()
@@ -88,7 +88,7 @@ export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number, t
     return await tx.wait()
 }
 
-export const isContract = async (address: string, txOptions = globalEnvOption) => {
+export const isContract = async (address: string, txOptions = (globalThis as any).globalEnvOption) => {
     const chain = await getChainFromData(txOptions.chain)
     const provider = await chain.getProvider()
     try {

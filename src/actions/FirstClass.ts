@@ -29,7 +29,7 @@ export abstract class FirstClassActions {
     async transfer(
         auth: Auth,
         input: TransferParams,
-        options: EnvOption = globalEnvOption,
+        options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _transfer(input), options, estimate)
@@ -38,20 +38,25 @@ export abstract class FirstClassActions {
     async approve(
         auth: Auth,
         input: ApproveParams,
-        options: EnvOption = globalEnvOption,
+        options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
-    async swap(auth: Auth, input: SwapParams, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
+    async swap(
+        auth: Auth,
+        input: SwapParams,
+        options: EnvOption = (globalThis as any).globalEnvOption,
+        estimate = false
+    ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
     async stake(
         auth: Auth,
         input: StakeParams,
-        options: EnvOption = globalEnvOption,
+        options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _stake(input), options, estimate)
@@ -78,7 +83,11 @@ export abstract class FirstClassActions {
         throw new ParameterFormatError("FirstClass.unstake", helper)
     }
 
-    async create(auth: Auth, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {
+    async create(
+        auth: Auth,
+        options: EnvOption = (globalThis as any).globalEnvOption,
+        estimate = false
+    ): Promise<ExecutionReceipt | UserOp> {
         const address = await this.getAddress()
         if (await isContract(address)) {
             throw new Error("Wallet already exists as contract.")
@@ -96,7 +105,7 @@ export abstract class FirstClassActions {
     async execRawTx(
         auth: Auth,
         input: Transaction,
-        options: EnvOption = globalEnvOption,
+        options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, genCall(input), options, estimate)
