@@ -102,7 +102,8 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
                 data: claimBatchWithdrawalTx.data,
             }
         } else {
-            data = { to: "", data: "", value: BigNumber.from(0) }
+            const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
+            throw new StatusError("Lido Finance", "action.finishUnstake", helper)
         }
         return { data, errorData }
     }
