@@ -29,7 +29,7 @@ export const _stake = (params: StakeParams) => {
                 reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
             }
         }
-        const data = { to: lidoAddress, data: "0x", value: `${params.amount}` }
+        const data = { to: lidoAddress, data: "0x", value: `${parseEther(params.amount.toString())}` }
         const errorData = {
             location: "action.stake",
             error: {
@@ -68,7 +68,6 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
         const { chain, wallet } = actionData
         const provider = await actionData.chain.getProvider()
         const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
-
         // check withdrawal requests
         const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
         // get the state of a particular nft
@@ -96,12 +95,11 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
             hints,
             params.recipient
         )
-        let data: ExecParams
-        if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to && claimBatchWithdrawalTx.value) {
+        let data
+        if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to) {
             data = {
                 to: claimBatchWithdrawalTx.to.toString(),
                 data: claimBatchWithdrawalTx.data,
-                value: claimBatchWithdrawalTx.value
             }
         } else {
             data = { to: "", data: "", value: BigNumber.from(0) }

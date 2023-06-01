@@ -2,7 +2,7 @@ import { BigNumber, constants } from "ethers"
 import wallet from "../abis/FunWallet.json"
 import factory from "../abis/FunWalletFactory.json"
 import { ExecutionReceipt, FirstClassActions } from "../actions"
-import { getAllNFTs, getAllTokens, getNFTs, getTokens, storeUserOp } from "../apis"
+import { getAllNFTs, getAllTokens, getNFTs, getTokens,getLidoWithdrawals, storeUserOp } from "../apis"
 import { Auth } from "../auth"
 import { EnvOption, GlobalEnvOption } from "../config"
 import { Chain, Token, UserOp, UserOperation, WalletIdentifier, getChainFromData } from "../data"
@@ -398,5 +398,24 @@ export class FunWallet extends FirstClassActions {
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
+    }
+
+    /**
+     * Get two lists of lido withdrawals, one list is ready to withdraw, the other is not ready to withdraw
+     * @returns Two lists, the first are readyToWithdrawIds, the second are notReadyToWithdrawIds
+     * [
+     *  [
+     *    123,
+     *    321,
+     *  ],
+     *  [
+     *    432,
+     *    120,
+     *  ]
+     * ]
+     */
+    async getLidoWithdrawals(txOptions = globalEnvOption) {
+        const chain = await getChainFromData(txOptions.chain)
+        return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
     }
 }

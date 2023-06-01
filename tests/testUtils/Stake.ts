@@ -43,17 +43,28 @@ export const StakeTest = (config: StakeTestConfig) => {
         })
 
         it("Should be able to start unstaking", async () => {
-            await wallet.requestUnstake(auth, { amounts: [0.001, 0.001] })
+            const withdrawalsBefore = await wallet.getLidoWithdrawals()
+            await wallet.unstake(auth, { amounts: [0.001, 0.001] })
+            const withdrawalsAfter = await wallet.getLidoWithdrawals()
+            assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
         })
 
         it("Should be able to finish unstaking if ready", async () => {
-            try {
-                await wallet.finishUnstake(auth, { recipient: await wallet.getAddress() })
-            } catch (error: any) {
-                assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
-                return
+            const withdrawals = await wallet.getLidoWithdrawals()
+            if (withdrawals[0].length > 0) {
+                const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
+                await wallet.unstake(auth, { recipient: await wallet.getAddress() })
+                const balAfter = await Token.getBalance(baseToken, await wallet.getAddress())
+                assert(balAfter > balBefore, "unable to finish unstaking")
+            } else {
+                try {
+                    await wallet.unstake(auth, { recipient: await wallet.getAddress() })
+                } catch (error: any) {
+                    assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
+                    return
+                }
+                assert(false, "Did not throw error")
             }
-            assert(false, "Did not throw error")
         })
     })
 }
