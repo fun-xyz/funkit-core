@@ -7,7 +7,7 @@ import { GlobalEnvOption, configureEnvironment } from "../src/config"
 async function setGlobal() {
     const apiKey = await getTestApiKey()
     const options: GlobalEnvOption = {
-        chain: "31337",
+        chain: "5",
         apiKey: apiKey
     }
     await configureEnvironment(options)
@@ -27,7 +27,7 @@ const loadAbis = async (): Promise<void> => {
         "TokenPaymaster",
         "GaslessPaymaster",
         "TokenPriceOracle",
-        "FeePercentTokenPriceOracle"
+        "FeePercentOracle"
     ]
 
     for (const contract of contracts) {

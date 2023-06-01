@@ -76,7 +76,7 @@ export class Chain {
 
     async loadBundler() {
         if (!this.bundler) {
-            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses.entryPointAddress)
+            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses.EntryPoint)
             await this.bundler.validateChainId()
         }
     }
@@ -92,9 +92,20 @@ export class Chain {
                 // const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 // Object.assign(this, { ...this, addresses, ...chain.rpcdata })
                 const abisAddresses = this.loadAddressesFromAbis(chainId)
+                // const abisAddresses = {
+                //     AaveWithdraw: '0xF3e08E4a32AE0c6FE96232fad697dC249B754F88',
+                //     ApproveAndExec: '0x2Ed4B26Bf71f15503A73F42648709E24e311FAc1',
+                //     ApproveAndSwap: '0x48575D6B267CE2bd4cEc0537c768044a56C723d7',
+                //     EntryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+                //     FunWalletFactory: '0x4FDffD240962F560BD3CA859a60034baa51ce3b2',
+                //     GaslessPaymaster: '0xBe0715556f98c1EcCd020a593068692ddbA97cc1',
+                //     TokenPaymaster: '0x068Df28a87DC1dD55730b7679e2e1e3E93d463dC',
+                //     TokenPriceOracle: '0x601cD9fdF44EcE68bA5FF7b9273b5231d019e301',
+                //     UserAuthentication: '0x8273fCeed934C9dd7FF57d883429Cc0026A4feE2'
+                // }
+                console.log("abisAddresses: ", abisAddresses)
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                console.log("addresses, ", addresses)
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -170,20 +181,42 @@ export class Chain {
     }
 
     private loadAddressesFromAbis(chainId: string): { [key: string]: string } {
-        const abisDir = path.join(__dirname, "src/abis")
-        const fileNames = fs.readdirSync(abisDir)
+        const abisDir = path.resolve(__dirname, "..", "abis")
+        let fileNames: string[] = []
+
+        try {
+            fileNames = fs.readdirSync(abisDir)
+        } catch (err) {
+            console.error(`Error reading directory ${abisDir}: ${err}`)
+            return {}
+        }
+
         const addresses: { [key: string]: string } = {}
 
         for (const fileName of fileNames) {
             const filePath = path.join(abisDir, fileName)
-            const fileContent = fs.readFileSync(filePath, "utf8")
-            const jsonContent = JSON.parse(fileContent)
+            let fileContent = ""
+
+            try {
+                fileContent = fs.readFileSync(filePath, "utf8")
+            } catch (err) {
+                console.error(`Error reading file ${filePath}: ${err}`)
+                continue
+            }
+
+            let jsonContent
+
+            try {
+                jsonContent = JSON.parse(fileContent)
+            } catch (err) {
+                console.error(`Error parsing JSON content from ${filePath}: ${err}`)
+                continue
+            }
 
             if (jsonContent.addresses && jsonContent.addresses[chainId]) {
                 addresses[jsonContent.name] = jsonContent.addresses[chainId]
             }
         }
-
         return addresses
     }
 }
