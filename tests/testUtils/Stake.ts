@@ -4,7 +4,6 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { BigNumber } from "ethers"
 import { getTestApiKey } from "../getTestApiKey"
 
 export interface StakeTestConfig {
@@ -37,7 +36,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: .001 })
+            await wallet.stake(auth, { amount: 0.001 })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })

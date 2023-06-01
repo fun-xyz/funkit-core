@@ -1,12 +1,10 @@
-import { ActionData } from "./FirstClass"
-import { Token } from "../data"
-import { approveAndExec, ApproveParams, ExecParams } from "./ApproveAndExec"
-
-import { Interface, parseEther } from "ethers/lib/utils"
 import { BigNumber, ethers } from "ethers"
-import { Helper, StatusError } from "../errors"
+import { Interface, parseEther } from "ethers/lib/utils"
+import { ApproveParams, ExecParams, approveAndExec } from "./ApproveAndExec"
+import { ActionData } from "./FirstClass"
 import WITHDRAW_QUEUE_ABI from "../abis/LidoWithdrawQueue.json"
-import { ActionData } from './firstClass';
+import { Token } from "../data"
+import { Helper, StatusError } from "../errors"
 export interface StakeParams {
     amount: number // denominated in wei
 }
@@ -50,7 +48,7 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
         const withdrawalQueue: string = getWithdrawalQueueAddr(await chain.getChainId())
         if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
             const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
-            throw new StatusError("Lido Finance", "action.requestUnstake", helper)
+            throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
         }
         const token = new Token(steth)
         const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
@@ -94,7 +92,7 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
         const readyToWithdrawRequestIds = await getReadyToWithdrawRequests(actionData)
         if (readyToWithdrawRequestIds.length === 0) {
             const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
-            throw new StatusError("Lido Finance", "action.finishUnstake", helper)
+            throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
         }
 
         // claim batch withdrawal
@@ -109,11 +107,11 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
         if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to) {
             data = {
                 to: claimBatchWithdrawalTx.to.toString(),
-                data: claimBatchWithdrawalTx.data,
+                data: claimBatchWithdrawalTx.data
             }
         } else {
             const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
-            throw new StatusError("Lido Finance", "action.finishUnstake", helper)
+            throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
         }
         return { data, errorData: null }
     }

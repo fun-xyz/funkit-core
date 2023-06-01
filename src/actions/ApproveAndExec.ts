@@ -1,7 +1,6 @@
-import { Transaction, constants } from "ethers"
+import { BigNumber, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
 import { ActionData } from "./FirstClass"
-import { BigNumber } from "ethers"
 import approveAndExecContract from "../abis/ApproveAndExec.json"
 
 const approveAndExecInterface = new Interface(approveAndExecContract.abi)
