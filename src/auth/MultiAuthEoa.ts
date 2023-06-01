@@ -5,13 +5,17 @@ import { Eoa, EoaAuthInput } from "./EoaAuth"
 import { Helper, ParameterFormatError } from "../errors"
 import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
 
+export interface MultiAuthEoaInput extends EoaAuthInput {
+    authIds: []
+}
+
 export class MultiAuthEoa extends Eoa {
     authIds = []
     uniqueId = ""
 
-    constructor(eoaAuthInput: EoaAuthInput, authIds: []) {
-        super(eoaAuthInput)
-        this.authIds = authIds //[["twitter###Chazzz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["google###chaz@fun.xyz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"]]
+    constructor(authInput: MultiAuthEoaInput) {
+        super(authInput)
+        this.authIds = authInput.authIds //[["twitter###Chazzz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["google###chaz@fun.xyz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"]]
     }
 
     override async getUniqueId(): Promise<string> {
