@@ -89,22 +89,20 @@ export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boole
 
 
 /**
- * Get all tokens for a specific chain
- * @param {string} chainId
- * @param {string} holderAddr
- * @param {string} onlyVerifiedTokens If true, only return alchemy tokens that are verified(filters spam)
- * @returns JSON
- * {
- *    1: {
- *      "0xTokenAddress": {
- *        "tokenBalance": "0x00001",
- *        "symbol": "USDC",
- *        "decimals": 6,
- *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
- *        "price": 1.0001,
- *     }
- *   }
- * }
+ * Get all lido withdrawal request ids for all chains
+ * @param {string} chainId https://chainlist.org/ ie "1" for ethereum
+ * @param {string} holderAddr Address of holder
+ * @returns [readyToWithdrawRequestIds, notReadyToWithdrawRequestIds]
+ * [
+ *   [
+ *     123,
+ *     124,
+ *   ],
+ *   [
+ *     412
+ *     413
+ *   ]
+ * ]
  */
 export async function getLidoWithdrawals(chainId: string, holderAddr: string): Promise<any> {
     return await sendPostRequest(API_URL, "getAssets/get-lido-withdrawals", {
