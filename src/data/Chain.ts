@@ -76,7 +76,7 @@ export class Chain {
 
     async loadBundler() {
         if (!this.bundler) {
-            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses.EntryPoint)
+            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses.entryPointAddress)
             await this.bundler.validateChainId()
         }
     }
@@ -89,23 +89,11 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                // const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
-                // Object.assign(this, { ...this, addresses, ...chain.rpcdata })
                 const abisAddresses = this.loadAddressesFromAbis(chainId)
-                // const abisAddresses = {
-                //     AaveWithdraw: '0xF3e08E4a32AE0c6FE96232fad697dC249B754F88',
-                //     ApproveAndExec: '0x2Ed4B26Bf71f15503A73F42648709E24e311FAc1',
-                //     ApproveAndSwap: '0x48575D6B267CE2bd4cEc0537c768044a56C723d7',
-                //     EntryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-                //     FunWalletFactory: '0x4FDffD240962F560BD3CA859a60034baa51ce3b2',
-                //     GaslessPaymaster: '0xBe0715556f98c1EcCd020a593068692ddbA97cc1',
-                //     TokenPaymaster: '0x068Df28a87DC1dD55730b7679e2e1e3E93d463dC',
-                //     TokenPriceOracle: '0x601cD9fdF44EcE68bA5FF7b9273b5231d019e301',
-                //     UserAuthentication: '0x8273fCeed934C9dd7FF57d883429Cc0026A4feE2'
-                // }
-                console.log("abisAddresses: ", abisAddresses)
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+                // this.modifyAddresses();
+                console.log("addresses: ", this.addresses)
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -178,6 +166,28 @@ export class Chain {
             callGasLimit = BigNumber.from(10e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
+    }
+
+    modifyAddresses() {
+        const modifications = {
+            eoaAaveWithdrawAddress: "AaveWithdraw",
+            approveAndExecAddress: "ApproveAndExec",
+            tokenSwapAddress: "ApproveAndSwap",
+            gaslessSponsorAddress: "GaslessPaymaster",
+            tokenSponsorAddress: "TokenPaymaster",
+            oracle: "TokenPriceOracle",
+            entryPointAddress: "EntryPoint",
+            factoryAddress: "FunWalletFactory",
+            feeOracle: "FeePercentOracle",
+            verificationAddress: "UserAuthentication"
+        }
+
+        Object.keys(modifications).forEach((key) => {
+            const newAddress = this.addresses[modifications[key]]
+            if (newAddress) {
+                this.addresses[key] = newAddress
+            }
+        })
     }
 
     private loadAddressesFromAbis(chainId: string): { [key: string]: string } {
