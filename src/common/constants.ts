@@ -40,3 +40,7 @@ export const BASE_WRAP_TOKEN_ADDR = {
 export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 export const TRANSACTION_TYPE = "FunWalletInteraction"
+
+export const WALLET_ABI = require("../../../fun-wallet-smart-contract/artifacts/contracts/wallet/FunWallet.sol/FunWallet.json")
+export const FACTORY_ABI = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json")
+export const ENTRYPOINT_ABI = require("../abis/EntryPoint.json")

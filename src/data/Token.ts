@@ -65,8 +65,14 @@ export class Token {
     }
 
     async getBalance(address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+        let amount = await this.getBalanceBN(address, options)
+        const decimals = await this.getDecimals(options)
+        return formatUnits(amount, decimals)
+    }
+
+    async getBalanceBN(address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
         const chain = await getChainFromData(options.chain)
-        let amount
+        let amount: BigNumber
         if (this.isNative) {
             const provider = await chain.getProvider()
             amount = await provider.getBalance(address)
@@ -74,8 +80,7 @@ export class Token {
             const contract = await this.getContract(options)
             amount = await contract.balanceOf(address)
         }
-        const decimals = await this.getDecimals(options)
-        return formatUnits(amount, decimals)
+        return amount
     }
 
     async getApproval(owner: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
@@ -123,21 +128,45 @@ export class Token {
         return await token.getBalance(address, options)
     }
 
-    static async getApproval(data: string, owner: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    static async getBalanceBN(data: string, address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
+        const token = new Token(data)
+        return await token.getBalanceBN(address, options)
+    }
+
+    static async getApproval(
+        data: string,
+        owner: string,
+        spender: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<any> {
         const token = new Token(data)
         return await token.getApproval(owner, spender, options)
     }
-    static async getDecimalAmount(data: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
+    static async getDecimalAmount(
+        data: string,
+        amount: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<BigNumber> {
         const token = new Token(data)
         return await token.getDecimalAmount(amount, options)
     }
 
-    static async approve(data: string, spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    static async approve(
+        data: string,
+        spender: string,
+        amount: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<any> {
         const token = new Token(data)
         return await token.approve(spender, amount, options)
     }
 
-    static async transfer(data: string, spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    static async transfer(
+        data: string,
+        spender: string,
+        amount: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<any> {
         const token = new Token(data)
         return await token.transfer(spender, amount, options)
     }

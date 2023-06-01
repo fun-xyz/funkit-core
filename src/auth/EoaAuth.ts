@@ -2,14 +2,15 @@ import { Signer, Wallet } from "ethers"
 import { BytesLike, arrayify } from "ethers/lib/utils"
 import { verifyPrivateKey } from "../utils/DataUtils"
 import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
-import { TransactionData } from "src/common/types/TransactionData"
+import { TransactionData } from "../common/types/TransactionData"
 import { storeEVMCall } from "../apis"
 import { Auth } from "./Auth"
-import { EnvOption } from "src/config"
+import { EnvOption } from "../config"
+import { Chain, encodeWalletSignature, UserOp, WalletSignature } from "../data"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
 
-export interface EoaAuthInput {
+export type EoaAuthInput = {
     signer?: Signer
     privateKey?: string
     provider?: Web3Provider
@@ -47,6 +48,16 @@ export class Eoa extends Auth {
         return await this.signer!.signMessage(arrayify(hash))
     }
 
+    async signOp(userOp: UserOp, chain: Chain): Promise<string> {
+        await this.init()
+        const opHash = await userOp.getOpHashData(chain)
+        const walletSignature: WalletSignature = {
+            signature: await this.signHash(opHash),
+            userId: await this.getUniqueId()
+        }
+        return encodeWalletSignature(walletSignature)
+    }
+
     async getUniqueId(): Promise<string> {
         await this.init()
         return await this.signer!.getAddress()
@@ -62,10 +73,18 @@ export class Eoa extends Auth {
     }
 
     async getEstimateGasSignature(): Promise<string> {
-        return await this.getUniqueId()
+        const walletSignature: WalletSignature = {
+            simulate: true,
+            userId: await this.getUniqueId(),
+            signature: "0x"
+        }
+        return encodeWalletSignature(walletSignature)
     }
 
-    async sendTx(txData: TransactionData|Function, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
+    async sendTx(
+        txData: TransactionData | Function,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionReceipt> {
         await this.init()
         if (typeof txData === "function") {
             txData = await txData(options)

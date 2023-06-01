@@ -1,9 +1,9 @@
 import { BytesLike, BigNumber } from "ethers"
 import { Chain } from "../../data"
 
-export interface TransactionData {
+export type TransactionData = {
     to: string
-    value: BigNumber | undefined
+    value: BigNumber | 0
     data: BytesLike
     chain: Chain
 }

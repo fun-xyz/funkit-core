@@ -3,7 +3,7 @@ import { DataFormatError } from "../errors"
 import { UserOperation, getChainFromData } from "../data"
 import { TEST_API_KEY, TRANSACTION_TYPE, API_URL } from "../common/constants"
 import { sendPostRequest } from "../utils/ApiUtils"
-import { TransactionReceipt } from '@ethersproject/providers'
+import { TransactionReceipt } from "@ethersproject/providers"
 import { GlobalEnvOption } from "src/config"
 
 export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) {

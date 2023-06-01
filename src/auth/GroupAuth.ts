@@ -1,20 +1,19 @@
 import { setGroupById, getGroupById } from "../apis"
 import { Helper, ParameterFormatError } from "../errors"
-import { v4 as uuidv4 } from 'uuid';
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
-import { Eoa, EoaAuthInput } from "./EoaAuth";
-
+import { v4 as uuidv4 } from "uuid"
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
+import { Eoa, EoaAuthInput } from "./EoaAuth"
 
 type GroupAuthInput = {
-    uniqueId?: string;
-    userIds?: string[];
-    requiredSignatures?: number;
+    uniqueId?: string
+    userIds?: string[]
+    requiredSignatures?: number
 }
 
 class GroupAuth extends Eoa {
-    uniqueId?: string;
-    userIds?: string[];
-    requiredSignatures?: number;
+    uniqueId?: string
+    userIds?: string[]
+    requiredSignatures?: number
 
     constructor(authData: EoaAuthInput, groupData: GroupAuthInput) {
         super(authData)
@@ -55,7 +54,6 @@ class GroupAuth extends Eoa {
     override async getOwnerAddr(): Promise<string[]> {
         return await this.getMembers()
     }
-
 }
 
 export { GroupAuth }

@@ -11,7 +11,7 @@ const errorData = {
 
 const initData = approveAndExecInterface.encodeFunctionData("init", [constants.HashZero])
 
-export interface ApproveAndExecParams {
+export type ApproveAndExecParams = {
     approve: Transaction
     exec: Transaction
 }

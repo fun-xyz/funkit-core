@@ -2,13 +2,13 @@ import { ActionData } from "./FirstClass"
 import { Token } from "../data"
 import { parseEther } from "ethers/lib/utils"
 
-export interface TransferParams {
+export type TransferParams = {
     to: string
     amount: number
     token?: string
 }
 
-export interface ApproveParams {
+export type ApproveParams = {
     spender: string
     amount: number
     token: string

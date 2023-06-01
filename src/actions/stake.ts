@@ -1,7 +1,7 @@
 import { parseEther } from "ethers/lib/utils"
 import { ActionData } from "./FirstClass"
 
-export interface StakeParams {
+export type StakeParams = {
     amount: number
 }
 

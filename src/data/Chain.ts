@@ -3,8 +3,9 @@ import { MissingParameterError, Helper, ServerMissingDataError } from "../errors
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
 import { UserOperation } from "./UserOp"
-import { BigNumber } from "ethers"
+import { BigNumber, Contract, Wallet } from "ethers"
 import { getChainInfo, getModuleInfo } from "../apis"
+import { ENTRYPOINT_ABI } from "../common/constants"
 
 export interface ChainInput {
     chainId?: string
@@ -137,6 +138,15 @@ export class Chain {
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
+    async sendOpToEntryPoint(userOp: UserOperation): Promise<string> {
+        const entrypoint = ENTRYPOINT_ABI.abi
+        const provider = await this.getProvider()
+        const signer = new Wallet(process.env.FUNDER_PRIVATE_KEY!, provider)
+        const entrypointContract = new Contract(this.addresses.entryPointAddress, entrypoint, signer)
+        await entrypointContract.handleOps([userOp], signer.address)
+        return ""
+    }
+
     async getFeeData(): Promise<any> {
         await this.init()
         return await this.provider!.getFeeData()
@@ -153,7 +163,8 @@ export class Chain {
         preVerificationGas = preVerificationGas.mul(2)
         const verificationGasLimit = verificationGas.add(50_000)
         if (partialOp.initCode != "0x") {
-            callGasLimit = BigNumber.from(10e6)
+            callGasLimit = BigNumber.from(0)
+            // callGasLimit = BigNumber.from(5e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }

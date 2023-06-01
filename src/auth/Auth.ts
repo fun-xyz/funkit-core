@@ -1,13 +1,15 @@
 import { BigNumber, Contract, Signer } from "ethers"
 import { EnvOption } from "src/config/config"
-import { getChainFromData } from "../data"
+import { Chain, getChainFromData, UserOp } from "../data"
 import { BytesLike } from "ethers/lib/utils"
 import { TransactionReceipt } from "@ethersproject/providers"
-import { TransactionData } from "src/common/types/TransactionData"
-const entrypointAbi = require("../abis/EntryPoint.json").abi
+import { TransactionData } from "../common/types/TransactionData"
+import { ENTRYPOINT_ABI } from "../common/constants"
+const entrypointAbi = ENTRYPOINT_ABI.abi
 
 export abstract class Auth {
     abstract signHash(hash: BytesLike): Promise<string>
+    abstract signOp(userOp: UserOp, chain: Chain): Promise<string>
     abstract getUniqueId(): Promise<string>
     abstract getSigner(): Promise<Signer>
     abstract getOwnerAddr(): Promise<string[]>

@@ -16,11 +16,11 @@ export async function getAuth(authId: string): Promise<any> {
     })
 }
 
-
-
 export async function setGroupById(uniqueId: string, userIds: string[], requiredSignatures: number) {
     return await sendPostRequest(API_URL, "groups", {
-        userIds, uniqueId, requiredSignatures
+        userIds,
+        uniqueId,
+        requiredSignatures
     })
 }
 

@@ -2,7 +2,7 @@
     "name": "fun-wallet",
     "version": "0.2.5",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
-    "main": "index.js",
+    "main": "index.ts",
     "scripts": {
         "build": "tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",

@@ -1,13 +1,11 @@
-import { constants, Contract, ethers } from "ethers"
-import { WalletIdentifier, Chain } from "../data"
+import { Contract, ethers } from "ethers"
+import { WalletIdentifier, Chain, encodeLoginData } from "../data"
 import { TransactionReceipt } from "@ethersproject/providers"
-import { defaultAbiCoder } from "ethers/lib/utils"
+import { ENTRYPOINT_ABI, FACTORY_ABI, WALLET_ABI } from "../common/constants"
 
-// const factoryAbi = require("../abis/FunWalletFactory.json").abi
-const factoryAbi = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json").abi
-
-const walletAbi = require("../abis/FunWallet.json").abi
-const entryPointAbi = require("../abis/EntryPoint.json").abi
+const factoryAbi = FACTORY_ABI.abi
+const walletAbi = WALLET_ABI.abi
+const entryPointAbi = ENTRYPOINT_ABI.abi
 
 export class WalletOnChainManager {
     chain: Chain
@@ -37,7 +35,7 @@ export class WalletOnChainManager {
     async getWalletAddress(): Promise<string> {
         await this.init()
         const uniqueId = await this.walletIdentifier.getIdentifier()
-        const data = defaultAbiCoder.encode(["tuple(uint8,address,bytes32,uint256,bytes)"], [[0, constants.AddressZero, uniqueId, 0, ethers.utils.toUtf8Bytes("")]])
+        const data = encodeLoginData({ salt: uniqueId })
         return await this.factory!.getAddress(data)
     }
 
