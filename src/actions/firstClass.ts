@@ -1,12 +1,14 @@
+import { Auth } from "../auth"
+import { RequestUnstakeParams, StakeParams, _stake, _requestUnstake, _finishUnstake, FinishUnstakeParams } from "./Stake"
 import { BigNumber, Transaction } from "ethers"
-import { StakeParams, _stake } from "./Stake"
 import { SwapParams, _swap } from "./Swap"
 import { ApproveParams, TransferParams, _approve, _transfer } from "./Token"
-import { Auth } from "../auth"
 import { EnvOption } from "../config"
 import { Chain, UserOp, getChainFromData } from "../data"
 import { isContract } from "../utils"
 import { FunWallet } from "../wallet"
+import { Helper, ParameterFormatError } from "../errors"
+
 
 export interface ActionData {
     wallet: FunWallet
@@ -54,6 +56,27 @@ export abstract class FirstClassActions {
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
         return await this.execute(auth, _stake(input), options, estimate)
+    }
+
+    async unstake(
+        auth: Auth,
+        input: RequestUnstakeParams | FinishUnstakeParams,
+        options: EnvOption = globalEnvOption,
+        estimate = false
+    ): Promise<ExecutionReceipt | UserOp> {
+        const isRequestUnstakeParams = (input: any) => {
+            return input.amounts !== undefined
+        }
+        const isFinishUnstakeParams = (input: any) => {
+            return input.recipient !== undefined
+        }
+        if (isRequestUnstakeParams(input)) { 
+            return await this.execute(auth, _requestUnstake(input as RequestUnstakeParams), options, estimate)
+        } else if (isFinishUnstakeParams(input)){
+            return await this.execute(auth, _finishUnstake(input as FinishUnstakeParams), options, estimate)
+        }
+        const helper = new Helper("Invalid parameters", input, "Must be of type RequestUnstakeParams or FinishUnstakeParams")
+        throw new ParameterFormatError("FirstClass.unstake", helper)
     }
 
     async create(auth: Auth, options: EnvOption = globalEnvOption, estimate = false): Promise<ExecutionReceipt | UserOp> {

@@ -86,3 +86,27 @@ export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boole
         onlyVerifiedTokens: onlyVerifiedTokens
     })
 }
+
+
+/**
+ * Get all lido withdrawal request ids for all chains
+ * @param {string} chainId https://chainlist.org/ ie "1" for ethereum
+ * @param {string} holderAddr Address of holder
+ * @returns [readyToWithdrawRequestIds, notReadyToWithdrawRequestIds]
+ * [
+ *   [
+ *     123,
+ *     124,
+ *   ],
+ *   [
+ *     412
+ *     413
+ *   ]
+ * ]
+ */
+export async function getLidoWithdrawals(chainId: string, holderAddr: string): Promise<any> {
+    return await sendPostRequest(API_URL, "getAssets/get-lido-withdrawals", {
+        chain: chainId,
+        address: holderAddr,
+    })
+}

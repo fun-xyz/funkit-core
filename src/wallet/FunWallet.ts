@@ -2,7 +2,7 @@ import { BigNumber, constants } from "ethers"
 import wallet from "../abis/FunWallet.json"
 import factory from "../abis/FunWalletFactory.json"
 import { ExecutionReceipt, FirstClassActions } from "../actions"
-import { getAllNFTs, getAllTokens, getNFTs, getTokens, storeUserOp } from "../apis"
+import { getAllNFTs, getAllTokens, getNFTs, getTokens,getLidoWithdrawals, storeUserOp } from "../apis"
 import { Auth } from "../auth"
 import { EnvOption, GlobalEnvOption } from "../config"
 import { Chain, Token, UserOp, UserOperation, WalletIdentifier, getChainFromData } from "../data"
@@ -394,7 +394,11 @@ export class FunWallet extends FirstClassActions {
      *   }
      * }
      */
-    async getAssets(onlyVerifiedTokens = false) {
+    async getAssets(onlyVerifiedTokens = false, status = false, txOptions = globalEnvOption) {
+        if (status) {
+            const chain = await getChainFromData(txOptions.chain)
+            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+        }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
