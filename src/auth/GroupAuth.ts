@@ -3,6 +3,7 @@ import { Helper, ParameterFormatError } from "../errors"
 import { v4 as uuidv4 } from "uuid"
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
 import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { BigNumber } from "ethers"
 
 type GroupAuthInput = {
     uniqueId?: string
@@ -28,12 +29,16 @@ class GroupAuth extends Eoa {
     }
 
     async _init() {
-        if (this.userIds) {
+        if (this.userIds && !this.uniqueId) {
+            const authId = await super.getUniqueId()!
+            if (!this.userIds.includes(authId)) {
+                this.userIds.push(authId)
+                this.userIds = this.userIds.sort((a: string, b: string) => { return BigNumber.from(a).gt(BigNumber.from(b)) ? -1 : 1 })
+            }
             this.uniqueId = keccak256(toUtf8Bytes(uuidv4()))
             await setGroupById(this.uniqueId!, this.userIds, this.requiredSignatures!)
         } else {
             this.userIds = await getGroupById(this.uniqueId!)
-            this
         }
     }
 
