@@ -1,0 +1,19 @@
+version: 0.2
+env:
+    secrets-manager:
+        API_KEY_STAGING: "FunApiServer/ApiGateway:staging"
+phases:
+    install:
+        runtime-versions:
+            nodejs: 16
+        commands:
+            - npm install
+    pre_build:
+        commands:
+            - npx ts-node tests/contractLoader.ts
+    build:
+        commands:
+            - npm run test-goerli
+artifacts:
+    files:
+        - "**/*"
