@@ -6,6 +6,7 @@ import { Interface, parseEther } from "ethers/lib/utils"
 import { BigNumber, ethers } from "ethers"
 import { Helper, StatusError } from "../errors"
 import WITHDRAW_QUEUE_ABI from "../abis/LidoWithdrawQueue.json"
+import { ActionData } from './firstClass';
 export interface StakeParams {
     amount: number // denominated in wei
 }
@@ -64,25 +65,33 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
     }
 }
 
+const getReadyToWithdrawRequests = async (actionData: ActionData) => {
+    const { chain, wallet } = actionData
+    const provider = await actionData.chain.getProvider()
+    const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
+    // check withdrawal requests
+    const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
+    // get the state of a particular nft
+    const withdrawalStatusTx = await withdrawalQueue.getWithdrawalStatus(withdrawalRequests)
+    const readyToWithdraw: BigNumber[] = []
+    for (let i = 0; i < withdrawalStatusTx.length; i++) {
+        if (withdrawalStatusTx[i].isFinalized) {
+            readyToWithdraw.push(withdrawalRequests[i])
+        }
+    }
+    const readyToWithdrawRequestIds = [...readyToWithdraw].sort((a, b) => {
+        return a.gt(b) ? 1 : -1
+    })
+    return readyToWithdrawRequestIds
+}
+
 export const _finishUnstake = (params: FinishUnstakeParams) => {
     return async (actionData: ActionData) => {
-        const { chain, wallet } = actionData
+        const { chain } = actionData
         const provider = await actionData.chain.getProvider()
         const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
-        // check withdrawal requests
-        const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
-        // get the state of a particular nft
-        const withdrawalStatusTx = await withdrawalQueue.getWithdrawalStatus(withdrawalRequests)
-        const readyToWithdraw: BigNumber[] = []
-        let errorData
-        for (let i = 0; i < withdrawalStatusTx.length; i++) {
-            if (withdrawalStatusTx[i].isFinalized) {
-                readyToWithdraw.push(withdrawalRequests[i])
-            }
-        }
-        const readyToWithdrawRequestIds = [...readyToWithdraw].sort((a, b) => {
-            return a.gt(b) ? 1 : -1
-        })
+
+        const readyToWithdrawRequestIds = await getReadyToWithdrawRequests(actionData)
         if (readyToWithdrawRequestIds.length === 0) {
             const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
             throw new StatusError("Lido Finance", "action.finishUnstake", helper)
@@ -106,7 +115,7 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
             const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
             throw new StatusError("Lido Finance", "action.finishUnstake", helper)
         }
-        return { data, errorData }
+        return { data, errorData: null }
     }
 }
 
