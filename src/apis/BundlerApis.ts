@@ -33,6 +33,6 @@ export async function validateChainId(chainId: string, provider?: JsonRpcProvide
 }
 
 export async function getChainId(bundlerUrl: string): Promise<any> {
-    const response = await sendGetRequest(API_URL, `bundler/get-chain-id?bundlerUrl=${encodeURIComponent(bundlerUrl)}`)
+    const response = await sendGetRequest(API_URL, `bundler/get-chain-id?bundlerUrl=${bundlerUrl}`)
     return response.chainId
 }

@@ -40,20 +40,18 @@ export class Chain {
     async init() {
         if (this.chainId) {
             await this.loadChainData(this.chainId.toString())
-        }
-        if (this.chainName) {
+        } else if (this.chainName) {
             await this.loadChainData(this.chainName)
-        }
-        if (this.rpcUrl) {
+        } else if (this.rpcUrl) {
             await this.loadProvider()
             const { chainId } = await this.provider!.getNetwork()
             await this.loadChainData(chainId.toString())
-        }
-        if (this.bundlerUrl) {
+        } else if (this.bundlerUrl) {
             const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
             await this.loadChainData(bundlerChainId)
             await this.loadBundler()
         }
+
         try {
             await this.loadBundler()
         } catch {
