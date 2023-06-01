@@ -280,7 +280,7 @@ class FunWallet extends FirstClassActions {
             const paymasterAddress= await getPaymasterAddress(paymasterType, txOptions)
             await DataServer.addTransaction({
                 action: "sponsor",
-                amount:"Querying from block.", //Get amount from lazy processing
+                amount:"unknown", //Get amount from lazy processing
                 from: txOptions.gasSponsor.sponsorAddress,
                 timestamp: Date.now(),
                 to: paymasterAddress,
