@@ -43,14 +43,14 @@ export const StakeTest = (config: StakeTestConfig) => {
         })
 
         it("Should be able to start unstaking", async () => {
-            const withdrawalsBefore = await wallet.getLidoWithdrawals()
+            const withdrawalsBefore = await wallet.getAssets(false, true)
             await wallet.unstake(auth, { amounts: [0.001, 0.001] })
-            const withdrawalsAfter = await wallet.getLidoWithdrawals()
+            const withdrawalsAfter = await wallet.getAssets(false, true)
             assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
         })
 
         it("Should be able to finish unstaking if ready", async () => {
-            const withdrawals = await wallet.getLidoWithdrawals()
+            const withdrawals = await wallet.getAssets(false, true)
             if (withdrawals[0].length > 0) {
                 const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
                 await wallet.unstake(auth, { recipient: await wallet.getAddress() })

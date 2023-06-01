@@ -394,28 +394,13 @@ export class FunWallet extends FirstClassActions {
      *   }
      * }
      */
-    async getAssets(onlyVerifiedTokens = false) {
+    async getAssets(onlyVerifiedTokens = false, status = false, txOptions = globalEnvOption) {
+        if (status) {
+            const chain = await getChainFromData(txOptions.chain)
+            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+        }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
-    }
-
-    /**
-     * Get two lists of lido withdrawals, one list is ready to withdraw, the other is not ready to withdraw
-     * @returns Two lists, the first are readyToWithdrawIds, the second are notReadyToWithdrawIds
-     * [
-     *  [
-     *    123,
-     *    321,
-     *  ],
-     *  [
-     *    432,
-     *    120,
-     *  ]
-     * ]
-     */
-    async getLidoWithdrawals(txOptions = globalEnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
     }
 }
