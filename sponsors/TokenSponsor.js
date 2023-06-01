@@ -99,11 +99,11 @@ class TokenSponsor {
 
     //false means unlocked, true means locked
     async getLockState(token, spender, options = global) {
-        const unlockBlock = Number((await this.getAllTokenData(Token.isNative(token) ? constants.AddressZero : tokenAddress, spender)).unlockBlock.toString())
+        const tokenAddr = await Token.isNative(token) ? constants.AddressZero : token
+        const unlockBlock = Number((await this.getAllTokenData(tokenAddr, spender)).unlockBlock.toString())
         const parsedOptions = await parseOptions(options)
         const provider = await parsedOptions.chain.getProvider()
         const currentBlock = await provider.getBlockNumber()
-        console.log(unlockBlock, currentBlock)
         if (1 <= unlockBlock && unlockBlock <= currentBlock) {
             return false
         }

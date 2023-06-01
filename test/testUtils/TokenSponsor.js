@@ -138,6 +138,41 @@ const TokenSponsorTest = (config) => {
                 await funder.sendTx(await gasSponsor.batchWhitelistUsers([walletAddress, walletAddress1], [true, true]))
             })
         })
+        it.skip("Lock/Unlock Tokens", async () => {
+            expect(await sponsor.getLockState(paymasterToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState(config.outToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState("eth", walletaddr)).to.be.true
+            let call = await sponsor.unlockTokenDepositAfter(paymasterToken, 0)
+            await wallet.sendTx({ auth, call }, {
+                apiKey: API_KEY,
+            })
+            expect(await sponsor.getLockState(paymasterToken, walletaddr)).to.be.false
+            expect(await sponsor.getLockState(config.outToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState("eth", walletaddr)).to.be.true
+            call = await sponsor.lockTokenDeposit(paymasterToken, 0)
+            await wallet.sendTx({ auth, call }, {
+                apiKey: API_KEY,
+            })
+            expect(await sponsor.getLockState(paymasterToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState(config.outToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState("eth", walletaddr)).to.be.true
+        })
+        it.skip("Lock/Unlock Base Tokens", async () => {
+            expect(await sponsor.getLockState(paymasterToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState("eth", walletaddr)).to.be.true
+            let call = sponsor.unlockDepositAfter(0)
+            await wallet.sendTx({ auth, call }, {
+                apiKey: API_KEY,
+            })
+            expect(await sponsor.getLockState(paymasterToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState("eth", walletaddr)).to.be.false
+            call = sponsor.lockDeposit()
+            await wallet.sendTx({ auth, call }, {
+                apiKey: API_KEY,
+            })
+            expect(await sponsor.getLockState(paymasterToken, walletaddr)).to.be.true
+            expect(await sponsor.getLockState("eth", walletaddr)).to.be.true
+        })
     })
 }
 

@@ -71,7 +71,6 @@ class GaslessSponsor {
         const parsedOptions = await parseOptions(options)
         const provider = await parsedOptions.chain.getProvider()
         const currentBlock = await provider.getBlockNumber()
-        console.log(unlockBlock)
         if (1 <= unlockBlock && unlockBlock <= currentBlock) {
             return false
         }
