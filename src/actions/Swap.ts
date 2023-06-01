@@ -67,12 +67,12 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
     return async (actionData: ActionData) => {
         const provider = await actionData.chain.getProvider()
 
-        const ApproveAndSwap = await actionData.chain.getAddress("ApproveAndSwap")
+        const tokenSwapAddress = await actionData.chain.getAddress("tokenSwapAddress")
         const univ3quoter = await actionData.chain.getAddress("univ3quoter")
         const univ3factory = await actionData.chain.getAddress("univ3factory")
         const univ3router = await actionData.chain.getAddress("univ3router")
 
-        const actionContract = new Contract(ApproveAndSwap, approveAndSwapContract.abi, provider)
+        const actionContract = new Contract(tokenSwapAddress, approveAndSwapContract.abi, provider)
 
         const tokenIn = new Token(params.in)
         const tokenOut = new Token(params.out)
@@ -114,7 +114,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
         } else {
             swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, univ3router, amount, data)
         }
-        const txData = { to: ApproveAndSwap, data: [initData, swapData.data], initAndExec: true }
+        const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
         return { data: txData, errorData }
     }
 }

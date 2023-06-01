@@ -6,7 +6,7 @@ import { Token } from "../data"
 
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, paymaster.abi, "GaslessPaymaster")
+        super(options, paymaster.abi, "gaslessSponsorAddress")
     }
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {

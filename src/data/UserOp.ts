@@ -56,7 +56,7 @@ export class UserOp {
     }
 
     async getOpHashData(chain: Chain) {
-        const entryPointAddress = await chain.getAddress("EntryPoint")
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
         const contract = new Contract(entryPointAddress, entryPoint.abi, provider)
         return await contract.getUserOpHash(this.op)

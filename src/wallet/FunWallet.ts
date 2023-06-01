@@ -127,7 +127,7 @@ export class FunWallet extends FirstClassActions {
                 const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execute", helper)
             }
-            fee.oracle = await onChainDataManager.chain.getAddress("FeePercentOracle")
+            fee.oracle = await onChainDataManager.chain.getAddress("feeOracle")
         }
         data = { ...data, ...fee }
         if (data.initAndExec) {
@@ -208,9 +208,9 @@ export class FunWallet extends FirstClassActions {
     async _getThisInitCode(chain: Chain, auth: Auth) {
         const owner = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()
-        const entryPointAddress = await chain.getAddress("EntryPoint")
-        const factoryAddress = await chain.getAddress("FunWalletFactory")
-        const verificationAddress = await chain.getAddress("UserAuthentication")
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        const factoryAddress = await chain.getAddress("factoryAddress")
+        const verificationAddress = await chain.getAddress("verificationAddress")
         const initCodeParams = { uniqueId, owner, entryPointAddress, verificationAddress, factoryAddress }
         return this.abiManager.getInitCode(initCodeParams)
     }
