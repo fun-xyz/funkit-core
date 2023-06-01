@@ -156,12 +156,13 @@ export class FunWallet extends FirstClassActions {
         transactionFunc: Function,
         txOptions: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
+    ): Promise<ExecutionReceipt | UserOp | BigNumber>  {
         const options = parseOptions(txOptions)
         const chain = await getChainFromData(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
+
         if (estimate) {
-            return estimatedOp
+            return estimatedOp.getMaxTxCost()
         }
         await estimatedOp.sign(auth, chain)
         if (options.sendTxLater) {
