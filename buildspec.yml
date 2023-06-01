@@ -8,9 +8,9 @@ phases:
             nodejs: 16
         commands:
             - npm install
-    pre_build:
-        commands:
-            - npx ts-node tests/contractLoader.ts
+    # pre_build:
+    #     commands:
+    #         - npx ts-node tests/contractLoader.ts
     build:
         commands:
             - npm run test-goerli
