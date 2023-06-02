@@ -1,11 +1,10 @@
-import { BigNumber, Contract, Signer } from "ethers"
-import { EnvOption } from "src/config/config"
-import { Chain, getChainFromData, UserOp } from "../data"
-import { BytesLike } from "ethers/lib/utils"
 import { TransactionReceipt } from "@ethersproject/providers"
+import { BigNumber, Contract, Signer } from "ethers"
+import { BytesLike } from "ethers/lib/utils"
+import { ENTRYPOINT_ABI } from "../common"
 import { TransactionData } from "../common/types/TransactionData"
-import { ENTRYPOINT_ABI } from "../common/constants"
-const entrypointAbi = ENTRYPOINT_ABI.abi
+import { EnvOption } from "../config/Config"
+import { Chain, UserOp, getChainFromData } from "../data"
 
 export abstract class Auth {
     abstract signHash(hash: BytesLike): Promise<string>
@@ -28,7 +27,7 @@ export abstract class Auth {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
-        const entrypointContract = new Contract(entryPointAddress, entrypointAbi, provider)
+        const entrypointContract = new Contract(entryPointAddress, ENTRYPOINT_ABI, provider)
         return await entrypointContract.getNonce(sender, key)
     }
 }

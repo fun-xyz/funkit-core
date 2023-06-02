@@ -1,11 +1,11 @@
 import { assert } from "chai"
 import { Eoa } from "../../src/auth"
-import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { Token } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
-import { getTestApiKey } from "../testUtils"
 import { FunWallet } from "../../src/wallet"
+import { getTestApiKey } from "../getTestApiKey"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
@@ -24,7 +24,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     const auth = new Eoa({ privateKey: config.authPrivateKey })
     describe("GaslessSponsor", function () {
         this.timeout(250_000)
-        let funder = new Eoa({ privateKey: config.funderPrivateKey })
+        const funder = new Eoa({ privateKey: config.funderPrivateKey })
 
         let wallet: FunWallet
         let wallet1: FunWallet
@@ -36,9 +36,9 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             }
             await configureEnvironment(options)
 
-            let uid = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex != null ? config.walletIndex : 129856341 })
-            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex != null ? config.funderIndex : 12341238465411 })
+            const uid = await auth.getUniqueId()
+            wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex ? config.walletIndex : 129856341 })
+            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 12341238465411 })
             if (config.prefund) {
                 await fundWallet(funder, wallet, 5)
                 await fundWallet(auth, wallet1, 5)
@@ -57,7 +57,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 }
             })
             const gasSponsor = new GaslessSponsor()
-
 
             const depositInfo1S = await gasSponsor.getBalance(funderAddress)
             const stake = await gasSponsor.stake(funderAddress, config.stakeAmount)
@@ -82,7 +81,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         }
 
         it("Only User Whitelisted", async () => {
-
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 

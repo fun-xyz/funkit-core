@@ -63,7 +63,8 @@ export function encodeLoginData(data: LoginData): string {
 }
 
 export function encodeWalletSignature(data: WalletSignature): string {
-    let {  authType, userId, signature, extraData } = data
+    const { userId, signature } = data
+    let { authType, extraData } = data
     authType = authType ? authType : 0
     extraData = extraData ? extraData : "0x"
     return defaultAbiCoder.encode(["uint8", "address", "bytes", "bytes"], [authType, userId, signature, extraData])

@@ -1,9 +1,9 @@
-import { setGroupById, getGroupById } from "../apis"
-import { Helper, ParameterFormatError } from "../errors"
-import { v4 as uuidv4 } from "uuid"
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
-import { Eoa, EoaAuthInput } from "./EoaAuth"
 import { BigNumber } from "ethers"
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
+import { v4 as uuidv4 } from "uuid"
+import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { getGroupById, setGroupById } from "../apis"
+import { Helper, ParameterFormatError } from "../errors"
 
 type GroupAuthInput = {
     uniqueId?: string
@@ -18,7 +18,8 @@ class GroupAuth extends Eoa {
 
     constructor(authData: EoaAuthInput, groupData: GroupAuthInput) {
         super(authData)
-        let { uniqueId, userIds, requiredSignatures } = groupData
+        const { uniqueId, userIds } = groupData
+        let { requiredSignatures } = groupData
         if (!(uniqueId || userIds)) {
             const helper = new Helper("Invalid parameters", { uniqueId, userIds }, "Either uniqueId or userIds must be provided")
             helper.pushMessage("Either uniqueId or userIds must be provided")
@@ -33,7 +34,9 @@ class GroupAuth extends Eoa {
             const authId = await super.getUniqueId()!
             if (!this.userIds.includes(authId)) {
                 this.userIds.push(authId)
-                this.userIds = this.userIds.sort((a: string, b: string) => { return BigNumber.from(a).gt(BigNumber.from(b)) ? -1 : 1 })
+                this.userIds = this.userIds.sort((a: string, b: string) => {
+                    return BigNumber.from(a).gt(BigNumber.from(b)) ? -1 : 1
+                })
             }
             this.uniqueId = keccak256(toUtf8Bytes(uuidv4()))
             await setGroupById(this.uniqueId!, this.userIds, this.requiredSignatures!)

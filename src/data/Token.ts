@@ -1,10 +1,10 @@
 import { BigNumber, Contract, ethers } from "ethers"
-import { parseUnits, formatUnits } from "ethers/lib/utils"
-import { MissingParameterError, TransactionError, Helper } from "../errors"
-import erc20 from "../abis/ERC20.json"
-import { getTokenInfo } from "../apis"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
 import { getChainFromData } from "./Chain"
-import { EnvOption } from "src/config/config"
+import { getTokenInfo } from "../apis"
+import { ERC20_ABI } from "../common"
+import { EnvOption } from "../config/Config"
+import { Helper, MissingParameterError, TransactionError } from "../errors"
 
 const nativeTokens = ["eth", "matic"]
 const wrappedNativeTokens = { eth: "weth", matic: "wmatic" }
@@ -51,7 +51,7 @@ export class Token {
         if (!this.contract) {
             const provider = await chain.getProvider()
             const addr = await this.getAddress()
-            this.contract = new ethers.Contract(addr, erc20.abi, provider)
+            this.contract = new ethers.Contract(addr, ERC20_ABI, provider)
         }
         return this.contract
     }
@@ -65,7 +65,7 @@ export class Token {
     }
 
     async getBalance(address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
-        let amount = await this.getBalanceBN(address, options)
+        const amount = await this.getBalanceBN(address, options)
         const decimals = await this.getDecimals(options)
         return formatUnits(amount, decimals)
     }

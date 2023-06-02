@@ -1,18 +1,16 @@
-import { getChainFromData, Token } from "../data"
-import { EnvOption } from "../config"
-import { Sponsor } from "./Sponsor"
-import { constants, Contract } from "ethers"
-import { Auth } from "../auth"
-import { WALLET_ABI } from "../common/constants"
+import { Contract, constants } from "ethers"
 import { defaultAbiCoder } from "ethers/lib/utils"
+import { Sponsor } from "./Sponsor"
+import { Auth } from "../auth"
+import { TOKEN_PAYMASTER_ABI, WALLET_ABI } from "../common/constants"
+import { EnvOption } from "../config"
+import { Token, getChainFromData } from "../data"
 
-const paymasterAbi = require("../../../fun-wallet-smart-contract/artifacts/contracts/paymaster/TokenPaymaster.sol/TokenPaymaster.json").abi
-const walletAbi = WALLET_ABI
 export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, paymasterAbi, "tokenSponsorAddress")
+        super(options, TOKEN_PAYMASTER_ABI, "tokenSponsorAddress")
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
@@ -20,17 +18,25 @@ export class TokenSponsor extends Sponsor {
         const tokenAddress = await Token.getAddress(this.token, options)
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2)
     }
-    
-    async getPaymasterAndDataPermit(amount: number, walletAddr: string, auth: Auth, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+
+    async getPaymasterAndDataPermit(
+        amount: number,
+        walletAddr: string,
+        auth: Auth,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<string> {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getProvider()
-        const walletContract = new Contract(walletAddr, walletAbi.abi, provider)
+        const walletContract = new Contract(walletAddr, WALLET_ABI, provider)
         const nonce = await walletContract.getNonce(0)
         const paymasterAddress = await this.getPaymasterAddress(options)
         const tokenAddress = await Token.getAddress(this.token, options)
         const hash = await walletContract.getPermitHash(tokenAddress, paymasterAddress, amount, nonce)
         const sig = await auth.signHash(hash)
-        const encoded = defaultAbiCoder.encode(["address", "address", "uint256", "uint256", "bytes"], [tokenAddress, paymasterAddress, amount, nonce, sig])
+        const encoded = defaultAbiCoder.encode(
+            ["address", "address", "uint256", "uint256", "bytes"],
+            [tokenAddress, paymasterAddress, amount, nonce, sig]
+        )
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2) + encoded.slice(2)
     }
 

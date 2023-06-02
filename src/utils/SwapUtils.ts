@@ -1,13 +1,12 @@
-import { ethers } from "ethers"
-import { CurrencyAmount, Percent, Token, TradeType, Currency } from "@uniswap/sdk-core"
-import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
-import { JSBI } from "@uniswap/sdk"
-import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
 import { Provider } from "@ethersproject/providers"
-import { getChainFromData } from "../data"
+import { JSBI } from "@uniswap/sdk"
+import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
+import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
+import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
+import { ethers } from "ethers"
+import { ERC20_ABI } from "../common"
 import { EnvOption } from "../config"
-
-const ERC20 = require("../abis/ERC20.json")
+import { getChainFromData } from "../data"
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
 export function fromReadableAmount(amount: number, decimals: number) {
@@ -73,7 +72,7 @@ class SwapToken {
     }
 
     async getTokenDecimals(tokenAddr: string) {
-        const contract = new ethers.Contract(tokenAddr, ERC20.abi, this.provider)
+        const contract = new ethers.Contract(tokenAddr, ERC20_ABI, this.provider)
         return await contract.decimals()
     }
 

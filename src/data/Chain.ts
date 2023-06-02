@@ -1,11 +1,11 @@
 import { JsonRpcProvider } from "@ethersproject/providers"
-import { MissingParameterError, Helper, ServerMissingDataError } from "../errors"
-import { Bundler } from "../servers/Bundler"
-import { flattenObj } from "../utils/DataUtils"
-import { UserOperation } from "./UserOp"
 import { BigNumber, Contract, Wallet } from "ethers"
+import { UserOperation } from "./UserOp"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { ENTRYPOINT_ABI } from "../common/constants"
+import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
+import { Bundler } from "../servers/Bundler"
+import { flattenObj } from "../utils/DataUtils"
 
 export interface ChainInput {
     chainId?: string
@@ -49,39 +49,37 @@ export class Chain {
         this.setAddress("gaslessSponsorAddress", "0xE2b5bDE7e80f89975f7229d78aD9259b2723d11F")
 
         this.setAddress("tokenSponsorAddress", "0x519b05b3655F4b89731B677d64CEcf761f4076f6")
-    
         this.setAddress("univ3factory", "0x1F98431c8aD98523631AE4a59f267346ea31F984")
         this.setAddress("univ3quoter", "0x61fFE014bA17989E743c5F6cB21bF9697530B21e")
         this.setAddress("univ3router", "0xE592427A0AEce92De3Edee1F18E0157C05861564")
-        
-      
-
-        
     }
 
     async init() {
         if (this.chainId) {
             await this.loadChainData(this.chainId.toString())
-        }
-        if (this.chainName) {
+        } else if (this.chainName) {
             await this.loadChainData(this.chainName)
-        }
-        if (this.rpcUrl) {
+        } else if (this.rpcUrl) {
             await this.loadProvider()
             const { chainId } = await this.provider!.getNetwork()
             await this.loadChainData(chainId.toString())
-        }
-        if (this.bundlerUrl) {
+        } else if (this.bundlerUrl) {
             const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
             await this.loadChainData(bundlerChainId)
             await this.loadBundler()
         }
+
         try {
             await this.loadBundler()
-        } catch { }
+        } catch {
+            // ignore
+        }
+
         try {
             await this.loadProvider()
-        } catch { }
+        } catch {
+            // ignore
+        }
     }
 
     async loadProvider() {
@@ -160,7 +158,7 @@ export class Chain {
     }
 
     async sendOpToEntryPoint(userOp: UserOperation): Promise<string> {
-        const entrypoint = ENTRYPOINT_ABI.abi
+        const entrypoint = ENTRYPOINT_ABI
         const provider = await this.getProvider()
         const signer = new Wallet(process.env.FUNDER_PRIVATE_KEY!, provider)
         const entrypointContract = new Contract(this.addresses.entryPointAddress, entrypoint, signer)
@@ -176,16 +174,16 @@ export class Chain {
     async estimateOpGas(partialOp: UserOperation): Promise<any> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        let { preVerificationGas, verificationGas, callGasLimit } = res
+        const { verificationGas } = res
+        let { preVerificationGas, callGasLimit } = res
         if (!(preVerificationGas || verificationGas || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
 
         preVerificationGas = preVerificationGas.mul(2)
         const verificationGasLimit = verificationGas.add(100_000)
-        if (partialOp.initCode != "0x") {
-            callGasLimit = BigNumber.from(0)
-            // callGasLimit = BigNumber.from(5e6)
+        if (partialOp.initCode !== "0x") {
+            callGasLimit = BigNumber.from(5e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }

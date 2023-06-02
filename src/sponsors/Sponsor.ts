@@ -1,7 +1,7 @@
 import { BigNumber, Contract } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { getChainFromData } from "../data"
 import { EnvOption } from "../config"
+import { getChainFromData } from "../data"
 
 export abstract class Sponsor {
     sponsorAddress: string
@@ -22,7 +22,7 @@ export abstract class Sponsor {
     async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const chain = await getChainFromData(options.chain)
         const chainId = await chain.getChainId()
-        if (!this.paymasterAddress && chainId != this.chainId) {
+        if (!this.paymasterAddress && chainId !== this.chainId) {
             this.paymasterAddress = await chain.getAddress(this.name)
             this.chainId = chainId
         }

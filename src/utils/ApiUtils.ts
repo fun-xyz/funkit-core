@@ -1,5 +1,5 @@
-import fetch from "node-fetch"
 import { retry } from "@lifeomic/attempt"
+import fetch from "node-fetch"
 import { API_URL } from "../common/constants"
 
 export const DEFAULT_RETRY_OPTIONS = {

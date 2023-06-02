@@ -1,16 +1,14 @@
 import { Contract, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { Token } from "../data/Token"
-import { swapExec, fromReadableAmount } from "../utils/SwapUtils"
-import { oneInchAPIRequest } from "../utils/SwapUtils"
-import { sendRequest } from "../utils"
 import { approveAndExec } from "./ApproveAndExec"
 import { ActionData } from "./FirstClass"
+import { APPROVE_AND_SWAP_ABI } from "../common"
 import { EnvOption } from "../config"
-// import { getChainFromData } from "../data"
+import { Token } from "../data/Token"
+import { sendRequest } from "../utils"
+import { fromReadableAmount, oneInchAPIRequest, swapExec } from "../utils/SwapUtils"
 
-const approveAndSwapAbi = require("../abis/ApproveAndSwap.json").abi
-const approveAndSwapInterface = new Interface(approveAndSwapAbi)
+const approveAndSwapInterface = new Interface(APPROVE_AND_SWAP_ABI)
 const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
 const DEFAULT_SLIPPAGE = 0.5 // .5%
@@ -64,7 +62,7 @@ export const _swap = (params: SwapParams) => {
     }
 }
 
-const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
+const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption) => {
     return async (actionData: ActionData) => {
         const provider = await actionData.chain.getProvider()
 
@@ -73,7 +71,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
         const univ3factory = await actionData.chain.getAddress("univ3factory")
         const univ3router = await actionData.chain.getAddress("univ3router")
 
-        const actionContract = new Contract(tokenSwapAddress, approveAndSwapAbi, provider)
+        const actionContract = new Contract(tokenSwapAddress, APPROVE_AND_SWAP_ABI, provider)
 
         const tokenIn = new Token(params.in)
         const tokenOut = new Token(params.out)
@@ -93,7 +91,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
 
         let percentDecimal = 100
         let slippage = params.slippage ? params.slippage : DEFAULT_SLIPPAGE
-        while (slippage < 1 || Math.trunc(slippage) != slippage) {
+        while (slippage < 1 || Math.trunc(slippage) !== slippage) {
             percentDecimal *= 10
             slippage *= 10
         }
@@ -120,7 +118,7 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
     }
 }
 
-const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
+const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption) => {
     let approveTx = undefined
     const inToken = new Token(swapParams.in)
     const outToken = new Token(swapParams.out)
@@ -167,7 +165,7 @@ const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: str
 }
 
 const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) => {
-    if (tokenAddress != eth1InchAddress) {
+    if (tokenAddress !== eth1InchAddress) {
         const inToken = new Token(tokenAddress)
         return await inToken.getDecimals(options)
     }

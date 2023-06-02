@@ -1,4 +1,4 @@
-import { GlobalEnvOption } from "./config"
+import { GlobalEnvOption } from "./Config"
 
 declare global {
     var globalEnvOption: GlobalEnvOption

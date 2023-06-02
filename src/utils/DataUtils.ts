@@ -1,6 +1,6 @@
 import { constants } from "ethers"
-import { isHexString, hexlify } from "ethers/lib/utils"
-import { MissingParameterError, Helper, DataFormatError } from "../errors"
+import { hexlify, isHexString } from "ethers/lib/utils"
+import { DataFormatError, Helper, MissingParameterError } from "../errors"
 
 const compareToExpectedParams = (input: any, expected: string[]) => {
     return expected.filter((key: any) => {
@@ -55,7 +55,7 @@ export const orderParams = (paramOrder: any, input: any) => {
 
 export const verifyPrivateKey = (value: string, location = "", isInternal = false) => {
     let helperMsg = ""
-    const isHashZero = value == constants.HashZero
+    const isHashZero = value === constants.HashZero
     if (isHashZero) {
         helperMsg = "privateKey can not be equal to bytes32(0)"
     }
@@ -88,9 +88,9 @@ export const deepHexlify = (obj: any): any => {
     if (typeof obj === "function") {
         return undefined
     }
-    if (obj == null || typeof obj === "string" || typeof obj === "boolean") {
+    if (!obj || typeof obj === "string" || typeof obj === "boolean") {
         return obj
-    } else if (obj._isBigNumber != null || typeof obj !== "object") {
+    } else if (obj._isBigNumber || typeof obj !== "object") {
         return hexlify(obj).replace(/^0x0/, "0x")
     }
     if (Array.isArray(obj)) {

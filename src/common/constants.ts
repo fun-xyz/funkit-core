@@ -9,6 +9,9 @@ export const LOCAL_TOKEN_ADDRS = {
     dai: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
     weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 }
+export const FORK_DEFAULT_ADDRESSES = {
+    "1inchOracleAddress": "0x07D91f5fb9Bf7798734C3f606dB065549F6893bb"
+}
 
 // fun testnet environment
 export const FUN_TESTNET_CHAIN_ID = 36864
@@ -41,8 +44,23 @@ export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 export const TRANSACTION_TYPE = "FunWalletInteraction"
 
-export const WALLET_ABI = require("../../../fun-wallet-smart-contract/artifacts/contracts/wallet/FunWallet.sol/FunWallet.json")
-export const FACTORY_ABI = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json")
-export const ENTRYPOINT_ABI = require("../abis/EntryPoint.json")
-const keys =process.env
-export { keys }
+// abis
+import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
+import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
+import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
+import ERC20_CONTRACT from "../abis/ERC20.json"
+import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
+import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
+import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
+import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
+import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
+
+export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT.abi
+export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT.abi
+export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT.abi
+export const ERC20_ABI = ERC20_CONTRACT.abi
+export const WALLET_ABI = FUN_WALLET_CONTRACT.abi
+export const FACTORY_ABI = FACTORY_CONTRACT.abi
+export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT.abi
+export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT.abi
+export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT.abi

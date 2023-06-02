@@ -1,11 +1,10 @@
-import { BytesLike } from "ethers"
-import { Eoa, EoaAuthInput } from "./EoaAuth"
-import { Signer } from "ethers"
 import { Web3Provider } from "@ethersproject/providers"
+import { BytesLike, Signer } from "ethers"
+import { Eoa, EoaAuthInput } from "./EoaAuth"
 
 export class Web3AuthEoa extends Eoa {
-    constructor(eoaAuthInput: EoaAuthInput) {
-        super(eoaAuthInput)
+    constructor(authInput: EoaAuthInput) {
+        super(authInput)
     }
 
     override async signHash(hash: BytesLike): Promise<string> {

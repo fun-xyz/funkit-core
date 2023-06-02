@@ -1,11 +1,11 @@
 import { assert } from "chai"
 import { Wallet } from "ethers"
 import { Auth, Eoa } from "../../src/auth"
-import { Token } from "../../src/data"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../testUtils"
+import { getTestApiKey } from "../getTestApiKey"
 
 export interface TransferTestConfig {
     chainId: number
@@ -26,7 +26,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         let wallet: FunWallet
         let difference: number
         before(async function () {
-            let apiKey = await getTestApiKey()
+            const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
                 apiKey: apiKey,
@@ -34,7 +34,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index != null ? config.index : 1792811340 })
+            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) await fundWallet(auth, wallet, 0.7)
             const walletAddress = await wallet.getAddress()
@@ -54,18 +54,14 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = wallet1.address
             const walletAddress = await wallet.getAddress()
 
-            let b1 = Token.getBalance(baseToken, randomAddress)
-            let b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, walletAddress)
             await wallet.transfer(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.01, token: baseToken })
-            let b3 = Token.getBalance(baseToken, randomAddress)
-            let b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress)
+            const b4 = Token.getBalance(baseToken, walletAddress)
 
-            let [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] = await Promise.all([
-                b1,
-                b2,
-                b3,
-                b4
-            ])
+            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                await Promise.all([b1, b2, b3, b4])
 
             assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
@@ -76,18 +72,14 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = wallet1.address
             const walletAddress = await wallet.getAddress()
 
-            let b1 = Token.getBalance(outToken, randomAddress)
-            let b2 = Token.getBalance(outToken, walletAddress)
+            const b1 = Token.getBalance(outToken, randomAddress)
+            const b2 = Token.getBalance(outToken, walletAddress)
             await wallet.transfer(auth, { to: randomAddress, amount: Math.floor(difference / 2), token: outToken })
-            let b3 = Token.getBalance(outToken, randomAddress)
-            let b4 = Token.getBalance(outToken, walletAddress)
+            const b3 = Token.getBalance(outToken, randomAddress)
+            const b4 = Token.getBalance(outToken, walletAddress)
 
-            let [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] = await Promise.all([
-                b1,
-                b2,
-                b3,
-                b4
-            ])
+            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                await Promise.all([b1, b2, b3, b4])
 
             assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")

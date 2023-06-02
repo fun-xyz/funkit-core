@@ -1,13 +1,12 @@
-import { Signer, Wallet } from "ethers"
-import { BytesLike, arrayify, toUtf8Bytes, hexZeroPad } from "ethers/lib/utils"
-import { verifyPrivateKey } from "../utils/DataUtils"
 import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
-import { TransactionData } from "../common/types/TransactionData"
-// import { storeEVMCall } from "../apis"
+import { Signer, Wallet } from "ethers"
+import { BytesLike, arrayify, hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
 import { Auth } from "./Auth"
+import { storeEVMCall } from "../apis"
+import { TransactionData } from "../common/types/TransactionData"
 import { EnvOption } from "../config"
-import { Chain, encodeWalletSignature, UserOp, WalletSignature } from "../data"
-
+import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
+import { verifyPrivateKey } from "../utils/DataUtils"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
 
@@ -22,15 +21,15 @@ export class Eoa extends Auth {
     privateKey?: string
     provider?: Web3Provider
 
-    constructor(eoaAuthInput: EoaAuthInput) {
+    constructor(authInput: EoaAuthInput) {
         super()
-        if (eoaAuthInput.privateKey) {
-            verifyPrivateKey(eoaAuthInput.privateKey, "EoaAuth constructor")
-            this.privateKey = eoaAuthInput.privateKey
-        } else if (eoaAuthInput.signer) {
-            this.signer = eoaAuthInput.signer
-        } else if (eoaAuthInput.provider) {
-            this.provider = eoaAuthInput.provider
+        if (authInput.privateKey) {
+            verifyPrivateKey(authInput.privateKey, "EoaAuth constructor")
+            this.privateKey = authInput.privateKey
+        } else if (authInput.signer) {
+            this.signer = authInput.signer
+        } else if (authInput.provider) {
+            this.provider = authInput.provider
         }
     }
 
@@ -102,7 +101,7 @@ export class Eoa extends Auth {
             tx = await eoa.sendTransaction({ to, value, data })
         }
         const receipt = await tx.wait()
-        // await storeEVMCall(receipt)
+        await storeEVMCall(receipt)
         return receipt
     }
 

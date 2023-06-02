@@ -1,28 +1,30 @@
-import { FirstClassActions, ExecutionReceipt } from "../actions"
-import { ParameterFormatError, Helper } from "../errors"
+import { BigNumber, constants } from "ethers"
+import { ExecutionReceipt, FirstClassActions } from "../actions"
+import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
+import { Auth } from "../auth"
+import { FACTORY_ABI, WALLET_ABI } from "../common/constants"
+import { EnvOption, parseOptions } from "../config"
 import {
-    UserOp,
-    WalletIdentifier,
-    Token,
-    getChainFromData,
     Chain,
-    UserOperation,
     InitCodeParams,
     LoginData,
-    toBytes32Arr,
-    addresstoBytes32
+    Token,
+    UserOp,
+    UserOperation,
+    WalletIdentifier,
+    addresstoBytes32,
+    getChainFromData,
+    toBytes32Arr
 } from "../data"
-import { TokenSponsor, GaslessSponsor } from "../sponsors"
+import { Helper, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
+import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
-import { BigNumber, constants } from "ethers"
-import { storeUserOp, getTokens, getNFTs, getAllNFTs, getAllTokens } from "../apis"
-import { Auth } from "../auth"
-import { EnvOption, GlobalEnvOption } from "src/config"
-import { FACTORY_ABI, WALLET_ABI } from "../common/constants"
 
-const wallet = WALLET_ABI
-const factory = FACTORY_ABI
+export interface FunWalletParams {
+    uniqueId: string
+    index?: number
+}
 
 export class FunWallet extends FirstClassActions {
     identifier: WalletIdentifier
@@ -34,11 +36,11 @@ export class FunWallet extends FirstClassActions {
      * @constructor
      * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
-    constructor(params: any) {
+    constructor(params: FunWalletParams) {
         super()
         const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
-        this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
+        this.abiManager = new WalletAbiManager(WALLET_ABI, FACTORY_ABI)
     }
 
     /**
@@ -48,7 +50,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: GlobalEnvOption = (globalThis as any).globalEnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: EnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         const actionData = {
             wallet: this,
@@ -67,11 +69,10 @@ export class FunWallet extends FirstClassActions {
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase();
-
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             } else {
                 const sponsor = new GaslessSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase();
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
 
@@ -80,7 +81,7 @@ export class FunWallet extends FirstClassActions {
         return { ...partialOp, nonce }
     }
 
-    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, auth: Auth, options: GlobalEnvOption) {
+    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, auth: Auth, options: EnvOption) {
         const fee = { ...options.fee }
         if (options.fee) {
             if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
@@ -114,7 +115,7 @@ export class FunWallet extends FirstClassActions {
 
                 let percentNum = fee.gasPercent
                 let percentBase = 100
-                while (percentNum % 1 != 0) {
+                while (percentNum % 1 !== 0) {
                     percentNum *= 10
                     percentBase *= 10
                 }
@@ -153,17 +154,18 @@ export class FunWallet extends FirstClassActions {
         transactionFunc: Function,
         txOptions: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp> {
-        const chain = await getChainFromData(txOptions.chain)
-        const estimatedOp = await this.estimateGas(auth, transactionFunc, txOptions)
+    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+        const options = parseOptions(txOptions)
+        const chain = await getChainFromData(options.chain)
+        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
         if (estimate) {
-            return estimatedOp
+            return estimatedOp.getMaxTxCost()
         }
         estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
         if (txOptions.sendTxLater) {
             return estimatedOp
         }
-        return await this.sendTx(estimatedOp, txOptions)
+        return await this.sendTx(estimatedOp, options)
     }
 
     /**
@@ -229,7 +231,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
-        ; (globalThis as any).globalEnvOption.apiKey = apiKey
+        ;(globalThis as any).globalEnvOption.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain)
         const walletIdentifer = new WalletIdentifier(uniqueId, index)
@@ -245,16 +247,6 @@ export class FunWallet extends FirstClassActions {
     }
 
     async sendTx(userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        // let userOp
-        // try {
-        //     userOp = new UserOp(op)
-        // } catch (e) {
-        //     if (typeof call == "function") {
-        //         call = await call(options)
-        //     }
-        //     const { to, value, data } = call
-        //     return await this.execute(auth, genCall({ to, value, data }), txOptions)
-        // }
         return await this.sendUserOp(userOp.op, txOptions)
     }
 
@@ -264,8 +256,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Options} txOptions Options for the transaction
      * @returns
      */
-    async sendUserOp(userOp: UserOperation, txOptions: GlobalEnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        // validateClassInstance(userOp, "UserOp", UserOp, "Wallet.sendUserOp")
+    async sendUserOp(userOp: UserOperation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const chain = await getChainFromData(txOptions.chain)
         await chain.sendOpToBundler(userOp)
         const opHash = await new UserOp(userOp).getOpHashData(chain)
@@ -289,15 +280,14 @@ export class FunWallet extends FirstClassActions {
      * @param {*} txOptions
      * @returns
      */
-    // TODO: implement this
-    // async sendTxs({ auth, ops }, txOptions = globalEnvOption) {
-    //     const receipts = []
-    //     for (let op of ops) {
-    //         let receipt = await this.sendTx({ auth, op }, txOptions)
-    //         receipts.push(receipt)
-    //     }
-    //     return receipts
-    // }
+    async sendTxs(ops: UserOp[], txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt[]> {
+        const receipts: ExecutionReceipt[] = []
+        for (const op of ops) {
+            const receipt = await this.sendTx(op, txOptions)
+            receipts.push(receipt)
+        }
+        return receipts
+    }
 
     /**
      * Get all tokens for a specific chain
@@ -315,8 +305,7 @@ export class FunWallet extends FirstClassActions {
      *     }
      * }
      */
-    async getTokens(onlyVerifiedTokens: boolean = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        onlyVerifiedTokens = true ? onlyVerifiedTokens : false
+    async getTokens(onlyVerifiedTokens = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         return await getTokens(chain.chainId!, await this.getAddress(), onlyVerifiedTokens)
     }
@@ -396,7 +385,11 @@ export class FunWallet extends FirstClassActions {
      *   }
      * }
      */
-    async getAssets(onlyVerifiedTokens = false) {
+    async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        if (status) {
+            const chain = await getChainFromData(txOptions.chain)
+            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+        }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }

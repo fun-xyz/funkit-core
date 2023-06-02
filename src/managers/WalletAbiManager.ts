@@ -1,13 +1,11 @@
-import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
-import { verifyValidParamsFromAbi, checkAbi, encodeContractCall } from "../utils/ChainUtils"
-import { WalletInitialzeParams, InitCodeParams, FactoryCreateAccountParams, encodeLoginData } from "../data"
-
-import { Interface, hexConcat, defaultAbiCoder } from "ethers/lib/utils"
 import { constants } from "ethers"
+import { Interface, defaultAbiCoder, hexConcat } from "ethers/lib/utils"
+import { FactoryCreateAccountParams, InitCodeParams, WalletInitialzeParams, encodeLoginData } from "../data"
+import { checkAbi, encodeContractCall, verifyValidParamsFromAbi } from "../utils/ChainUtils"
+import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
+
 const encodeCallExpectedKeys = ["to", "data"]
-
 const encodeFeeCallExpectedKeys = ["to", "data", "token", "amount", "recipient"]
-
 const callFunctionName = "execFromEntryPoint"
 const feeCallFunctionName = "execFromEntryPointWithFee"
 
@@ -26,7 +24,8 @@ export class WalletAbiManager {
             return this.encodeFeeCall(input)
         }
         verifyFunctionParams(location, input, encodeCallExpectedKeys)
-        let { to: dest, data, value } = input
+        const { to: dest } = input
+        let { data, value } = input
         if (Array.isArray(data)) {
             data = data[1]
         }
@@ -41,7 +40,8 @@ export class WalletAbiManager {
 
     encodeFeeCall(input: any, location = "WalletAbiManager.encodeFeeCall") {
         verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
-        let { to: dest, data, value, token, amount, recipient, oracle } = input
+        const { to: dest, token, amount, recipient, oracle } = input
+        let { data, value } = input
         if (Array.isArray(data)) {
             data = data[1]
         }
@@ -61,7 +61,8 @@ export class WalletAbiManager {
             return this.encodeInitExecFeeCall(input)
         }
         verifyFunctionParams(location, input, encodeCallExpectedKeys)
-        let { to: dest, data, value } = input
+        const { to: dest, data } = input
+        let { value } = input
         verifyIsArray(data, location)
         if (value) {
             verifyIsArray(value, location)
@@ -74,7 +75,8 @@ export class WalletAbiManager {
 
     encodeInitExecFeeCall(input: any, location = "WalletAbiManager.encodeInitExecFeeCall", isInternal = false) {
         verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
-        let { to: dest, data, value, token, amount, recipient } = input
+        const { to: dest, data, token, amount, recipient } = input
+        let { value } = input
         verifyIsArray(data, location)
         if (value) {
             verifyIsArray(value, location)

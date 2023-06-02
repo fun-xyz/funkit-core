@@ -1,13 +1,17 @@
-import { Eoa, EoaAuthInput } from "./EoaAuth"
-import { Signer } from "ethers"
 import { Web3Provider } from "@ethersproject/providers"
+import { Signer } from "ethers"
+import { Eoa, EoaAuthInput } from "./EoaAuth"
+
+export interface MagicAuthEoaInput extends EoaAuthInput {
+    uniqueId: string
+}
 
 export class MagicAuthEoa extends Eoa {
     uniqueId: string
 
-    constructor(eoaAuthInput: EoaAuthInput, uniqueId: string) {
-        super(eoaAuthInput)
-        this.uniqueId = uniqueId
+    constructor(authInput: MagicAuthEoaInput) {
+        super(authInput)
+        this.uniqueId = authInput.uniqueId
     }
 
     override async getUniqueId(): Promise<string> {

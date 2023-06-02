@@ -1,10 +1,10 @@
-import { calcPreVerificationGas } from "../utils"
 import { BigNumber, Contract } from "ethers"
 import { Chain, getChainFromData } from "./Chain"
-import { EnvOption } from "src/config/config"
+import { WalletSignature, encodeWalletSignature } from "./SolidityData"
 import { Auth } from "../auth/Auth"
 import { ENTRYPOINT_ABI } from "../common/constants"
-import { encodeWalletSignature, WalletSignature } from "./SolidityData"
+import { EnvOption } from "../config/Config"
+import { calcPreVerificationGas } from "../utils"
 
 export interface UserOperation {
     sender: string
@@ -40,20 +40,19 @@ export class UserOp {
     async getOpHashData(chain: Chain) {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
-        const abi = ENTRYPOINT_ABI.abi
-        const contract = new Contract(entryPointAddress, abi, provider)
+        const contract = new Contract(entryPointAddress, ENTRYPOINT_ABI, provider)
         return await contract.getUserOpHash(this.op)
     }
 
     getMaxTxCost() {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
-        const mul = this.op.paymasterAndData != "0x" ? 3 : 1
+        const mul = this.op.paymasterAndData !== "0x" ? 3 : 1
         const requiredGas = callGasLimit.add(verificationGasLimit.mul(mul)).add(preVerificationGas!)
         return maxFeePerGas.mul(requiredGas)
     }
 
     async estimateGas(auth: Auth, option: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
-        if (!this.op.signature || this.op.signature == "0x") {
+        if (!this.op.signature || this.op.signature === "0x") {
             this.op.signature = await auth.getEstimateGasSignature()
         }
         const chain = await getChainFromData(option.chain)
