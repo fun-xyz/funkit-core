@@ -13,15 +13,9 @@ phases:
             # - npx ts-node tests/contractLoader.ts
             - aws secretsmanager get-secret-value --secret-id PrivateKeys --region us-west-2 --query SecretString --output text > secrets.json
             - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
-            # Use the environment variables in your build process
-            - echo $TEST_PRIVATE_KEY
-            - echo $FUNDER_PRIVATE_KEY
-            - echo $WALLET_PRIVATE_KEY
-            - echo $GOERLI_FUNDER_PRIVATE_KEY
-            - echo $WALLET_PRIVATE_KEY_2
     build:
         commands:
-            - npm run test-goerli
+            - ts-mocha ${TEST_PATH}
 artifacts:
     files:
         - "**/*"
