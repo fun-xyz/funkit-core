@@ -10,6 +10,7 @@ phases:
             nodejs: 16
         commands:
             - npm install
+            - npm install mocha -g
     pre_build:
         commands:
             # - npx ts-node tests/contractLoader.ts
