@@ -36,6 +36,27 @@ export class Chain {
         } else if (chainInput.bundlerUrl) {
             this.bundlerUrl = chainInput.bundlerUrl
         }
+        this.rpcUrl = "http://localhost:8545"
+        this.bundlerUrl = "http://localhost:3000/rpc"
+        const entryPointAddress = "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+        this.setAddress("entryPointAddress", entryPointAddress)
+
+        this.setAddress("factoryAddress", "0xC3EF8c2d214F5dE686aeD0481516626E30A1Ad24")
+        this.setAddress("rbacAddress", "0x30426D33a78afdb8788597D5BFaBdADc3Be95698")
+        this.setAddress("userAuthAddress", "0x85495222Fd7069B987Ca38C2142732EbBFb7175D")
+        this.setAddress("tokenSwapAddress", "0x5C797E9C0b49e82258A41A0684571D9960E78290")
+        this.setAddress("approveAndExecAddress", "0x51ACB3797E60B9e45b8B192B5C660f033b17336A")
+        this.setAddress("gaslessSponsorAddress", "0xE2b5bDE7e80f89975f7229d78aD9259b2723d11F")
+
+        this.setAddress("tokenSponsorAddress", "0x519b05b3655F4b89731B677d64CEcf761f4076f6")
+    
+        this.setAddress("univ3factory", "0x1F98431c8aD98523631AE4a59f267346ea31F984")
+        this.setAddress("univ3quoter", "0x61fFE014bA17989E743c5F6cB21bF9697530B21e")
+        this.setAddress("univ3router", "0xE592427A0AEce92De3Edee1F18E0157C05861564")
+        
+      
+
+        
     }
 
     async init() {
@@ -161,7 +182,7 @@ export class Chain {
         }
 
         preVerificationGas = preVerificationGas.mul(2)
-        const verificationGasLimit = verificationGas.add(50_000)
+        const verificationGasLimit = verificationGas.add(100_000)
         if (partialOp.initCode != "0x") {
             callGasLimit = BigNumber.from(0)
             // callGasLimit = BigNumber.from(5e6)

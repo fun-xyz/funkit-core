@@ -1,5 +1,5 @@
 import { Eoa } from "../../src/auth"
-import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../../common/constants"
+import { LOCAL_FORK_CHAIN_ID, FUN_TESTNET_CHAIN_ID } from "../../src/common/constants"
 import { expect } from "chai"
 import { randomBytes } from "ethers/lib/utils"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
@@ -18,7 +18,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId, authPrivateKey } = config
 
     describe("Factory", function () {
-        let auth: Eoa
+        const auth: Eoa = new Eoa({ privateKey: authPrivateKey })
         let wallet: FunWallet
         let uniqueId: string
 
@@ -30,7 +30,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+
             uniqueId = randomBytes(32).toString()
             wallet = new FunWallet({ uniqueId, index: 3123 })
         })

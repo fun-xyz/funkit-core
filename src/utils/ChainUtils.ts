@@ -74,7 +74,7 @@ export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number, t
     const to = await wallet.getAddress()
     const signer = await auth.getSigner()
     let txSigner = signer
-    if (!signer.provider) {
+    if (!signer?.provider) {
         const provider = await chain.getProvider()
         txSigner = signer.connect(provider)
     }

@@ -38,7 +38,6 @@ type WalletInitialzeParams = {
 }
 
 type WalletSignature = {
-    simulate?: boolean
     authType?: number
     userId: string
     signature: string
@@ -64,11 +63,10 @@ export function encodeLoginData(data: LoginData): string {
 }
 
 export function encodeWalletSignature(data: WalletSignature): string {
-    let { simulate, authType, userId, signature, extraData } = data
-    simulate = simulate ? simulate : false
+    let {  authType, userId, signature, extraData } = data
     authType = authType ? authType : 0
     extraData = extraData ? extraData : "0x"
-    return defaultAbiCoder.encode(["bool", "uint8", "address", "bytes", "bytes"], [simulate, authType, userId, signature, extraData])
+    return defaultAbiCoder.encode(["uint8", "address", "bytes", "bytes"], [authType, userId, signature, extraData])
 }
 export function addresstoBytes32(data: string): string {
     return defaultAbiCoder.encode(["address"], [data])

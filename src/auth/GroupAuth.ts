@@ -37,7 +37,7 @@ class GroupAuth extends Eoa {
             }
             this.uniqueId = keccak256(toUtf8Bytes(uuidv4()))
             await setGroupById(this.uniqueId!, this.userIds, this.requiredSignatures!)
-        } else {
+        } else if (!this.userIds) {
             this.userIds = await getGroupById(this.uniqueId!)
         }
     }

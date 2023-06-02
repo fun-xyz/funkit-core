@@ -1,12 +1,13 @@
 import { Signer, Wallet } from "ethers"
-import { BytesLike, arrayify } from "ethers/lib/utils"
+import { BytesLike, arrayify, toUtf8Bytes, hexZeroPad } from "ethers/lib/utils"
 import { verifyPrivateKey } from "../utils/DataUtils"
 import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
 import { TransactionData } from "../common/types/TransactionData"
-import { storeEVMCall } from "../apis"
+// import { storeEVMCall } from "../apis"
 import { Auth } from "./Auth"
 import { EnvOption } from "../config"
 import { Chain, encodeWalletSignature, UserOp, WalletSignature } from "../data"
+
 
 const gasSpecificChain = { "137": 850_000_000_000 }
 
@@ -45,17 +46,17 @@ export class Eoa extends Auth {
 
     async signHash(hash: BytesLike): Promise<string> {
         await this.init()
-        return await this.signer!.signMessage(arrayify(hash))
+        const walletSignature: WalletSignature = {
+            signature: await await this.signer!.signMessage(arrayify(hash)),
+            userId: await this.getUniqueId()
+        }
+        return encodeWalletSignature(walletSignature)
     }
 
     async signOp(userOp: UserOp, chain: Chain): Promise<string> {
         await this.init()
         const opHash = await userOp.getOpHashData(chain)
-        const walletSignature: WalletSignature = {
-            signature: await this.signHash(opHash),
-            userId: await this.getUniqueId()
-        }
-        return encodeWalletSignature(walletSignature)
+        return await this.signHash(opHash)
     }
 
     async getUniqueId(): Promise<string> {
@@ -74,9 +75,8 @@ export class Eoa extends Auth {
 
     async getEstimateGasSignature(): Promise<string> {
         const walletSignature: WalletSignature = {
-            simulate: true,
             userId: await this.getUniqueId(),
-            signature: "0x"
+            signature: hexZeroPad(toUtf8Bytes(""), 65)
         }
         return encodeWalletSignature(walletSignature)
     }
@@ -102,7 +102,7 @@ export class Eoa extends Auth {
             tx = await eoa.sendTransaction({ to, value, data })
         }
         const receipt = await tx.wait()
-        await storeEVMCall(receipt)
+        // await storeEVMCall(receipt)
         return receipt
     }
 

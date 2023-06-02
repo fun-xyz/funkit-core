@@ -1,10 +1,13 @@
-import { Token } from "../data"
+import { getChainFromData, Token } from "../data"
 import { EnvOption } from "../config"
 import { Sponsor } from "./Sponsor"
-import { constants } from "ethers"
+import { constants, Contract } from "ethers"
+import { Auth } from "../auth"
+import { WALLET_ABI } from "../common/constants"
+import { defaultAbiCoder } from "ethers/lib/utils"
 
-const paymasterAbi = require("../abis/TokenPaymaster.json").abi
-
+const paymasterAbi = require("../../../fun-wallet-smart-contract/artifacts/contracts/paymaster/TokenPaymaster.sol/TokenPaymaster.json").abi
+const walletAbi = WALLET_ABI
 export class TokenSponsor extends Sponsor {
     token: string
 
@@ -16,6 +19,20 @@ export class TokenSponsor extends Sponsor {
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2)
+    }
+    
+    async getPaymasterAndDataPermit(amount: number, walletAddr: string, auth: Auth, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+        const chain = await getChainFromData(options.chain)
+        const provider = await chain.getProvider()
+        console.log("asdfasdfas")
+        const walletContract = new Contract(walletAddr, walletAbi.abi, provider)
+        const nonce = await walletContract.getNonce(0)
+        const paymasterAddress = await this.getPaymasterAddress(options)
+        const tokenAddress = await Token.getAddress(this.token, options)
+        const hash = await walletContract.getPermitHash(tokenAddress, paymasterAddress, amount, nonce)
+        const sig = await auth.signHash(hash)
+        const encoded = defaultAbiCoder.encode(["address", "address", "uint256", "uint256", "bytes"], [tokenAddress, paymasterAddress, amount, nonce, sig])
+        return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2) + encoded.slice(2)
     }
 
     stake(walletAddress: string, amount: number): Function {

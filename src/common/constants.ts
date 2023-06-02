@@ -44,3 +44,5 @@ export const TRANSACTION_TYPE = "FunWalletInteraction"
 export const WALLET_ABI = require("../../../fun-wallet-smart-contract/artifacts/contracts/wallet/FunWallet.sol/FunWallet.json")
 export const FACTORY_ABI = require("../../../fun-wallet-smart-contract/artifacts/contracts/deployer/FunWalletFactory.sol/FunWalletFactory.json")
 export const ENTRYPOINT_ABI = require("../abis/EntryPoint.json")
+const keys =process.env
+export { keys }
