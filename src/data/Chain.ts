@@ -92,7 +92,7 @@ export class Chain {
                 const abisAddresses = this.loadAddressesFromAbis(chainId)
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                // this.modifyAddresses();
+                this.modifyAddresses()
                 console.log("addresses: ", this.addresses)
             }
         } catch (e) {
