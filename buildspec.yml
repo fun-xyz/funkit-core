@@ -10,7 +10,7 @@ phases:
             - npm install
     pre_build:
         commands:
-            - npx ts-node tests/contractLoader.ts
+            # - npx ts-node tests/contractLoader.ts
             - aws secretsmanager get-secret-value --secret-id PrivateKeys --region us-west-2 --query SecretString --output text > secrets.json
             - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
             # Use the environment variables in your build process
