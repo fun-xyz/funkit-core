@@ -24,7 +24,6 @@ export class TokenSponsor extends Sponsor {
     async getPaymasterAndDataPermit(amount: number, walletAddr: string, auth: Auth, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getProvider()
-        console.log("asdfasdfas")
         const walletContract = new Contract(walletAddr, walletAbi.abi, provider)
         const nonce = await walletContract.getNonce(0)
         const paymasterAddress = await this.getPaymasterAddress(options)

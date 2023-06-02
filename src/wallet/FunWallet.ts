@@ -66,17 +66,13 @@ export class FunWallet extends FirstClassActions {
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
-                console.log("GASSSS")
                 const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndDataPermit(100, await this.getAddress(), auth, txOptions)).toLowerCase();
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase();
 
             } else {
                 const sponsor = new GaslessSponsor(txOptions)
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase();
             }
-        }else{
-            console.log("NO GASSSS")
-
         }
 
         const partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }

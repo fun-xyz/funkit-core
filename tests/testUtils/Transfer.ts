@@ -29,7 +29,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             let apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
-                apiKey: apiKey
+                apiKey: apiKey,
+                gasSponsor: undefined
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: authPrivateKey })
@@ -77,7 +78,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             let b1 = Token.getBalance(outToken, randomAddress)
             let b2 = Token.getBalance(outToken, walletAddress)
-            await wallet.transfer(auth, { to: randomAddress, amount: difference / 2, token: outToken })
+            await wallet.transfer(auth, { to: randomAddress, amount: Math.floor(difference / 2), token: outToken })
             let b3 = Token.getBalance(outToken, randomAddress)
             let b4 = Token.getBalance(outToken, walletAddress)
 
