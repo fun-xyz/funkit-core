@@ -18,7 +18,7 @@ phases:
             - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
     build:
         commands:
-            - test-aws $TEST_PATH
+            - npm run test-aws $TEST_PATH
 artifacts:
     files:
         - "**/*"
