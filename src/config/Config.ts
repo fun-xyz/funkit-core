@@ -2,7 +2,7 @@ import { getOrgInfo } from "../apis"
 import { OPTION_TEST_API_KEY } from "../common/constants"
 import { Chain, getChainFromData } from "../data"
 
-export type EnvOption = {
+export interface EnvOption {
     chain?: string | Chain
     gasSponsor?: {
         sponsorAddress?: string
@@ -18,7 +18,7 @@ export type EnvOption = {
     sendTxLater?: boolean
 }
 
-export type GlobalEnvOption = EnvOption & {
+export interface GlobalEnvOption extends EnvOption {
     apiKey?: string
     orgInfo?: {
         name?: string
@@ -27,7 +27,7 @@ export type GlobalEnvOption = EnvOption & {
 }
 
 export function parseOptions(option: EnvOption) {
-    const globalOptions = global.globalEnvOption
+    const globalOptions = (globalThis as any).globalEnvOption
     return { ...globalOptions, ...option }
 }
 

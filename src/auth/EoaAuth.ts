@@ -10,7 +10,7 @@ import { verifyPrivateKey } from "../utils/DataUtils"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
 
-export type EoaAuthInput = {
+export interface EoaAuthInput {
     signer?: Signer
     privateKey?: string
     provider?: Web3Provider

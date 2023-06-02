@@ -3,7 +3,7 @@ import { ActionData } from "./FirstClass"
 import { NFT, Token } from "../data"
 import { Helper, MissingParameterError } from "../errors"
 
-export type TransferParams = {
+export interface TransferParams {
     to: string
     amount?: number
     token?: string
@@ -27,7 +27,7 @@ export interface NativeTransferParams {
     amount: number
 }
 
-export type ApproveParams = {
+export interface ApproveParams {
     spender: string
     amount?: number
     tokenId?: number

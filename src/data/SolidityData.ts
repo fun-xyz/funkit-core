@@ -1,13 +1,13 @@
 import { constants } from "ethers"
 import { defaultAbiCoder } from "ethers/lib/utils"
 
-type FactoryCreateAccountParams = {
+export interface FactoryCreateAccountParams {
     initializerCallData: string
     implementation: string
     data: string
 }
 
-type InitCodeParams = {
+export interface InitCodeParams {
     entryPointAddress: string
     factoryAddress: string
     implementationAddress?: string
@@ -24,7 +24,7 @@ type InitCodeParams = {
  * @param salt *EOA login* Hashed with loginType to generate salt
  */
 
-type LoginData = {
+export interface LoginData {
     loginType?: number
     newFunWalletOwner?: string
     index?: number
@@ -32,23 +32,24 @@ type LoginData = {
     salt?: string
 }
 
-type WalletInitialzeParams = {
+export interface WalletInitialzeParams {
     _newEntryPoint: string
     validationInitData: string
 }
 
-type WalletSignature = {
+export interface WalletSignature {
     authType?: number
     userId: string
     signature: string
     extraData?: string
 }
 
-type CallInfo = {
+export interface CallInfo {
     to: string
     data?: string | "0x"
     value?: number | 0
 }
+
 export function encodeLoginData(data: LoginData): string {
     let { loginType, newFunWalletOwner, index, socialHandle, salt } = data
     newFunWalletOwner = newFunWalletOwner ? newFunWalletOwner : constants.AddressZero
@@ -75,5 +76,3 @@ export function addresstoBytes32(data: string): string {
 export function toBytes32Arr(data: string[]): string {
     return defaultAbiCoder.encode(["bytes32[]"], [data])
 }
-
-export { FactoryCreateAccountParams, InitCodeParams, LoginData, WalletInitialzeParams, WalletSignature, CallInfo }

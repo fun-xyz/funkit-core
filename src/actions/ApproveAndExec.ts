@@ -8,12 +8,12 @@ const errorData = {
     location: "actions.approveAndExec"
 }
 
-export type ApproveParams = {
+export interface ApproveParams {
     to: string
     data: string
 }
 
-export type ExecParams = {
+export interface ExecParams {
     to: string
     value: BigNumber
     data: string

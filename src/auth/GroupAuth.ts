@@ -5,13 +5,13 @@ import { Eoa, EoaAuthInput } from "./EoaAuth"
 import { getGroupById, setGroupById } from "../apis"
 import { Helper, ParameterFormatError } from "../errors"
 
-type GroupAuthInput = {
+export interface GroupAuthInput {
     uniqueId?: string
     userIds?: string[]
     requiredSignatures?: number
 }
 
-class GroupAuth extends Eoa {
+export class GroupAuth extends Eoa {
     uniqueId?: string
     userIds?: string[]
     requiredSignatures?: number
@@ -63,5 +63,3 @@ class GroupAuth extends Eoa {
         return await this.getMembers()
     }
 }
-
-export { GroupAuth }

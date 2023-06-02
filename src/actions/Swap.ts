@@ -27,7 +27,7 @@ export enum UniSwapPoolFeeOptions {
     high = "high"
 }
 
-export type SwapParams = {
+export interface SwapParams {
     in: string
     out: string
     amount: number
@@ -35,12 +35,12 @@ export type SwapParams = {
     returnAddress?: string
 }
 
-export type OneInchSwapParams = SwapParams & {
+export interface OneInchSwapParams extends SwapParams {
     disableEstimate?: boolean
     allowPartialFill?: boolean
 }
 
-export type UniSwapParams = SwapParams & {
+export interface UniSwapParams extends SwapParams {
     poolFee?: UniSwapPoolFeeOptions
     percentDecimal?: number
 }
