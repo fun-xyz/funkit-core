@@ -4,7 +4,7 @@ const { ParameterFormatError, Helper } = require("../errors")
 const { UserOp, WalletIdentifier, Token } = require("../data")
 const { TokenSponsor, GaslessSponsor } = require("../sponsors")
 const { WalletAbiManager, WalletOnChainManager } = require("../managers")
-const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId, getPaymasterType, getPaymasterAddress} = require("../utils")
+const { verifyFunctionParams, validateClassInstance, parseOptions, gasCalculation, getChainFromData, getUniqueId, getPaymasterType, getPaymasterAddress } = require("../utils")
 const { BigNumber, constants } = require("ethers")
 
 const wallet = require("../abis/FunWallet.json")
@@ -277,15 +277,15 @@ class FunWallet extends FirstClassActions {
 
         if (txOptions?.gasSponsor?.sponsorAddress) { //log paymaster
             const paymasterType = getPaymasterType(txOptions)
-            const paymasterAddress= await getPaymasterAddress(paymasterType, txOptions)
+            const paymasterAddress = await getPaymasterAddress(paymasterType, txOptions)
             await DataServer.addTransaction({
                 action: "sponsor",
-                amount:"Pending...", //Get amount from lazy processing
+                amount: "Pending...", //Get amount from lazy processing
                 from: txOptions.gasSponsor.sponsorAddress,
                 timestamp: Date.now(),
-                to: paymasterAddress,
+                to: await this.getAddress(),
                 token: "eth",
-                txid:txid
+                txid: txid
             }, paymasterType, txOptions.gasSponsor.sponsorAddress)
         }
 
