@@ -19,8 +19,20 @@ export const FUN_TESTNET_CHAIN_KEY = "fun-testnet"
 export const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 
 // prod
-// export const API_URL = "https://kjj7i5hi79.execute-api.us-west-2.amazonaws.com/prod"
-export const API_URL = "https://api.fun.xyz/staging"
+let API_URL
+
+switch (process.env.NODE_ENV) {
+    case "staging":
+        API_URL = "https://api.fun.xyz/staging/"
+        break
+    case "internal":
+        API_URL = "https://api.fun.xyz/internal"
+        break
+    default:
+        API_URL = "https://api.fun.xyz"
+}
+
+export { API_URL }
 
 export const DASHBOARD_API_URL = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 export const BASE_WRAP_TOKEN_ADDR = {

@@ -27,6 +27,7 @@ export interface GlobalEnvOption extends EnvOption {
 }
 
 export function parseOptions(option: EnvOption) {
+    const global = globalThis as any
     const globalOptions = global.globalEnvOption
     return { ...globalOptions, ...option }
 }
