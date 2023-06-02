@@ -4,7 +4,7 @@ import factory from "../abis/FunWalletFactory.json"
 import { ExecutionReceipt, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
-import { EnvOption, GlobalEnvOption } from "../config"
+import { EnvOption, parseOptions } from "../config"
 import { Chain, Token, UserOp, UserOperation, WalletIdentifier, getChainFromData } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
@@ -40,7 +40,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: GlobalEnvOption = (globalThis as any).globalEnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: EnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         const actionData = {
             wallet: this,
@@ -73,7 +73,7 @@ export class FunWallet extends FirstClassActions {
         return { ...partialOp, nonce }
     }
 
-    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, sender: string, auth: Auth, options: GlobalEnvOption) {
+    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, sender: string, auth: Auth, options: EnvOption) {
         let tempCallData
         const fee = { ...options.fee }
         if (options.fee) {
@@ -157,16 +157,17 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp> {
-        const chain = await getChainFromData(txOptions.chain)
-        const estimatedOp = await this.estimateGas(auth, transactionFunc, txOptions)
+        const options = parseOptions(txOptions)
+        const chain = await getChainFromData(options.chain)
+        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
         if (estimate) {
             return estimatedOp
         }
         await estimatedOp.sign(auth, chain)
-        if (txOptions.sendTxLater) {
+        if (options.sendTxLater) {
             return estimatedOp
         }
-        return await this.sendTx(estimatedOp, txOptions)
+        return await this.sendTx(estimatedOp, options)
     }
 
     /**
@@ -245,17 +246,6 @@ export class FunWallet extends FirstClassActions {
     }
 
     async sendTx(userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        // let userOp
-        // try {
-        //     console.log()
-        //     userOp = new UserOp(op)
-        // } catch (e) {
-        //     if (typeof call == "function") {
-        //         call = await call(options)
-        //     }
-        //     const { to, value, data } = call
-        //     return await this.execute(auth, genCall({ to, value, data }), txOptions)
-        // }
         return await this.sendUserOp(userOp.op, txOptions)
     }
 
@@ -265,7 +255,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Options} txOptions Options for the transaction
      * @returns
      */
-    async sendUserOp(userOp: UserOperation, txOptions: GlobalEnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+    async sendUserOp(userOp: UserOperation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const chain = await getChainFromData(txOptions.chain)
         const opHash = await chain.sendOpToBundler(userOp)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
@@ -288,15 +278,14 @@ export class FunWallet extends FirstClassActions {
      * @param {*} txOptions
      * @returns
      */
-    // TODO: implement this
-    // async sendTxs({ auth, ops }, txOptions = globalEnvOption) {
-    //     const receipts = []
-    //     for (let op of ops) {
-    //         let receipt = await this.sendTx({ auth, op }, txOptions)
-    //         receipts.push(receipt)
-    //     }
-    //     return receipts
-    // }
+    async sendTxs(ops: UserOp[], txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt[]> {
+        const receipts: ExecutionReceipt[] = []
+        for (const op of ops) {
+            const receipt = await this.sendTx(op, txOptions)
+            receipts.push(receipt)
+        }
+        return receipts
+    }
 
     /**
      * Get all tokens for a specific chain
@@ -332,7 +321,7 @@ export class FunWallet extends FirstClassActions {
      *     }
      *  ]
      */
-    async getNFTs(txOptions = globalEnvOption) {
+    async getNFTs(txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         return await getNFTs(chain.chainId!, await this.getAddress())
     }
@@ -394,7 +383,7 @@ export class FunWallet extends FirstClassActions {
      *   }
      * }
      */
-    async getAssets(onlyVerifiedTokens = false, status = false, txOptions = globalEnvOption) {
+    async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         if (status) {
             const chain = await getChainFromData(txOptions.chain)
             return await getLidoWithdrawals(chain.chainId!, await this.getAddress())

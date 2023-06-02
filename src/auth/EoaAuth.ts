@@ -20,15 +20,15 @@ export class Eoa extends Auth {
     privateKey?: string
     provider?: Web3Provider
 
-    constructor(eoaAuthInput: EoaAuthInput) {
+    constructor(authInput: EoaAuthInput) {
         super()
-        if (eoaAuthInput.privateKey) {
-            verifyPrivateKey(eoaAuthInput.privateKey, "EoaAuth constructor")
-            this.privateKey = eoaAuthInput.privateKey
-        } else if (eoaAuthInput.signer) {
-            this.signer = eoaAuthInput.signer
-        } else if (eoaAuthInput.provider) {
-            this.provider = eoaAuthInput.provider
+        if (authInput.privateKey) {
+            verifyPrivateKey(authInput.privateKey, "EoaAuth constructor")
+            this.privateKey = authInput.privateKey
+        } else if (authInput.signer) {
+            this.signer = authInput.signer
+        } else if (authInput.provider) {
+            this.provider = authInput.provider
         }
     }
 
