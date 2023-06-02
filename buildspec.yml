@@ -1,5 +1,7 @@
 version: 0.2
 env:
+    variables:
+        TEST_PATH: "tests/goerli"
     secrets-manager:
         API_KEY_STAGING: "FunApiServer/ApiGateway:staging"
 phases:
@@ -15,7 +17,7 @@ phases:
             - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
     build:
         commands:
-            - ts-mocha ${TEST_PATH}
+            - ts-mocha $TEST_PATH
 artifacts:
     files:
         - "**/*"
