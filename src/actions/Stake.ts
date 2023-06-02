@@ -5,12 +5,13 @@ import { ActionData } from "./FirstClass"
 import WITHDRAW_QUEUE_ABI from "../abis/LidoWithdrawQueue.json"
 import { Token } from "../data"
 import { Helper, StatusError } from "../errors"
+
 export interface StakeParams {
-    amount: number // denominated in wei
+    amount: number // denominated in ETH
 }
 
 export interface RequestUnstakeParams {
-    amounts: number[] // denominated in wei
+    amounts: number[] // denominated in ETH
     recipient?: string
 }
 
@@ -21,7 +22,7 @@ const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
 export const _stake = (params: StakeParams) => {
     return async (actionData: ActionData) => {
-        const lidoAddress = getLidoAddress(actionData.chain.id!.toString())
+        const lidoAddress = getLidoAddress(actionData.chain.chainId!.toString())
         let reasonData: any = null
         if (!lidoAddress) {
             reasonData = {
