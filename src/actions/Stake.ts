@@ -5,12 +5,13 @@ import { ActionData } from "./FirstClass"
 import WITHDRAW_QUEUE_ABI from "../abis/LidoWithdrawQueue.json"
 import { Token } from "../data"
 import { Helper, StatusError } from "../errors"
+
 export interface StakeParams {
-    amount: number // denominated in wei
+    amount: number // denominated in ETH
 }
 
 export interface RequestUnstakeParams {
-    amounts: number[] // denominated in wei
+    amounts: number[] // denominated in ETH
     recipient?: string
 }
 
@@ -63,7 +64,7 @@ export const _requestUnstake = (params: RequestUnstakeParams) => {
     }
 }
 
-export const getReadyToWithdrawRequests = async (actionData: ActionData) => {
+const getReadyToWithdrawRequests = async (actionData: ActionData) => {
     const { chain, wallet } = actionData
     const provider = await actionData.chain.getProvider()
     const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
