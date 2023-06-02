@@ -36,19 +36,16 @@ export class Chain {
         } else if (chainInput.bundlerUrl) {
             this.bundlerUrl = chainInput.bundlerUrl
         }
-        this.rpcUrl = "http://localhost:8545"
-        this.bundlerUrl = "http://localhost:3000/rpc"
-        const entryPointAddress = "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
-        this.setAddress("entryPointAddress", entryPointAddress)
-
-        this.setAddress("factoryAddress", "0xC3EF8c2d214F5dE686aeD0481516626E30A1Ad24")
-        this.setAddress("rbacAddress", "0x30426D33a78afdb8788597D5BFaBdADc3Be95698")
-        this.setAddress("userAuthAddress", "0x85495222Fd7069B987Ca38C2142732EbBFb7175D")
-        this.setAddress("tokenSwapAddress", "0x5C797E9C0b49e82258A41A0684571D9960E78290")
-        this.setAddress("approveAndExecAddress", "0x51ACB3797E60B9e45b8B192B5C660f033b17336A")
-        this.setAddress("gaslessSponsorAddress", "0xE2b5bDE7e80f89975f7229d78aD9259b2723d11F")
-
-        this.setAddress("tokenSponsorAddress", "0x519b05b3655F4b89731B677d64CEcf761f4076f6")
+        // this.rpcUrl = "http://localhost:8545"
+        // this.bundlerUrl = "http://localhost:3000/rpc"
+        this.setAddress("entryPointAddress", "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789")
+        this.setAddress("factoryAddress", "0xcdC0E989b4c86B0dC1F82A4e5E3b5776e326CfaF")
+        this.setAddress("rbacAddress", "0x71Dc112b4cA9eca93349229f79419B7457c69dF3")
+        this.setAddress("userAuthAddress", "0x00f68DD342164b8B603FBA741fF686993B3eD698")
+        this.setAddress("tokenSwapAddress", "0xb9b49259aD198878260A400eDAbac133FB94d7c6")
+        this.setAddress("approveAndExecAddress", "0x8874a0C8ddc2376B6889cd51E73dc66b1fc41500")
+        this.setAddress("gaslessSponsorAddress", "0x63fDF49053F83EA8C5Af86843B9594F598cA5F97")
+        this.setAddress("tokenSponsorAddress", "0x17dCA013EE7927576d1797F7A3Dc7C0231D2646c")
         this.setAddress("univ3factory", "0x1F98431c8aD98523631AE4a59f267346ea31F984")
         this.setAddress("univ3quoter", "0x61fFE014bA17989E743c5F6cB21bF9697530B21e")
         this.setAddress("univ3router", "0xE592427A0AEce92De3Edee1F18E0157C05861564")
@@ -160,7 +157,7 @@ export class Chain {
     async sendOpToEntryPoint(userOp: UserOperation): Promise<string> {
         const entrypoint = ENTRYPOINT_ABI
         const provider = await this.getProvider()
-        const signer = new Wallet(process.env.FUNDER_PRIVATE_KEY!, provider)
+        const signer = new Wallet(process.env.GOERLI_FUNDER_PRIVATE_KEY!, provider)
         const entrypointContract = new Contract(this.addresses.entryPointAddress, entrypoint, signer)
         await entrypointContract.handleOps([userOp], signer.address)
         return ""
@@ -172,20 +169,21 @@ export class Chain {
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<any> {
-        await this.init()
-        const res = await this.bundler!.estimateUserOpGas(partialOp)
-        const { verificationGas } = res
-        let { preVerificationGas, callGasLimit } = res
-        if (!(preVerificationGas || verificationGas || callGasLimit)) {
-            throw new Error(JSON.stringify(res))
-        }
+        // await this.init()
+        // const res = await this.bundler!.estimateUserOpGas(partialOp)
+        // const { verificationGas } = res
+        // let { preVerificationGas, callGasLimit } = res
+        // if (!(preVerificationGas || verificationGas || callGasLimit)) {
+        //     throw new Error(JSON.stringify(res))
+        // }
 
-        preVerificationGas = preVerificationGas.mul(2)
-        const verificationGasLimit = verificationGas.add(100_000)
-        if (partialOp.initCode !== "0x") {
-            callGasLimit = BigNumber.from(5e6)
-        }
-        return { preVerificationGas, verificationGasLimit, callGasLimit }
+        // preVerificationGas = preVerificationGas.mul(2)
+        // const verificationGasLimit = verificationGas.add(100_000)
+        // if (partialOp.initCode !== "0x") {
+        //     callGasLimit = BigNumber.from(5e6)
+        // }
+        // return { preVerificationGas, verificationGasLimit, callGasLimit }
+        return { preVerificationGas: 100_000, verificationGasLimit: 800_000, callGasLimit: 500_000 }
     }
 }
 

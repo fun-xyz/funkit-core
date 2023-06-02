@@ -109,7 +109,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
-            console.log("asdfasdfa")
             const gasSponsor = new TokenSponsor()
             await funder.sendTx(await gasSponsor.setToWhitelistMode())
             await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
@@ -124,8 +123,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         })
 
         it("Blacklist Mode Approved", async () => {
-            console.log("asdfasdfa")
-
             const gasSponsor = new TokenSponsor()
             const funder = new Eoa({ privateKey: config.funderPrivateKey })
             const funderAddress = await funder.getUniqueId()
