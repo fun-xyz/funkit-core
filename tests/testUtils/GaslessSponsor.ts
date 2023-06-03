@@ -94,7 +94,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33")
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + JSON.stringify(error))
             }
         })
 
