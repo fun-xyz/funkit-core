@@ -5,6 +5,8 @@
     "main": "index.ts",
     "scripts": {
         "build": "tsc",
+        "test": "env REMOTE_TEST=true mocha test/fork",
+        "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",

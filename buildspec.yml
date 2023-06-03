@@ -1,0 +1,24 @@
+version: 0.2
+env:
+    variables:
+        TEST_PATH: "tests/goerli"
+    secrets-manager:
+        API_KEY_STAGING: "FunApiServer/ApiGateway:staging"
+phases:
+    install:
+        runtime-versions:
+            nodejs: 16
+        commands:
+            - npm install
+            - npm install mocha -g
+    pre_build:
+        commands:
+            - npx ts-node tests/contractLoader.ts
+            - aws secretsmanager get-secret-value --secret-id PrivateKeys --region us-west-2 --query SecretString --output text > secrets.json
+            - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
+    build:
+        commands:
+            - npm run test-aws $TEST_PATH
+artifacts:
+    files:
+        - "**/*"
