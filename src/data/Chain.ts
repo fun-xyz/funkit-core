@@ -173,10 +173,11 @@ export class Chain {
             gaslessSponsorAddress: "GaslessPaymaster",
             tokenSponsorAddress: "TokenPaymaster",
             oracle: "TokenPriceOracle",
-            entryPointAddress: "EntryPoint",
+            entryPointAddress: "ENTRYPOINT_V6",
             factoryAddress: "FunWalletFactory",
             feeOracle: "FeePercentOracle",
-            verificationAddress: "UserAuthentication"
+            userAuthAddress: "UserAuthentication",
+            rbacAddress: "RoleBasedAccessControl"
         }
 
         Object.keys(modifications).forEach((key) => {

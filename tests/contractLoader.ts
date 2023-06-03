@@ -27,7 +27,14 @@ const loadAbis = async (): Promise<void> => {
         "TokenPaymaster",
         "GaslessPaymaster",
         "TokenPriceOracle",
-        "FeePercentOracle"
+        "FeePercentOracle",
+        "RoleBasedAccessControl",
+        "ENTRYPOINT_V6",
+        "GELATO_MSG_SENDER",
+        "WETH",
+        "univ3factory",
+        "univ3quoter",
+        "univ3router"
     ]
 
     for (const contract of contracts) {
