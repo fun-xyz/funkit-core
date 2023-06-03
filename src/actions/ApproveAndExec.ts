@@ -1,19 +1,19 @@
 import { BigNumber, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
 import { ActionData } from "./FirstClass"
-import approveAndExecContract from "../abis/ApproveAndExec.json"
+import { APPROVE_AND_EXEC_ABI } from "../common"
 
-const approveAndExecInterface = new Interface(approveAndExecContract.abi)
+const approveAndExecInterface = new Interface(APPROVE_AND_EXEC_ABI)
 const errorData = {
     location: "actions.approveAndExec"
 }
 
-export type ApproveParams = {
+export interface ApproveParams {
     to: string
     data: string
 }
 
-export type ExecParams = {
+export interface ExecParams {
     to: string
     value: BigNumber
     data: string

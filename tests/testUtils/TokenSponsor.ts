@@ -82,9 +82,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
             const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
             const data = await gasSponsor.stake(funderAddress, baseStakeAmount)
-            const addTokens = await gasSponsor.addWhitelistTokens([paymasterToken])
 
-            await funder.sendTxs([approve, deposit, deposit1, data, addTokens])
+            await funder.sendTxs([approve, deposit, deposit1, data])
 
             const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
             const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
@@ -110,7 +109,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
-
             const gasSponsor = new TokenSponsor()
             await funder.sendTx(await gasSponsor.setToWhitelistMode())
             await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
@@ -120,13 +118,23 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33")
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + JSON.stringify(error))
             }
         })
 
         it("Blacklist Mode Approved", async () => {
             const gasSponsor = new TokenSponsor()
+            const funder = new Eoa({ privateKey: config.funderPrivateKey })
+            const funderAddress = await funder.getUniqueId()
+
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
+            await configureEnvironment({
+                gasSponsor: {
+                    sponsorAddress: funderAddress,
+                    token: paymasterToken
+                }
+            })
+
             await runSwap(wallet)
         })
     })

@@ -7,7 +7,7 @@ const loadAbis = () => {
     const approveAndExecPath = "modules/actions/ApproveAndExec.sol/ApproveAndExec.json"
     const aaveWithdrawPath = "modules/actions/AaveWithdraw.sol/AaveWithdraw.json"
     const factoryPath = "deployer/FunWalletFactory.sol/FunWalletFactory.json"
-    const walletPath = "FunWallet.sol/FunWallet.json"
+    const walletPath = "wallet/FunWallet.sol/FunWallet.json"
     const tokenPaymasterpath = "paymaster/TokenPaymaster.sol/TokenPaymaster.json"
     const gaslessPaymasterPaymasterpath = "paymaster/GaslessPaymaster.sol/GaslessPaymaster.json"
     const tokenOracle = "oracles/TokenPriceOracle.sol/TokenPriceOracle.json"
@@ -31,7 +31,7 @@ const loadAbis = () => {
 const moveFile = (path) => {
     const dirs = Array.from(path.split("/"))
     const fileName = dirs.at(-1)
-    const newPath = `./abis/${fileName}`
+    const newPath = `../src/abis/${fileName}`
     const basePath = "../../fun-wallet-smart-contract/artifacts/contracts/"
     try {
         const data = require(basePath + path)

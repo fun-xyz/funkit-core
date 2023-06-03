@@ -1,10 +1,11 @@
 import { TransactionReceipt, Web3Provider } from "@ethersproject/providers"
 import { Signer, Wallet } from "ethers"
-import { BytesLike, arrayify } from "ethers/lib/utils"
+import { BytesLike, arrayify, hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
 import { Auth } from "./Auth"
 import { storeEVMCall } from "../apis"
 import { TransactionData } from "../common/types/TransactionData"
 import { EnvOption } from "../config"
+import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
 import { verifyPrivateKey } from "../utils/DataUtils"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
@@ -44,7 +45,17 @@ export class Eoa extends Auth {
 
     async signHash(hash: BytesLike): Promise<string> {
         await this.init()
-        return await this.signer!.signMessage(arrayify(hash))
+        const walletSignature: WalletSignature = {
+            signature: await await this.signer!.signMessage(arrayify(hash)),
+            userId: await this.getUniqueId()
+        }
+        return encodeWalletSignature(walletSignature)
+    }
+
+    async signOp(userOp: UserOp, chain: Chain): Promise<string> {
+        await this.init()
+        const opHash = await userOp.getOpHashData(chain)
+        return await this.signHash(opHash)
     }
 
     async getUniqueId(): Promise<string> {
@@ -62,7 +73,11 @@ export class Eoa extends Auth {
     }
 
     async getEstimateGasSignature(): Promise<string> {
-        return await this.getUniqueId()
+        const walletSignature: WalletSignature = {
+            userId: await this.getUniqueId(),
+            signature: hexZeroPad(toUtf8Bytes(""), 65)
+        }
+        return encodeWalletSignature(walletSignature)
     }
 
     async sendTx(

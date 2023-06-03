@@ -11,11 +11,11 @@ const config: TokenSponsorTestConfig = {
     funderPrivateKey: process.env.FUNDER_PRIVATE_KEY!,
     inToken: "eth",
     outToken: "dai",
-    paymasterToken: "usdc",
+    paymasterToken: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
     baseTokenStakeAmt: 1,
     paymasterTokenStakeAmt: 100,
     prefund: true,
-    swapAmount: 0.01,
+    swapAmount: 1,
     stake: true
 }
 

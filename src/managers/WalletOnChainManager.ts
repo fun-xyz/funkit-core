@@ -1,15 +1,7 @@
 import { TransactionReceipt } from "@ethersproject/providers"
 import { Contract, ethers } from "ethers"
-import entryPoint from "../abis/EntryPoint.json"
-import wallet from "../abis/FunWallet.json"
-import factory from "../abis/FunWalletFactory.json"
-import offChainOracle from "../abis/OffChainOracle.json"
-import { Chain, WalletIdentifier } from "../data"
-
-const factoryAbi = factory.abi
-const walletAbi = wallet.abi
-const entryPointAbi = entryPoint.abi
-const offChainOracleAbi = offChainOracle.abi
+import { ENTRYPOINT_ABI, FACTORY_ABI, OFF_CHAIN_ORACLE_ABI, WALLET_ABI } from "../common/constants"
+import { Chain, WalletIdentifier, encodeLoginData } from "../data"
 
 export class WalletOnChainManager {
     chain: Chain
@@ -26,25 +18,26 @@ export class WalletOnChainManager {
         if (!this.factory) {
             const factoryAddress = await this.chain.getAddress("factoryAddress")
             const provider = await this.chain.getProvider()
-            this.factory = new Contract(factoryAddress, factoryAbi, provider)
+            this.factory = new Contract(factoryAddress, FACTORY_ABI, provider)
         }
 
         if (!this.entrypoint) {
             const entryPointAddress = await this.chain.getAddress("entryPointAddress")
             const provider = await this.chain.getProvider()
-            this.entrypoint = new Contract(entryPointAddress, entryPointAbi, provider)
+            this.entrypoint = new Contract(entryPointAddress, ENTRYPOINT_ABI, provider)
         }
     }
 
     async getWalletAddress(): Promise<string> {
         await this.init()
         const uniqueId = await this.walletIdentifier.getIdentifier()
-        return await this.factory!.getAddress(uniqueId)
+        const data = encodeLoginData({ salt: uniqueId })
+        return await this.factory!.getAddress(data)
     }
 
     static async getWalletAddress(identifier: string, rpcUrl: string, factoryAddress: string): Promise<string> {
         const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
-        const factory = new ethers.Contract(factoryAddress, factoryAbi, provider)
+        const factory = new ethers.Contract(factoryAddress, FACTORY_ABI, provider)
         return await factory.getAddress(identifier)
     }
 
@@ -74,7 +67,7 @@ export class WalletOnChainManager {
     async getModuleIsInit(walletAddress: string, moduleAddress: string) {
         await this.init()
         const provider = await this.chain.getProvider()
-        const contract = new Contract(walletAddress, walletAbi, provider)
+        const contract = new Contract(walletAddress, WALLET_ABI, provider)
         try {
             const data = await contract.getModuleStateVal(moduleAddress)
             return data !== "0x"
@@ -93,7 +86,7 @@ export class WalletOnChainManager {
     async getEthTokenPairing(token: string) {
         const offChainOracleAddress = await this.chain.getAddress("1inchOracleAddress")
         const provider = await this.chain.getProvider()
-        const oracle = new Contract(offChainOracleAddress, offChainOracleAbi, provider)
+        const oracle = new Contract(offChainOracleAddress, OFF_CHAIN_ORACLE_ABI, provider)
         return await oracle.getRateToEth(token, true)
     }
 }

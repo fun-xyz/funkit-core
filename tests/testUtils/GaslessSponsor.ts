@@ -21,9 +21,9 @@ export interface GaslessSponsorTestConfig {
 }
 
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
+    const auth = new Eoa({ privateKey: config.authPrivateKey })
     describe("GaslessSponsor", function () {
         this.timeout(250_000)
-        const auth = new Eoa({ privateKey: config.authPrivateKey })
         const funder = new Eoa({ privateKey: config.funderPrivateKey })
 
         let wallet: FunWallet
@@ -50,18 +50,17 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 out: config.outToken,
                 returnAddress: funderAddress
             })
+
             await configureEnvironment({
                 gasSponsor: {
-                    sponsorAddress: await funder.getUniqueId()
+                    sponsorAddress: funderAddress
                 }
             })
             const gasSponsor = new GaslessSponsor()
 
-            const stakeAmount = config.stakeAmount
             const depositInfo1S = await gasSponsor.getBalance(funderAddress)
-            const stake = await gasSponsor.stake(funderAddress, stakeAmount)
-            await funder.sendTxs([stake])
-
+            const stake = await gasSponsor.stake(funderAddress, config.stakeAmount)
+            await funder.sendTx(stake)
             const depositInfo1E = await gasSponsor.getBalance(funderAddress)
 
             assert(depositInfo1E.gt(depositInfo1S), "Stake Failed")
@@ -95,7 +94,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33")
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + JSON.stringify(error))
             }
         })
 

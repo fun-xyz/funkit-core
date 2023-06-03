@@ -1,12 +1,12 @@
 import { BigNumber } from "ethers"
 import { Sponsor } from "./Sponsor"
-import paymaster from "../abis/GaslessPaymaster.json"
+import { GASLESS_PAYMASTER_ABI } from "../common"
 import { EnvOption } from "../config"
 import { Token } from "../data"
 
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, paymaster.abi, "gaslessSponsorAddress")
+        super(options, GASLESS_PAYMASTER_ABI, "gaslessSponsorAddress")
     }
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {

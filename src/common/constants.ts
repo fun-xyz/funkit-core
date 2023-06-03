@@ -56,3 +56,24 @@ export const BASE_WRAP_TOKEN_ADDR = {
 export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 export const TRANSACTION_TYPE = "FunWalletInteraction"
+
+// abis
+import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
+import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
+import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
+import ERC20_CONTRACT from "../abis/ERC20.json"
+import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
+import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
+import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
+import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
+import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
+
+export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT.abi
+export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT.abi
+export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT.abi
+export const ERC20_ABI = ERC20_CONTRACT.abi
+export const WALLET_ABI = FUN_WALLET_CONTRACT.abi
+export const FACTORY_ABI = FACTORY_CONTRACT.abi
+export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT.abi
+export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT.abi
+export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT.abi

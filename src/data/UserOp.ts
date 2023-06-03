@@ -1,64 +1,46 @@
 import { BigNumber, Contract } from "ethers"
 import { Chain, getChainFromData } from "./Chain"
-import entryPoint from "../abis/EntryPoint.json"
+import { WalletSignature, encodeWalletSignature } from "./SolidityData"
 import { Auth } from "../auth/Auth"
+import { ENTRYPOINT_ABI } from "../common/constants"
 import { EnvOption } from "../config/Config"
 import { calcPreVerificationGas } from "../utils"
 
 export interface UserOperation {
     sender: string
     nonce: BigNumber
-    initCode: string
+    initCode?: string | "0x"
     callData: string
     callGasLimit: BigNumber
     verificationGasLimit: BigNumber
     preVerificationGas?: BigNumber
     maxFeePerGas: BigNumber
     maxPriorityFeePerGas: BigNumber
-    paymasterAndData: string
-    signature: string
+    paymasterAndData?: string | "0x"
+    signature?: string | "0x"
 }
 
 export class UserOp {
     op: UserOperation
 
-    constructor(
-        sender: string,
-        nonce: BigNumber,
-        callData: string,
-        callGasLimit: BigNumber,
-        verificationGasLimit: BigNumber,
-        maxFeePerGas: BigNumber,
-        maxPriorityFeePerGas: BigNumber,
-        initCode?: string,
-        preVerificationGas?: BigNumber,
-        paymasterAndData?: string,
-        signature?: string
-    ) {
-        this.op = {
-            sender,
-            nonce,
-            initCode: initCode ? initCode : "0x",
-            callData,
-            callGasLimit,
-            verificationGasLimit,
-            maxFeePerGas,
-            maxPriorityFeePerGas,
-            paymasterAndData: paymasterAndData ? paymasterAndData : "0x",
-            signature: signature ? signature : "0x"
-        }
-        this.op.preVerificationGas = preVerificationGas ? preVerificationGas : calcPreVerificationGas(this.op)
+    constructor(op: UserOperation) {
+        this.op = op
+        this.op.preVerificationGas = op.preVerificationGas ? op.preVerificationGas : calcPreVerificationGas(this.op)
     }
 
     async sign(auth: Auth, chain: Chain) {
         const opHash = await this.getOpHashData(chain)
-        this.op.signature = await auth.signHash(opHash)
+        const walletSignature: WalletSignature = {
+            signature: await auth.signHash(opHash),
+            userId: await auth.getUniqueId()
+        }
+        this.op.signature = encodeWalletSignature(walletSignature)
     }
 
     async getOpHashData(chain: Chain) {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
-        const contract = new Contract(entryPointAddress, entryPoint.abi, provider)
+        const contract = new Contract(entryPointAddress, ENTRYPOINT_ABI, provider)
         return await contract.getUserOpHash(this.op)
     }
 

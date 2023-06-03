@@ -1,9 +1,10 @@
 import fs from "fs"
 import path from "path"
 import { JsonRpcProvider } from "@ethersproject/providers"
-import { BigNumber } from "ethers"
+import { BigNumber, Contract, Wallet } from "ethers"
 import { UserOperation } from "./UserOp"
 import { getChainInfo, getModuleInfo } from "../apis"
+import { ENTRYPOINT_ABI } from "../common/constants"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -59,6 +60,7 @@ export class Chain {
         } catch {
             // ignore
         }
+
         try {
             await this.loadProvider()
         } catch {
@@ -102,7 +104,7 @@ export class Chain {
 
     async getAddress(name: string): Promise<string> {
         await this.init()
-        const res = this.addresses[name]
+        const res = this.addresses![name]
         if (!res) {
             const currentLocation = "Chain.getAddress"
             const helperMainMessage = "Search key does not exist"
@@ -143,6 +145,15 @@ export class Chain {
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
+    async sendOpToEntryPoint(userOp: UserOperation): Promise<string> {
+        const entrypoint = ENTRYPOINT_ABI
+        const provider = await this.getProvider()
+        const signer = new Wallet(process.env.GOERLI_FUNDER_PRIVATE_KEY!, provider)
+        const entrypointContract = new Contract(this.addresses.entryPointAddress, entrypoint, signer)
+        await entrypointContract.handleOps([userOp], signer.address)
+        return ""
+    }
+
     async getFeeData(): Promise<any> {
         await this.init()
         return await this.provider!.getFeeData()
@@ -158,9 +169,9 @@ export class Chain {
         }
 
         preVerificationGas = preVerificationGas.mul(2)
-        const verificationGasLimit = verificationGas.add(50_000)
+        const verificationGasLimit = verificationGas.add(100_000)
         if (partialOp.initCode !== "0x") {
-            callGasLimit = BigNumber.from(10e6)
+            callGasLimit = BigNumber.from(5e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
