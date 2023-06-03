@@ -23,7 +23,7 @@ let API_URL
 
 switch (process.env.NODE_ENV) {
     case "staging":
-        API_URL = "https://api.fun.xyz/staging/"
+        API_URL = "https://api.fun.xyz/staging"
         break
     case "internal":
         API_URL = "https://api.fun.xyz/internal"
