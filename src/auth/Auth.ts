@@ -1,13 +1,14 @@
 import { TransactionReceipt } from "@ethersproject/providers"
 import { BigNumber, Contract, Signer } from "ethers"
 import { BytesLike } from "ethers/lib/utils"
-import entryPointContract from "../abis/EntryPoint.json"
+import { ENTRYPOINT_ABI } from "../common"
 import { TransactionData } from "../common/types/TransactionData"
 import { EnvOption } from "../config/Config"
-import { getChainFromData } from "../data"
+import { Chain, UserOp, getChainFromData } from "../data"
 
 export abstract class Auth {
     abstract signHash(hash: BytesLike): Promise<string>
+    abstract signOp(userOp: UserOp, chain: Chain): Promise<string>
     abstract getUniqueId(): Promise<string>
     abstract getSigner(): Promise<Signer>
     abstract getOwnerAddr(): Promise<string[]>
@@ -26,7 +27,7 @@ export abstract class Auth {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const provider = await chain.getProvider()
-        const entrypointContract = new Contract(entryPointAddress, entryPointContract.abi, provider)
+        const entrypointContract = new Contract(entryPointAddress, ENTRYPOINT_ABI, provider)
         return await entrypointContract.getNonce(sender, key)
     }
 }

@@ -57,7 +57,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: difference / 2,
+                amount: Math.floor(difference / 2),
                 out: outToken
             })
             const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)

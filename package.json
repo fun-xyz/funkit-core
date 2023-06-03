@@ -2,14 +2,12 @@
     "name": "fun-wallet",
     "version": "0.2.5",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
-    "main": "index.js",
+    "main": "index.ts",
     "scripts": {
         "build": "tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
-        "test-localfork": "env REMOTE_TEST=false mocha test/fork",
-        "test-funtestnet": "env REMOTE_TEST=true mocha test/fork",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
@@ -21,20 +19,16 @@
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.315.0",
         "@lifeomic/attempt": "^3.0.3",
-        "@metamask/providers": "^11.0.0",
         "@uniswap/sdk": "^3.0.3",
         "@uniswap/v3-core": "^1.0.1",
         "@uniswap/v3-sdk": "^3.9.0",
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "node-fetch": "2.0.0",
-        "uuid": "^9.0.0",
-        "viem": "^0.3.37"
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "@types/chai": "^4.3.5",
-        "@types/expect": "^24.3.0",
-        "@types/jest": "^29.5.1",
         "@types/mocha": "^10.0.1",
         "@types/node-fetch": "^2.6.4",
         "@types/uuid": "^9.0.1",

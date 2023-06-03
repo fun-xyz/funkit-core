@@ -80,7 +80,7 @@ export const fundWallet = async (
     const to = await wallet.getAddress()
     const signer = await auth.getSigner()
     let txSigner = signer
-    if (!signer.provider) {
+    if (!signer?.provider) {
         const provider = await chain.getProvider()
         txSigner = signer.connect(provider)
     }

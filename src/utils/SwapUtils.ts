@@ -4,7 +4,7 @@ import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sd
 import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { ethers } from "ethers"
-import ERC20 from "../abis/ERC20.json"
+import { ERC20_ABI } from "../common"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
@@ -72,7 +72,7 @@ class SwapToken {
     }
 
     async getTokenDecimals(tokenAddr: string) {
-        const contract = new ethers.Contract(tokenAddr, ERC20.abi, this.provider)
+        const contract = new ethers.Contract(tokenAddr, ERC20_ABI, this.provider)
         return await contract.decimals()
     }
 

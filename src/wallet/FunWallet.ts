@@ -1,11 +1,21 @@
 import { BigNumber, constants } from "ethers"
-import wallet from "../abis/FunWallet.json"
-import factory from "../abis/FunWalletFactory.json"
 import { ExecutionReceipt, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
+import { FACTORY_ABI, WALLET_ABI } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
-import { Chain, Token, UserOp, UserOperation, WalletIdentifier, getChainFromData } from "../data"
+import {
+    Chain,
+    InitCodeParams,
+    LoginData,
+    Token,
+    UserOp,
+    UserOperation,
+    WalletIdentifier,
+    addresstoBytes32,
+    getChainFromData,
+    toBytes32Arr
+} from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
@@ -30,7 +40,7 @@ export class FunWallet extends FirstClassActions {
         super()
         const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
-        this.abiManager = new WalletAbiManager(wallet.abi, factory.abi)
+        this.abiManager = new WalletAbiManager(WALLET_ABI, FACTORY_ABI)
     }
 
     /**
@@ -52,20 +62,18 @@ export class FunWallet extends FirstClassActions {
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
-        const callData = await this._getCallData(onChainDataManager, data, sender, auth, txOptions)
+        const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
-
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
-            let sponsor
-            // gas payment method check
             if (txOptions.gasSponsor.token) {
-                sponsor = new TokenSponsor(txOptions)
+                const sponsor = new TokenSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             } else {
-                sponsor = new GaslessSponsor(txOptions)
+                const sponsor = new GaslessSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
-            paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
         }
 
         const partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
@@ -73,8 +81,7 @@ export class FunWallet extends FirstClassActions {
         return { ...partialOp, nonce }
     }
 
-    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, sender: string, auth: Auth, options: EnvOption) {
-        let tempCallData
+    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, auth: Auth, options: EnvOption) {
         const fee = { ...options.fee }
         if (options.fee) {
             if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
@@ -130,17 +137,8 @@ export class FunWallet extends FirstClassActions {
             fee.oracle = await onChainDataManager.chain.getAddress("feeOracle")
         }
         data = { ...data, ...fee }
-        if (data.initAndExec) {
-            const moduleIsInit = await onChainDataManager.getModuleIsInit(sender, data.to)
-            if (!moduleIsInit) {
-                tempCallData = this.abiManager.encodeInitExecCall(data)
-            } else {
-                tempCallData = this.abiManager.encodeCall(data)
-            }
-        } else {
-            tempCallData = this.abiManager.encodeCall(data)
-        }
-        return tempCallData
+
+        return this.abiManager.encodeCall(data)
     }
 
     /**
@@ -163,8 +161,8 @@ export class FunWallet extends FirstClassActions {
         if (estimate) {
             return estimatedOp.getMaxTxCost()
         }
-        await estimatedOp.sign(auth, chain)
-        if (options.sendTxLater) {
+        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
+        if (txOptions.sendTxLater) {
             return estimatedOp
         }
         return await this.sendTx(estimatedOp, options)
@@ -184,35 +182,38 @@ export class FunWallet extends FirstClassActions {
         const res = await chain.estimateOpGas({
             ...partialOp,
             signature: signature.toLowerCase(),
-            maxFeePerGas: 0,
-            maxPriorityFeePerGas: 0,
             preVerificationGas: 0,
             callGasLimit: 0,
             verificationGasLimit: 10e6
         })
 
-        return new UserOp(
-            partialOp.sender,
-            partialOp.nonce,
-            partialOp.callData,
-            res.callGasLimit,
-            res.verificationGasLimit,
-            partialOp.maxFeePerGas,
-            partialOp.maxPriorityFeePerGas,
-            partialOp.initCode,
-            res.preVerificationGas,
-            partialOp.paymasterAndData,
+        return new UserOp({
+            ...partialOp,
+            ...res,
             signature
-        )
+        })
     }
-
     async _getThisInitCode(chain: Chain, auth: Auth) {
-        const owner = await auth.getOwnerAddr()
+        const owners = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
-        const verificationAddress = await chain.getAddress("verificationAddress")
-        const initCodeParams = { uniqueId, owner, entryPointAddress, verificationAddress, factoryAddress }
+        const rbac = await chain.getAddress("rbacAddress")
+        const userAuth = await chain.getAddress("userAuthAddress")
+        const loginData: LoginData = {
+            salt: uniqueId
+        }
+        const rbacInitData = toBytes32Arr(owners.map((owner) => addresstoBytes32(owner)))
+        const userAuthInitData = "0x"
+        const initCodeParams: InitCodeParams = {
+            entryPointAddress,
+            factoryAddress,
+            implementationAddress: constants.AddressZero,
+            loginData: loginData,
+            verificationAddresses: [rbac, userAuth],
+            verificationData: [rbacInitData, userAuthInitData]
+        }
+
         return this.abiManager.getInitCode(initCodeParams)
     }
 
@@ -230,7 +231,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
-        globalEnvOption.apiKey = apiKey
+        ;(globalThis as any).globalEnvOption.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain)
         const walletIdentifer = new WalletIdentifier(uniqueId, index)
@@ -257,7 +258,8 @@ export class FunWallet extends FirstClassActions {
      */
     async sendUserOp(userOp: UserOperation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const chain = await getChainFromData(txOptions.chain)
-        const opHash = await chain.sendOpToBundler(userOp)
+        await chain.sendOpToBundler(userOp)
+        const opHash = await new UserOp(userOp).getOpHashData(chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const txid = await onChainDataManager.getTxId(opHash)
         const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)

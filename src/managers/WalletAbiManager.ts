@@ -1,11 +1,13 @@
 import { constants } from "ethers"
-import { Interface, hexConcat } from "ethers/lib/utils"
+import { Interface, defaultAbiCoder, hexConcat } from "ethers/lib/utils"
+import { FactoryCreateAccountParams, InitCodeParams, WalletInitialzeParams, encodeLoginData } from "../data"
 import { checkAbi, encodeContractCall, verifyValidParamsFromAbi } from "../utils/ChainUtils"
 import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
 
 const encodeCallExpectedKeys = ["to", "data"]
-const initCodeExpectedKeys = ["uniqueId", "entryPointAddress", "factoryAddress", "verificationAddress", "owner"]
 const encodeFeeCallExpectedKeys = ["to", "data", "token", "amount", "recipient"]
+const callFunctionName = "execFromEntryPoint"
+const feeCallFunctionName = "execFromEntryPointWithFee"
 
 export class WalletAbiManager {
     walletInterface: Interface
@@ -33,7 +35,7 @@ export class WalletAbiManager {
             value = value ? value : 0
         }
         const encodeObj = { dest, data, value }
-        return this.encodeWalletCall("execFromEntryPointOrOwner", encodeObj)
+        return this.encodeWalletCall(callFunctionName, encodeObj)
     }
 
     encodeFeeCall(input: any, location = "WalletAbiManager.encodeFeeCall") {
@@ -51,7 +53,7 @@ export class WalletAbiManager {
 
         const feedata = [token, recipient, oracle, amount]
         const encodeObj = { dest, data, value, feedata }
-        return this.encodeWalletCall("execFromEntryPointOrOwnerWithFee", encodeObj)
+        return this.encodeWalletCall(feeCallFunctionName, encodeObj)
     }
 
     encodeInitExecCall(input: any, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
@@ -94,23 +96,26 @@ export class WalletAbiManager {
         return encodeContractCall(this.factoryInterface, encodeFunctionName, input, location, isInternal)
     }
 
-    getInitCode(input: any) {
-        verifyFunctionParams("WalletAbiManager.getInitCode", input, initCodeExpectedKeys)
-
-        const { uniqueId, entryPointAddress, verificationAddress, owner, implementation } = input
-
-        const initCodeParams: any = {
-            salt: uniqueId,
-            _entryPointAddr: entryPointAddress,
-            _userAuthAddr: verificationAddress,
-            _owner: owner,
-            implementation: implementation ? implementation : constants.AddressZero
+    getInitCode(input: InitCodeParams) {
+        const walletInitialzeParams: WalletInitialzeParams = {
+            _newEntryPoint: input.entryPointAddress,
+            validationInitData: defaultAbiCoder.encode(["address[]", "bytes[]"], [input.verificationAddresses, input.verificationData])
         }
 
-        verifyValidParamsFromAbi(this.walletInterface.fragments, "initialize", initCodeParams, "WalletAbiManager.getInitCode")
-        initCodeParams.initializerCallData = this.encodeWalletCall("initialize", initCodeParams)
-        verifyValidParamsFromAbi(this.factoryInterface.fragments, "createAccount", initCodeParams, "WalletAbiManager.getInitCode")
-        const data = this.encodeFactoryCall("createAccount", initCodeParams, "WalletAbiManager.getInitCode")
+        verifyValidParamsFromAbi(this.walletInterface.fragments, "initialize", walletInitialzeParams, "WalletAbiManager.getInitCode")
+        const factoryCreateAccountParams: FactoryCreateAccountParams = {
+            initializerCallData: this.encodeWalletCall("initialize", walletInitialzeParams),
+            implementation: input.implementationAddress ? input.implementationAddress : constants.AddressZero,
+            data: encodeLoginData(input.loginData)
+        }
+
+        verifyValidParamsFromAbi(
+            this.factoryInterface.fragments,
+            "createAccount",
+            factoryCreateAccountParams,
+            "WalletAbiManager.getInitCode"
+        )
+        const data = this.encodeFactoryCall("createAccount", factoryCreateAccountParams, "WalletAbiManager.getInitCode")
         return hexConcat([input.factoryAddress, data])
     }
 }
