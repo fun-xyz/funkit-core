@@ -93,6 +93,9 @@ export class Chain {
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
                 this.modifyAddresses()
+                for (const name in addresses) {
+                    this.setAddress(name, addresses[name])
+                }
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -184,7 +187,7 @@ export class Chain {
             gaslessSponsorAddress: "GaslessPaymaster",
             tokenSponsorAddress: "TokenPaymaster",
             oracle: "TokenPriceOracle",
-            entryPointAddress: "ENTRYPOINT_V6",
+            entryPointAddress: "EntryPoint",
             factoryAddress: "FunWalletFactory",
             feeOracle: "FeePercentOracle",
             userAuthAddress: "UserAuthentication",

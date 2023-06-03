@@ -29,7 +29,6 @@ const loadAbis = async (): Promise<void> => {
         "TokenPriceOracle",
         "FeePercentOracle",
         "RoleBasedAccessControl",
-        "ENTRYPOINT_V6",
         "GELATO_MSG_SENDER",
         "WETH",
         "univ3factory",
