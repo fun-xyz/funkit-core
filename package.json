@@ -2,7 +2,6 @@
     "name": "fun-wallet",
     "version": "0.2.5",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
-    "main": "index.ts",
     "scripts": {
         "build": "tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
@@ -16,6 +15,63 @@
     },
     "author": "",
     "license": "ISC",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./actions": {
+            "types": "./dist/actions.d.ts",
+            "default": "./dist/actions.js"
+        },
+        "./apis": {
+            "types": "./dist/apis.d.ts",
+            "default": "./dist/apis.js"
+        },
+        "./auth": {
+            "types": "./dist/auth.d.ts",
+            "default": "./dist/auth.js"
+        },
+        "./common": {
+            "types": "./dist/common.d.ts",
+            "default": "./dist/common.js"
+        },
+        "./config": {
+            "types": "./dist/config.d.ts",
+            "default": "./dist/config.js"
+        },
+        "./data": {
+            "types": "./dist/data.d.ts",
+            "default": "./dist/data.js"
+        },
+        "./errors": {
+            "types": "./dist/errors.d.ts",
+            "default": "./dist/errors.js"
+        },
+        "./managers": {
+            "types": "./dist/managers.d.ts",
+            "default": "./dist/managers.js"
+        },
+        "./servers": {
+            "types": "./dist/servers.d.ts",
+            "default": "./dist/servers.js"
+        },
+        "./sponsors": {
+            "types": "./dist/sponsors.d.ts",
+            "default": "./dist/sponsors.js"
+        },
+        "./utils": {
+            "types": "./dist/utils.d.ts",
+            "default": "./dist/utils.js"
+        },
+        "./wallet": {
+            "types": "./dist/wallet.d.ts",
+            "default": "./dist/wallet.js"
+        }
+    },
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.315.0",
         "@lifeomic/attempt": "^3.0.3",
