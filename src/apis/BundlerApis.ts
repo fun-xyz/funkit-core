@@ -1,7 +1,8 @@
 import { JsonRpcProvider } from "@ethersproject/providers"
-import { API_URL, LOCAL_FORK_CHAIN_ID } from "../common/constants"
+import { API_URL } from "../common/constants"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
+const LOCAL_FORK_CHAIN_ID = 36865
 export async function sendUserOpToBundler(
     userOp: any,
     entryPointAddress: string,

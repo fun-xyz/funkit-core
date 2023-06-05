@@ -23,7 +23,7 @@ export class Bundler {
         this.chainId = chainId
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
-        this.userOpJsonRpcProvider = Number(chainId) === LOCAL_FORK_CHAIN_ID ? new JsonRpcProvider(this.bundlerUrl) : undefined
+        this.userOpJsonRpcProvider =  new JsonRpcProvider(this.bundlerUrl) 
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid

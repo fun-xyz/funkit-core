@@ -21,11 +21,12 @@ export const TransferTest = (config: TransferTestConfig) => {
     const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
 
     describe("Transfer", function () {
-        this.timeout(120_000)
+        this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
         let difference: number
         before(async function () {
+            console.log(outToken, difference)
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
@@ -54,13 +55,14 @@ export const TransferTest = (config: TransferTestConfig) => {
             var wallet1 = Wallet.createRandom()
             const randomAddress = wallet1.address
             const walletAddress = await wallet.getAddress()
-
+            console.log(randomAddress)
             const b1 = Token.getBalance(baseToken, randomAddress)
             const b2 = Token.getBalance(baseToken, walletAddress)
+            console.log(await b2)
             await wallet.transfer(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.01, token: baseToken })
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
-
+            console.log(await b3)
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
 

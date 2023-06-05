@@ -142,6 +142,7 @@ export class Chain {
 
     async sendOpToBundler(userOp: UserOperation): Promise<string> {
         await this.init()
+        console.log(userOp)
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
@@ -167,9 +168,9 @@ export class Chain {
         if (!(preVerificationGas || verificationGas || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
-
-        preVerificationGas = preVerificationGas.mul(2)
-        const verificationGasLimit = verificationGas.add(100_000)
+        callGasLimit = callGasLimit.mul(10)
+        preVerificationGas = preVerificationGas.mul(10)
+        const verificationGasLimit = verificationGas.add(1000_000)
         if (partialOp.initCode !== "0x") {
             callGasLimit = BigNumber.from(5e6)
         }
