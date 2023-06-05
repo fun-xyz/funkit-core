@@ -1,8 +1,5 @@
-import * as dotenv from "dotenv"
 import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSponsor"
-dotenv.config()
 
-const PREFUND = process.env.PREFUND === "true" ? true : false
 const config: TokenSponsorTestConfig = {
     chainId: 42161,
     inToken: "eth",
@@ -10,7 +7,7 @@ const config: TokenSponsorTestConfig = {
     paymasterToken: "0x53589543A64408AA03ba709EFCD1a7f03AA6880D",
     baseTokenStakeAmt: 0.02,
     paymasterTokenStakeAmt: 1000,
-    prefund: PREFUND,
+    prefund: true,
     swapAmount: 0.00001,
     stake: true,
     walletIndex: 0,

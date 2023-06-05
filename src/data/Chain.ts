@@ -2,6 +2,7 @@ import fs from "fs"
 import path from "path"
 import { JsonRpcProvider } from "@ethersproject/providers"
 import { BigNumber, Contract, Wallet } from "ethers"
+import { getAwsSecret } from "tests/getAWSSecrets"
 import { UserOperation } from "./UserOp"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { ENTRYPOINT_ABI } from "../common/constants"
@@ -148,7 +149,7 @@ export class Chain {
     async sendOpToEntryPoint(userOp: UserOperation): Promise<string> {
         const entrypoint = ENTRYPOINT_ABI
         const provider = await this.getProvider()
-        const signer = new Wallet(process.env.GOERLI_FUNDER_PRIVATE_KEY!, provider)
+        const signer = new Wallet(await getAwsSecret("PrivateKeys", "GOERLI_FUNDER_PRIVATE_KEY"), provider)
         const entrypointContract = new Contract(this.addresses.entryPointAddress, entrypoint, signer)
         await entrypointContract.handleOps([userOp], signer.address)
         return ""

@@ -1,12 +1,10 @@
-import * as dotenv from "dotenv"
-import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
-dotenv.config()
 
-const PREFUND = process.env.PREFUND === "true" ? true : false
+import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
+
 const config: TransferTestConfig = {
     chainId: 5,
     outToken: "dai",
     baseToken: "eth",
-    prefund: PREFUND
+    prefund: true
 }
 TransferTest(config)

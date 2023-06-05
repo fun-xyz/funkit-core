@@ -1,14 +1,11 @@
 import { BigNumber } from "@ethersproject/bignumber"
 import { expect } from "chai"
-import * as dotenv from "dotenv"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getAWSSecrets"
-dotenv.config()
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 const chainId = 5
-const authPrivateKey = process.env.WALLET_PRIVATE_KEY!
 
 describe("GetAssets", function () {
     this.timeout(120_000)
@@ -21,7 +18,7 @@ describe("GetAssets", function () {
             apiKey: apiKey
         }
         await configureEnvironment(options)
-        auth = new Eoa({ privateKey: authPrivateKey })
+        auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
 
         wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 14142 })
     })
