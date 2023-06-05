@@ -4,11 +4,10 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 export interface SwapTestConfig {
     chainId: number
-    authPrivateKey: string
     inToken: string
     outToken: string
     baseToken: string
@@ -18,7 +17,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
+    const { chainId, inToken, outToken, baseToken, prefund } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
@@ -31,7 +30,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {

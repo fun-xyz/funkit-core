@@ -1,6 +1,6 @@
 import fs from "fs"
 import path from "path"
-import { getTestApiKey } from "./getTestApiKey"
+import { getTestApiKey } from "./getAWSSecrets"
 import { getContractAbi } from "../src/apis/ContractApis"
 import { GlobalEnvOption, configureEnvironment } from "../src/config"
 

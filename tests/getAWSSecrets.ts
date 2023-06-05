@@ -35,3 +35,31 @@ export async function getTestApiKey(): Promise<string> {
     const apiKey = secret.apigw
     return apiKey
 }
+
+export async function getAwsSecret(secretId: string, secretName: string): Promise<string> {
+    const client = new SecretsManagerClient({
+        region: REGION
+    })
+
+    let response
+
+    try {
+        response = await retry(
+            () =>
+                client.send(
+                    new GetSecretValueCommand({
+                        SecretId: secretId,
+                        VersionStage: VERSION_STAGE
+                    })
+                ),
+            DEFAULT_RETRY_OPTIONS
+        )
+    } catch (error) {
+        // For a list of exceptions thrown, see
+        // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        console.error("Error retrieving API key:", error)
+        return ""
+    }
+    const secret = JSON.parse(response.SecretString)
+    return secret[`${secretName}`]
+}
