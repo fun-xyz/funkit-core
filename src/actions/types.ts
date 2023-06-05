@@ -83,16 +83,16 @@ export interface OneInchSwapParams extends SwapParam {
 }
 
 export type OneInchSwapReturn = {
-    approveTx: TransactionData
+    approveTx?: TransactionData
     swapTx: TransactionData
 }
 
-export interface UniSwapParams extends SwapParam {
+export interface UniswapParams extends SwapParam {
     poolFee?: UniSwapPoolFeeOptions
     percentDecimal?: number
 }
 
-export type SwapParams = OneInchSwapParams | UniSwapParams
+export type SwapParams = OneInchSwapParams | UniswapParams
 
 export type FirstClassActionResult = {
     data: TransactionData

@@ -70,7 +70,13 @@ export class Chain {
 
     async loadBundler() {
         if (!this.bundler) {
-            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses!.entryPointAddress)
+            if (!this.id || !this.bundlerUrl || !this.addresses || !this.addresses.entryPointAddress) {
+                const currentLocation = "Chain.loadBundler"
+                const helperMainMessage = "{id,bundlerUrl,addresses, or addresses.entryPointAddress} are missing"
+                const helper = new Helper(`${currentLocation} was given these parameters`, this, helperMainMessage)
+                throw new MissingParameterError(currentLocation, helper)
+            }
+            this.bundler = new Bundler(this.id, this.bundlerUrl, this.addresses.entryPointAddress)
             await this.bundler.validateChainId()
         }
     }
@@ -183,7 +189,7 @@ export class Chain {
         }
 
         Object.keys(modifications).forEach((key) => {
-            const newAddress = this.addresses![modifications[key]]
+            const newAddress = this.addresses[modifications[key]]
             if (newAddress) {
                 this.addresses![key] = newAddress
             }

@@ -2,7 +2,7 @@ import { BigNumber, ethers } from "ethers"
 import { Interface, parseEther } from "ethers/lib/utils"
 import { approveAndExec } from "./ApproveAndExec"
 import { ActionData, ActionFunction, FinishUnstakeParams, FirstClassActionResult, RequestUnstakeParams, StakeParams } from "./types"
-import { WITHDRAW_QUEUE_ABI } from "../common"
+import { TransactionData, WITHDRAW_QUEUE_ABI } from "../common"
 import { Token } from "../data"
 import { Helper, StatusError } from "../errors"
 
@@ -37,13 +37,13 @@ export const _requestUnstake = (params: RequestUnstakeParams): ActionFunction =>
             throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
         }
         const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
-        const approveData = await Token.approve(steth, withdrawalQueue, approveAmount, { chain: actionData.chain })
+        const approveData: TransactionData = await Token.approve(steth, withdrawalQueue, approveAmount, { chain: actionData.chain })
         // Request Withdrawal
         const requestWithdrawal = withdrawQueueInterface.encodeFunctionData("requestWithdrawals", [
             params.amounts.map((amount) => parseEther(amount.toString())),
             params.recipient ? params.recipient : await wallet.getAddress()
         ])
-        const requestWithdrawalData = { to: withdrawalQueue, data: requestWithdrawal, value: BigNumber.from(0) }
+        const requestWithdrawalData: TransactionData = { to: withdrawalQueue, data: requestWithdrawal, value: BigNumber.from(0) }
         const approveAndExecData = { approve: approveData, exec: requestWithdrawalData }
         return await approveAndExec(approveAndExecData)(actionData)
     }

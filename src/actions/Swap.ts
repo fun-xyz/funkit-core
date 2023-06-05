@@ -7,10 +7,10 @@ import {
     OneInchSwapParams,
     OneInchSwapReturn,
     SwapParams,
-    UniSwapParams,
-    UniSwapPoolFeeOptions
+    UniSwapPoolFeeOptions,
+    UniswapParams
 } from "./types"
-import { APPROVE_AND_SWAP_ABI } from "../common"
+import { APPROVE_AND_SWAP_ABI, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { Token } from "../data/Token"
 import { sendRequest } from "../utils"
@@ -41,7 +41,7 @@ export const _swap = (params: SwapParams): ActionFunction => {
     }
 }
 
-const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption): ActionFunction => {
+const _uniswapSwap = (params: UniswapParams, address: string, options: EnvOption): ActionFunction => {
     return async (actionData: ActionData): Promise<FirstClassActionResult> => {
         const provider = await actionData.chain.getProvider()
 
@@ -98,7 +98,8 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
 }
 
 const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption): Promise<OneInchSwapReturn> => {
-    let approveTx
+    let approveTx: TransactionData | undefined
+
     const inToken = new Token(swapParams.in)
     const outToken = new Token(swapParams.out)
     if (inToken.isNative) {
@@ -113,13 +114,13 @@ const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, option
     return { approveTx, swapTx }
 }
 
-const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption) => {
+const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption): Promise<TransactionData> => {
     const inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, options)
     tokenAddress = await Token.getAddress(tokenAddress, options)
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
     const url = await oneInchAPIRequest("/approve/transaction", amount ? { tokenAddress, amount } : { tokenAddress })
     const transaction = await sendRequest(url, "GET", "")
-    return transaction
+    return transaction as TransactionData
 }
 
 const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: string, options: EnvOption) => {

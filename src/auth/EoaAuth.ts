@@ -7,6 +7,7 @@ import { storeEVMCall } from "../apis"
 import { TransactionData } from "../common/"
 import { EnvOption } from "../config"
 import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
+import { Helper, MissingParameterError } from "../errors"
 import { verifyPrivateKey } from "../utils/DataUtils"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
@@ -84,14 +85,20 @@ export class Eoa extends Auth {
             txData = await txData(options)
         }
         const { to, value, data, chain } = txData as TransactionData
-        const provider = await chain!.getProvider()
+        if (!chain || !chain.id) {
+            const currentLocation = "Eoa.sendTx"
+            const helperMainMessage = "Chain object is missing or incorrect"
+            const helper = new Helper(`${currentLocation} was given these parameters`, txData, helperMainMessage)
+            throw new MissingParameterError(currentLocation, helper)
+        }
+        const provider = await chain.getProvider()
         let eoa = this.signer!
         if (!eoa.provider) {
             eoa = this.signer!.connect(provider!)
         }
         let tx
         if ((gasSpecificChain as any)[chain!.id!]) {
-            tx = await eoa.sendTransaction({ to, value, data, gasPrice: (gasSpecificChain as any)[chain!.id!] })
+            tx = await eoa.sendTransaction({ to, value, data, gasPrice: (gasSpecificChain as any)[chain.id] })
         } else {
             tx = await eoa.sendTransaction({ to, value, data })
         }

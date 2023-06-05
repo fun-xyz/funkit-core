@@ -86,10 +86,10 @@ export abstract class FirstClassActions {
         if (await isContract(address)) {
             throw new Error("Wallet already exists as contract.")
         } else {
-            const chain = await getChainFromData(options.chain!)
+            const chain = await getChainFromData(options.chain)
             return await this.execRawTx(
                 auth,
-                { to: address, data: "0x", nonce: 0, value: BigNumber.from(0), chainId: Number(chain.id!), gasLimit: BigNumber.from(0) },
+                { to: address, data: "0x", nonce: 0, value: BigNumber.from(0), chainId: Number(chain.id), gasLimit: BigNumber.from(0) },
                 options,
                 estimate
             )

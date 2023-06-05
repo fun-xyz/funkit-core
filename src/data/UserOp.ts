@@ -35,7 +35,7 @@ export class UserOp {
         let { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
         const mul = this.op.paymasterAndData !== "0x" ? 3 : 1
         maxFeePerGas = BigNumber.from(maxFeePerGas)
-        preVerificationGas = BigNumber.from(preVerificationGas)
+        preVerificationGas = BigNumber.from(preVerificationGas ?? 0)
         callGasLimit = BigNumber.from(callGasLimit)
         verificationGasLimit = BigNumber.from(verificationGasLimit)
         const requiredGas = callGasLimit.add(verificationGasLimit.mul(mul)).add(preVerificationGas!)
