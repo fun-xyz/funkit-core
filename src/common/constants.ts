@@ -32,7 +32,6 @@ switch (process.env.NODE_ENV) {
         API_URL = "https://api.fun.xyz"
 }
 
-API_URL = LOCAL_API_URL
 export { API_URL }
 
 export const DASHBOARD_API_URL = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
