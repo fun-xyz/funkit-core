@@ -99,9 +99,7 @@ export async function getModuleInfo(moduleName: string, chainId: string): Promis
 
 export async function getPaymasterAddress(chainId: string): Promise<any> {
     const {
-        moduleAddresses: {
-            paymaster: { paymasterAddress }
-        }
+        moduleAddresses: { paymaster }
     } = await getChainInfo(chainId)
-    return paymasterAddress
+    return paymaster
 }
