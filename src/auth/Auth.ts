@@ -1,9 +1,8 @@
 import { TransactionReceipt } from "@ethersproject/providers"
 import { BigNumber, Contract, Signer } from "ethers"
 import { BytesLike } from "ethers/lib/utils"
-import { ENTRYPOINT_ABI } from "../common"
-import { TransactionData } from "../common/types/TransactionData"
-import { EnvOption } from "../config/Config"
+import { ENTRYPOINT_ABI, TransactionData } from "../common"
+import { EnvOption } from "../config"
 import { Chain, UserOp, getChainFromData } from "../data"
 
 export abstract class Auth {

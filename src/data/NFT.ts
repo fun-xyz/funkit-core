@@ -1,13 +1,9 @@
 import { Contract, ethers } from "ethers"
-import { Chain, getChainFromData } from "./Chain"
-import erc721_abi from "../abis/ERC721.json"
+import { getChainFromData } from "./Chain"
+import { ERC_721_ABI, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { MissingParameterError } from "../errors"
 
-type TransactionData = {
-    data: ethers.PopulatedTransaction
-    chain: Chain
-}
 export class NFT {
     address = ""
     contract?: Contract
@@ -45,7 +41,7 @@ export class NFT {
         if (!this.contract) {
             const provider = await chain.getProvider()
             const addr = await this.getAddress()
-            this.contract = new ethers.Contract(addr, erc721_abi, provider)
+            this.contract = new ethers.Contract(addr, ERC_721_ABI, provider)
         }
         return this.contract
     }

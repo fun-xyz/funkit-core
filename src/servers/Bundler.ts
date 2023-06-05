@@ -2,16 +2,11 @@ import { JsonRpcProvider } from "@ethersproject/providers"
 import { BigNumber } from "ethers"
 import { resolveProperties } from "ethers/lib/utils"
 import { estimateUserOpGas, getChainId, sendUserOpToBundler, validateChainId } from "../apis"
+import { EstimateGasResult } from "../common"
 import { LOCAL_FORK_CHAIN_ID } from "../common/constants"
-import { UserOperation } from "../data/UserOp"
+import { UserOperation } from "../data/"
 import { Helper, NoServerConnectionError } from "../errors"
 import { deepHexlify } from "../utils/DataUtils"
-
-export interface EstimateUserOpGasResult {
-    callGasLimit: BigNumber
-    verificationGas: BigNumber
-    preVerificationGas: BigNumber
-}
 
 export class Bundler {
     chainId: string
@@ -47,7 +42,7 @@ export class Bundler {
         return response
     }
 
-    async estimateUserOpGas(userOp: UserOperation): Promise<EstimateUserOpGasResult> {
+    async estimateUserOpGas(userOp: UserOperation): Promise<EstimateGasResult> {
         const hexifiedUserOp = deepHexlify(await resolveProperties(userOp))
         const res = await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId, this.userOpJsonRpcProvider)
         if (!(res.preVerificationGas || res.verificationGas || res.callGasLimit)) {
@@ -55,7 +50,7 @@ export class Bundler {
         }
         return {
             callGasLimit: BigNumber.from(res.callGasLimit),
-            verificationGas: BigNumber.from(res.verificationGas),
+            verificationGasLimit: BigNumber.from(res.verificationGas),
             preVerificationGas: BigNumber.from(res.preVerificationGas)
         }
     }

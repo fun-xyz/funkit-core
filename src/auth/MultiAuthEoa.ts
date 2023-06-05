@@ -1,7 +1,8 @@
 import { Web3Provider } from "@ethersproject/providers"
 import { Signer } from "ethers"
 import { v4 as uuidv4 } from "uuid"
-import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { Eoa } from "./EoaAuth"
+import { EoaAuthInput } from "./types"
 import { Helper, ParameterFormatError } from "../errors"
 import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
 

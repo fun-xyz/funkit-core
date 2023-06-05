@@ -1,54 +1,6 @@
 import { constants } from "ethers"
 import { defaultAbiCoder } from "ethers/lib/utils"
-
-export interface FactoryCreateAccountParams {
-    initializerCallData: string
-    implementation: string
-    data: string
-}
-
-export interface InitCodeParams {
-    entryPointAddress: string
-    factoryAddress: string
-    implementationAddress?: string
-    loginData: LoginData
-    verificationData: string[]
-    verificationAddresses: string[]
-}
-
-/**
- * @param loginType 0 = EOA, 1 = Twitter
- * @param newFunWalletOwner *social login* Address of the new FunWallet owner, used to stop frontrunning
- * @param index *social login* Hashed with socialHandle and loginType to generate salt
- * @param socialHandle *social login*
- * @param salt *EOA login* Hashed with loginType to generate salt
- */
-
-export interface LoginData {
-    loginType?: number
-    newFunWalletOwner?: string
-    index?: number
-    socialHandle?: string
-    salt?: string
-}
-
-export interface WalletInitialzeParams {
-    _newEntryPoint: string
-    validationInitData: string
-}
-
-export interface WalletSignature {
-    authType?: number
-    userId: string
-    signature: string
-    extraData?: string
-}
-
-export interface CallInfo {
-    to: string
-    data?: string | "0x"
-    value?: number | 0
-}
+import { LoginData, WalletSignature } from "./types"
 
 export function encodeLoginData(data: LoginData): string {
     let { loginType, newFunWalletOwner, index, socialHandle, salt } = data

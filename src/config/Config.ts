@@ -1,30 +1,7 @@
+import { EnvOption, GlobalEnvOption } from "./types"
 import { getOrgInfo } from "../apis"
 import { OPTION_TEST_API_KEY } from "../common/constants"
-import { Chain, getChainFromData } from "../data"
-
-export interface EnvOption {
-    chain?: string | Chain
-    gasSponsor?: {
-        sponsorAddress?: string
-        token?: string
-    }
-    fee?: {
-        token?: string
-        amount?: number
-        gasPercent?: number
-        recipient?: string
-        oracle?: string
-    }
-    sendTxLater?: boolean
-}
-
-export interface GlobalEnvOption extends EnvOption {
-    apiKey?: string
-    orgInfo?: {
-        name?: string
-        id?: string
-    }
-}
+import { getChainFromData } from "../data"
 
 export function parseOptions(option: EnvOption) {
     const globalOptions = (globalThis as any).globalEnvOption
@@ -36,7 +13,7 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     global.globalEnvOption = {}
     const globalEnvOption = global.globalEnvOption as GlobalEnvOption
     if (!option.chain && !globalEnvOption.chain) {
-        globalEnvOption.chain = await getChainFromData(5)
+        globalEnvOption.chain = await getChainFromData("5")
     } else {
         globalEnvOption.chain = option.chain ? await getChainFromData(option.chain) : globalEnvOption.chain
     }
