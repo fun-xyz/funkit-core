@@ -5,11 +5,10 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getAWSSecrets"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 export interface TransferTestConfig {
     chainId: number
-    authPrivateKey: string
     outToken: string
     baseToken: string
     prefund: boolean
@@ -18,7 +17,7 @@ export interface TransferTestConfig {
 }
 
 export const TransferTest = (config: TransferTestConfig) => {
-    const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
+    const { chainId, outToken, baseToken, prefund } = config
 
     describe("Transfer", function () {
         this.timeout(120_000)
@@ -33,7 +32,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 gasSponsor: undefined
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) await fundWallet(auth, wallet, 0.7)
