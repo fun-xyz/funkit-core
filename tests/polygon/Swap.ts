@@ -7,7 +7,6 @@ const USDC_POLYGON = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
 const PREFUND = process.env.PREFUND === "true" ? true : false
 const config: SwapTestConfig = {
     chainId: 137,
-    authPrivateKey: process.env.WALLET_PRIVATE_KEY_2!,
     inToken: DAI_POLYGON,
     outToken: USDC_POLYGON,
     baseToken: "matic",

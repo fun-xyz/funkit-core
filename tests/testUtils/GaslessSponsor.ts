@@ -5,12 +5,10 @@ import { Token } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getAWSSecrets"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
-    authPrivateKey: string
-    funderPrivateKey: string
     inToken: string
     outToken: string
     stakeAmount: number
@@ -21,14 +19,15 @@ export interface GaslessSponsorTestConfig {
 }
 
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
-    const auth = new Eoa({ privateKey: config.authPrivateKey })
     describe("GaslessSponsor", function () {
         this.timeout(250_000)
-        const funder = new Eoa({ privateKey: config.funderPrivateKey })
-
+        let funder: Eoa
+        let auth: Eoa
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId.toString(),
