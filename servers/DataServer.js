@@ -138,12 +138,19 @@ class DataServer {
             return r
 
         } else {
-            return await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
+            
+            let returnVal = await this.sendPostRequest(APIURL, "get-chain-info", body).then((r) => {
                 if (!r.data) {
                     throw new Error(JSON.stringify(r))
                 }
                 return r.data
             })
+            returnVal.aaData.factoryAddress = "0x4fdffd240962f560bd3ca859a60034baa51ce3b2"
+            returnVal.aaData.verificationAddress="0x8273fceed934c9dd7ff57d883429cc0026a4fee2"
+            returnVal.moduleAddresses.paymaster.gaslessSponsorAddress = "0xBe0715556f98c1EcCd020a593068692ddbA97cc1"
+            returnVal.moduleAddresses.paymaster.tokenSponsorAddress="0x068Df28a87DC1dD55730b7679e2e1e3E93d463dC"
+            console.log(returnVal)
+            return returnVal
         }
     }
 
