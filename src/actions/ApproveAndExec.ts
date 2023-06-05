@@ -1,41 +1,23 @@
-import { BigNumber, constants } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { ActionData } from "./FirstClass"
-import { APPROVE_AND_EXEC_ABI } from "../common"
+import { ActionData, ActionFunction, ApproveAndExecParams, FirstClassActionResult } from "./types"
+import { APPROVE_AND_EXEC_ABI } from "../common/constants"
 
 const approveAndExecInterface = new Interface(APPROVE_AND_EXEC_ABI)
 const errorData = {
     location: "actions.approveAndExec"
 }
 
-export interface ApproveParams {
-    to: string
-    data: string
+export const approveAndExecToCalldata = (params: ApproveAndExecParams): string => {
+    const { to: dest, value, data: executeData } = params.exec
+    const { to: token, data: approveData } = params.approve
+    return approveAndExecInterface.encodeFunctionData("approveAndExecute", [dest, value, executeData, token, approveData])
 }
 
-export interface ExecParams {
-    to: string
-    value: BigNumber
-    data: string
-}
-
-const initData = approveAndExecInterface.encodeFunctionData("init", [constants.HashZero])
-
-export interface ApproveAndExecParams {
-    approve: ApproveParams
-    exec: ExecParams
-}
-
-export const approveAndExec = (params: ApproveAndExecParams) => {
-    return async (actionData: ActionData) => {
+export const approveAndExec = (params: ApproveAndExecParams): ActionFunction => {
+    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
         const approveAndExecAddress = await actionData.chain.getAddress("approveAndExecAddress")
-        const dest = params.exec.to
-        const value = params.exec.value
-        const executeData = params.exec.data
-        const token = params.approve.to
-        const approveData = params.approve.data
-        const calldata = approveAndExecInterface.encodeFunctionData("approveAndExecute", [dest, value, executeData, token, approveData])
-        const txData = { to: approveAndExecAddress, data: [initData, calldata], initAndExec: true }
+        const calldata = approveAndExecToCalldata(params)
+        const txData = { to: approveAndExecAddress, data: calldata }
         return { data: txData, errorData }
     }
 }

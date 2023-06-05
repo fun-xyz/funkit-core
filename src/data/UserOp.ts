@@ -1,24 +1,11 @@
 import { BigNumber, Contract } from "ethers"
 import { Chain, getChainFromData } from "./Chain"
-import { WalletSignature, encodeWalletSignature } from "./SolidityData"
+import { encodeWalletSignature } from "./SolidityData"
+import { UserOperation, WalletSignature } from "./types"
 import { Auth } from "../auth/Auth"
 import { ENTRYPOINT_ABI } from "../common/constants"
-import { EnvOption } from "../config/Config"
+import { EnvOption } from "../config"
 import { calcPreVerificationGas } from "../utils"
-
-export interface UserOperation {
-    sender: string
-    nonce: BigNumber
-    initCode?: string | "0x"
-    callData: string
-    callGasLimit: BigNumber
-    verificationGasLimit: BigNumber
-    preVerificationGas?: BigNumber
-    maxFeePerGas: BigNumber
-    maxPriorityFeePerGas: BigNumber
-    paymasterAndData?: string | "0x"
-    signature?: string | "0x"
-}
 
 export class UserOp {
     op: UserOperation
@@ -45,8 +32,12 @@ export class UserOp {
     }
 
     getMaxTxCost() {
-        const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
+        let { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
         const mul = this.op.paymasterAndData !== "0x" ? 3 : 1
+        maxFeePerGas = BigNumber.from(maxFeePerGas)
+        preVerificationGas = BigNumber.from(preVerificationGas ?? 0)
+        callGasLimit = BigNumber.from(callGasLimit)
+        verificationGasLimit = BigNumber.from(verificationGasLimit)
         const requiredGas = callGasLimit.add(verificationGasLimit.mul(mul)).add(preVerificationGas!)
         return maxFeePerGas.mul(requiredGas)
     }

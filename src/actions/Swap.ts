@@ -1,15 +1,20 @@
-import { Contract, constants } from "ethers"
-import { Interface } from "ethers/lib/utils"
+import { Contract } from "ethers"
 import { approveAndExec } from "./ApproveAndExec"
-import { ActionData } from "./FirstClass"
-import { APPROVE_AND_SWAP_ABI } from "../common"
+import {
+    ActionData,
+    ActionFunction,
+    FirstClassActionResult,
+    OneInchSwapParams,
+    OneInchSwapReturn,
+    SwapParams,
+    UniSwapPoolFeeOptions,
+    UniswapParams
+} from "./types"
+import { APPROVE_AND_SWAP_ABI, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { Token } from "../data/Token"
 import { sendRequest } from "../utils"
 import { fromReadableAmount, oneInchAPIRequest, swapExec } from "../utils/SwapUtils"
-
-const approveAndSwapInterface = new Interface(APPROVE_AND_SWAP_ABI)
-const initData = approveAndSwapInterface.encodeFunctionData("init", [constants.HashZero])
 
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 
@@ -20,35 +25,9 @@ const errorData = {
 
 const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
 
-export enum UniSwapPoolFeeOptions {
-    lowest = "lowest",
-    low = "low",
-    medium = "medium",
-    high = "high"
-}
-
-export interface SwapParams {
-    in: string
-    out: string
-    amount: number
-    slippage?: number
-    returnAddress?: string
-}
-
-export interface OneInchSwapParams extends SwapParams {
-    disableEstimate?: boolean
-    allowPartialFill?: boolean
-}
-
-export interface UniSwapParams extends SwapParams {
-    poolFee?: UniSwapPoolFeeOptions
-    percentDecimal?: number
-}
-
-export const _swap = (params: SwapParams) => {
-    return async (actionData: ActionData) => {
+export const _swap = (params: SwapParams): ActionFunction => {
+    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
         params.slippage = params.slippage ? params.slippage : 1
-
         const address = await actionData.wallet.getAddress()
         if (oneInchSupported.includes(parseInt(actionData.chain.id!))) {
             const data = await _1inchSwap(params, address, actionData.options)
@@ -62,8 +41,8 @@ export const _swap = (params: SwapParams) => {
     }
 }
 
-const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption) => {
-    return async (actionData: ActionData) => {
+const _uniswapSwap = (params: UniswapParams, address: string, options: EnvOption): ActionFunction => {
+    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
         const provider = await actionData.chain.getProvider()
 
         const tokenSwapAddress = await actionData.chain.getAddress("tokenSwapAddress")
@@ -113,13 +92,14 @@ const _uniswapSwap = (params: UniSwapParams, address: string, options: EnvOption
         } else {
             swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, univ3router, amount, data)
         }
-        const txData = { to: tokenSwapAddress, data: [initData, swapData.data], initAndExec: true }
+        const txData = { to: tokenSwapAddress, data: swapData.data }
         return { data: txData, errorData }
     }
 }
 
-const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption) => {
-    let approveTx = undefined
+const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, options: EnvOption): Promise<OneInchSwapReturn> => {
+    let approveTx: TransactionData | undefined
+
     const inToken = new Token(swapParams.in)
     const outToken = new Token(swapParams.out)
     if (inToken.isNative) {
@@ -134,13 +114,13 @@ const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, option
     return { approveTx, swapTx }
 }
 
-const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption) => {
+const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption): Promise<TransactionData> => {
     const inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, options)
     tokenAddress = await Token.getAddress(tokenAddress, options)
     const amount = fromReadableAmount(amt, inTokenDecimals).toString()
     const url = await oneInchAPIRequest("/approve/transaction", amount ? { tokenAddress, amount } : { tokenAddress })
     const transaction = await sendRequest(url, "GET", "")
-    return transaction
+    return transaction as TransactionData
 }
 
 const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: string, options: EnvOption) => {

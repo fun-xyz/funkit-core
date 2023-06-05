@@ -1,25 +1,20 @@
 import { BigNumber, Transaction } from "ethers"
-import { FinishUnstakeParams, RequestUnstakeParams, StakeParams, _finishUnstake, _requestUnstake, _stake } from "./Stake"
-import { SwapParams, _swap } from "./Swap"
-import { ApproveParams, TransferParams, _approve, _transfer } from "./Token"
+import { _finishUnstake, _requestUnstake, _stake } from "./Stake"
+import { _swap } from "./Swap"
+import { _approve, _transfer } from "./Token"
+import { ApproveParams, FinishUnstakeParams, RequestUnstakeParams, StakeParams, SwapParams, TransferParams } from "./types"
 import { Auth } from "../auth"
+import { ExecutionReceipt } from "../common/types"
 import { EnvOption } from "../config"
-import { Chain, UserOp, getChainFromData } from "../data"
+import { UserOp, getChainFromData } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { isContract } from "../utils"
-import { FunWallet } from "../wallet"
 
-export interface ActionData {
-    wallet: FunWallet
-    chain: Chain
-    options: EnvOption
+const isRequestUnstakeParams = (input: any) => {
+    return input.amounts !== undefined
 }
-
-export interface ExecutionReceipt {
-    opHash: string
-    txid?: string
-    gasUsed: number
-    gasUSD: number
+const isFinishUnstakeParams = (input: any) => {
+    return input.recipient !== undefined
 }
 
 export abstract class FirstClassActions {
@@ -70,15 +65,9 @@ export abstract class FirstClassActions {
     async unstake(
         auth: Auth,
         input: RequestUnstakeParams | FinishUnstakeParams,
-        options: EnvOption = globalEnvOption,
+        options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp | BigNumber> {
-        const isRequestUnstakeParams = (input: any) => {
-            return input.amounts !== undefined
-        }
-        const isFinishUnstakeParams = (input: any) => {
-            return input.recipient !== undefined
-        }
         if (isRequestUnstakeParams(input)) {
             return await this.execute(auth, _requestUnstake(input as RequestUnstakeParams), options, estimate)
         } else if (isFinishUnstakeParams(input)) {
@@ -100,7 +89,7 @@ export abstract class FirstClassActions {
             const chain = await getChainFromData(options.chain)
             return await this.execRawTx(
                 auth,
-                { to: address, data: "0x", nonce: 0, value: BigNumber.from(0), chainId: Number(chain.id!), gasLimit: BigNumber.from(0) },
+                { to: address, data: "0x", nonce: 0, value: BigNumber.from(0), chainId: Number(chain.id), gasLimit: BigNumber.from(0) },
                 options,
                 estimate
             )

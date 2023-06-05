@@ -1,6 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers"
 import { BytesLike, Signer } from "ethers"
-import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { Eoa } from "./EoaAuth"
+import { EoaAuthInput } from "./types"
 
 export class Web3AuthEoa extends Eoa {
     constructor(authInput: EoaAuthInput) {

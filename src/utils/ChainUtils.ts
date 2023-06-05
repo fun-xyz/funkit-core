@@ -1,3 +1,4 @@
+import { ContractInterface } from "ethers"
 import { Interface, defaultAbiCoder, parseEther } from "ethers/lib/utils"
 import { formatMissingForError, orderParams } from "./DataUtils"
 import { Auth } from "../auth"
@@ -15,8 +16,9 @@ const getFunctionParamOrderFromInterface = (interf: Interface, func: string) => 
     return undefined
 }
 
-export const checkAbi = (abi: any, name: string, location: string, isInternal = false) => {
+export const checkAbi = (abi: ContractInterface, name: string, location: string, isInternal = false) => {
     try {
+        if (abi instanceof Interface) return abi
         return new Interface(abi)
     } catch {
         const helperMainMessage =
