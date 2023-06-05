@@ -1,4 +1,3 @@
-
 import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
 
 const config: TransferTestConfig = {
