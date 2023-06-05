@@ -4,18 +4,17 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 export interface StakeTestConfig {
     chainId: number
-    authPrivateKey: string
     baseToken: string
     prefund: boolean
     steth: string
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
-    const { chainId, authPrivateKey, baseToken, prefund } = config
+    const { chainId, baseToken, prefund } = config
 
     describe("Stake", function () {
         this.timeout(120_000)
@@ -28,7 +27,7 @@ export const StakeTest = (config: StakeTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
             if (prefund) await fundWallet(auth, wallet, 0.002)
         })

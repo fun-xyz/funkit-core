@@ -5,25 +5,25 @@ import { FUN_TESTNET_CHAIN_ID, LOCAL_FORK_CHAIN_ID } from "../../src/common/cons
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { fundWallet, isContract } from "../../src/utils/ChainUtils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 export interface FactoryTestConfig {
     chainId: number
-    authPrivateKey: string
     testCreate?: boolean
     prefundAmt?: number
 }
 
 export const FactoryTest = (config: FactoryTestConfig) => {
-    const { chainId, authPrivateKey } = config
+    const { chainId } = config
 
     describe("Factory", function () {
-        const auth: Eoa = new Eoa({ privateKey: authPrivateKey })
+        let auth: Eoa
         let wallet: FunWallet
         let uniqueId: string
 
         this.timeout(100_000)
         before(async function () {
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),

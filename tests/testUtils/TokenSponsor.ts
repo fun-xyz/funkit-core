@@ -5,12 +5,10 @@ import { Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 export interface TokenSponsorTestConfig {
     chainId: number
-    authPrivateKey: string
-    funderPrivateKey: string
     inToken: string
     outToken: string
     paymasterToken: string
@@ -28,11 +26,13 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
     describe("TokenSponsor", function () {
         this.timeout(300_000)
-        const auth = new Eoa({ privateKey: config.authPrivateKey })
-        const funder = new Eoa({ privateKey: config.funderPrivateKey })
+        let auth: Eoa
+        let funder: Eoa
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
+            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId.toString(),
@@ -124,7 +124,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Blacklist Mode Approved", async () => {
             const gasSponsor = new TokenSponsor()
-            const funder = new Eoa({ privateKey: config.funderPrivateKey })
+            const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             const funderAddress = await funder.getUniqueId()
 
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
