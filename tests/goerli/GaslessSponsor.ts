@@ -9,7 +9,7 @@ const config: GaslessSponsorTestConfig = {
     funderPrivateKey: process.env.WALLET_PRIVATE_KEY_2!,
     inToken: "eth",
     outToken: "usdc",
-    stakeAmount: 1,
+    stakeAmount: 0.0005,
     prefund: PREFUND
 }
 GaslessSponsorTest(config)

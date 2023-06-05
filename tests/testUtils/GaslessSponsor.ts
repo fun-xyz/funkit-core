@@ -40,18 +40,19 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex ? config.walletIndex : 129856341 })
             wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 12341238465411 })
             if (config.prefund) {
-                await fundWallet(funder, wallet, 0.5)
-                await fundWallet(auth, wallet1, 0.5)
+                await fundWallet(funder, wallet, config.stakeAmount / 8)
+                await fundWallet(auth, wallet1, config.stakeAmount / 8)
             }
             const funderAddress = await funder.getUniqueId()
             await wallet.swap(auth, {
                 in: config.inToken,
-                amount: config.amount ? config.amount : 0.01,
+                amount: config.amount ? config.amount : config.stakeAmount / 4,
                 out: config.outToken,
                 returnAddress: funderAddress
             })
 
             await configureEnvironment({
+                ...options,
                 gasSponsor: {
                     sponsorAddress: funderAddress
                 }
@@ -59,7 +60,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const gasSponsor = new GaslessSponsor()
 
             const depositInfo1S = await gasSponsor.getBalance(funderAddress)
-            const stake = await gasSponsor.stake(funderAddress, config.stakeAmount)
+            const stake = await gasSponsor.stake(funderAddress, config.stakeAmount / 2)
             await funder.sendTx(stake)
             const depositInfo1E = await gasSponsor.getBalance(funderAddress)
 
