@@ -4,16 +4,15 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { NFT } from "../../src/data/NFT"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getAWSSecrets"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 export interface NFTTestConfig {
     chainId: number
-    authPrivateKey: string
     baseToken: string
     prefund: boolean
     nftAddress: string
 }
 export const NFTTest = (config: NFTTestConfig) => {
-    const { chainId, authPrivateKey, prefund, nftAddress } = config
+    const { chainId, prefund, nftAddress } = config
 
     describe("NFT Tests", function () {
         this.timeout(120_000)
@@ -27,7 +26,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
             wallet2 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811341 })
             if (prefund) {
