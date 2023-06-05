@@ -4,7 +4,7 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { NFT } from "../../src/data/NFT"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getTestApiKey } from "../getAWSSecrets"
 export interface NFTTestConfig {
     chainId: number
     authPrivateKey: string

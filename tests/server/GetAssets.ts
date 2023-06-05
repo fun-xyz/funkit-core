@@ -4,7 +4,7 @@ import * as dotenv from "dotenv"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getTestApiKey } from "../getAWSSecrets"
 dotenv.config()
 
 const chainId = 5

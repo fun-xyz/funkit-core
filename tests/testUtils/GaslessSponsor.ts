@@ -5,7 +5,7 @@ import { Token } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getTestApiKey } from "../getAWSSecrets"
 
 export interface GaslessSponsorTestConfig {
     chainId: number

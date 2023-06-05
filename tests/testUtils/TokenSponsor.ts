@@ -5,7 +5,7 @@ import { Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getTestApiKey } from "../getAWSSecrets"
 
 export interface TokenSponsorTestConfig {
     chainId: number
