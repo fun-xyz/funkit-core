@@ -1,4 +1,4 @@
-import { BigNumber, Contract } from "ethers"
+import { BigNumber, Contract, ContractInterface } from "ethers"
 import { Interface } from "ethers/lib/utils"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
@@ -6,15 +6,19 @@ import { getChainFromData } from "../data"
 export abstract class Sponsor {
     sponsorAddress: string
     interface: Interface
-    abi: any
+    abi: ContractInterface
     name: string
     paymasterAddress?: string
     chainId?: string
     contract?: Contract
 
-    constructor(options: EnvOption = (globalThis as any).globalEnvOption, abi: any, name: string) {
+    constructor(options: EnvOption = (globalThis as any).globalEnvOption, abi: ContractInterface, name: string) {
         this.sponsorAddress = options.gasSponsor!.sponsorAddress!
-        this.interface = new Interface(abi)
+        if (abi instanceof Interface) {
+            this.interface = abi
+        } else {
+            this.interface = new Interface(abi)
+        }
         this.abi = abi
         this.name = name
     }
@@ -39,12 +43,12 @@ export abstract class Sponsor {
         return this.contract
     }
 
-    async encode(data: any, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const to = await this.getPaymasterAddress(options)
         return { to, data, chain: options.chain }
     }
 
-    async encodeValue(data: any, value: BigNumber, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async encodeValue(data: string, value: BigNumber, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const to = await this.getPaymasterAddress(options)
         return { to, value, data, chain: options.chain }
     }

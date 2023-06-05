@@ -1,7 +1,8 @@
 import { BigNumber, constants } from "ethers"
-import { ExecutionReceipt, FirstClassActions } from "../actions"
+import { ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
+import { ExecutionReceipt, TransactionData } from "../common"
 import { FACTORY_ABI, WALLET_ABI } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
@@ -50,14 +51,14 @@ export class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: Function, txOptions: EnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         const actionData = {
             wallet: this,
             chain,
             txOptions
         }
-        const { data, optionalParams } = await transactionFunc(actionData)
+        const { data } = await transactionFunc(actionData)
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
@@ -76,12 +77,19 @@ export class FunWallet extends FirstClassActions {
             }
         }
 
-        const partialOp = { callData, paymasterAndData, sender, maxFeePerGas, maxPriorityFeePerGas, initCode, ...optionalParams }
+        const partialOp = {
+            callData,
+            paymasterAndData,
+            sender,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxPriorityFeePerGas!,
+            initCode
+        }
         const nonce = await auth.getNonce(partialOp.sender)
         return { ...partialOp, nonce }
     }
 
-    async _getCallData(onChainDataManager: WalletOnChainManager, data: any, auth: Auth, options: EnvOption) {
+    async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
         const fee = { ...options.fee }
         if (options.fee) {
             if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
@@ -136,9 +144,8 @@ export class FunWallet extends FirstClassActions {
             }
             fee.oracle = await onChainDataManager.chain.getAddress("feeOracle")
         }
-        data = { ...data, ...fee }
 
-        return this.abiManager.encodeCall(data)
+        return this.abiManager.encodeCall({ ...data, ...fee })
     }
 
     /**
@@ -151,7 +158,7 @@ export class FunWallet extends FirstClassActions {
      */
     async execute(
         auth: Auth,
-        transactionFunc: Function,
+        transactionFunc: ActionFunction,
         txOptions: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
     ): Promise<ExecutionReceipt | UserOp | BigNumber> {
@@ -175,17 +182,22 @@ export class FunWallet extends FirstClassActions {
      * @param {Options} txOptions Options for the transaction
      * @returns
      */
-    async estimateGas(auth: Auth, transactionFunc: Function, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
+    estimateGas = async (
+        auth: Auth,
+        transactionFunc: ActionFunction,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOp> => {
         const chain = await getChainFromData(txOptions.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
         const signature = await auth.getEstimateGasSignature()
-        const res = await chain.estimateOpGas({
+        const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
-            preVerificationGas: 0,
-            callGasLimit: 0,
-            verificationGasLimit: 10e6
-        })
+            preVerificationGas: BigNumber.from(0),
+            callGasLimit: BigNumber.from(0),
+            verificationGasLimit: BigNumber.from(10e6)
+        }
+        const res = await chain.estimateOpGas(estimateOp)
 
         return new UserOp({
             ...partialOp,
@@ -233,7 +245,7 @@ export class FunWallet extends FirstClassActions {
     static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
         const uniqueId = await getUniqueId(authId)
-        const chainObj = await getChainFromData(chain)
+        const chainObj = await getChainFromData(chain.toString())
         const walletIdentifer = new WalletIdentifier(uniqueId, index)
         const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
         return await walletOnChainManager.getWalletAddress()

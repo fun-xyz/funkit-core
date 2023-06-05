@@ -1,20 +1,14 @@
 import fs from "fs"
 import path from "path"
-import { JsonRpcProvider } from "@ethersproject/providers"
-import { BigNumber, Contract, Wallet } from "ethers"
-import { UserOperation } from "./UserOp"
+import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
+import { BigNumber, Contract, Signer } from "ethers"
+import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
+import { EstimateGasResult } from "../common"
 import { ENTRYPOINT_ABI } from "../common/constants"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
-
-export interface ChainInput {
-    chainId?: string
-    rpcUrl?: string
-    chainName?: string
-    bundlerUrl?: string
-}
 
 export class Chain {
     chainId?: string
@@ -25,7 +19,7 @@ export class Chain {
     bundler?: Bundler
     id?: string
     name?: string
-    addresses?: any
+    addresses: Addresses = {}
     currency?: string
 
     constructor(chainInput: ChainInput) {
@@ -76,7 +70,7 @@ export class Chain {
 
     async loadBundler() {
         if (!this.bundler) {
-            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses.entryPointAddress)
+            this.bundler = new Bundler(this.id!, this.bundlerUrl!, this.addresses!.entryPointAddress)
             await this.bundler.validateChainId()
         }
     }
@@ -145,31 +139,29 @@ export class Chain {
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
-    async sendOpToEntryPoint(userOp: UserOperation): Promise<string> {
-        const entrypoint = ENTRYPOINT_ABI
+    async sendOpToEntryPoint(userOp: UserOperation, signer: Signer): Promise<TransactionResponse> {
         const provider = await this.getProvider()
-        const signer = new Wallet(process.env.GOERLI_FUNDER_PRIVATE_KEY!, provider)
-        const entrypointContract = new Contract(this.addresses.entryPointAddress, entrypoint, signer)
-        await entrypointContract.handleOps([userOp], signer.address)
-        return ""
+        const entrypointContract = new Contract(this.addresses.entryPointAddress, ENTRYPOINT_ABI, provider)
+        const tx = await entrypointContract.populateTransaction.handleOps([userOp], await signer.getAddress())
+        return await signer.sendTransaction(tx)
     }
 
-    async getFeeData(): Promise<any> {
+    async getFeeData(): Promise<FeeData> {
         await this.init()
         return await this.provider!.getFeeData()
     }
 
-    async estimateOpGas(partialOp: UserOperation): Promise<any> {
+    async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        const { verificationGas } = res
+        let { verificationGasLimit } = res
         let { preVerificationGas, callGasLimit } = res
-        if (!(preVerificationGas || verificationGas || callGasLimit)) {
+        if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
 
         preVerificationGas = preVerificationGas.mul(2)
-        const verificationGasLimit = verificationGas.add(100_000)
+        verificationGasLimit = verificationGasLimit.add(100_000)
         if (partialOp.initCode !== "0x") {
             callGasLimit = BigNumber.from(5e6)
         }
@@ -191,9 +183,9 @@ export class Chain {
         }
 
         Object.keys(modifications).forEach((key) => {
-            const newAddress = this.addresses[modifications[key]]
+            const newAddress = this.addresses![modifications[key]]
             if (newAddress) {
-                this.addresses[key] = newAddress
+                this.addresses![key] = newAddress
             }
         })
     }
@@ -245,23 +237,21 @@ const verifyBundlerUrl = async (url: string) => {
     return data.indexOf("aa-bundler") + 1
 }
 
-export const getChainFromData = async (chainIdentifier: any): Promise<Chain> => {
-    let chain
-
+export const getChainFromData = async (chainIdentifier?: string | Chain): Promise<Chain> => {
+    if (!chainIdentifier) {
+        const helper = new Helper("getChainFromData", chainIdentifier, "chainIdentifier is required")
+        throw new MissingParameterError("Chain.getChainFromData", helper)
+    }
     if (chainIdentifier instanceof Chain) {
         return chainIdentifier
     }
 
-    if (Number(chainIdentifier)) {
-        chain = new Chain({ chainId: chainIdentifier })
-    } else if (chainIdentifier.indexOf("http") + 1) {
+    if (chainIdentifier.indexOf("http") + 1) {
         if (await verifyBundlerUrl(chainIdentifier)) {
-            chain = new Chain({ bundlerUrl: chainIdentifier })
+            return new Chain({ bundlerUrl: chainIdentifier })
         } else {
-            chain = new Chain({ rpcUrl: chainIdentifier })
+            return new Chain({ rpcUrl: chainIdentifier })
         }
-    } else {
-        chain = new Chain({ chainName: chainIdentifier })
     }
-    return chain
+    return new Chain({ chainName: chainIdentifier })
 }

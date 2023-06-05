@@ -2,8 +2,8 @@ import { BigNumber, Contract, ethers } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import { getChainFromData } from "./Chain"
 import { getTokenInfo } from "../apis"
-import { ERC20_ABI } from "../common"
-import { EnvOption } from "../config/Config"
+import { ERC20_ABI, TransactionData } from "../common"
+import { EnvOption } from "../config"
 import { Helper, MissingParameterError, TransactionError } from "../errors"
 
 const nativeTokens = ["eth", "matic"]
@@ -30,7 +30,7 @@ export class Token {
         this.symbol = input
     }
 
-    async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const chain = await getChainFromData(options.chain)
         const chainId = await chain.getChainId()
         if (this.address) {
@@ -97,20 +97,22 @@ export class Token {
         return parseUnits(`${amount}`, decimals)
     }
 
-    async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const amountDec = await this.getDecimalAmount(amount)
-        const data = await contract.populateTransaction.approve(spender, amountDec)
-        return { ...data, chain }
+        const calldata = await contract.populateTransaction.approve(spender, amountDec)
+        const { to, data, value } = calldata
+        return { to: to!, data: data!, value: value!, chain }
     }
 
-    async transfer(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async transfer(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
         const contract = await this.getContract(options)
         const amountDec = await this.getDecimalAmount(amount)
-        const data = await contract.populateTransaction.transfer(spender, amountDec)
-        return { ...data, chain }
+        const calldata = await contract.populateTransaction.transfer(spender, amountDec)
+        const { to, data, value } = calldata
+        return { to: to!, data: data!, value: value!, chain }
     }
 
     static async getAddress(data: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
@@ -138,7 +140,7 @@ export class Token {
         owner: string,
         spender: string,
         options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<any> {
+    ): Promise<BigNumber> {
         const token = new Token(data)
         return await token.getApproval(owner, spender, options)
     }
@@ -156,7 +158,7 @@ export class Token {
         spender: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<any> {
+    ): Promise<TransactionData> {
         const token = new Token(data)
         return await token.approve(spender, amount, options)
     }
@@ -166,8 +168,12 @@ export class Token {
         spender: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<any> {
+    ): Promise<TransactionData> {
         const token = new Token(data)
         return await token.transfer(spender, amount, options)
+    }
+
+    static isNative(data: string): boolean {
+        return nativeTokens.includes(data.toLowerCase())
     }
 }

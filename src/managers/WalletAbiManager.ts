@@ -1,5 +1,6 @@
-import { constants } from "ethers"
+import { ContractInterface, constants } from "ethers"
 import { Interface, defaultAbiCoder, hexConcat } from "ethers/lib/utils"
+import { TransactionDataWithFee } from "../common"
 import { FactoryCreateAccountParams, InitCodeParams, WalletInitialzeParams, encodeLoginData } from "../data"
 import { checkAbi, encodeContractCall, verifyValidParamsFromAbi } from "../utils/ChainUtils"
 import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
@@ -13,13 +14,13 @@ export class WalletAbiManager {
     walletInterface: Interface
     factoryInterface: Interface
 
-    constructor(walletAbi: any, factoryAbi: any) {
+    constructor(walletAbi: ContractInterface, factoryAbi: ContractInterface) {
         const errorLocation = "WalletAbiManager constructor"
         this.walletInterface = checkAbi(walletAbi, "FunWallet", errorLocation, true)
         this.factoryInterface = checkAbi(factoryAbi, "FunWalletFactory", errorLocation, true)
     }
 
-    encodeCall(input: any, location = "WalletAbiManager.encodeCall") {
+    encodeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeCall") {
         if (input.token) {
             return this.encodeFeeCall(input)
         }
@@ -38,7 +39,7 @@ export class WalletAbiManager {
         return this.encodeWalletCall(callFunctionName, encodeObj)
     }
 
-    encodeFeeCall(input: any, location = "WalletAbiManager.encodeFeeCall") {
+    encodeFeeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeFeeCall") {
         verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
         const { to: dest, token, amount, recipient, oracle } = input
         let { data, value } = input
@@ -56,7 +57,7 @@ export class WalletAbiManager {
         return this.encodeWalletCall(feeCallFunctionName, encodeObj)
     }
 
-    encodeInitExecCall(input: any, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
+    encodeInitExecCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
         if (input.token) {
             return this.encodeInitExecFeeCall(input)
         }
@@ -73,7 +74,7 @@ export class WalletAbiManager {
         return encodeContractCall(this.walletInterface, "initAndExec", encodeObj, location, isInternal)
     }
 
-    encodeInitExecFeeCall(input: any, location = "WalletAbiManager.encodeInitExecFeeCall", isInternal = false) {
+    encodeInitExecFeeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeInitExecFeeCall", isInternal = false) {
         verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
         const { to: dest, data, token, amount, recipient } = input
         let { value } = input

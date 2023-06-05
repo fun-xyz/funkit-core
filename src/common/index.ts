@@ -1,2 +1,2 @@
 export * from "./constants"
-export * from "./types/TransactionData"
+export * from "./types"

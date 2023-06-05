@@ -1,15 +1,10 @@
 import { BigNumber } from "ethers"
 import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
 import { v4 as uuidv4 } from "uuid"
-import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { Eoa } from "./EoaAuth"
+import { EoaAuthInput, GroupAuthInput } from "./types"
 import { getGroupById, setGroupById } from "../apis"
 import { Helper, ParameterFormatError } from "../errors"
-
-export interface GroupAuthInput {
-    uniqueId?: string
-    userIds?: string[]
-    requiredSignatures?: number
-}
 
 export class GroupAuth extends Eoa {
     uniqueId?: string
