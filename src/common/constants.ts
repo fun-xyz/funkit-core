@@ -50,6 +50,9 @@ export const BASE_WRAP_TOKEN_ADDR = {
     },
     "42161": {
         weth: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    },
+    "36865": {
+        weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     }
 }
 

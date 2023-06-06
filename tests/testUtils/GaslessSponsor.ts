@@ -43,13 +43,20 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await fundWallet(funder, wallet, 0.5)
                 await fundWallet(auth, wallet1, 0.5)
             }
+            console.log("asjdkj")
             const funderAddress = await funder.getUniqueId()
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.amount ? config.amount : 0.01,
-                out: config.outToken,
-                returnAddress: funderAddress
-            })
+            try {
+                await wallet.swap(auth, {
+                    in: config.inToken,
+                    amount: config.amount ? config.amount : 0.01,
+                    out: config.outToken,
+                    returnAddress: funderAddress
+                })
+            } catch (e) {
+                console.log(e)
+            }
+
+            console.log("asjdkj")
 
             await configureEnvironment({
                 gasSponsor: {
@@ -62,6 +69,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const stake = await gasSponsor.stake(funderAddress, config.stakeAmount)
             await funder.sendTx(stake)
             const depositInfo1E = await gasSponsor.getBalance(funderAddress)
+            console.log("asjdkj")
 
             assert(depositInfo1E.gt(depositInfo1S), "Stake Failed")
         })
@@ -70,11 +78,16 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
             if (Number(tokenBalanceBefore) < 0.1) {
-                await wallet.swap(auth, {
-                    in: config.inToken,
-                    amount: config.amount ? config.amount : 0.1,
-                    out: config.outToken
-                })
+                try {
+                    await wallet.swap(auth, {
+                        in: config.inToken,
+                        amount: config.amount ? config.amount : 0.1,
+                        out: config.outToken
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+
                 const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
                 assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
             }

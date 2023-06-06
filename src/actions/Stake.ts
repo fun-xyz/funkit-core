@@ -70,6 +70,7 @@ const getReadyToWithdrawRequests = async (actionData: ActionData) => {
     const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
     // check withdrawal requests
     const withdrawalRequests: BigNumber[] = await withdrawalQueue.getWithdrawalRequests(await wallet.getAddress())
+    console.log("Withdrawal Requests: ", withdrawalRequests)
     // get the state of a particular nft
     const withdrawalStatusTx = await withdrawalQueue.getWithdrawalStatus(withdrawalRequests)
     const readyToWithdraw: BigNumber[] = []
@@ -121,9 +122,11 @@ export const _finishUnstake = (params: FinishUnstakeParams) => {
 export const getLidoAddress = (chainId: string) => {
     switch (parseInt(chainId)) {
         case 1:
-            return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
+            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         case 5:
             return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+        case 36865:
+            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
             return null
     }
@@ -135,6 +138,8 @@ export const getWithdrawalQueueAddr = (chainId: string): string => {
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         case 5:
             return "0xCF117961421cA9e546cD7f50bC73abCdB3039533"
+        case 36865:
+            return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         default:
             return ""
     }
@@ -146,6 +151,8 @@ export const getSteth = (chainId: string): string => {
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         case 5:
             return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+        case 36865:
+            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
             return ""
     }

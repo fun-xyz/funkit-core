@@ -113,14 +113,14 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    addWhitelistTokens(tokens: string[]) {
+    addWhitelistTokens(tokens: string, modes: boolean) {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const sendTokens = await Promise.all(
-                tokens.map((token) => {
-                    return Token.getAddress(token, options)
-                })
-            )
-            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
+            // const sendTokens = await Promise.all(
+            //     tokens.map((token) => {
+            //         return Token.getAddress(token, options)
+            //     })
+            // )
+            const data = this.interface.encodeFunctionData("setTokenWhitelistMode", [tokens, modes])
             return await this.encode(data, options)
         }
     }

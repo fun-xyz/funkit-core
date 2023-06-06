@@ -2,7 +2,6 @@ import { JsonRpcProvider } from "@ethersproject/providers"
 import { BigNumber } from "ethers"
 import { resolveProperties } from "ethers/lib/utils"
 import { estimateUserOpGas, getChainId, sendUserOpToBundler, validateChainId } from "../apis"
-import { LOCAL_FORK_CHAIN_ID } from "../common/constants"
 import { UserOperation } from "../data/UserOp"
 import { Helper, NoServerConnectionError } from "../errors"
 import { deepHexlify } from "../utils/DataUtils"
@@ -23,7 +22,7 @@ export class Bundler {
         this.chainId = chainId
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
-        this.userOpJsonRpcProvider =  new JsonRpcProvider(this.bundlerUrl) 
+        this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl)
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid

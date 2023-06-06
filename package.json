@@ -12,7 +12,8 @@
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "add-token":"ts-node tests/addToken.ts"
     },
     "author": "",
     "license": "ISC",

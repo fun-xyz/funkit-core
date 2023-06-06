@@ -29,6 +29,7 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
             chain: "1"
         }
     }
+    console.log((BASE_WRAP_TOKEN_ADDR as any)[chainId], chainId, symbol)
     if ((symbol === "weth" || symbol === "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
         return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
@@ -48,7 +49,6 @@ export async function getChainInfo(chainId: string): Promise<any> {
         return await getChainFromName(chainId)
     }
     const body = { chain: chainId }
-
     if (Number(chainId) === LOCAL_FORK_CHAIN_ID) {
         const req = await sendPostRequest(LOCAL_API_URL, "get-chain-info", body)
             .then((r) => {
@@ -61,6 +61,7 @@ export async function getChainInfo(chainId: string): Promise<any> {
     } else {
         return await sendPostRequest(API_URL, "get-chain-info", body).then((r) => {
             if (!r.data) {
+                console.log(r)
                 throw new Error(JSON.stringify(r))
             }
             return r.data
