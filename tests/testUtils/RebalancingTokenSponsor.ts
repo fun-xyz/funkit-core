@@ -52,8 +52,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, config.baseTokenStakeAmt)
-                await fundWallet(auth, wallet1, config.baseTokenStakeAmt)
+                await fundWallet(funder, wallet, 0.5)
+                await fundWallet(auth, wallet1, 0.5)
             }
 
             await wallet.swap(auth, {
