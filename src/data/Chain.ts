@@ -2,6 +2,7 @@ import fs from "fs"
 import path from "path"
 import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
 import { BigNumber, Contract, Signer } from "ethers"
+import { PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
@@ -21,6 +22,9 @@ export class Chain {
     name?: string
     addresses: Addresses = {}
     currency?: string
+
+    // viem
+    client?: PublicClient
 
     constructor(chainInput: ChainInput) {
         if (chainInput.chainId) {
@@ -65,6 +69,14 @@ export class Chain {
     async loadProvider() {
         if (!this.provider) {
             this.provider = new JsonRpcProvider(this.rpcUrl)
+        }
+    }
+
+    async loadClient() {
+        if (!this.client) {
+            this.client = createPublicClient({
+                transport: http(this.rpcUrl)
+            })
         }
     }
 
@@ -136,6 +148,11 @@ export class Chain {
     async getProvider(): Promise<JsonRpcProvider> {
         await this.init()
         return this.provider!
+    }
+
+    async getClient(): Promise<PublicClient> {
+        await this.init()
+        return this.client!
     }
 
     setAddress(name: string, address: string) {
@@ -242,9 +259,12 @@ export class Chain {
 }
 
 const verifyBundlerUrl = async (url: string) => {
-    const provider = new JsonRpcProvider(url)
-    const data = await provider.send("web3_clientVersion", [])
-    return data.indexOf("aa-bundler") + 1
+    const client = createPublicClient({ transport: http(url) })
+    const epcall = { method: "eth_chainId" }
+    // @ts-ignore: Unreachable code error
+    const data = await client.request(epcall)
+    console.log(data)
+    return false
 }
 
 export const getChainFromData = async (chainIdentifier?: string | Chain): Promise<Chain> => {
@@ -265,3 +285,5 @@ export const getChainFromData = async (chainIdentifier?: string | Chain): Promis
     }
     return new Chain({ chainName: chainIdentifier })
 }
+
+verifyBundlerUrl("https://api.pimlico.io/v1/polygon/rpc?apikey=176ee560-e982-41fb-a908-fc5dd044643d")
