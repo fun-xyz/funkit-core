@@ -1,9 +1,9 @@
 import { Contract, ethers } from "ethers"
 import { getChainFromData } from "./Chain"
+import { getNftAddress, getNftName } from "../apis/NFTApis"
 import { ERC_721_ABI, TransactionData } from "../common"
 import { EnvOption } from "../config"
-import { MissingParameterError } from "../errors"
-
+import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 export class NFT {
     address = ""
     name = ""
@@ -36,9 +36,31 @@ export class NFT {
 
     async getAddress(): Promise<string> {
         if (this.name && !this.address) {
-            return this.address
+            const nftName = await getNftAddress(this.name)
+            if (nftName.error) {
+                const helper = new Helper("getName", "", "call failed")
+                helper.pushMessage(`NFT address for ${this.name} not found`)
+                throw new ServerMissingDataError("NFT.getAddress", "NFT", helper)
+            } else {
+                return nftName.address
+            }
         }
         return this.address
+    }
+
+    async getName(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+        if (!this.name && this.address) {
+            const chain = await getChainFromData(options.chain)
+            const nftName = await getNftName(await chain.getChainId(), this.address)
+            if (nftName.error) {
+                const helper = new Helper("getName", chain, "call failed")
+                helper.pushMessage(`NFT name for address ${this.address} and chain id ${await chain.getChainId()} not found`)
+                throw new ServerMissingDataError("NFT.getName", "NFT", helper)
+            } else {
+                return nftName.name
+            }
+        }
+        return this.name
     }
 
     async getContract(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Contract> {

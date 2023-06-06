@@ -32,11 +32,9 @@ export async function getTestApiKey(): Promise<string> {
     }
 
     const secret = JSON.parse(response.SecretString)
-    const apiKey = secret.staging
-    console.log(apiKey)
+    const apiKey = secret.prod
     return apiKey
 }
-console.log(getTestApiKey())
 
 export async function getAwsSecret(secretId: string, secretName: string): Promise<string> {
     const client = new SecretsManagerClient({

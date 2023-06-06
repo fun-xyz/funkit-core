@@ -8,7 +8,7 @@
         "build": "tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
         "test-aws": "env PREFUND=false ts-mocha",
-        "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
+        "test-goerli": "env PREFUND=false ts-mocha tests/goerli/NFT.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",

@@ -19,8 +19,9 @@ export const NFTTest = (config: NFTTestConfig) => {
         let auth: Auth
         let wallet1: FunWallet
         let wallet2: FunWallet
+        let apiKey: string
         before(async function () {
-            const apiKey = await getTestApiKey()
+            apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
                 apiKey: apiKey
@@ -64,7 +65,8 @@ export const NFTTest = (config: NFTTestConfig) => {
                     tokenId: 10
                 })
                 const data = await nft.getApproved("10")
-                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receiveis not correct")
+                console.log(data, await wallet2.getAddress(), await wallet1.getAddress())
+                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
         })
 
@@ -90,6 +92,30 @@ export const NFTTest = (config: NFTTestConfig) => {
                 const approved = await nft.getApproved(tokenId)
                 const owner = await wallet2.getAddress()
                 assert(approved === owner, "Owner is not correct")
+            })
+
+            it("getName", async () => {
+                const options: GlobalEnvOption = {
+                    chain: "1",
+                    apiKey: apiKey
+                }
+                await configureEnvironment(options)
+                const nftAddr = "0x96fc56721d2b79485692350014875b3b67cb00eb"
+                const nft = new NFT(nftAddr)
+                const nftName = await nft.getName()
+                assert(nftName === "Anatomy Science Ape Club", "Incorrect NFT Name")
+            })
+
+            it("getAddress", async () => {
+                const options: GlobalEnvOption = {
+                    chain: "1",
+                    apiKey: apiKey
+                }
+                const nftName = "Anatomy Science Ape Club"
+                await configureEnvironment(options)
+                const nft = new NFT(nftName)
+                const nftAddr = await nft.getAddress()
+                assert(nftAddr === "0x96fc56721d2b79485692350014875b3b67cb00eb", "Incorrect NFT Address")
             })
         })
     })
