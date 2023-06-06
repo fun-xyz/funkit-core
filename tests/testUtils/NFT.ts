@@ -65,7 +65,6 @@ export const NFTTest = (config: NFTTestConfig) => {
                     tokenId: 10
                 })
                 const data = await nft.getApproved("10")
-                console.log(data, await wallet2.getAddress(), await wallet1.getAddress())
                 assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
         })
