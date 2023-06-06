@@ -6,16 +6,18 @@ import { MissingParameterError } from "../errors"
 
 export class NFT {
     address = ""
+    name = ""
     contract?: Contract
 
-    constructor(address: string, location = "NFT constructor") {
-        if (!address) {
+    constructor(input: string, location = "NFT constructor") {
+        if (!input) {
             throw new MissingParameterError(location)
         }
-        if (ethers.utils.isAddress(address)) {
-            this.address = address
+        if (ethers.utils.isAddress(input)) {
+            this.address = input
             return
         }
+        this.name = input
     }
 
     async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
@@ -33,6 +35,9 @@ export class NFT {
     }
 
     async getAddress(): Promise<string> {
+        if (this.name && !this.address) {
+            return this.address
+        }
         return this.address
     }
 
