@@ -1,11 +1,11 @@
 import { assert } from "chai"
-import { Wallet } from "ethers"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet } from "../../src/utils"
+import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface TransferTestConfig {
     chainId: number
@@ -49,8 +49,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("transfer baseToken directly", async () => {
-            var wallet1 = Wallet.createRandom()
-            const randomAddress = wallet1.address
+            const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(baseToken, randomAddress)
@@ -67,8 +66,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("wallet should have lower balance of specified token", async () => {
-            var wallet1 = Wallet.createRandom()
-            const randomAddress = wallet1.address
+            const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(outToken, randomAddress)

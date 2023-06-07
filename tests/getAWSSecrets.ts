@@ -1,5 +1,6 @@
 import { GetSecretValueCommand, SecretsManagerClient } from "@aws-sdk/client-secrets-manager"
 import { retry } from "@lifeomic/attempt"
+import { Hex } from "viem"
 import { DEFAULT_RETRY_OPTIONS } from "../src/utils"
 
 const SECRET_NAME = "FunApiServer/ApiGateway"
@@ -36,7 +37,7 @@ export async function getTestApiKey(): Promise<string> {
     return apiKey
 }
 
-export async function getAwsSecret(secretId: string, secretName: string): Promise<string> {
+export async function getAwsSecret(secretId: string, secretName: string): Promise<Hex> {
     const client = new SecretsManagerClient({
         region: REGION
     })
@@ -58,7 +59,7 @@ export async function getAwsSecret(secretId: string, secretName: string): Promis
         // For a list of exceptions thrown, see
         // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
         console.error("Error retrieving API key:", error)
-        return ""
+        return "0x"
     }
     const secret = JSON.parse(response.SecretString)
     return secret[`${secretName}`]

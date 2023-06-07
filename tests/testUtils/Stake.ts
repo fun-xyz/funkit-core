@@ -1,10 +1,12 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface StakeTestConfig {
     chainId: number
@@ -27,7 +29,7 @@ export const StakeTest = (config: StakeTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
             if (prefund) await fundWallet(auth, wallet, 0.002)
         })

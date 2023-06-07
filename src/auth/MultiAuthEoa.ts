@@ -1,6 +1,5 @@
-import { Web3Provider } from "@ethersproject/providers"
-import { Signer } from "ethers"
 import { v4 as uuidv4 } from "uuid"
+import { Hex } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput } from "./types"
 import { Helper, ParameterFormatError } from "../errors"
@@ -19,7 +18,7 @@ export class MultiAuthEoa extends Eoa {
         this.authIds = authInput.authIds //[["twitter###Chazzz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["google###chaz@fun.xyz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"]]
     }
 
-    override async getUniqueId(): Promise<string> {
+    override async getUniqueId(): Promise<Hex> {
         const uniqueIds = new Set<string>()
         for (const authId of this.authIds) {
             const storedUniqueId = await getStoredUniqueId(authId[0])
@@ -43,10 +42,10 @@ export class MultiAuthEoa extends Eoa {
             await setStoredUniqueId(authId[0], this.uniqueId, authId[1])
         }
 
-        return this.uniqueId
+        return this.uniqueId as Hex
     }
 
-    override async getOwnerAddr(): Promise<string[]> {
+    override async getOwnerAddr(): Promise<Hex[]> {
         return this.authIds.map((authId) => {
             return authId[1]
         })
@@ -55,9 +54,5 @@ export class MultiAuthEoa extends Eoa {
     override async getEstimateGasSignature(): Promise<string> {
         const ownerAddr = await this.getOwnerAddr()
         return ownerAddr[0]
-    }
-
-    override async getSignerFromProvider(provider: Web3Provider): Promise<Signer> {
-        return await provider.getSigner()
     }
 }

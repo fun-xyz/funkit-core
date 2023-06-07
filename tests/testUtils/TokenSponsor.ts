@@ -1,4 +1,5 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -6,6 +7,7 @@ import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface TokenSponsorTestConfig {
     chainId: number
@@ -31,8 +33,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
-            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
+            funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId.toString(),

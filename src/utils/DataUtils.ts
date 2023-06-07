@@ -1,5 +1,5 @@
-import { constants } from "ethers"
-import { hexlify, isHexString } from "ethers/lib/utils"
+import { isHex, toHex } from "viem"
+import { HashZero } from "../common"
 import { DataFormatError, Helper, MissingParameterError } from "../errors"
 
 const compareToExpectedParams = (input: any, expected: string[]) => {
@@ -55,11 +55,11 @@ export const orderParams = (paramOrder: any, input: any) => {
 
 export const verifyPrivateKey = (value: string, location = "", isInternal = false) => {
     let helperMsg = ""
-    const isHashZero = value === constants.HashZero
+    const isHashZero = value === HashZero
     if (isHashZero) {
         helperMsg = "privateKey can not be equal to bytes32(0)"
     }
-    if (!isHexString(value, 32) || isHashZero) {
+    if (!isHex(value) || isHashZero) {
         const helper = new Helper("privateKey", value, helperMsg)
         throw new DataFormatError("privateKey", "{bytes32}", location, helper, isInternal)
     }
@@ -91,7 +91,7 @@ export const deepHexlify = (obj: any): any => {
     if (!obj || typeof obj === "string" || typeof obj === "boolean") {
         return obj
     } else if (obj._isBigNumber || typeof obj !== "object") {
-        return hexlify(obj).replace(/^0x0/, "0x")
+        return toHex(obj).replace(/^0x0/, "0x")
     }
     if (Array.isArray(obj)) {
         return obj.map((member) => deepHexlify(member))

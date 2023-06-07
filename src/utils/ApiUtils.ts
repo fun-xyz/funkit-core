@@ -1,5 +1,6 @@
 import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
+import { stringifyOp } from "./UseropUtils"
 import { API_URL } from "../common/constants"
 
 export const DEFAULT_RETRY_OPTIONS = {
@@ -27,7 +28,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                     "X-Api-Key": apiKey
                 },
                 redirect: "follow",
-                body: JSON.stringify(body)
+                body: method !== "GET" ? stringifyOp(body) : undefined
             }).then((r) => r.json())
         }, DEFAULT_RETRY_OPTIONS)
     } catch (e) {

@@ -1,29 +1,22 @@
-import { BigNumber, Contract, ContractInterface } from "ethers"
-import { Interface } from "ethers/lib/utils"
+import { Address } from "viem"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
+import { ContractInterface } from "../viem/ContractInterface"
 
 export abstract class Sponsor {
     sponsorAddress: string
-    interface: Interface
-    abi: ContractInterface
+    contractInterface: ContractInterface
     name: string
-    paymasterAddress?: string
+    paymasterAddress?: Address
     chainId?: string
-    contract?: Contract
 
-    constructor(options: EnvOption = (globalThis as any).globalEnvOption, abi: ContractInterface, name: string) {
+    constructor(options: EnvOption = (globalThis as any).globalEnvOption, contractInterface: ContractInterface, name: string) {
         this.sponsorAddress = options.gasSponsor!.sponsorAddress!
-        if (abi instanceof Interface) {
-            this.interface = abi
-        } else {
-            this.interface = new Interface(abi)
-        }
-        this.abi = abi
+        this.contractInterface = contractInterface
         this.name = name
     }
 
-    async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+    async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         const chain = await getChainFromData(options.chain)
         const chainId = await chain.getChainId()
         if (!this.paymasterAddress && chainId !== this.chainId) {
@@ -33,22 +26,12 @@ export abstract class Sponsor {
         return this.paymasterAddress!
     }
 
-    async getContract(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Contract> {
-        if (!this.contract) {
-            const chain = await getChainFromData(options.chain)
-            const provider = await chain.getProvider()
-            const paymasterAddress = await this.getPaymasterAddress(options)
-            this.contract = new Contract(paymasterAddress, this.abi, provider)
-        }
-        return this.contract
-    }
-
     async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const to = await this.getPaymasterAddress(options)
         return { to, data, chain: options.chain }
     }
 
-    async encodeValue(data: string, value: BigNumber, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async encodeValue(data: string, value: BigInt, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const to = await this.getPaymasterAddress(options)
         return { to, value, data, chain: options.chain }
     }
@@ -61,42 +44,42 @@ export abstract class Sponsor {
 
     setToBlacklistMode(): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("setListMode", [true])
+            const data = this.contractInterface.encodeData("setListMode", [true])
             return await this.encode(data, options)
         }
     }
 
     setToWhitelistMode(): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("setListMode", [false])
+            const data = this.contractInterface.encodeData("setListMode", [false])
             return await this.encode(data, options)
         }
     }
 
     addSpenderToWhiteList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
+            const data = this.contractInterface.encodeData("setSpenderWhitelistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
     removeSpenderFromWhiteList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
+            const data = this.contractInterface.encodeData("setSpenderWhitelistMode", [spender, false])
             return await this.encode(data, options)
         }
     }
 
     addSpenderToBlackList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
+            const data = this.contractInterface.encodeData("setSpenderBlacklistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
     removeSpenderFromBlackList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
+            const data = this.contractInterface.encodeData("setSpenderBlacklistMode", [spender, false])
             return await this.encode(data, options)
         }
     }

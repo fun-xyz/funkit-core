@@ -1,4 +1,5 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -6,6 +7,7 @@ import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
@@ -26,8 +28,8 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+            funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId.toString(),
@@ -63,7 +65,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             await funder.sendTx(stake)
             const depositInfo1E = await gasSponsor.getBalance(funderAddress)
 
-            assert(depositInfo1E.gt(depositInfo1S), "Stake Failed")
+            assert(depositInfo1E > depositInfo1S, "Stake Failed")
         })
 
         const runSwap = async (wallet: FunWallet) => {

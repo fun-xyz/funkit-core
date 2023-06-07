@@ -1,6 +1,7 @@
 import { JsonRpcProvider } from "@ethersproject/providers"
 import { API_URL, LOCAL_FORK_CHAIN_ID } from "../common/constants"
 import { UserOperation } from "../data"
+import { objectfy } from "../utils"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function sendUserOpToBundler(
@@ -9,10 +10,10 @@ export async function sendUserOpToBundler(
     chainId: string,
     provider?: JsonRpcProvider
 ): Promise<any> {
-    if (Number(chainId) === LOCAL_FORK_CHAIN_ID) {
+    if (Number(chainId) !== LOCAL_FORK_CHAIN_ID) {
         return await provider!.send("eth_sendUserOperation", [userOp, entryPointAddress])
     } else {
-        return await sendPostRequest(API_URL, "bundler/send-user-op", { userOp, entryPointAddress, chainId })
+        return await sendPostRequest(API_URL, "bundler/send-user-op", { userOp: objectfy(userOp), entryPointAddress, chainId })
     }
 }
 
@@ -25,7 +26,7 @@ export async function estimateUserOpGas(
     if (Number(chainId) === LOCAL_FORK_CHAIN_ID) {
         return await provider!.send("eth_estimateUserOperationGas", [userOp, entryPointAddress])
     } else {
-        return await sendPostRequest(API_URL, "bundler/estimate-user-op-gas", { userOp, entryPointAddress, chainId })
+        return await sendPostRequest(API_URL, "bundler/estimate-user-op-gas", { userOp: objectfy(userOp), entryPointAddress, chainId })
     }
 }
 

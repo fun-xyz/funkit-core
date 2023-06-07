@@ -1,8 +1,7 @@
-import { Contract, constants } from "ethers"
-import { defaultAbiCoder } from "ethers/lib/utils"
+import { Address, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
 import { Auth } from "../auth"
-import { TOKEN_PAYMASTER_ABI, WALLET_ABI } from "../common/constants"
+import { AddressZero, tokenPaymasterContractInterface, walletContractInterface } from "../common/constants"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 
@@ -10,7 +9,7 @@ export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, TOKEN_PAYMASTER_ABI, "tokenSponsorAddress")
+        super(options, tokenPaymasterContractInterface, "tokenSponsorAddress")
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
@@ -20,21 +19,24 @@ export class TokenSponsor extends Sponsor {
     }
 
     async getPaymasterAndDataPermit(
-        amount: number,
-        walletAddr: string,
+        amount: bigint,
+        walletAddr: Address,
         auth: Auth,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<string> {
         const chain = await getChainFromData(options.chain)
-        const provider = await chain.getProvider()
-        const walletContract = new Contract(walletAddr, WALLET_ABI, provider)
-        const nonce = await walletContract.getNonce(0)
+        const nonce = await walletContractInterface.readFromChain(walletAddr, "getNonce", [0], chain)
         const paymasterAddress = await this.getPaymasterAddress(options)
         const tokenAddress = await Token.getAddress(this.token, options)
-        const hash = await walletContract.getPermitHash(tokenAddress, paymasterAddress, amount, nonce)
+        const hash = await walletContractInterface.readFromChain(
+            walletAddr,
+            "getPermitHash",
+            [tokenAddress, paymasterAddress, amount, nonce],
+            chain
+        )
         const sig = await auth.signHash(hash)
-        const encoded = defaultAbiCoder.encode(
-            ["address", "address", "uint256", "uint256", "bytes"],
+        const encoded = encodeAbiParameters(
+            [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
             [tokenAddress, paymasterAddress, amount, nonce, sig]
         )
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2) + encoded.slice(2)
@@ -43,7 +45,7 @@ export class TokenSponsor extends Sponsor {
     stake(walletAddress: string, amount: number): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
-            const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
+            const data = this.contractInterface.encodeData("addEthDepositTo", [walletAddress, amountdec])
             return await this.encodeValue(data, amountdec, options)
         }
     }
@@ -51,32 +53,43 @@ export class TokenSponsor extends Sponsor {
     unstake(walletAddress: string, amount: number): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
-            const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
+            const data = this.contractInterface.encodeData("withdrawEthDepositTo", [walletAddress, amountdec])
             return await this.encode(data, options)
         }
     }
 
     async getTokenInfo(token: string, options: EnvOption = (globalThis as any).globalEnvOption) {
-        const contract = await this.getContract(options)
         const tokenAddress = await Token.getAddress(token, options)
-        return await contract.getToken(tokenAddress)
+        const chain = await getChainFromData(options.chain)
+        return await tokenPaymasterContractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getToken",
+            [tokenAddress],
+            chain
+        )
     }
 
     async getTokenBalance(token: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
-        const contract = await this.getContract(options)
         const tokenData = new Token(token)
         let tokenAddress
         if (tokenData.isNative) {
-            tokenAddress = constants.AddressZero
+            tokenAddress = AddressZero
         } else {
             tokenAddress = await tokenData.getAddress(options)
         }
-        return await contract.getTokenBalance(tokenAddress, spender)
+
+        const chain = await getChainFromData(options.chain)
+        return await tokenPaymasterContractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getTokenBalance",
+            [tokenAddress, spender],
+            chain
+        )
     }
 
     async getListMode(spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
-        const contract = await this.getContract(options)
-        return await contract.getListMode(spender)
+        const chain = await getChainFromData(options.chain)
+        return await tokenPaymasterContractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [spender], chain)
     }
 
     addUsableToken(oracle: string, token: string, aggregator: string) {
@@ -84,7 +97,7 @@ export class TokenSponsor extends Sponsor {
             const decimals = await Token.getDecimals(token, options)
             const tokenAddress = await Token.getAddress(token, options)
             const data = [oracle, tokenAddress, decimals, aggregator]
-            const calldata = this.interface.encodeFunctionData("setTokenData", [data])
+            const calldata = this.contractInterface.encodeData("setTokenData", [data])
             return await this.encode(calldata, options)
         }
     }
@@ -96,7 +109,7 @@ export class TokenSponsor extends Sponsor {
             const tokenAddress = await tokenObj.getAddress(options)
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
 
-            const data = this.interface.encodeFunctionData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
+            const data = this.contractInterface.encodeData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)
         }
     }
@@ -108,7 +121,7 @@ export class TokenSponsor extends Sponsor {
             const tokenAddress = await tokenObj.getAddress(options)
             const amountdec = await tokenObj.getDecimalAmount(amount, options)
 
-            const data = this.interface.encodeFunctionData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
+            const data = this.contractInterface.encodeData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
             return await this.encode(data, options)
         }
     }
@@ -120,7 +133,7 @@ export class TokenSponsor extends Sponsor {
                     return Token.getAddress(token, options)
                 })
             )
-            const data = this.interface.encodeFunctionData("useTokens", [sendTokens])
+            const data = this.contractInterface.encodeData("useTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }
@@ -132,21 +145,21 @@ export class TokenSponsor extends Sponsor {
                     return Token.getAddress(token, options)
                 })
             )
-            const data = this.interface.encodeFunctionData("removeTokens", [sendTokens])
+            const data = this.contractInterface.encodeData("removeTokens", [sendTokens])
             return await this.encode(data, options)
         }
     }
 
     lockTokenDeposit(token: string) {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("lockTokenDeposit", [token])
+            const data = this.contractInterface.encodeData("lockTokenDeposit", [token])
             return await this.encode(data, options)
         }
     }
 
     unlockTokenDepositAfter(token: string, blocksToWait: number) {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const data = this.interface.encodeFunctionData("unlockTokenDepositAfter", [token, blocksToWait])
+            const data = this.contractInterface.encodeData("unlockTokenDepositAfter", [token, blocksToWait])
             return await this.encode(data, options)
         }
     }

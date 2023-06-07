@@ -1,12 +1,9 @@
 import fs from "fs"
 import path from "path"
-import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
-import { BigNumber, Contract, Signer } from "ethers"
-import { PublicClient, createPublicClient, http } from "viem"
+import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
-import { ENTRYPOINT_ABI } from "../common/constants"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -16,7 +13,6 @@ export class Chain {
     rpcUrl?: string
     chainName?: string
     bundlerUrl?: string
-    provider?: JsonRpcProvider
     bundler?: Bundler
     id?: string
     name?: string
@@ -44,8 +40,8 @@ export class Chain {
         } else if (this.chainName) {
             await this.loadChainData(this.chainName)
         } else if (this.rpcUrl) {
-            await this.loadProvider()
-            const { chainId } = await this.provider!.getNetwork()
+            await this.loadClient()
+            const chainId = await this.client!.getChainId()
             await this.loadChainData(chainId.toString())
         } else if (this.bundlerUrl) {
             const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
@@ -60,15 +56,9 @@ export class Chain {
         }
 
         try {
-            await this.loadProvider()
+            await this.loadClient()
         } catch {
             // ignore
-        }
-    }
-
-    async loadProvider() {
-        if (!this.provider) {
-            this.provider = new JsonRpcProvider(this.rpcUrl)
         }
     }
 
@@ -117,7 +107,7 @@ export class Chain {
         }
     }
 
-    async getAddress(name: string): Promise<string> {
+    async getAddress(name: string): Promise<Address> {
         await this.init()
         const res = this.addresses![name]
         if (!res) {
@@ -136,7 +126,7 @@ export class Chain {
 
     async getActualChainId(): Promise<string> {
         await this.init()
-        const { chainId } = await this.provider!.getNetwork()
+        const chainId = await this.client!.getChainId()
         return chainId.toString()
     }
 
@@ -144,18 +134,12 @@ export class Chain {
         await this.init()
         return this.id!
     }
-
-    async getProvider(): Promise<JsonRpcProvider> {
-        await this.init()
-        return this.provider!
-    }
-
     async getClient(): Promise<PublicClient> {
         await this.init()
         return this.client!
     }
 
-    setAddress(name: string, address: string) {
+    setAddress(name: string, address: Address) {
         if (!this.addresses) this.addresses = {}
         this.addresses[name] = address
     }
@@ -165,32 +149,21 @@ export class Chain {
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
-    async sendOpToEntryPoint(userOp: UserOperation, signer: Signer): Promise<TransactionResponse> {
-        const provider = await this.getProvider()
-        const entrypointContract = new Contract(this.addresses.entryPointAddress, ENTRYPOINT_ABI, provider)
-        const tx = await entrypointContract.populateTransaction.handleOps([userOp], await signer.getAddress())
-        return await signer.sendTransaction(tx)
-    }
-
-    async getFeeData(): Promise<FeeData> {
+    async getFeeData(): Promise<any> {
         await this.init()
-        return await this.provider!.getFeeData()
+        return this.client!.getGasPrice()
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        let { verificationGasLimit } = res
-        let { preVerificationGas, callGasLimit } = res
+        let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
-
-        preVerificationGas = preVerificationGas.mul(2)
-        verificationGasLimit = verificationGasLimit.add(100_000)
-        if (partialOp.initCode !== "0x") {
-            callGasLimit = BigNumber.from(5e6)
-        }
+        callGasLimit = BigInt(callGasLimit)
+        preVerificationGas = BigInt(preVerificationGas) * 2n
+        verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 
@@ -258,15 +231,6 @@ export class Chain {
     }
 }
 
-const verifyBundlerUrl = async (url: string) => {
-    const client = createPublicClient({ transport: http(url) })
-    const epcall = { method: "eth_chainId" }
-    // @ts-ignore: Unreachable code error
-    const data = await client.request(epcall)
-    console.log(data)
-    return false
-}
-
 export const getChainFromData = async (chainIdentifier?: string | Chain): Promise<Chain> => {
     if (!chainIdentifier) {
         const helper = new Helper("getChainFromData", chainIdentifier, "chainIdentifier is required")
@@ -277,13 +241,7 @@ export const getChainFromData = async (chainIdentifier?: string | Chain): Promis
     }
 
     if (chainIdentifier.indexOf("http") + 1) {
-        if (await verifyBundlerUrl(chainIdentifier)) {
-            return new Chain({ bundlerUrl: chainIdentifier })
-        } else {
-            return new Chain({ rpcUrl: chainIdentifier })
-        }
+        return new Chain({ rpcUrl: chainIdentifier })
     }
     return new Chain({ chainName: chainIdentifier })
 }
-
-verifyBundlerUrl("https://api.pimlico.io/v1/polygon/rpc?apikey=176ee560-e982-41fb-a908-fc5dd044643d")

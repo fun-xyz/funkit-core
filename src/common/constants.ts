@@ -1,4 +1,20 @@
+// abis
+import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
+import { padHex } from "viem"
+import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
+import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
+import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
+import ERC20_CONTRACT from "../abis/ERC20.json"
+import ERC_721_CONTRACT from "../abis/ERC721.json"
+import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
+import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
+import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
+import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
+import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
+import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
+import { ContractInterface } from "../viem/ContractInterface"
 // local fork environment
+
 export const LOCAL_FORK_CHAIN_ID = 31337
 export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
@@ -53,22 +69,12 @@ export const BASE_WRAP_TOKEN_ADDR = {
     }
 }
 
+export const AddressZero = padHex("0x", { size: 20 })
+export const HashZero = padHex("0x", { size: 32 })
+
 export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 export const TRANSACTION_TYPE = "FunWalletInteraction"
-
-// abis
-import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
-import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
-import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
-import ERC20_CONTRACT from "../abis/ERC20.json"
-import ERC_721_CONTRACT from "../abis/ERC721.json"
-import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
-import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
-import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
-import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
-import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
-import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
 
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT.abi
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT.abi
@@ -81,3 +87,13 @@ export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT.abi
 export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT.abi
 export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT.abi
 export const ERC_721_ABI = ERC_721_CONTRACT.abi
+
+export const entrypointContractInterface = new ContractInterface(ENTRYPOINT_ABI)
+export const erc721ContractInterface = new ContractInterface(ERC_721_ABI)
+export const erc20ContractInterface = new ContractInterface(ERC20_ABI)
+export const factoryContractInterface = new ContractInterface(FACTORY_ABI)
+export const gaslessPaymasterContractInterface = new ContractInterface(GASLESS_PAYMASTER_ABI)
+export const tokenPaymasterContractInterface = new ContractInterface(TOKEN_PAYMASTER_ABI)
+export const walletContractInterface = new ContractInterface(WALLET_ABI)
+export const poolContractInterface = new ContractInterface(IUniswapV3PoolABI.abi)
+export const approveAndExecContractInterface = new ContractInterface(APPROVE_AND_EXEC_ABI)

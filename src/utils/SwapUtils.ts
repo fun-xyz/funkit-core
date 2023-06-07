@@ -1,30 +1,28 @@
-import { Provider } from "@ethersproject/providers"
 import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
-import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
-import { ethers } from "ethers"
-import { ERC20_ABI } from "../common"
+import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
+import { erc20ContractInterface, poolContractInterface } from "../common"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
 export function fromReadableAmount(amount: number, decimals: number) {
-    return ethers.utils.parseUnits(amount.toString(), decimals)
+    return parseUnits(`${amount}`, decimals)
 }
 
 class SwapToken {
-    provider: Provider
-    quoterContractAddr: string
+    client: PublicClient
+    quoterContractAddr: Address
     poolFactoryContractAddr: string
 
-    constructor(provider: Provider, quoterContractAddr: string, poolFactoryContractAddr: string) {
-        this.provider = provider
+    constructor(client: PublicClient, quoterContractAddr: Address, poolFactoryContractAddr: string) {
+        this.client = client
         this.quoterContractAddr = quoterContractAddr
         this.poolFactoryContractAddr = poolFactoryContractAddr
     }
 
-    async getOutputQuote(route: Route<Currency, Currency>, token0: Token, amountIn: number) {
+    async getOutputQuote(route: Route<Currency, Currency>, token0: Token, amountIn: number): Promise<BigInt> {
         const { calldata } = await SwapQuoter.quoteCallParameters(
             route,
             CurrencyAmount.fromRawAmount(token0, fromReadableAmount(amountIn, token0.decimals).toString()),
@@ -34,11 +32,14 @@ class SwapToken {
             }
         )
 
-        const quoteCallReturnData = await this.provider.call({
+        const quoteCallReturnData = await this.client.call({
             to: this.quoterContractAddr,
-            data: calldata
+            data: calldata as Hex
         })
-        return ethers.utils.defaultAbiCoder.decode(["uint256"], quoteCallReturnData)
+        if (!quoteCallReturnData.data) {
+            throw new Error("No data returned from quote call")
+        }
+        return BigInt(decodeAbiParameters([{ name: "return", type: "uint256" }], quoteCallReturnData.data)[0])
     }
 
     async getPoolInfo(tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
@@ -49,16 +50,36 @@ class SwapToken {
             fee: poolFee
         })
 
-        const poolContract = new ethers.Contract(currentPoolAddress, IUniswapV3PoolABI.abi, this.provider)
-
-        const [token0, token1, fee, tickSpacing, liquidity, slot0] = await Promise.all([
-            poolContract.token0(),
-            poolContract.token1(),
-            poolContract.fee(),
-            poolContract.tickSpacing(),
-            poolContract.liquidity(),
-            poolContract.slot0()
-        ])
+        const [token0, token1, fee, tickSpacing, liquidity, slot0] = await poolContractInterface.batchReadFromChain(
+            currentPoolAddress as Address,
+            this.client,
+            [
+                {
+                    functionName: "token0",
+                    args: []
+                },
+                {
+                    functionName: "token1",
+                    args: []
+                },
+                {
+                    functionName: "fee",
+                    args: []
+                },
+                {
+                    functionName: "tickSpacing",
+                    args: []
+                },
+                {
+                    functionName: "liquidity",
+                    args: []
+                },
+                {
+                    functionName: "slot0",
+                    args: []
+                }
+            ]
+        )
 
         return {
             token0,
@@ -71,9 +92,8 @@ class SwapToken {
         }
     }
 
-    async getTokenDecimals(tokenAddr: string) {
-        const contract = new ethers.Contract(tokenAddr, ERC20_ABI, this.provider)
-        return await contract.decimals()
+    async getTokenDecimals(tokenAddr: Address) {
+        return await erc20ContractInterface.readFromChain(tokenAddr, "decimals", [], this.client)
     }
 
     async createTrade(amountIn: number, tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
@@ -86,7 +106,7 @@ class SwapToken {
         const uncheckedTrade = Trade.createUncheckedTrade({
             route: swapRoute,
             inputAmount: CurrencyAmount.fromRawAmount(tokenIn, tokenInAmount),
-            outputAmount: CurrencyAmount.fromRawAmount(tokenOut, JSBI.BigInt(amountOut)),
+            outputAmount: CurrencyAmount.fromRawAmount(tokenOut, JSBI.BigInt(amountOut.toString())),
             tradeType: TradeType.EXACT_INPUT
         })
 
@@ -122,14 +142,13 @@ const fees = {
     high: 10000
 }
 
-export async function swapExec(provider: Provider, uniswapAddrs: any, swapParams: any) {
+export async function swapExec(client: PublicClient, uniswapAddrs: any, swapParams: any, chainId: number) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
 
     const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
     const _poolFee = (fees as any)[poolFee]
 
-    const swapper = new SwapToken(provider, univ3quoter, univ3factory)
-    const { chainId } = await provider.getNetwork()
+    const swapper = new SwapToken(client, univ3quoter, univ3factory)
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
     const tokenOutDecimal = await swapper.getTokenDecimals(tokenOutAddress)
 

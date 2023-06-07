@@ -1,3 +1,4 @@
+import { Address } from "viem"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -17,7 +18,7 @@ export interface ActionData {
 
 // Transfer Param types
 export type TransferParam = {
-    to: string
+    to: Address
 }
 
 export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams

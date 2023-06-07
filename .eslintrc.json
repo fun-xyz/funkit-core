@@ -45,6 +45,7 @@
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "import/namespace": "off",
     "sort-imports": [
       "error",
       {

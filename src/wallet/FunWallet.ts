@@ -1,9 +1,9 @@
-import { BigNumber, constants } from "ethers"
+import { Address } from "viem"
 import { ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common"
-import { FACTORY_ABI, WALLET_ABI } from "../common/constants"
+import { AddressZero } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
     Chain,
@@ -30,7 +30,7 @@ export interface FunWalletParams {
 export class FunWallet extends FirstClassActions {
     identifier: WalletIdentifier
     abiManager: WalletAbiManager
-    address?: string
+    address?: Address
 
     /**
      * Creates FunWallet object
@@ -41,7 +41,7 @@ export class FunWallet extends FirstClassActions {
         super()
         const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
-        this.abiManager = new WalletAbiManager(WALLET_ABI, FACTORY_ABI)
+        this.abiManager = new WalletAbiManager()
     }
 
     /**
@@ -64,7 +64,7 @@ export class FunWallet extends FirstClassActions {
 
         const sender = await this.getAddress({ chain })
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
-        const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
+        const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
@@ -82,7 +82,7 @@ export class FunWallet extends FirstClassActions {
             paymasterAndData,
             sender,
             maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxPriorityFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
             initCode
         }
         const nonce = await auth.getNonce(partialOp.sender)
@@ -102,13 +102,13 @@ export class FunWallet extends FirstClassActions {
 
             const token = new Token(fee.token!)
             if (token.isNative) {
-                fee.token = constants.AddressZero
+                fee.token = AddressZero
             } else {
                 fee.token = await token.getAddress()
             }
 
             if (fee.amount) {
-                fee.amount = (await token.getDecimalAmount(fee.amount)).toNumber()
+                fee.amount = Number(await token.getDecimalAmount(fee.amount))
             } else if (fee.gasPercent) {
                 const emptyFunc = async () => {
                     return {
@@ -121,23 +121,23 @@ export class FunWallet extends FirstClassActions {
                 const actualGas = await this.estimateGas(auth, emptyFunc, estimateGasOptions)
                 let eth = actualGas.getMaxTxCost()
 
-                let percentNum = fee.gasPercent
-                let percentBase = 100
-                while (percentNum % 1 !== 0) {
-                    percentNum *= 10
-                    percentBase *= 10
+                let percentNum = BigInt(fee.gasPercent)
+                let percentBase = 100n
+                while (percentNum % 1n !== 0n) {
+                    percentNum *= 10n
+                    percentBase *= 10n
                 }
 
                 if (!token.isNative) {
                     const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token!)
                     const decimals = await token.getDecimals()
-                    const numerator = BigNumber.from(10).pow(decimals)
-                    const denominator = BigNumber.from(10).pow(18) // eth decimals
-                    const price = ethTokenPairing.mul(numerator).div(denominator)
-                    eth = price.mul(numerator).div(eth).mul(percentNum).div(percentBase)
+                    const numerator = BigInt(10) ** decimals
+                    const denominator = BigInt(10) ** 18n // eth decimals
+                    const price = (ethTokenPairing * numerator) / denominator
+                    eth = (price * numerator) / ((eth * percentNum) / percentBase)
                 }
 
-                fee.amount = eth.toNumber()
+                fee.amount = Number(eth)
             } else {
                 const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execute", helper)
@@ -161,7 +161,7 @@ export class FunWallet extends FirstClassActions {
         transactionFunc: ActionFunction,
         txOptions: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         const options = parseOptions(txOptions)
         const chain = await getChainFromData(options.chain)
         const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
@@ -193,9 +193,9 @@ export class FunWallet extends FirstClassActions {
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
-            preVerificationGas: BigNumber.from(0),
-            callGasLimit: BigNumber.from(0),
-            verificationGasLimit: BigNumber.from(10e6)
+            preVerificationGas: 0n,
+            callGasLimit: 0n,
+            verificationGasLimit: BigInt(10e6)
         }
         const res = await chain.estimateOpGas(estimateOp)
 
@@ -215,12 +215,12 @@ export class FunWallet extends FirstClassActions {
         const loginData: LoginData = {
             salt: uniqueId
         }
-        const rbacInitData = toBytes32Arr(owners.map((owner) => addresstoBytes32(owner)))
+        const rbacInitData = toBytes32Arr(owners.map((owner: Address) => addresstoBytes32(owner)))
         const userAuthInitData = "0x"
         const initCodeParams: InitCodeParams = {
             entryPointAddress,
             factoryAddress,
-            implementationAddress: constants.AddressZero,
+            implementationAddress: AddressZero,
             loginData: loginData,
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
@@ -234,7 +234,7 @@ export class FunWallet extends FirstClassActions {
      * @param {*} options
      * @returns
      */
-    async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+    async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
             this.address = await new WalletOnChainManager(chain, this.identifier).getWalletAddress()
@@ -251,7 +251,7 @@ export class FunWallet extends FirstClassActions {
         return await walletOnChainManager.getWalletAddress()
     }
 
-    static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: string) {
+    static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {
         //offline query
         const walletIdentifer = new WalletIdentifier(uniqueId, index)
         const identifier = await walletIdentifer.getIdentifier()
@@ -274,7 +274,10 @@ export class FunWallet extends FirstClassActions {
         const opHash = await new UserOp(userOp).getOpHashData(chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
         const txid = await onChainDataManager.getTxId(opHash)
+        if (!txid) throw new Error("Txid not found")
         const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
+        if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
+
         const receipt: ExecutionReceipt = {
             opHash,
             txid,
