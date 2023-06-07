@@ -17,7 +17,7 @@ export interface TransferTestConfig {
 }
 
 export const TransferTest = (config: TransferTestConfig) => {
-    const { chainId, outToken, baseToken, prefund } = config
+    const { outToken, baseToken, prefund } = config
 
     describe("Transfer", function () {
         this.timeout(120_000)

@@ -14,7 +14,7 @@ export interface StakeTestConfig {
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
-    const { chainId, baseToken, prefund } = config
+    const { baseToken, prefund } = config
 
     describe("Stake", function () {
         this.timeout(120_000)

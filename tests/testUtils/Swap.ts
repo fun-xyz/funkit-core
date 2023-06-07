@@ -17,7 +17,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { chainId, inToken, outToken, baseToken, prefund } = config
+    const { inToken, outToken, baseToken, prefund } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
