@@ -1,8 +1,8 @@
 import fs from "fs"
 import path from "path"
-import { getTestApiKey } from "./getAWSSecrets"
-import { getContractAbi } from "../src/apis/ContractApis"
-import { GlobalEnvOption, configureEnvironment } from "../src/config"
+import { getContractAbi } from "../../src/apis/ContractApis"
+import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { getTestApiKey } from "../getAWSSecrets"
 
 async function setGlobal() {
     const apiKey = await getTestApiKey()
