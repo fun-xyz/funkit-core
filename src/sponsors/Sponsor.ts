@@ -43,14 +43,13 @@ export abstract class Sponsor {
         return this.contract
     }
 
-    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
+    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption, value?: BigNumber): Promise<TransactionData> {
         const to = await this.getPaymasterAddress(options)
-        return { to, data, chain: options.chain }
-    }
-
-    async encodeValue(data: string, value: BigNumber, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
-        const to = await this.getPaymasterAddress(options)
-        return { to, value, data, chain: options.chain }
+        if (value) {
+            return { to, value, data, chain: options.chain }
+        } else {
+            return { to, data, chain: options.chain }
+        }
     }
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>
