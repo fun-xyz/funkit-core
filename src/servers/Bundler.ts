@@ -3,7 +3,7 @@ import { BigNumber } from "ethers"
 import { resolveProperties } from "ethers/lib/utils"
 import { estimateUserOpGas, getChainId, sendUserOpToBundler, validateChainId } from "../apis"
 import { EstimateGasResult } from "../common"
-import { LOCAL_FORK_CHAIN_ID } from "../common/constants"
+import { FUN_TESTNET_CHAIN_ID, LOCAL_FORK_CHAIN_ID } from "../common/constants"
 import { UserOperation } from "../data/"
 import { Helper, NoServerConnectionError } from "../errors"
 import { deepHexlify } from "../utils/DataUtils"
@@ -18,7 +18,10 @@ export class Bundler {
         this.chainId = chainId
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
-        this.userOpJsonRpcProvider = Number(chainId) === LOCAL_FORK_CHAIN_ID ? new JsonRpcProvider(this.bundlerUrl) : undefined
+        this.userOpJsonRpcProvider =
+            Number(chainId) === LOCAL_FORK_CHAIN_ID || Number(chainId) === FUN_TESTNET_CHAIN_ID
+                ? new JsonRpcProvider(this.bundlerUrl)
+                : undefined
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid

@@ -19,6 +19,7 @@ export interface TokenSponsorTestConfig {
     stake: boolean
     walletIndex?: number
     funderIndex?: number
+    amount?: number
 }
 
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
@@ -52,18 +53,18 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, 0.5)
-                await fundWallet(auth, wallet1, 0.5)
+                await fundWallet(funder, wallet, config.amount ? config.amount : 0.05)
+                await fundWallet(auth, wallet1, config.amount ? config.amount : 0.05)
             }
 
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.swapAmount,
-                out: paymasterToken,
-                returnAddress: funderAddress
-            })
-
+            // await wallet.swap(auth, {
+            //     in: config.inToken,
+            //     amount: config.swapAmount,
+            //     out: paymasterToken,
+            //     returnAddress: funderAddress
+            // })
             await configureEnvironment({
+                ...options,
                 gasSponsor: {
                     sponsorAddress: funderAddress,
                     token: paymasterToken
@@ -71,10 +72,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             })
 
             const gasSponsor = new TokenSponsor()
-
             const baseStakeAmount = config.baseTokenStakeAmt
             const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
-
             const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
             const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
 
@@ -124,16 +123,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Blacklist Mode Approved", async () => {
             const gasSponsor = new TokenSponsor()
-            const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            const funderAddress = await funder.getUniqueId()
-
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
-            await configureEnvironment({
-                gasSponsor: {
-                    sponsorAddress: funderAddress,
-                    token: paymasterToken
-                }
-            })
 
             await runSwap(wallet)
         })

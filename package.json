@@ -7,12 +7,14 @@
     "scripts": {
         "build": "tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
+        "test-tenderly": "ts-mocha tests/tenderly/*.ts",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
+        "add-token":"ts-node tests/addToken.ts",
         "prepare": "husky install"
     },
     "author": "The Fun Group (https://fun.xyz/)",

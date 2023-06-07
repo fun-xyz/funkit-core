@@ -71,6 +71,7 @@ export class TokenSponsor extends Sponsor {
         } else {
             tokenAddress = await tokenData.getAddress(options)
         }
+
         return await contract.getTokenBalance(tokenAddress, spender)
     }
 

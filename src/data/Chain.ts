@@ -165,6 +165,12 @@ export class Chain {
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
+        if (Number(this.id) === 36865) {
+            //check this during review : Estimate gas underestimates gas on tenderly
+            callGasLimit = callGasLimit.mul(10)
+            preVerificationGas = preVerificationGas.mul(5)
+            verificationGasLimit = verificationGasLimit.add(1000_000)
+        }
 
         preVerificationGas = preVerificationGas.mul(2)
         verificationGasLimit = verificationGasLimit.add(100_000)
@@ -252,7 +258,7 @@ export const getChainFromData = async (chainIdentifier?: string | Chain): Promis
     if (chainIdentifier instanceof Chain) {
         return chainIdentifier
     }
-
+    
     if (chainIdentifier.indexOf("http") + 1) {
         if (await verifyBundlerUrl(chainIdentifier)) {
             return new Chain({ bundlerUrl: chainIdentifier })

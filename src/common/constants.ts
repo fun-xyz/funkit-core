@@ -14,7 +14,7 @@ export const FORK_DEFAULT_ADDRESSES = {
 }
 
 // fun testnet environment
-export const FUN_TESTNET_CHAIN_ID = 36864
+export const FUN_TESTNET_CHAIN_ID = 36865
 export const FUN_TESTNET_CHAIN_KEY = "fun-testnet"
 export const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 
@@ -44,6 +44,9 @@ export const BASE_WRAP_TOKEN_ADDR = {
     },
     "137": {
         wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
+    },
+    "36865": {
+        weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     },
     "43113": {
         weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"

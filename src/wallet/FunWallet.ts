@@ -273,7 +273,12 @@ export class FunWallet extends FirstClassActions {
         await chain.sendOpToBundler(userOp)
         const opHash = await new UserOp(userOp).getOpHashData(chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-        const txid = await onChainDataManager.getTxId(opHash)
+        let txid: string | undefined
+        try {
+            txid = await onChainDataManager.getTxId(opHash)
+        } catch (e) {
+            txid = `Cannot retreive ID: ${e}.`
+        }
         const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
         const receipt: ExecutionReceipt = {
             opHash,
