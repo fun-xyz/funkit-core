@@ -1,7 +1,7 @@
 import { Chain } from "../data"
 
 export interface EnvOption {
-    chain?: Chain
+    chain?: string | Chain
     gasSponsor?: {
         sponsorAddress?: string
         token?: string
