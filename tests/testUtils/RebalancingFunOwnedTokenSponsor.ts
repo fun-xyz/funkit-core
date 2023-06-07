@@ -1,7 +1,7 @@
-import { assert } from "chai"
+// import { assert } from "chai"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+// import { Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -27,7 +27,7 @@ export const RebalancingFunOwnedTokenSponsorTest = (config: RebalancingFunOwnedT
         let auth: Eoa
         let funder: Eoa
         let funderAddress: string
-        let wallet: FunWallet
+        // let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
             // Configure Environment
@@ -40,7 +40,7 @@ export const RebalancingFunOwnedTokenSponsorTest = (config: RebalancingFunOwnedT
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
             funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             await configureEnvironment(options)
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.walletIndex })
+            // wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.walletIndex })
             wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.funderIndex })
 
             // if (config.prefund) {
@@ -86,17 +86,17 @@ export const RebalancingFunOwnedTokenSponsorTest = (config: RebalancingFunOwnedT
         })
 
         // Swap inToken for outToken using paymaster
-        const runSwap = async (wallet: FunWallet) => {
-            const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.swapAmount,
-                out: config.outToken
-            })
-            const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
-            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-        }
+        // const runSwap = async (wallet: FunWallet) => {
+        //     const walletAddress = await wallet.getAddress()
+        //     const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
+        //     await wallet.swap(auth, {
+        //         in: config.inToken,
+        //         amount: config.swapAmount,
+        //         out: config.outToken
+        //     })
+        //     const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
+        //     assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+        // }
 
         it("Blacklist Mode Approved", async () => {
             // Configure Environment
