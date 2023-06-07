@@ -82,7 +82,7 @@ export class Eoa extends Auth {
     ): Promise<TransactionReceipt> {
         await this.init()
         if (typeof txData === "function") {
-            txData = await txData(options)
+            txData = await txData((await this.getOwnerAddr())[0], options)
         }
         const { to, value, data, chain } = txData as TransactionData
         if (!chain || !chain.id) {
