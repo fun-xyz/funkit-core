@@ -7,7 +7,7 @@ import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
-export interface TokenSponsorTestConfig {
+export interface RebalancingFunOwnedTokenSponsorTestConfig {
     chainId: number
     inToken: string
     outToken: string
@@ -17,11 +17,11 @@ export interface TokenSponsorTestConfig {
     prefund: boolean
     swapAmount: number
     stake: boolean
-    walletIndex?: number
-    funderIndex?: number
+    walletIndex: number
+    funderIndex: number
 }
 
-export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
+export const RebalancingFunOwnedTokenSponsorTest = (config: RebalancingFunOwnedTokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
 
     describe("TokenSponsor", function () {
@@ -31,38 +31,34 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
-            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            // Configure Environment
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId.toString(),
                 apiKey: apiKey
             }
-
+            // Deploy FunWallets and configure authorizations
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
+            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             await configureEnvironment(options)
-
-            const uniqueId = await auth.getUniqueId()
-
-            wallet = new FunWallet({ uniqueId, index: config.walletIndex ? config.walletIndex : 1223452391856341 })
-            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex ? config.funderIndex : 2345234 })
-
+            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.walletIndex })
+            wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.funderIndex })
+            if (config.prefund) {
+                await fundWallet(funder, wallet, config.baseTokenStakeAmt)
+                await fundWallet(auth, wallet1, config.baseTokenStakeAmt)
+            }
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
-
             const funderAddress = await funder.getUniqueId()
 
-            if (config.prefund) {
-                await fundWallet(funder, wallet, 0.5)
-                await fundWallet(auth, wallet1, 0.5)
-            }
-
+            // Send some paymaster tokens to the funder
             await wallet.swap(auth, {
                 in: config.inToken,
                 amount: config.swapAmount,
                 out: paymasterToken,
                 returnAddress: funderAddress
             })
-
+            // Configure the enviroment to use the tokenPaymaster
             await configureEnvironment({
                 gasSponsor: {
                     sponsorAddress: funderAddress,
