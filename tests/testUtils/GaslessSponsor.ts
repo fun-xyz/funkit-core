@@ -1,7 +1,7 @@
 import { assert } from "chai"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -30,7 +30,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: new Chain({ chainId: config.chainId.toString() }),
                 apiKey: apiKey
             }
             await configureEnvironment(options)

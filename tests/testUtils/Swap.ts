@@ -1,7 +1,7 @@
 import { assert } from "chai"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -26,7 +26,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: new Chain({ chainId: config.chainId.toString() }),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
