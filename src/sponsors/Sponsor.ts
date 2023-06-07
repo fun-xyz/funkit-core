@@ -1,8 +1,8 @@
 import { BigNumber, Contract, ContractInterface } from "ethers"
 import { Interface } from "ethers/lib/utils"
+import { TransactionData } from "../common"
 import { EnvOption } from "../config"
-import { getChainFromData } from "../data"
-
+import { Chain, getChainFromData } from "../data"
 export abstract class Sponsor {
     sponsorAddress: string
     interface: Interface
@@ -43,14 +43,19 @@ export abstract class Sponsor {
         return this.contract
     }
 
-    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption, value?: BigNumber): Promise<TransactionData> {
         const to = await this.getPaymasterAddress(options)
-        return { to, data, chain: options.chain }
-    }
-
-    async encodeValue(data: string, value: BigNumber, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
-        const to = await this.getPaymasterAddress(options)
-        return { to, value, data, chain: options.chain }
+        let chain: Chain
+        if (typeof options.chain === "string") {
+            chain = new Chain({ chainId: options.chain })
+        } else {
+            chain = options.chain
+        }
+        if (value) {
+            return { to, value, data, chain: chain }
+        } else {
+            return { to, data, chain: chain }
+        }
     }
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>

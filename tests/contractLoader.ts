@@ -3,11 +3,12 @@ import path from "path"
 import { getTestApiKey } from "./getAWSSecrets"
 import { getContractAbi } from "../src/apis/ContractApis"
 import { GlobalEnvOption, configureEnvironment } from "../src/config"
+import { Chain } from "../src/data"
 
 async function setGlobal() {
     const apiKey = await getTestApiKey()
     const options: GlobalEnvOption = {
-        chain: "5",
+        chain: new Chain({ chainId: "5" }),
         apiKey: apiKey
     }
     await configureEnvironment(options)

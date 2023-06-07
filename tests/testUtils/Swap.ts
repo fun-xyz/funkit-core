@@ -17,7 +17,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { chainId, inToken, outToken, baseToken, prefund } = config
+    const { inToken, outToken, baseToken, prefund } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
@@ -26,7 +26,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)

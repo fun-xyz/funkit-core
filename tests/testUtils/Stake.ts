@@ -14,7 +14,7 @@ export interface StakeTestConfig {
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
-    const { chainId, baseToken, prefund } = config
+    const { baseToken, prefund } = config
 
     describe("Stake", function () {
         this.timeout(120_000)
@@ -23,7 +23,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)

@@ -44,7 +44,7 @@ export class TokenSponsor extends Sponsor {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
-            return await this.encodeValue(data, amountdec, options)
+            return await this.encode(data, options, amountdec)
         }
     }
 
@@ -77,6 +77,11 @@ export class TokenSponsor extends Sponsor {
     async getListMode(spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
         const contract = await this.getContract(options)
         return await contract.getListMode(spender)
+    }
+
+    async getAllTokens(options: EnvOption = (globalThis as any).globalEnvOption) {
+        const contract = await this.getContract(options)
+        return await contract.getAllTokens()
     }
 
     addUsableToken(oracle: string, token: string, aggregator: string) {
