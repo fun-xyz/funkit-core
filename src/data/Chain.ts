@@ -258,7 +258,7 @@ export const getChainFromData = async (chainIdentifier?: string | Chain): Promis
     if (chainIdentifier instanceof Chain) {
         return chainIdentifier
     }
-    
+
     if (chainIdentifier.indexOf("http") + 1) {
         if (await verifyBundlerUrl(chainIdentifier)) {
             return new Chain({ bundlerUrl: chainIdentifier })
