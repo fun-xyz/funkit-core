@@ -1,6 +1,7 @@
 import { Contract, constants } from "ethers"
 import { defaultAbiCoder } from "ethers/lib/utils"
 import { Sponsor } from "./Sponsor"
+import { ActionFunction } from "../actions"
 import { Auth } from "../auth"
 import { TOKEN_PAYMASTER_ABI, WALLET_ABI } from "../common/constants"
 import { EnvOption } from "../config"
@@ -40,15 +41,15 @@ export class TokenSponsor extends Sponsor {
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2) + encoded.slice(2)
     }
 
-    stake(walletAddress: string, amount: number): Function {
+    stake(walletAddress: string, amount: number): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addEthDepositTo", [walletAddress, amountdec])
-            return await this.encodeValue(data, amountdec, options)
+            return await this.encode(data, options, amountdec)
         }
     }
 
-    unstake(walletAddress: string, amount: number): Function {
+    unstake(walletAddress: string, amount: number): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("withdrawEthDepositTo", [walletAddress, amountdec])
@@ -77,6 +78,11 @@ export class TokenSponsor extends Sponsor {
     async getListMode(spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
         const contract = await this.getContract(options)
         return await contract.getListMode(spender)
+    }
+
+    async getAllTokens(options: EnvOption = (globalThis as any).globalEnvOption) {
+        const contract = await this.getContract(options)
+        return await contract.getAllTokens()
     }
 
     addUsableToken(oracle: string, token: string, aggregator: string) {

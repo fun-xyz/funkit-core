@@ -17,7 +17,7 @@ export class GaslessSponsor extends Sponsor {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
-            return await this.encodeValue(data, amountdec, options)
+            return await this.encode(data, options, amountdec)
         }
     }
 
