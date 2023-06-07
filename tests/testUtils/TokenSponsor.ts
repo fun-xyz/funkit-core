@@ -63,6 +63,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             })
 
             await configureEnvironment({
+                ...options,
                 gasSponsor: {
                     sponsorAddress: funderAddress,
                     token: paymasterToken
@@ -127,7 +128,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const funderAddress = await funder.getUniqueId()
 
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
+            const apiKey = await getTestApiKey()
             await configureEnvironment({
+                ...{
+                    chain: new Chain({ chainId: config.chainId.toString() }),
+                    apiKey: apiKey
+                },
                 gasSponsor: {
                     sponsorAddress: funderAddress,
                     token: paymasterToken
