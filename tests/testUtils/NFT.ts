@@ -13,6 +13,9 @@ export interface NFTTestConfig {
     baseToken: string
     prefund: boolean
     nftAddress: string
+    tokenId: number
+    testNFTName: string
+    testNFTAddress: string
 }
 export const NFTTest = (config: NFTTestConfig) => {
     const { chainId, prefund, nftAddress } = config
@@ -22,8 +25,9 @@ export const NFTTest = (config: NFTTestConfig) => {
         let auth: Auth
         let wallet1: FunWallet
         let wallet2: FunWallet
+        let apiKey: string
         before(async function () {
-            const apiKey = await getTestApiKey()
+            apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: chainId.toString(),
                 apiKey: apiKey
@@ -45,7 +49,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     await wallet1.transfer(auth, {
                         to: await wallet2.getAddress(),
                         token: nftAddress,
-                        tokenId: 10
+                        tokenId: config.tokenId
                     })
                 } catch (error) {
                     console.log("NFT transfer error: ", error)
@@ -54,7 +58,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 await wallet2.transfer(auth, {
                     to: await wallet1.getAddress(),
                     token: nftAddress,
-                    tokenId: 10
+                    tokenId: config.tokenId
                 })
                 assert(!transferError, "Transfer should have failed")
             })
@@ -64,10 +68,10 @@ export const NFTTest = (config: NFTTestConfig) => {
                 await wallet1.approve(auth, {
                     spender: await wallet2.getAddress(),
                     token: nftAddress,
-                    tokenId: 10
+                    tokenId: config.tokenId
                 })
-                const data = await nft.getApproved("10")
-                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receiveis not correct")
+                const data = await nft.getApproved(config.tokenId.toString())
+                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
         })
 
@@ -84,10 +88,32 @@ export const NFTTest = (config: NFTTestConfig) => {
             })
             it("getApproval", async () => {
                 const nft = new NFT(nftAddress)
-                const tokenId = "10"
+                const tokenId = config.tokenId.toString()
                 const approved = await nft.getApproved(tokenId)
                 const owner = await wallet2.getAddress()
                 assert(approved === owner, "Owner is not correct")
+            })
+
+            it("getName", async () => {
+                const options: GlobalEnvOption = {
+                    chain: "1",
+                    apiKey: apiKey
+                }
+                await configureEnvironment(options)
+                const nft = new NFT(config.testNFTAddress)
+                const nftName = await nft.getName()
+                assert(nftName === config.testNFTName, "Incorrect NFT Name")
+            })
+
+            it("getAddress", async () => {
+                const options: GlobalEnvOption = {
+                    chain: "1",
+                    apiKey: apiKey
+                }
+                await configureEnvironment(options)
+                const nft = new NFT(config.testNFTName)
+                const nftAddr = await nft.getAddress()
+                assert(nftAddr === config.testNFTAddress, "Incorrect NFT Address")
             })
         })
     })
