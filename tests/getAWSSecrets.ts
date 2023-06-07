@@ -32,7 +32,7 @@ export async function getTestApiKey(): Promise<string> {
     }
 
     const secret = JSON.parse(response.SecretString)
-    const apiKey = secret.apigw
+    const apiKey = secret.prod
     return apiKey
 }
 
