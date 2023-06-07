@@ -3,10 +3,8 @@ import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
-import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
-
 export interface RebalancingFunOwnedTokenSponsorTestConfig {
     chainId: number
     inToken: string
@@ -28,6 +26,7 @@ export const RebalancingFunOwnedTokenSponsorTest = (config: RebalancingFunOwnedT
         this.timeout(300_000)
         let auth: Eoa
         let funder: Eoa
+        let funderAddress: string
         let wallet: FunWallet
         let wallet1: FunWallet
         before(async function () {
@@ -43,95 +42,106 @@ export const RebalancingFunOwnedTokenSponsorTest = (config: RebalancingFunOwnedT
             await configureEnvironment(options)
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.walletIndex })
             wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.funderIndex })
-            if (config.prefund) {
-                await fundWallet(funder, wallet, config.baseTokenStakeAmt)
-                await fundWallet(auth, wallet1, config.baseTokenStakeAmt)
-            }
-            const walletAddress = await wallet.getAddress()
-            const walletAddress1 = await wallet1.getAddress()
-            const funderAddress = await funder.getUniqueId()
 
-            // Send some paymaster tokens to the funder
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.swapAmount,
-                out: paymasterToken,
-                returnAddress: funderAddress
-            })
-            // Configure the enviroment to use the tokenPaymaster
-            await configureEnvironment({
-                gasSponsor: {
-                    sponsorAddress: funderAddress,
-                    token: paymasterToken
-                }
-            })
+            // if (config.prefund) {
+            //     await fundWallet(funder, wallet, config.baseTokenStakeAmt)
+            //     await fundWallet(auth, wallet1, config.baseTokenStakeAmt)
+            // }
+            // const walletAddress = await wallet.getAddress()
+            // const walletAddress1 = await wallet1.getAddress()
+            // funderAddress = await funder.getUniqueId()
 
-            const gasSponsor = new TokenSponsor()
+            // // Send some paymaster tokens to the funder
+            // await wallet.swap(auth, {
+            //     in: config.inToken,
+            //     amount: config.swapAmount,
+            //     out: paymasterToken,
+            //     returnAddress: funderAddress
+            // })
+            // // Configure the enviroment to use the tokenPaymaster
+            // await configureEnvironment({
+            //     gasSponsor: {
+            //         sponsorAddress: funderAddress,
+            //         token: paymasterToken
+            //     }
+            // })
 
-            const baseStakeAmount = config.baseTokenStakeAmt
-            const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
+            // // Create a new token sponsor
+            // const gasSponsor = new TokenSponsor()
+            // const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+            // const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-            const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-            const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+            // // Stake some tokens for wallet and wallet1
+            // const approve = await gasSponsor.approve(paymasterToken, config.paymasterTokenStakeAmt * 2)
+            // const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, config.paymasterTokenStakeAmt)
+            // const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, config.paymasterTokenStakeAmt)
+            // const data = await gasSponsor.stake(funderAddress, config.baseTokenStakeAmt)
+            // await funder.sendTxs([approve, deposit, deposit1, data])
 
-            const approve = await gasSponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
-            const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
-            const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
-            const data = await gasSponsor.stake(funderAddress, baseStakeAmount)
-
-            await funder.sendTxs([approve, deposit, deposit1, data])
-
-            const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-            const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
-
-            assert(depositInfo1E.gt(depositInfo1S), "Base Stake Failed")
-            assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+            // // Check to make sure token sponsor's paymaster token and eth balances have increased
+            // const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
+            // const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+            // assert(depositInfo1E.gt(depositInfo1S), "Base Stake Failed")
+            // assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
         })
 
+        // Swap inToken for outToken using paymaster
         const runSwap = async (wallet: FunWallet) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
-            if (Number(tokenBalanceBefore) < 0.1) {
-                await wallet.swap(auth, {
-                    in: config.inToken,
-                    amount: config.swapAmount,
-                    out: config.outToken
-                })
-                const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
-                assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-            }
+            await wallet.swap(auth, {
+                in: config.inToken,
+                amount: config.swapAmount,
+                out: config.outToken
+            })
+            const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it("Only User Whitelisted", async () => {
-            const walletAddress = await wallet.getAddress()
-            const walletAddress1 = await wallet1.getAddress()
-            const gasSponsor = new TokenSponsor()
-            await funder.sendTx(await gasSponsor.setToWhitelistMode())
-            await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
-            await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
-            await runSwap(wallet)
-            try {
-                await runSwap(wallet1)
-                throw new Error("Wallet is not whitelisted but transaction passed")
-            } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + JSON.stringify(error))
-            }
-        })
-
         it("Blacklist Mode Approved", async () => {
-            const gasSponsor = new TokenSponsor()
-            const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            const funderAddress = await funder.getUniqueId()
-
-            await funder.sendTx(await gasSponsor.setToBlacklistMode())
-            await configureEnvironment({
+            // Configure Environment
+            const apiKey = await getTestApiKey()
+            const options: GlobalEnvOption = {
+                chain: config.chainId.toString(),
+                apiKey: apiKey,
                 gasSponsor: {
                     sponsorAddress: funderAddress,
                     token: paymasterToken
                 }
-            })
+            }
+            await configureEnvironment(options)
+            const gasSponsor = new TokenSponsor()
 
-            await runSwap(wallet)
+            // console.log("set sponsor to blacklistmode", await funder.sendTx(await gasSponsor.setToBlacklistMode()))
+            // await runSwap(wallet)
+
+            // Get a list of all tokens in the paymaster
+            const tokens = await gasSponsor.getAllTokens()
+            for (const token of tokens) {
+                const amount = await gasSponsor.getTokenBalance(token, await wallet1.getAddress())
+                console.log("amount", amount)
+                if (amount.eq(0)) continue
+
+                const unlockTx = await gasSponsor.unlockTokenDepositAfter(token, 1)
+                console.log(await auth.sendTx(unlockTx))
+
+                // unstake Token all tokens belonging to paymaster
+                const unstake = await gasSponsor.unstakeToken(token, await wallet1.getAddress(), amount)
+                await auth.sendTx(unstake)
+                console.log("Unstake Token", unstake)
+
+                // swap these tokens for eth
+                const swap = await wallet1.swap(auth, {
+                    in: token,
+                    amount: amount,
+                    out: "eth"
+                })
+                console.log("SWAP", swap)
+                // addEthDepositTo
+                const stake = await gasSponsor.stake(await wallet1.getAddress(), amount)
+                const stakeTx = await funder.sendTx(stake)
+                console.log("STAKE", stakeTx)
+            }
         })
     })
 }

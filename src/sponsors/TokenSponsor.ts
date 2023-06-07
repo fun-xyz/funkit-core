@@ -79,6 +79,11 @@ export class TokenSponsor extends Sponsor {
         return await contract.getListMode(spender)
     }
 
+    async getAllTokens(options: EnvOption = (globalThis as any).globalEnvOption) {
+        const contract = await this.getContract(options)
+        return await contract.getAllTokens()
+    }
+
     addUsableToken(oracle: string, token: string, aggregator: string) {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const decimals = await Token.getDecimals(token, options)
