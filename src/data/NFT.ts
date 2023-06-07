@@ -1,21 +1,23 @@
 import { Contract, ethers } from "ethers"
 import { getChainFromData } from "./Chain"
+import { getNftAddress, getNftName } from "../apis/NFTApis"
 import { ERC_721_ABI, TransactionData } from "../common"
 import { EnvOption } from "../config"
-import { MissingParameterError } from "../errors"
-
+import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 export class NFT {
     address = ""
+    name = ""
     contract?: Contract
 
-    constructor(address: string, location = "NFT constructor") {
-        if (!address) {
+    constructor(input: string, location = "NFT constructor") {
+        if (!input) {
             throw new MissingParameterError(location)
         }
-        if (ethers.utils.isAddress(address)) {
-            this.address = address
+        if (ethers.utils.isAddress(input)) {
+            this.address = input
             return
         }
+        this.name = input
     }
 
     async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
@@ -33,7 +35,32 @@ export class NFT {
     }
 
     async getAddress(): Promise<string> {
+        if (this.name && !this.address) {
+            const nft = await getNftAddress(this.name)
+            if (nft.error) {
+                const helper = new Helper("getName", "", "call failed")
+                helper.pushMessage(`NFT address for ${this.name} not found`)
+                throw new ServerMissingDataError("NFT.getAddress", "NFT", helper)
+            } else {
+                return nft.address
+            }
+        }
         return this.address
+    }
+
+    async getName(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+        if (!this.name && this.address) {
+            const chain = await getChainFromData(options.chain)
+            const nft = await getNftName(await chain.getChainId(), this.address)
+            if (nft.error) {
+                const helper = new Helper("getName", chain, "call failed")
+                helper.pushMessage(`NFT name for address ${this.address} and chain id ${await chain.getChainId()} not found`)
+                throw new ServerMissingDataError("NFT.getName", "NFT", helper)
+            } else {
+                return nft.name
+            }
+        }
+        return this.name
     }
 
     async getContract(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Contract> {
