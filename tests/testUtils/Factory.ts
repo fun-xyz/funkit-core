@@ -3,7 +3,6 @@ import { randomBytes } from "ethers/lib/utils"
 import { Eoa } from "../../src/auth"
 import { FUN_TESTNET_CHAIN_ID, LOCAL_FORK_CHAIN_ID } from "../../src/common/constants"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data"
 import { fundWallet, isContract } from "../../src/utils/ChainUtils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -26,7 +25,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: new Chain({ chainId: config.chainId.toString() }),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)

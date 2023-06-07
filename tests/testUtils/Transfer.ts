@@ -2,7 +2,7 @@ import { assert } from "chai"
 import { Wallet } from "ethers"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, Token } from "../../src/data"
+import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -27,7 +27,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: new Chain({ chainId: config.chainId.toString() }),
+                chain: config.chainId.toString(),
                 apiKey: apiKey,
                 gasSponsor: undefined
             }

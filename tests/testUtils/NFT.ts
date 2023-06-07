@@ -1,7 +1,6 @@
 import { assert } from "chai"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data"
 import { NFT } from "../../src/data/NFT"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -27,7 +26,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         before(async function () {
             apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: new Chain({ chainId: config.chainId.toString() }),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
@@ -99,7 +98,7 @@ export const NFTTest = (config: NFTTestConfig) => {
 
             it("getName", async () => {
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "1" }),
+                    chain: "1",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -110,7 +109,7 @@ export const NFTTest = (config: NFTTestConfig) => {
 
             it("getAddress", async () => {
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "1" }),
+                    chain: "1",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)

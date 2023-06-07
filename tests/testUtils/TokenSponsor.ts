@@ -34,7 +34,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: new Chain({ chainId: config.chainId.toString() }),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
 

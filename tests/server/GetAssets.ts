@@ -2,7 +2,6 @@ import { BigNumber } from "@ethersproject/bignumber"
 import { expect } from "chai"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 const chainId = 5
@@ -14,7 +13,7 @@ describe("GetAssets", function () {
     before(async function () {
         const apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
-            chain: new Chain({ chainId: chainId.toString() }),
+            chain: chainId.toString(),
             apiKey: apiKey
         }
         await configureEnvironment(options)
@@ -33,7 +32,7 @@ describe("GetAssets", function () {
             it("Mainnet, Binance 8", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "1" }),
+                    chain: "1",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -44,7 +43,7 @@ describe("GetAssets", function () {
             it("Optimism, Optimism Foundation", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "10" }),
+                    chain: "10",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -56,7 +55,7 @@ describe("GetAssets", function () {
             it("Polygon, Quickswap Team", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "137" }),
+                    chain: "137",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -67,7 +66,7 @@ describe("GetAssets", function () {
             it("Arbitrum", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "42161" }),
+                    chain: "42161",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -83,7 +82,7 @@ describe("GetAssets", function () {
             it("Goerli, Funwallet", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "5" }),
+                    chain: "5",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -94,7 +93,7 @@ describe("GetAssets", function () {
             it("Mainnet, Franklinisbored.eth", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "1" }),
+                    chain: "1",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -105,7 +104,7 @@ describe("GetAssets", function () {
             it("Optimism, Uniswap Positions", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "10" }),
+                    chain: "10",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -116,7 +115,7 @@ describe("GetAssets", function () {
             it("Polygon, Uniswap Positions", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "137" }),
+                    chain: "137",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
@@ -127,7 +126,7 @@ describe("GetAssets", function () {
             it("Arbitrum, Arbitrum Odyssey", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
-                    chain: new Chain({ chainId: "42161" }),
+                    chain: "42161",
                     apiKey: apiKey
                 }
                 await configureEnvironment(options)
