@@ -6,7 +6,7 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "test": "env REMOTE_TEST=true mocha test/fork",
+        "test": "ts-mocha tests/tenderly/*.ts",
         "test-tenderly": "ts-mocha tests/tenderly/*.ts",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",

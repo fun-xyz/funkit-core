@@ -32,4 +32,4 @@ jobs:
               run: yarn build
 
             - name: Yarn test
-              run: yarn test-goerli
+              run: yarn test
