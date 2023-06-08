@@ -1,7 +1,5 @@
-// import { API_URL } from "../common/constants"
+import { API_URL } from "../common/constants"
 import { sendPostRequest } from "../utils/ApiUtils"
-
-const API_URL = "http://127.0.0.1:3003"
 
 export interface PaymasterTransaction {
     action: string

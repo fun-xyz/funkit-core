@@ -92,6 +92,17 @@ export abstract class Sponsor {
         }
     }
 
+    batchTransaction(transactions: Function[]): Function {
+        return async (sponsorAddress: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
+            let calldata: any[] = []
+            for (let i = 0; i < transactions.length; i++) {
+                calldata.push(await transactions[i](sponsorAddress, options))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, options)
+        }
+    }
+
     addSpenderToWhiteList(spender: string): Function {
         return async (sponsorAddress: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
             const chain = await getChainFromData(options.chain)
