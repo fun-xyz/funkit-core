@@ -31,8 +31,8 @@ async function main() {
     // const sponsoraddr = await sponsor.getPaymasterAddress()
     const token = "0xAA8958047307Da7Bb00F0766957edeC0435b46B5"
     // const deposit = sponsor.unlockDepositAfter(0)
-    // const deposit = sponsor.lockDeposit() 
-    const deposit = await sponsor.unlockTokenDepositAfter(token, 0)
+    // const deposit = sponsor.lockDeposit()
+    // const deposit = await sponsor.unlockTokenDepositAfter(token, 0)
     // const deposit = await sponsor.lockTokenDeposit(token, 0)
     // const deposit = await sponsor.unlockTokenDepositAfter(token, walletaddr, 50)
     // console.log((await sponsor.getTokenBalance(token, walletaddr)).toString())
@@ -40,7 +40,6 @@ async function main() {
     // const unlock = await sponsor.unlockTokenDepositAfter(token, 0)
     // const unstake = await sponsor.unstakeToken("0xAA8958047307Da7Bb00F0766957edeC0435b46B5", wallet, 50)
     // await auth.sendTx(unlock)
-
     // console.log(await sponsor.getAllTokenData(token, walletaddr))
     // const deposit= await sponsor.removeSpenderFromWhiteList("0xE8448945F00bf10EfFa2Ddf935B74B3527F29DB9")
     // const deposit = await sponsor.addSpenderToBlackList("0xE8448945F00bf10EfFa2Ddf935B74B3527F29DB9")
@@ -48,12 +47,18 @@ async function main() {
     // const deposit = await sponsor.batchWhitelistUsers(['0x07865c6e87b9f70255377e024ace6630c1eaa37f', '0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767', '0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093'], [true, true, false])
     // console.log(await deposit())
     // await auth.sendTx(deposit)
-    // const deposit = await sponsor.approve("0xAA8958047307Da7Bb00F0766957edeC0435b46B5",100)
-    // const deposit = await sponsor.stakeToken("0xAA8958047307Da7Bb00F0766957edeC0435b46B5",wallet,100)
+    // const deposit = await sponsor.approve("0xAA8958047307Da7Bb00F0766957edeC0435b46B5",200)
+    // const deposit = await sponsor.stakeToken("0xAA8958047307Da7Bb00F0766957edeC0435b46B5",walletaddr,200)
     // // const deposit=await sponsor.setToWhitelistMode()
-    console.log((await sponsor.getLockState(token, walletaddr))) //0 or greater than current block number lock. 
-    console.log((await sponsor.getLockState("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", walletaddr))) //0 or greater than current block number lock. 
-    console.log((await sponsor.getLockState("eth", walletaddr)))
+    // console.log((await sponsor.getLockState(token, walletaddr))) //0 or greater than current block number lock. 
+    // console.log((await sponsor.getLockState("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", walletaddr))) //0 or greater than current block number lock. 
+    // console.log((await sponsor.getLockState("eth", walletaddr)))
+    // console.log(walletaddr)
+    // console.log(await sponsor.getListMode("0xcd63cB2374e49f88083d79D5f7891be5734cdc68"))
+    // console.log(await sponsor.getSpenderWhitelisted("0xcd63cB2374e49f88083d79D5f7891be5734cdc68","0xf7aDDE90eD64812D0A55FFd8847F644aEFCd04aa"))
+    const deposit = await sponsor.batchWhitelistUsers(["0x5958381730478d01b4AE44526F2eE87f0b65388C", "0xD797E4Aa7232Ef6fcC69446028a36BC2CF14bc14"], [true, true])
+    // auth.sendTx(deposit)
+    // console.log(await auth.getUniqueId())
     await funWallet.sendTx({ auth, call: deposit }, {
         apiKey: API_KEY,
         // gasSponsor: {
@@ -61,9 +66,17 @@ async function main() {
         //     // token: "0xAA8958047307Da7Bb00F0766957edeC0435b46B5"
         // }
     })
-    console.log((await sponsor.getLockState(token, walletaddr))) //0 or greater than current block number lock. 
-    console.log((await sponsor.getLockState("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", walletaddr))) //0 or greater than current block number lock. 
-    console.log((await sponsor.getLockState("eth", walletaddr)))
+    // await funWallet.transfer(auth, { to: "0x175C5611402815Eba550Dad16abd2ac366a63329", amount: 0.02, token: "eth" }, {
+    //     apiKey: API_KEY,
+    //     gasSponsor: {
+    //         sponsorAddress: '0xcd63cB2374e49f88083d79D5f7891be5734cdc68',
+    //         // token: "0xAA8958047307Da7Bb00F0766957edeC0435b46B5"
+    //     }
+    // })
+    // console.log((await sponsor.getLockState(token, walletaddr))) //0 or greater than current block number lock. 
+    // console.log((await sponsor.getLockState("0x3E1FF16B9A94eBdE6968206706BcD473aA3Da767", walletaddr))) //0 or greater than current block number lock. 
+    // console.log((await sponsor.getLockState("eth", walletaddr)))
+
 
 
 
