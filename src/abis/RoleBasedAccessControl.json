@@ -1,19 +1,6 @@
 {
-  "name": "UserAuthentication",
+  "name": "RoleBasedAccessControl",
   "abi": [
-    {
-      "name": "ADMIN_ROLE",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "inputs": []
-    },
     {
       "name": "INIT_HASH",
       "outputs": [
@@ -28,17 +15,30 @@
       "inputs": []
     },
     {
-      "name": "VERSION",
+      "name": "WILDCARD_RULE_ID",
       "outputs": [
         {
           "name": "",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "bytes32",
+          "internalType": "bytes32"
         }
       ],
       "stateMutability": "view",
       "type": "function",
       "inputs": []
+    },
+    {
+      "name": "addOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {
+          "name": "ownerId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
     },
     {
       "name": "authenticateUserOp",
@@ -115,7 +115,7 @@
           "type": "tuple"
         },
         {
-          "name": "userOpHash",
+          "name": "",
           "type": "bytes32",
           "internalType": "bytes32"
         },
@@ -127,43 +127,31 @@
       ]
     },
     {
-      "name": "createMultiSigGroup",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "inputs": [
+      "name": "getRule",
+      "outputs": [
         {
-          "name": "groupId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "group",
+          "name": "rule",
           "components": [
             {
-              "name": "userIds",
-              "type": "bytes32[]",
-              "internalType": "bytes32[]"
+              "name": "data",
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
-              "name": "threshold",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "constraints",
+              "type": "bytes32[2][]",
+              "internalType": "bytes32[2][]"
             }
           ],
-          "internalType": "struct MultiSigGroup",
+          "internalType": "struct Rule",
           "type": "tuple"
         }
-      ]
-    },
-    {
-      "name": "deleteMultiSigGroup",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      ],
+      "stateMutability": "view",
       "type": "function",
       "inputs": [
         {
-          "name": "groupId",
+          "name": "ruleId",
           "type": "bytes32",
           "internalType": "bytes32"
         }
@@ -214,7 +202,7 @@
       "type": "function",
       "inputs": [
         {
-          "name": "multiSigInitData",
+          "name": "initData",
           "type": "bytes",
           "internalType": "bytes"
         }
@@ -229,16 +217,16 @@
           "internalType": "bytes4"
         }
       ],
-      "stateMutability": "view",
+      "stateMutability": "pure",
       "type": "function",
       "inputs": [
         {
-          "name": "_hash",
+          "name": "",
           "type": "bytes32",
           "internalType": "bytes32"
         },
         {
-          "name": "_signature",
+          "name": "",
           "type": "bytes",
           "internalType": "bytes"
         }
@@ -258,66 +246,114 @@
       ]
     },
     {
-      "name": "subValidateSignatureECDSA",
-      "outputs": [
-        {
-          "name": "sigTimeRange",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "stateMutability": "pure",
+      "name": "removeOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function",
       "inputs": [
         {
-          "name": "signature",
-          "type": "bytes",
-          "internalType": "bytes"
-        },
-        {
-          "name": "userOpHash",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "userId",
+          "name": "ownerId",
           "type": "bytes32",
           "internalType": "bytes32"
         }
       ]
     },
     {
-      "name": "updateMultiSigGroup",
+      "name": "setRule",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
       "inputs": [
         {
-          "name": "groupId",
+          "name": "ruleId",
           "type": "bytes32",
           "internalType": "bytes32"
         },
         {
-          "name": "group",
+          "name": "rule",
           "components": [
             {
-              "name": "userIds",
-              "type": "bytes32[]",
-              "internalType": "bytes32[]"
+              "name": "data",
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
-              "name": "threshold",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "constraints",
+              "type": "bytes32[2][]",
+              "internalType": "bytes32[2][]"
             }
           ],
-          "internalType": "struct MultiSigGroup",
+          "internalType": "struct Rule",
           "type": "tuple"
+        }
+      ]
+    },
+    {
+      "name": "setSelectorRule",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        },
+        {
+          "name": "ruleId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "name": "setTargetRule",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {
+          "name": "target",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        },
+        {
+          "name": "ruleId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "name": "setUserRule",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function",
+      "inputs": [
+        {
+          "name": "userId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "selector",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        },
+        {
+          "name": "ruleId",
+          "type": "bytes32",
+          "internalType": "bytes32"
         }
       ]
     }
   ],
   "addresses": {
-    "5": "0x4EC766433D3faA65c44Dd30047542d3B1EC654Af"
+    "5": "0xc718a836F46074B54Dc96A4E1EAC81b8962A2485"
   }
 }
