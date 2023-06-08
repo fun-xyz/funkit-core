@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
-import { BigNumber, Contract, Signer } from "ethers"
+import { Contract, Signer } from "ethers"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
@@ -160,17 +160,14 @@ export class Chain {
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        let { verificationGasLimit } = res
-        let { preVerificationGas, callGasLimit } = res
-        if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
+        const { callGasLimit } = res
+        let { preVerificationGas, verificationGasLimit } = res
+        if (!(preVerificationGas || verificationGasLimit || res.callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
 
         preVerificationGas = preVerificationGas.mul(2)
         verificationGasLimit = verificationGasLimit.add(100_000)
-        if (partialOp.initCode !== "0x") {
-            callGasLimit = BigNumber.from(5e6)
-        }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 
