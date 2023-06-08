@@ -84,7 +84,7 @@ export class TokenSponsor extends Sponsor {
         return await contract.getAllTokens()
     }
 
-    addUsableToken(oracle: string, token: string, aggregator: string) {
+    addUsableToken(oracle: string, token: string, aggregator: string): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const decimals = await Token.getDecimals(token, options)
             const tokenAddress = await Token.getAddress(token, options)
@@ -94,7 +94,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    stakeToken(token: string, walletAddress: string, amount: number) {
+    stakeToken(token: string, walletAddress: string, amount: number): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const tokenObj = new Token(token)
 
@@ -106,7 +106,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    unstakeToken(token: string, walletAddress: string, amount: number) {
+    unstakeToken(token: string, walletAddress: string, amount: number): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const tokenObj = new Token(token)
 
@@ -118,7 +118,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    addWhitelistTokens(tokens: string[]) {
+    addWhitelistTokens(tokens: string[]): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const sendTokens = await Promise.all(
                 tokens.map((token) => {
@@ -130,7 +130,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    removeWhitelistTokens(tokens: string[]) {
+    removeWhitelistTokens(tokens: string[]): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const sendTokens = await Promise.all(
                 tokens.map((token) => {
@@ -142,7 +142,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    lockTokenDeposit(token: string) {
+    lockTokenDeposit(token: string): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("lockTokenDeposit", [token])
             return await this.encode(data, options)
@@ -156,10 +156,10 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    approve(token: string, amount: number) {
+    approve(token: string, amount: number): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const gasSponsorAddress = await this.getPaymasterAddress(options)
-            return await Token.approve(token, gasSponsorAddress, amount)
+            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "" } }
         }
     }
 }
