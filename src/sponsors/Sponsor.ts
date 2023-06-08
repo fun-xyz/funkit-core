@@ -1,6 +1,6 @@
 import { BigNumber, Contract, ContractInterface } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { ActionFunction, FirstClassActionResult } from "../actions"
+import { FirstClassActionResult } from "../actions"
 import { EnvOption } from "../config"
 import { Chain, getChainFromData } from "../data"
 export abstract class Sponsor {
@@ -68,42 +68,42 @@ export abstract class Sponsor {
 
     abstract unstake(walletAddress: string, amount: number): Function
 
-    setToBlacklistMode(): ActionFunction {
+    setToBlacklistMode(): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setListMode", [true])
             return await this.encode(data, options)
         }
     }
 
-    setToWhitelistMode(): ActionFunction {
+    setToWhitelistMode(): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setListMode", [false])
             return await this.encode(data, options)
         }
     }
 
-    addSpenderToWhiteList(spender: string): ActionFunction {
+    addSpenderToWhiteList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
-    removeSpenderFromWhiteList(spender: string): ActionFunction {
+    removeSpenderFromWhiteList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
             return await this.encode(data, options)
         }
     }
 
-    addSpenderToBlackList(spender: string): ActionFunction {
+    addSpenderToBlackList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
             return await this.encode(data, options)
         }
     }
 
-    removeSpenderFromBlackList(spender: string): ActionFunction {
+    removeSpenderFromBlackList(spender: string): Function {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
             return await this.encode(data, options)

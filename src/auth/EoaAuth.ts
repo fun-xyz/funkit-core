@@ -3,7 +3,6 @@ import { Signer, Wallet } from "ethers"
 import { BytesLike, arrayify, hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
 import { Auth } from "./Auth"
 import { EoaAuthInput } from "./types"
-import { ActionFunction } from "../actions"
 import { storeEVMCall } from "../apis"
 import { TransactionData } from "../common/"
 import { EnvOption } from "../config"
@@ -77,7 +76,7 @@ export class Eoa extends Auth {
     }
 
     async sendTx(
-        txData: TransactionData | ActionFunction,
+        txData: TransactionData | Function,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionReceipt> {
         await this.init()
