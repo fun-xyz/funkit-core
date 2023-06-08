@@ -400,7 +400,7 @@ export class FunWallet extends FirstClassActions {
     async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         if (status) {
             const chain = await getChainFromData(txOptions.chain)
-            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+            return await getLidoWithdrawals(await chain.getChainId(), await this.getAddress())
         }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
