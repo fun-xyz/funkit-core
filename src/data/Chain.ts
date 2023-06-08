@@ -87,7 +87,10 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                const abisAddresses = Object.fromEntries(Object.entries(CONTRACT_ADDRESSES).map(([key, value]) => [key, value["5"]]))
+                const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
+                    result[key] = CONTRACT_ADDRESSES[key][chainId]
+                    return result
+                }, {})
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
