@@ -53,7 +53,7 @@ const loadAbis = async (): Promise<void> => {
             }
 
             try {
-                fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+                fs.writeFileSync(filePath, JSON.stringify(data, null))
                 console.log("SUCCESS: ", fileName)
             } catch (error) {
                 console.error(`Failed to write to ${filePath}:`, error)
