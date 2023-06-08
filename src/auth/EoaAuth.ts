@@ -9,7 +9,6 @@ import { EnvOption } from "../config"
 import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
 import { Helper, MissingParameterError } from "../errors"
 import { verifyPrivateKey } from "../utils/DataUtils"
-
 const gasSpecificChain = { "137": 850_000_000_000 }
 
 export class Eoa extends Auth {
@@ -82,7 +81,7 @@ export class Eoa extends Auth {
     ): Promise<TransactionReceipt> {
         await this.init()
         if (typeof txData === "function") {
-            txData = await txData(options)
+            txData = (await txData(options)).data
         }
         const { to, value, data, chain } = txData as TransactionData
         if (!chain || !chain.id) {
