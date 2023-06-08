@@ -94,7 +94,7 @@ export abstract class Sponsor {
 
     batchTransaction(transactions: Function[]): Function {
         return async (sponsorAddress: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
-            let calldata: any[] = []
+            const calldata: any[] = []
             for (let i = 0; i < transactions.length; i++) {
                 calldata.push(await transactions[i](sponsorAddress, options))
             }
