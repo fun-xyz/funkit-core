@@ -29,13 +29,13 @@ export const StakeTest = (config: StakeTestConfig) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
-            if (prefund) await fundWallet(auth, wallet, 0.002)
+            if (prefund) await fundWallet(auth, wallet, 0.02)
         })
 
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: 0.001 })
+            await wallet.stake(auth, { amount: 0.01 })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })
