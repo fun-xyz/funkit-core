@@ -67,7 +67,8 @@ export class TokenSponsor extends Sponsor {
                 this.paymasterType,
                 walletAddress
             )
-            return await this.encodeValue(data, amountdec, options)
+
+            return await this.encode(data, options, amountdec)
         }
     }
 
@@ -137,6 +138,11 @@ export class TokenSponsor extends Sponsor {
             tokenAddress = await tokenData.getAddress(options)
         }
         return await contract.getTokenBalance(tokenAddress, spender)
+    }
+
+    async getAllTokens(options: EnvOption = (globalThis as any).globalEnvOption) {
+        const contract = await this.getContract(options)
+        return await contract.getAllTokens()
     }
 
     addUsableToken(oracle: string, token: string, aggregator: string) {

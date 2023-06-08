@@ -14,7 +14,7 @@ export interface StakeTestConfig {
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
-    const { chainId, baseToken, prefund } = config
+    const { baseToken, prefund } = config
 
     describe("Stake", function () {
         this.timeout(120_000)
@@ -23,19 +23,19 @@ export const StakeTest = (config: StakeTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
-            if (prefund) await fundWallet(auth, wallet, 0.002)
+            if (prefund) await fundWallet(auth, wallet, 0.02)
         })
 
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: 0.001 })
+            await wallet.stake(auth, { amount: 0.01 })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })

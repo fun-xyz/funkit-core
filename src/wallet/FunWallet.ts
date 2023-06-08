@@ -1,5 +1,5 @@
 import { BigNumber, constants } from "ethers"
-import { ActionFunction, FirstClassActions } from "../actions"
+import { ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
@@ -54,10 +54,10 @@ export class FunWallet extends FirstClassActions {
      */
     async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
         const chain = await getChainFromData(txOptions.chain)
-        const actionData = {
+        const actionData: ActionData = {
             wallet: this,
             chain,
-            txOptions
+            options: txOptions
         }
         const { data } = await transactionFunc(actionData)
 
@@ -419,7 +419,7 @@ export class FunWallet extends FirstClassActions {
     async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         if (status) {
             const chain = await getChainFromData(txOptions.chain)
-            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+            return await getLidoWithdrawals(await chain.getChainId(), await this.getAddress())
         }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())

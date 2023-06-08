@@ -36,7 +36,7 @@ export class GaslessSponsor extends Sponsor {
                 walletAddress
             )
 
-            return await this.encodeValue(data, amountdec, options)
+            return await this.encode(data, options, amountdec)
         }
     }
 
