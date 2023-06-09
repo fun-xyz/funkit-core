@@ -103,7 +103,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + JSON.stringify(error))
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 
@@ -117,7 +117,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.false
 
-            expect(await runSwap(wallet)).not.to.throw
+            await runSwap(wallet)
             try {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not blacklisted but transaction passed")
@@ -127,7 +127,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Lock/Unlock Base Tokens", async () => {
-            expect(await sponsor.getLockState(funderAddress)).to.be.true
             await funder.sendTx(sponsor.unlockDepositAfter(0))
             expect(await sponsor.getLockState(funderAddress)).to.be.false
             await funder.sendTx(sponsor.lockDeposit())

@@ -162,7 +162,7 @@ export class Chain {
         const res = await this.bundler!.estimateUserOpGas(partialOp)
         const { callGasLimit } = res
         let { preVerificationGas, verificationGasLimit } = res
-        if (!(preVerificationGas || verificationGasLimit || res.callGasLimit)) {
+        if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
 
