@@ -42,7 +42,7 @@ export class Eoa extends Auth {
     async signHash(hash: BytesLike): Promise<string> {
         await this.init()
         const walletSignature: WalletSignature = {
-            signature: await await this.signer!.signMessage(arrayify(hash)),
+            signature: await this.signer!.signMessage(arrayify(hash)),
             userId: await this.getUniqueId()
         }
         return encodeWalletSignature(walletSignature)
