@@ -99,7 +99,7 @@ export class TokenSponsor extends Sponsor {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getProvider()
         const currentBlock = await provider.getBlockNumber()
-        return unlockBlock > 0 && unlockBlock > currentBlock
+        return unlockBlock === 0 || unlockBlock > currentBlock
     }
 
     async getTokenInfo(token: string, options: EnvOption = (globalThis as any).globalEnvOption) {

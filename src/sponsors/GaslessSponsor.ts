@@ -72,7 +72,7 @@ export class GaslessSponsor extends Sponsor {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getProvider()
         const currentBlock = await provider.getBlockNumber()
-        return unlockBlock > 0 && unlockBlock > currentBlock
+        return unlockBlock === 0 || unlockBlock > currentBlock
     }
 
     async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
