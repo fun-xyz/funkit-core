@@ -83,7 +83,7 @@ export class Eoa extends Auth {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionReceipt> {
         if (typeof txData === "function") {
-            txData = await txData(options)
+            txData = (await txData(options)).data
         }
         const { to, data, chain } = txData as TransactionData
         let { value } = txData as TransactionData

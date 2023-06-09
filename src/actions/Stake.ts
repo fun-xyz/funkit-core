@@ -10,9 +10,9 @@ const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
 
 export const _stake = (params: StakeParams): ActionFunction => {
     return async (actionData: ActionData): Promise<FirstClassActionResult> => {
-        const lidoAddress = getLidoAddress((await actionData.chain.getChainId()).toString())
+        const lidoAddress = getLidoAddress(await actionData.chain.getChainId())
+        const data = { to: lidoAddress!, data: "0x", value: `${parseEther(params.amount.toString())}` }
 
-        const data = { to: lidoAddress!, value: `${parseEther(`${params.amount}`)}` }
         const errorData = {
             location: "action.stake",
             error: {

@@ -2,11 +2,12 @@ import { assert } from "chai"
 import { Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+
 import "../../fetch-polyfill"
 
 export interface TokenSponsorTestConfig {
@@ -54,8 +55,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, 0.5)
-                await fundWallet(auth, wallet1, 0.5)
+                await fundWallet(funder, wallet, 0.005)
+                await fundWallet(auth, wallet1, 0.005)
             }
 
             await wallet.swap(auth, {
@@ -66,6 +67,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             })
 
             await configureEnvironment({
+                ...options,
                 gasSponsor: {
                     sponsorAddress: funderAddress,
                     token: paymasterToken
@@ -130,7 +132,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const funderAddress = await funder.getUniqueId()
 
             await funder.sendTx(await gasSponsor.setToBlacklistMode())
+            const apiKey = await getTestApiKey()
             await configureEnvironment({
+                ...{
+                    chain: new Chain({ chainId: config.chainId.toString() }),
+                    apiKey: apiKey
+                },
                 gasSponsor: {
                     sponsorAddress: funderAddress,
                     token: paymasterToken

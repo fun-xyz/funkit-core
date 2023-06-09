@@ -1,9 +1,16 @@
-import fs from "fs"
 import path from "path"
 import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
+
+import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
+import { BigNumber, Contract, Signer } from "ethers"
+import { Addresses, ChainInput, UserOperation } from "./types"
+import { getChainInfo, getModuleInfo } from "../apis"
+import { EstimateGasResult } from "../common"
+import { CONTRACT_ADDRESSES, ENTRYPOINT_ABI } from "../common/constants"
+
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -95,13 +102,12 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                const abisAddresses = this.loadAddressesFromAbis(chainId)
+                const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
+                    result[key] = CONTRACT_ADDRESSES[key][chainId]
+                    return result
+                }, {})
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                this.modifyAddresses()
-                for (const name in addresses) {
-                    this.setAddress(name, addresses[name])
-                }
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -169,69 +175,6 @@ export class Chain {
         preVerificationGas = BigInt(preVerificationGas) * 2n
         verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
-    }
-
-    modifyAddresses() {
-        const modifications = {
-            eoaAaveWithdrawAddress: "AaveWithdraw",
-            approveAndExecAddress: "ApproveAndExec",
-            tokenSwapAddress: "ApproveAndSwap",
-            gaslessSponsorAddress: "GaslessPaymaster",
-            tokenSponsorAddress: "TokenPaymaster",
-            oracle: "TokenPriceOracle",
-            entryPointAddress: "EntryPoint",
-            factoryAddress: "FunWalletFactory",
-            feeOracle: "FeePercentOracle",
-            userAuthAddress: "UserAuthentication",
-            rbacAddress: "RoleBasedAccessControl"
-        }
-
-        Object.keys(modifications).forEach((key) => {
-            const newAddress = this.addresses[modifications[key]]
-            if (newAddress) {
-                this.addresses![key] = newAddress
-            }
-        })
-    }
-
-    private loadAddressesFromAbis(chainId: string): { [key: string]: string } {
-        const abisDir = path.resolve(__dirname, "..", "abis")
-        let fileNames: string[] = []
-
-        try {
-            fileNames = fs.readdirSync(abisDir)
-        } catch (err) {
-            console.error(`Error reading directory ${abisDir}: ${err}`)
-            return {}
-        }
-
-        const addresses: { [key: string]: string } = {}
-
-        for (const fileName of fileNames) {
-            const filePath = path.join(abisDir, fileName)
-            let fileContent = ""
-
-            try {
-                fileContent = fs.readFileSync(filePath, "utf8")
-            } catch (err) {
-                console.error(`Error reading file ${filePath}: ${err}`)
-                continue
-            }
-
-            let jsonContent
-
-            try {
-                jsonContent = JSON.parse(fileContent)
-            } catch (err) {
-                console.error(`Error parsing JSON content from ${filePath}: ${err}`)
-                continue
-            }
-
-            if (jsonContent.addresses && jsonContent.addresses[chainId]) {
-                addresses[jsonContent.name] = jsonContent.addresses[chainId]
-            }
-        }
-        return addresses
     }
 }
 

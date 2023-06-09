@@ -18,7 +18,7 @@ export interface NFTTestConfig {
     testNFTAddress: string
 }
 export const NFTTest = (config: NFTTestConfig) => {
-    const { chainId, prefund, nftAddress } = config
+    const { prefund, nftAddress } = config
 
     describe("NFT Tests", function () {
         this.timeout(120_000)
@@ -29,7 +29,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         before(async function () {
             apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)

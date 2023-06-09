@@ -1,5 +1,6 @@
 import { Address } from "viem"
-import { ActionFunction, FirstClassActions } from "../actions"
+import { ActionData, ActionFunction, FirstClassActions  } from "../actions"
+
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common"
@@ -53,10 +54,10 @@ export class FunWallet extends FirstClassActions {
      */
     async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
         const chain = await getChainFromData(txOptions.chain)
-        const actionData = {
+        const actionData: ActionData = {
             wallet: this,
             chain,
-            txOptions
+            options: txOptions
         }
         const { data } = await transactionFunc(actionData)
 

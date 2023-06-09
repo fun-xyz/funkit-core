@@ -7,6 +7,7 @@ import { getChainFromData } from "../../src/data"
 import { fundWallet, isContract, randomBytes } from "../../src/utils/ChainUtils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+
 import "../../fetch-polyfill"
 
 export interface FactoryTestConfig {
@@ -28,7 +29,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)

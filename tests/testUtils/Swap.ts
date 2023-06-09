@@ -19,7 +19,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { chainId, inToken, outToken, baseToken, prefund } = config
+    const { inToken, outToken, baseToken, prefund } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
@@ -28,7 +28,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
@@ -36,7 +36,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {
-                await fundWallet(auth, wallet, 1)
+                await fundWallet(auth, wallet, 0.005)
             }
         })
         let difference: number
@@ -45,7 +45,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: baseToken,
-                amount: config.amount ? config.amount : 0.01,
+                amount: config.amount ? config.amount : 0.001,
                 out: inToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)

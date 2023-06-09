@@ -100,4 +100,4 @@ export type FirstClassActionResult = {
     errorData: ErrorData
 }
 
-export type ActionFunction = (obj: any) => Promise<FirstClassActionResult>
+export type ActionFunction = (obj: ActionData) => Promise<FirstClassActionResult>
