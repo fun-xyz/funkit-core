@@ -1,5 +1,6 @@
 import { BigNumber } from "ethers"
 import { Sponsor } from "./Sponsor"
+import { ActionData, ActionFunction } from "../actions"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_ABI } from "../common"
 import { EnvOption } from "../config"
@@ -16,49 +17,49 @@ export class GaslessSponsor extends Sponsor {
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2)
     }
 
-    stake(walletAddress: string, amount: number): Function {
-        return async (sponsorAddress: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const amountdec = await Token.getDecimalAmount("eth", amount, options)
+    stake(walletAddress: string, amount: number): ActionFunction {
+        return async (actionData: ActionData) => {
+            const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
 
-            const chain = await getChainFromData(options.chain)
+            const chain = await getChainFromData(actionData.chain)
             await addTransaction(
                 await chain.getChainId(),
                 {
                     action: "stake",
                     amount,
-                    from: sponsorAddress,
+                    from: await actionData.wallet.getAddress(),
                     timestamp: Date.now(),
-                    to: await this.getPaymasterAddress(options),
+                    to: await this.getPaymasterAddress(actionData.options),
                     token: "eth"
                 },
                 this.paymasterType,
                 walletAddress
             )
 
-            return await this.encode(data, options, amountdec)
+            return await this.encode(data, actionData.options, amountdec)
         }
     }
 
-    unstake(walletAddress: string, amount: number): Function {
-        return async (sponsorAddress: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const amountdec = await Token.getDecimalAmount("eth", amount, options)
+    unstake(walletAddress: string, amount: number): ActionFunction {
+        return async (actionData: ActionData) => {
+            const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])
-            const chain = await getChainFromData(options.chain)
+            const chain = await getChainFromData(actionData.chain)
             await addTransaction(
                 await chain.getChainId(),
                 {
                     action: "unstake",
                     amount,
-                    from: sponsorAddress,
+                    from: await actionData.wallet.getAddress(),
                     timestamp: Date.now(),
-                    to: await this.getPaymasterAddress(options),
+                    to: await this.getPaymasterAddress(actionData.options),
                     token: "eth"
                 },
                 this.paymasterType,
                 walletAddress
             )
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
@@ -83,17 +84,17 @@ export class GaslessSponsor extends Sponsor {
         return await contract.getBalance(sponsor)
     }
 
-    lockDeposit(): Function {
-        return async (_: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
+    lockDeposit(): ActionFunction {
+        return async (actionData: ActionData) => {
             const data = this.interface.encodeFunctionData("lockDeposit", [])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
-    unlockDepositAfter(blocksToWait: number): Function {
-        return async (_: string, options: EnvOption = (globalThis as any).globalEnvOption) => {
+    unlockDepositAfter(blocksToWait: number): ActionFunction {
+        return async (actionData: ActionData) => {
             const data = this.interface.encodeFunctionData("unlockDepositAfter", [blocksToWait])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 

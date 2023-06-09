@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from "ethers"
 import { Interface, parseEther } from "ethers/lib/utils"
 import { approveAndExec } from "./ApproveAndExec"
-import { ActionData, ActionFunction, FinishUnstakeParams, FirstClassActionResult, RequestUnstakeParams, StakeParams } from "./types"
+import { ActionData, ActionFunction, ActionResult, FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
 import { TransactionData, WITHDRAW_QUEUE_ABI } from "../common"
 import { Token } from "../data"
 import { Helper, StatusError } from "../errors"
@@ -9,7 +9,7 @@ import { Helper, StatusError } from "../errors"
 const withdrawQueueInterface = new Interface(WITHDRAW_QUEUE_ABI)
 
 export const _stake = (params: StakeParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const lidoAddress = getLidoAddress(await actionData.chain.getChainId())
         const data = { to: lidoAddress!, data: "0x", value: `${parseEther(params.amount.toString())}` }
         const errorData = {
@@ -26,7 +26,7 @@ export const _stake = (params: StakeParams): ActionFunction => {
 }
 
 export const _requestUnstake = (params: RequestUnstakeParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         // Approve steth
         const { chain, wallet } = actionData
         const steth: string = getSteth(await chain.getChainId())
@@ -69,7 +69,7 @@ const getReadyToWithdrawRequests = async (actionData: ActionData) => {
 }
 
 export const _finishUnstake = (params: FinishUnstakeParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const { chain } = actionData
         const provider = await actionData.chain.getProvider()
         const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
