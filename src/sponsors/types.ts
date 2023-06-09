@@ -2,8 +2,8 @@ import { BigNumber } from "ethers"
 
 export enum PaymasterType {
     BaseSponsor = "BaseSponsor",
-    GaslessSponsor = "GaslessSponsor",
-    TokenSponsor = "TokenSponsor"
+    GaslessSponsor = "gasless",
+    TokenSponsor = "token"
 }
 
 export interface AllTokenData {
