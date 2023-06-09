@@ -31,7 +31,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
