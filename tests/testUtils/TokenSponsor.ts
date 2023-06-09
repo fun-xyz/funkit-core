@@ -1,4 +1,4 @@
-import { assert } from "chai"
+import { assert, expect } from "chai"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -6,7 +6,6 @@ import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
-
 export interface TokenSponsorTestConfig {
     chainId: number
     inToken: string
@@ -31,11 +30,17 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let funder: Eoa
         let wallet: FunWallet
         let wallet1: FunWallet
+        let funderAddress: string
+        let walletAddress: string
+        let walletAddress1: string
+        let sponsor: TokenSponsor
+        let options: GlobalEnvOption
+
         before(async function () {
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
             funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             const apiKey = await getTestApiKey()
-            const options: GlobalEnvOption = {
+            options = {
                 chain: config.chainId.toString(),
                 apiKey: apiKey
             }
@@ -47,22 +52,22 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             wallet = new FunWallet({ uniqueId, index: config.walletIndex ? config.walletIndex : 1223452391856341 })
             wallet1 = new FunWallet({ uniqueId, index: config.funderIndex ? config.funderIndex : 2345234 })
 
-            const walletAddress = await wallet.getAddress()
-            const walletAddress1 = await wallet1.getAddress()
+            walletAddress = await wallet.getAddress()
+            walletAddress1 = await wallet1.getAddress()
 
-            const funderAddress = await funder.getUniqueId()
+            funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
                 await fundWallet(funder, wallet, config.amount ? config.amount : 0.05)
                 await fundWallet(auth, wallet1, config.amount ? config.amount : 0.05)
             }
 
-            // await wallet.swap(auth, {
-            //     in: config.inToken,
-            //     amount: config.swapAmount,
-            //     out: paymasterToken,
-            //     returnAddress: funderAddress
-            // })
+            await wallet.swap(auth, {
+                in: config.inToken,
+                amount: config.swapAmount,
+                out: paymasterToken,
+                returnAddress: funderAddress
+            })
             await configureEnvironment({
                 ...options,
                 gasSponsor: {
@@ -77,55 +82,126 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
             const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-            const approve = await gasSponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
-            const deposit = await gasSponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
-            const deposit1 = await gasSponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
-            const data = await gasSponsor.stake(funderAddress, baseStakeAmount)
+            const approve = await sponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
+            const deposit = await sponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
+            const deposit1 = await sponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
+            const data = await sponsor.stake(funderAddress, baseStakeAmount)
 
             await funder.sendTxs([approve, deposit, deposit1, data])
 
-            const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-            const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
+            const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
+            const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
 
             assert(depositInfo1E.gt(depositInfo1S), "Base Stake Failed")
             assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
         })
 
         const runSwap = async (wallet: FunWallet) => {
-            const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
-            if (Number(tokenBalanceBefore) < 0.1) {
-                await wallet.swap(auth, {
-                    in: config.inToken,
-                    amount: config.swapAmount,
-                    out: config.outToken
-                })
-                const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
-                assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
-            }
+            await wallet.swap(auth, {
+                in: config.inToken,
+                amount: config.swapAmount,
+                out: config.outToken
+            })
+
+            await new Promise((f) => setTimeout(f, 2000))
+
+            const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
+            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
         it("Only User Whitelisted", async () => {
-            const walletAddress = await wallet.getAddress()
-            const walletAddress1 = await wallet1.getAddress()
-            const gasSponsor = new TokenSponsor()
-            await funder.sendTx(await gasSponsor.setToWhitelistMode())
-            await funder.sendTx(await gasSponsor.addSpenderToWhiteList(walletAddress))
-            await funder.sendTx(await gasSponsor.removeSpenderFromWhiteList(walletAddress1))
-            await runSwap(wallet)
+            await funder.sendTx(sponsor.setToWhitelistMode())
+            expect(await sponsor.getListMode(funderAddress)).to.be.false
+
+            await funder.sendTx(sponsor.addSpenderToWhiteList(walletAddress))
+            expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.removeSpenderFromWhiteList(walletAddress1))
+            expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
+
+            expect(await runSwap(wallet)).to.not.throw
             try {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + JSON.stringify(error))
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 
         it("Blacklist Mode Approved", async () => {
-            const gasSponsor = new TokenSponsor()
-            await funder.sendTx(await gasSponsor.setToBlacklistMode())
+            const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
 
-            await runSwap(wallet)
+            await funder.sendTx(await sponsor.setToBlacklistMode())
+            expect(await sponsor.getListMode(funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.addSpenderToBlackList(walletAddress1))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
+
+            expect(await runSwap(wallet)).not.to.throw
+            try {
+                await runSwap(wallet1)
+                throw new Error("Wallet is not blacklisted but transaction passed")
+            } catch (error: any) {
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+            }
+        })
+
+        it("Lock/Unlock Tokens", async () => {
+            await funder.sendTx(sponsor.unlockTokenDepositAfter(paymasterToken, 0))
+            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.false
+            expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
+            expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
+            await funder.sendTx(sponsor.lockTokenDeposit(paymasterToken))
+            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.true
+        })
+
+        it("Lock/Unlock Base Tokens", async () => {
+            await funder.sendTx(sponsor.unlockDepositAfter(0))
+            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.true
+            expect(await sponsor.getLockState("eth", funderAddress)).to.be.false
+            await funder.sendTx(sponsor.lockDeposit())
+            expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
+        })
+
+        it("Batch Blacklist/Whitelist Users", async () => {
+            await funder.sendTx(sponsor.setToBlacklistMode())
+            await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [false, false]))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
+            expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.false
+            await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [true, true]))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.true
+            expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.setToWhitelistMode())
+            await funder.sendTx(sponsor.batchWhitelistUsers([walletAddress, walletAddress1], [false, false]))
+            expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.false
+            expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
+            await funder.sendTx(sponsor.batchWhitelistUsers([walletAddress, walletAddress1], [true, true]))
+            expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
+            expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.true
+        })
+
+        it("Batch Blacklist/Whitelist Tokens", async () => {
+            const usdtAddr = "0x509Ee0d083DdF8AC028f2a56731412edD63223B9"
+            await funder.sendTx(sponsor.setTokenToBlackListMode())
+            await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken, usdtAddr], [false, false]))
+            expect(await sponsor.getTokenBlacklisted(paymasterToken, funderAddress)).to.be.false
+            expect(await sponsor.getTokenBlacklisted(usdtAddr, funderAddress)).to.be.false
+            await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken, usdtAddr], [true, true]))
+            expect(await sponsor.getTokenBlacklisted(paymasterToken, funderAddress)).to.be.true
+            expect(await sponsor.getTokenBlacklisted(usdtAddr, funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.setTokenToWhiteListMode())
+            await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken, usdtAddr], [false, false]))
+            expect(await sponsor.getTokenWhitelisted(paymasterToken, funderAddress)).to.be.false
+            expect(await sponsor.getTokenWhitelisted(usdtAddr, funderAddress)).to.be.false
+            await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken, usdtAddr], [true, true]))
+            expect(await sponsor.getTokenWhitelisted(paymasterToken, funderAddress)).to.be.true
+            expect(await sponsor.getTokenWhitelisted(usdtAddr, funderAddress)).to.be.true
         })
     })
 }

@@ -1,0 +1,3 @@
+tests/contractLoader.ts
+tests/deployer.js
+tests/loader.js

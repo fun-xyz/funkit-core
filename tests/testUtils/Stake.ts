@@ -15,7 +15,7 @@ export interface StakeTestConfig {
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
-    const { chainId, baseToken, prefund } = config
+    const { baseToken, prefund } = config
 
     describe("Stake", function () {
         this.timeout(120_000)
@@ -24,7 +24,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
@@ -36,14 +36,14 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: 0.001 })
+            await wallet.stake(auth, { amount: 0.01 })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })
 
         it("Should be able to start unstaking", async () => {
             const withdrawalsBefore = await wallet.getAssets(false, true)
-            await wallet.unstake(auth, { amounts: [0.001, 0.001] })
+            await wallet.unstake(auth, { amounts: [0.001] })
             const withdrawalsAfter = await wallet.getAssets(false, true)
             assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
         })

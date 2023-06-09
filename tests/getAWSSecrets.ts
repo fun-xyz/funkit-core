@@ -32,8 +32,14 @@ export async function getTestApiKey(): Promise<string> {
     }
 
     const secret = JSON.parse(response.SecretString)
-    const apiKey = secret.prod
-    return apiKey
+    switch (process.env.NODE_ENV) {
+        case "staging":
+            return secret.staging
+        case "internal":
+            return secret.internal
+        default:
+            return secret.prod
+    }
 }
 
 export async function getAwsSecret(secretId: string, secretName: string): Promise<string> {

@@ -5,7 +5,7 @@ dotenv.config()
 const config: NFTTestConfig = {
     chainId: 5,
     baseToken: "eth",
-    prefund: true,
+    prefund: false,
     nftAddress: "0xdFb5778fDbD15d8cb0e37d278CcC2ba9751aa5fc",
     tokenId: 10,
     testNFTName: "Anatomy Science Ape Club",

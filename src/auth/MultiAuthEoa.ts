@@ -60,4 +60,8 @@ export class MultiAuthEoa extends Eoa {
     override async getSignerFromProvider(provider: Web3Provider): Promise<Signer> {
         return await provider.getSigner()
     }
+
+    override async getAddress(): Promise<string> {
+        return await this.getOwnerAddr()[0]
+    }
 }

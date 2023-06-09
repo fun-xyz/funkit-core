@@ -17,12 +17,7 @@ const paymasterConfig = async (chainId, privateKey, aggergator, oracle, tokenAdd
     await configureEnvironment(await getOptions(chainId))
     // const tokenAddress = await Token.getAddress("usdc")
     const eoa = new Eoa({ privateKey: privateKey })
-    const sponsor = new TokenSponsor({
-        gasSponsor: {
-            sponsorAddress: "0x175C5611402815Eba550Dad16abd2ac366a63329",
-            token: "0x53589543A64408AA03ba709EFCD1a7f03AA6880D"
-        }
-    })
+    const sponsor = new TokenSponsor()
 
     await eoa.sendTx(await sponsor.addUsableToken(oracle, tokenAddress, aggergator))
 
