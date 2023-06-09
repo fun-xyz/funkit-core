@@ -24,7 +24,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)

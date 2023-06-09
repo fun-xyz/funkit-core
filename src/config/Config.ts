@@ -3,7 +3,7 @@ import { OPTION_TEST_API_KEY } from "../common/constants"
 import { Chain, getChainFromData } from "../data"
 
 export interface EnvOption {
-    chain?: string | Chain
+    chain?: string | Chain | number
     gasSponsor?: {
         sponsorAddress?: string
         token?: string
