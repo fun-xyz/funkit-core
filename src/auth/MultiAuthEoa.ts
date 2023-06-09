@@ -55,7 +55,7 @@ export class MultiAuthEoa extends Eoa {
 
     override async getEstimateGasSignature(): Promise<string> {
         const walletSignature: WalletSignature = {
-            userId: await this.getOwnerAddr()[0],
+            userId: (await this.getOwnerAddr())[0],
             signature: hexZeroPad(toUtf8Bytes(""), 65)
         }
         return encodeWalletSignature(walletSignature)
