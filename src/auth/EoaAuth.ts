@@ -45,7 +45,6 @@ export class Eoa extends Auth {
             this.client = createWalletClient({
                 transport: custom(authInput.windowEth)
             })
-            console.log("client", this.client)
         }
         if (authInput.rpc) {
             this.client = createWalletClient({
