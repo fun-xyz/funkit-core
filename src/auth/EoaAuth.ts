@@ -6,6 +6,7 @@ import {
     TransactionReceipt,
     WalletClient,
     createWalletClient,
+    custom,
     http,
     pad,
     parseUnits,
@@ -33,22 +34,37 @@ for (const key in chains) {
 export class Eoa extends Auth {
     signer?: PrivateKeyAccount | JsonRpcAccount
     client?: WalletClient
+    inited = false
+    account?: Address
     constructor(authInput: EoaAuthInput) {
         super()
         if (authInput.privateKey) {
             this.signer = privateKeyToAccount(authInput.privateKey)
         }
-        if (authInput.client) {
-            this.client = authInput.client
+        if (authInput.windowEth) {
+            this.client = createWalletClient({
+                transport: custom(authInput.windowEth)
+            })
+            console.log("client", this.client)
         }
     }
 
+    async init(): Promise<void> {
+        if (this.inited) return
+        if (this.client) {
+            const address = await this.client.requestAddresses()
+            this.account = address[0]
+        }
+        this.inited = true
+    }
+
     async signHash(hash: Hex): Promise<Hex> {
+        await this.init()
         let signature
         if (this.signer?.type === "local") {
             signature = await this.signer.signMessage({ message: { raw: toBytes(hash) } })
-        } else if (this.client && this.signer?.type === "json-rpc") {
-            signature = await this.client.signMessage({ account: this.signer, message: hash })
+        } else if (this.client && this.account) {
+            signature = await this.client.signMessage({ account: this.account, message: hash })
         } else {
             throw new Error("No signer or client")
         }
@@ -60,19 +76,23 @@ export class Eoa extends Auth {
     }
 
     async signOp(userOp: UserOp, chain: Chain): Promise<string> {
+        await this.init()
         const opHash = await userOp.getOpHashData(chain)
         return await this.signHash(opHash)
     }
 
     async getUniqueId(): Promise<Hex> {
+        await this.init()
         return this.signer!.address
     }
 
     async getOwnerAddr(): Promise<Hex[]> {
+        await this.init()
         return [await this.getUniqueId()]
     }
 
     async getEstimateGasSignature(): Promise<string> {
+        await this.init()
         const walletSignature: WalletSignature = {
             userId: await this.getUniqueId(),
             signature: pad("0x", { size: 65 })
@@ -84,6 +104,7 @@ export class Eoa extends Auth {
         txData: TransactionData | ActionFunction,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionReceipt> {
+        await this.init()
         if (typeof txData === "function") {
             const chain = await getChainFromData(options.chain)
             txData = (await txData({ wallet: this, chain, options })).data
@@ -121,6 +142,7 @@ export class Eoa extends Auth {
     }
 
     async getAddress(): Promise<Address> {
+        await this.init()
         return await this.getUniqueId()
     }
 }

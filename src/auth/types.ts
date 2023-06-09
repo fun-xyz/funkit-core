@@ -4,6 +4,8 @@ export interface EoaAuthInput {
     signerClient?: Account
     privateKey?: Hex
     client?: WalletClient
+    windowEth?: any
+    rpc?: string
 }
 
 export interface GroupAuthInput {
