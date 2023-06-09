@@ -1,5 +1,3 @@
-import fs from "fs"
-import path from "path"
 import { JsonRpcProvider } from "@ethersproject/providers"
 import { BigNumber, Contract, Wallet } from "ethers"
 import { UserOperation } from "./UserOp"
@@ -89,10 +87,8 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                const abisAddresses = this.loadAddressesFromAbis(chainId)
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
+                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                this.modifyAddresses()
             }
         } catch (e) {
             const helper = new Helper("getChainInfo", chain, "call failed")
@@ -174,68 +170,6 @@ export class Chain {
             callGasLimit = BigNumber.from(5e6)
         }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
-    }
-
-    modifyAddresses() {
-        const modifications = {
-            eoaAaveWithdrawAddress: "AaveWithdraw",
-            approveAndExecAddress: "ApproveAndExec",
-            tokenSwapAddress: "ApproveAndSwap",
-            gaslessSponsorAddress: "GaslessPaymaster",
-            tokenSponsorAddress: "TokenPaymaster",
-            oracle: "TokenPriceOracle",
-            entryPointAddress: "EntryPoint",
-            factoryAddress: "FunWalletFactory",
-            feeOracle: "FeePercentOracle",
-            verificationAddress: "UserAuthentication"
-        }
-
-        Object.keys(modifications).forEach((key) => {
-            const newAddress = this.addresses[modifications[key]]
-            if (newAddress) {
-                this.addresses[key] = newAddress
-            }
-        })
-    }
-
-    private loadAddressesFromAbis(chainId: string): { [key: string]: string } {
-        const abisDir = path.resolve(__dirname, "..", "abis")
-        let fileNames: string[] = []
-
-        try {
-            fileNames = fs.readdirSync(abisDir)
-        } catch (err) {
-            console.error(`Error reading directory ${abisDir}: ${err}`)
-            return {}
-        }
-
-        const addresses: { [key: string]: string } = {}
-
-        for (const fileName of fileNames) {
-            const filePath = path.join(abisDir, fileName)
-            let fileContent = ""
-
-            try {
-                fileContent = fs.readFileSync(filePath, "utf8")
-            } catch (err) {
-                console.error(`Error reading file ${filePath}: ${err}`)
-                continue
-            }
-
-            let jsonContent
-
-            try {
-                jsonContent = JSON.parse(fileContent)
-            } catch (err) {
-                console.error(`Error parsing JSON content from ${filePath}: ${err}`)
-                continue
-            }
-
-            if (jsonContent.addresses && jsonContent.addresses[chainId]) {
-                addresses[jsonContent.name] = jsonContent.addresses[chainId]
-            }
-        }
-        return addresses
     }
 }
 
