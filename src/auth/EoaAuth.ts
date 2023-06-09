@@ -88,7 +88,9 @@ export class Eoa extends Auth {
 
     async getUniqueId(): Promise<Hex> {
         await this.init()
-        return this.signer!.address
+        if (this.signer) return this.signer!.address
+        if (this.client && this.account) return this.account
+        throw new Error("No signer or client")
     }
 
     async getOwnerAddr(): Promise<Hex[]> {
