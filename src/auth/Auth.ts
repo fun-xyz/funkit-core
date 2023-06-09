@@ -13,6 +13,7 @@ export abstract class Auth {
     abstract getOwnerAddr(): Promise<string[]>
     abstract getEstimateGasSignature(): Promise<string>
     abstract sendTx(txData: TransactionData | Function): Promise<TransactionReceipt>
+    abstract getAddress(): Promise<string>
 
     async sendTxs(txs: TransactionData[] | Function[]): Promise<TransactionReceipt[]> {
         const receipts: TransactionReceipt[] = []

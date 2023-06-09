@@ -3,7 +3,7 @@ import { approveAndExec } from "./ApproveAndExec"
 import {
     ActionData,
     ActionFunction,
-    FirstClassActionResult,
+    ActionResult,
     OneInchSwapParams,
     OneInchSwapReturn,
     SwapParams,
@@ -26,7 +26,7 @@ const errorData = {
 const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
 
 export const _swap = (params: SwapParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         params.slippage = params.slippage ? params.slippage : 1
         const address = await actionData.wallet.getAddress()
         if (oneInchSupported.includes(parseInt(actionData.chain.id!))) {
@@ -42,7 +42,7 @@ export const _swap = (params: SwapParams): ActionFunction => {
 }
 
 const _uniswapSwap = (params: UniswapParams, address: string, options: EnvOption): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const provider = await actionData.chain.getProvider()
 
         const tokenSwapAddress = await actionData.chain.getAddress("tokenSwapAddress")

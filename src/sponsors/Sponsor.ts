@@ -1,18 +1,27 @@
 import { BigNumber, Contract, ContractInterface } from "ethers"
 import { Interface } from "ethers/lib/utils"
-import { FirstClassActionResult } from "../actions"
+import { PaymasterType } from "./types"
+import { ActionData, ActionFunction, ActionResult } from "../actions"
+import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
 import { EnvOption } from "../config"
 import { Chain, getChainFromData } from "../data"
+
 export abstract class Sponsor {
     sponsorAddress: string
     interface: Interface
     abi: ContractInterface
     name: string
+    paymasterType: PaymasterType
     paymasterAddress?: string
     chainId?: string
     contract?: Contract
 
-    constructor(options: EnvOption = (globalThis as any).globalEnvOption, abi: ContractInterface, name: string) {
+    constructor(
+        options: EnvOption = (globalThis as any).globalEnvOption,
+        abi: ContractInterface,
+        name: string,
+        paymasterType: PaymasterType
+    ) {
         this.sponsorAddress = options.gasSponsor!.sponsorAddress!
         if (abi instanceof Interface) {
             this.interface = abi
@@ -21,6 +30,7 @@ export abstract class Sponsor {
         }
         this.abi = abi
         this.name = name
+        this.paymasterType = paymasterType
     }
 
     async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
@@ -43,11 +53,7 @@ export abstract class Sponsor {
         return this.contract
     }
 
-    async encode(
-        data: string,
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        value?: BigNumber
-    ): Promise<FirstClassActionResult> {
+    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption, value?: BigNumber): Promise<ActionResult> {
         const to = await this.getPaymasterAddress(options)
         let chain: Chain
         if (typeof options.chain === "string") {
@@ -64,49 +70,164 @@ export abstract class Sponsor {
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>
 
-    abstract stake(walletAddress: string, amount: number): Function
+    abstract stake(walletAddress: string, amount: number): ActionFunction
 
-    abstract unstake(walletAddress: string, amount: number): Function
+    abstract unstake(walletAddress: string, amount: number): ActionFunction
 
-    setToBlacklistMode(): Function {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+    abstract lockDeposit(): ActionFunction
+
+    abstract unlockDepositAfter(blocksToWait: number): ActionFunction
+
+    async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+        const contract = await this.getContract(options)
+        return await contract.getListMode(sponsor)
+    }
+
+    setToBlacklistMode(): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.chain)
+            await updatePaymasterMode(
+                await chain.getChainId(),
+                { mode: "blacklist" },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+
             const data = this.interface.encodeFunctionData("setListMode", [true])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
-    setToWhitelistMode(): Function {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+    setToWhitelistMode(): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.chain)
+            await updatePaymasterMode(
+                await chain.getChainId(),
+                { mode: "whitelist" },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
             const data = this.interface.encodeFunctionData("setListMode", [false])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
-    addSpenderToWhiteList(spender: string): Function {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+    batchTransaction(transactions: Function[]): ActionFunction {
+        return async (actionData: ActionData) => {
+            const calldata: any[] = []
+            for (let i = 0; i < transactions.length; i++) {
+                calldata.push(await transactions[i](await actionData.wallet.getAddress(), actionData.options))
+            }
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    addSpenderToWhiteList(spender: string): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.chain)
+            await addToList(
+                await chain.getChainId(),
+                [spender],
+                "walletsWhiteList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
-    removeSpenderFromWhiteList(spender: string): Function {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+    removeSpenderFromWhiteList(spender: string): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.chain)
+            await removeFromList(
+                await chain.getChainId(),
+                [spender],
+                "walletsWhiteList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+
             const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
-    addSpenderToBlackList(spender: string): Function {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+    batchWhitelistUsers(users: string[], modes: boolean[]): ActionFunction {
+        return async (actionData: ActionData) => {
+            const calldata: string[] = []
+            for (let i = 0; i < users.length; i++) {
+                calldata.push(this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]]))
+            }
+
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+
+            const chain = await getChainFromData(actionData.chain)
+            batchOperation(
+                await chain.getChainId(),
+                users,
+                modes,
+                "walletsWhiteList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    addSpenderToBlackList(spender: string): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.chain)
+            await addToList(
+                await chain.getChainId(),
+                [spender],
+                "walletsBlackList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
-    removeSpenderFromBlackList(spender: string): Function {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+    removeSpenderFromBlackList(spender: string): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.chain)
+            await removeFromList(
+                await chain.getChainId(),
+                [spender],
+                "walletsBlackList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+
             const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    batchBlacklistUsers(users: string[], modes: boolean[]): ActionFunction {
+        return async (actionData: ActionData) => {
+            const calldata: string[] = []
+            for (let i = 0; i < users.length; i++) {
+                calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
+            }
+
+            const chain = await getChainFromData(actionData.chain)
+            batchOperation(
+                await chain.getChainId(),
+                users,
+                modes,
+                "walletsBlackList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+
+            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            return await this.encode(data, actionData.options)
         }
     }
 }

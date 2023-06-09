@@ -2,12 +2,12 @@ import { parseEther } from "ethers/lib/utils"
 import {
     ActionData,
     ActionFunction,
+    ActionResult,
     ApproveERC20Params,
     ApproveERC721Params,
     ApproveParams,
     ERC20TransferParams,
     ERC721TransferParams,
-    FirstClassActionResult,
     NativeTransferParams,
     TransferParams
 } from "./types"
@@ -44,7 +44,7 @@ export const _transfer = (params: TransferParams): ActionFunction => {
 }
 
 const ethTransfer = (params: NativeTransferParams): ActionFunction => {
-    return async (): Promise<FirstClassActionResult> => {
+    return async (): Promise<ActionResult> => {
         const data: TransactionData = { to: params.to, data: "0x", value: parseEther(`${params.amount}`) }
         const errorData: ErrorData = {
             location: "action.transfer.eth"
@@ -55,7 +55,7 @@ const ethTransfer = (params: NativeTransferParams): ActionFunction => {
 
 const erc20Transfer = (params: ERC20TransferParams): ActionFunction => {
     const { to, amount, token } = params
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const transferData = await Token.transfer(token!, to, amount, { chain: actionData.chain })
 
         const txDetails = {
@@ -83,7 +83,7 @@ const erc20Transfer = (params: ERC20TransferParams): ActionFunction => {
 
 const erc721Transfer = (params: ERC721TransferParams): ActionFunction => {
     const { to, tokenId, token } = params
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const from = await actionData.wallet.getAddress()
         const transferData = await NFT.transfer(token!, from, to, tokenId, { chain: actionData.chain })
 
@@ -132,7 +132,7 @@ export const _approve = (params: ApproveParams): ActionFunction => {
 
 const erc20Approve = (params: ApproveERC20Params): ActionFunction => {
     const { spender, amount, token } = params
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const erc20token = new Token(token)
         const approveData = await erc20token.approve(spender, amount, { chain: actionData.chain })
         const tokenAddress = await erc20token.getAddress()
@@ -161,7 +161,7 @@ const erc20Approve = (params: ApproveERC20Params): ActionFunction => {
 
 const erc721Approve = (params: ApproveERC721Params): ActionFunction => {
     const { spender, tokenId, token } = params
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const erc721token = new NFT(token)
         const approveData = await erc721token.approve(spender, tokenId, { chain: actionData.chain })
         const tokenAddress = await erc721token.getAddress()

@@ -1,6 +1,7 @@
 import { BigNumber, constants } from "ethers"
 import { ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
+import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common"
 import { FACTORY_ABI, WALLET_ABI } from "../common/constants"
@@ -20,7 +21,7 @@ import {
 import { Helper, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, getUniqueId } from "../utils"
+import { gasCalculation, getPaymasterType, getUniqueId } from "../utils"
 
 export interface FunWalletParams {
     uniqueId: string
@@ -193,9 +194,9 @@ export class FunWallet extends FirstClassActions {
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
-            preVerificationGas: BigNumber.from(0),
-            callGasLimit: BigNumber.from(0),
-            verificationGasLimit: BigNumber.from(10e6)
+            preVerificationGas: 100_000n,
+            callGasLimit: BigInt(10e6),
+            verificationGasLimit: BigInt(10e6)
         }
         const res = await chain.estimateOpGas(estimateOp)
 
@@ -282,6 +283,24 @@ export class FunWallet extends FirstClassActions {
             gasUSD
         }
         await storeUserOp(userOp, 0, receipt)
+
+        if (txOptions?.gasSponsor?.sponsorAddress) {
+            const paymasterType = getPaymasterType(txOptions)
+            addTransaction(
+                await chain.getChainId(),
+                {
+                    action: "sponsor",
+                    amount: -1, //Get amount from lazy processing
+                    from: txOptions.gasSponsor.sponsorAddress,
+                    timestamp: Date.now(),
+                    to: await this.getAddress(),
+                    token: "eth",
+                    txid: txid
+                },
+                paymasterType,
+                txOptions.gasSponsor.sponsorAddress
+            )
+        }
         return receipt
     }
 

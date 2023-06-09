@@ -1,5 +1,5 @@
 import { Interface } from "ethers/lib/utils"
-import { ActionData, ActionFunction, ApproveAndExecParams, FirstClassActionResult } from "./types"
+import { ActionData, ActionFunction, ActionResult, ApproveAndExecParams } from "./types"
 import { APPROVE_AND_EXEC_ABI } from "../common/constants"
 
 const approveAndExecInterface = new Interface(APPROVE_AND_EXEC_ABI)
@@ -14,7 +14,7 @@ export const approveAndExecToCalldata = (params: ApproveAndExecParams): string =
 }
 
 export const approveAndExec = (params: ApproveAndExecParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const approveAndExecAddress = await actionData.chain.getAddress("approveAndExecAddress")
         const calldata = approveAndExecToCalldata(params)
         const txData = { to: approveAndExecAddress, data: calldata }
