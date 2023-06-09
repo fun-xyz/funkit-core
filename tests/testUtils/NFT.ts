@@ -46,31 +46,39 @@ export const NFTTest = (config: NFTTestConfig) => {
             it("transfer", async () => {
                 let transferError = false
                 try {
-                    await wallet1.transfer(auth, {
-                        to: await wallet2.getAddress(),
-                        token: nftAddress,
-                        tokenId: config.tokenId
-                    })
+                    console.log(
+                        await wallet1.transfer(auth, {
+                            to: await wallet2.getAddress(),
+                            token: nftAddress,
+                            tokenId: config.tokenId
+                        })
+                    )
                 } catch (error) {
                     console.log("NFT transfer error: ", error)
                     transferError = true
                 }
-                await wallet2.transfer(auth, {
-                    to: await wallet1.getAddress(),
-                    token: nftAddress,
-                    tokenId: config.tokenId
-                })
+                console.log(
+                    await wallet2.transfer(auth, {
+                        to: await wallet1.getAddress(),
+                        token: nftAddress,
+                        tokenId: config.tokenId
+                    })
+                )
                 assert(!transferError, "Transfer should have failed")
             })
 
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
-                await wallet1.approve(auth, {
-                    spender: await wallet2.getAddress(),
-                    token: nftAddress,
-                    tokenId: config.tokenId
-                })
+                console.log(
+                    await wallet1.approve(auth, {
+                        spender: await wallet2.getAddress(),
+                        token: nftAddress,
+                        tokenId: config.tokenId
+                    })
+                )
                 const data = await nft.getApproved(config.tokenId.toString())
+                console.log("Approved: ", data)
+                console.log("Approved: ", await wallet2.getAddress())
                 assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
         })

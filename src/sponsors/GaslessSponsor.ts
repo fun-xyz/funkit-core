@@ -1,8 +1,8 @@
 import { Sponsor } from "./Sponsor"
+import { ActionFunction } from "../actions"
 import { gaslessPaymasterContractInterface } from "../common"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
-import { ActionFunction } from "../actions"
 
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
@@ -17,8 +17,7 @@ export class GaslessSponsor extends Sponsor {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
             const data = this.contractInterface.encodeData("addDepositTo", [walletAddress, amountdec])
- return await this.encode(data, options, amountdec)
-
+            return await this.encode(data, options, amountdec)
         }
     }
 
@@ -41,7 +40,6 @@ export class GaslessSponsor extends Sponsor {
             return await this.encode(data, options)
         }
     }
-
 
     unlock(num: bigint | number): ActionFunction {
         return async (options: EnvOption = (globalThis as any).globalEnvOption) => {

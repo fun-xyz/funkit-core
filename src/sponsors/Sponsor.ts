@@ -1,8 +1,8 @@
-import { Address } from "viem"
-import { EnvOption } from "../config"
-import { Chain, getChainFromData  } from "../data"
-import { ContractInterface } from "../viem/ContractInterface"
+import { Address, Hex } from "viem"
 import { FirstClassActionResult } from "../actions"
+import { EnvOption } from "../config"
+import { Chain, getChainFromData } from "../data"
+import { ContractInterface } from "../viem/ContractInterface"
 
 export abstract class Sponsor {
     sponsorAddress: string
@@ -27,13 +27,7 @@ export abstract class Sponsor {
         return this.paymasterAddress!
     }
 
-
-
-    async encode(
-        data: string,
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        value?: BigNumber
-    ): Promise<FirstClassActionResult> {
+    async encode(data: Hex, options: EnvOption = (globalThis as any).globalEnvOption, value?: bigint): Promise<FirstClassActionResult> {
         const to = await this.getPaymasterAddress(options)
         let chain: Chain
         if (typeof options.chain === "string") {

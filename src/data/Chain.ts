@@ -1,16 +1,8 @@
-import path from "path"
 import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
-
-import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
-import { BigNumber, Contract, Signer } from "ethers"
-import { Addresses, ChainInput, UserOperation } from "./types"
-import { getChainInfo, getModuleInfo } from "../apis"
-import { EstimateGasResult } from "../common"
-import { CONTRACT_ADDRESSES, ENTRYPOINT_ABI } from "../common/constants"
-
+import { CONTRACT_ADDRESSES } from "../common/constants"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"

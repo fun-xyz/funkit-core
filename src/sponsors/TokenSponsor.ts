@@ -47,8 +47,7 @@ export class TokenSponsor extends Sponsor {
             const amountdec = await Token.getDecimalAmount("eth", amount, options)
 
             const data = this.contractInterface.encodeData("addEthDepositTo", [walletAddress, amountdec])
-return await this.encode(data, options, amountdec)
-
+            return await this.encode(data, options, amountdec)
         }
     }
 
@@ -95,8 +94,8 @@ return await this.encode(data, options, amountdec)
     }
 
     async getAllTokens(options: EnvOption = (globalThis as any).globalEnvOption) {
-        const contract = await this.getContract(options)
-        return await contract.getAllTokens()
+        const chain = await getChainFromData(options.chain)
+        return await tokenPaymasterContractInterface.readFromChain(await this.getPaymasterAddress(options), "getAllTokens", [], chain)
     }
 
     addUsableToken(oracle: string, token: string, aggregator: string): ActionFunction {
