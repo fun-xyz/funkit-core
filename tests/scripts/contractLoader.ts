@@ -16,7 +16,6 @@ async function setGlobal() {
 
 const loadAbis = async (): Promise<void> => {
     await setGlobal()
-
     const contracts = [
         "EntryPoint",
         "UserAuthentication",
@@ -41,7 +40,7 @@ const loadAbis = async (): Promise<void> => {
         try {
             const data = await getContractAbi(contract)
             const fileName = `${contract}.json`
-            const dir = path.resolve(__dirname, "../src/abis")
+            const dir = path.resolve(__dirname, "../../src/abis")
             const filePath = path.join(dir, fileName)
 
             fs.existsSync(dir) || fs.mkdirSync(dir, { recursive: true })
