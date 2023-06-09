@@ -1,11 +1,11 @@
 import { EnvOption } from "../config"
-import { GASLESS_SPONSOR_TYPE, TOKEN_SPONSOR_TYPE } from "../sponsors"
+import { PaymasterType } from "../sponsors/types"
 
 export const getPaymasterType = (txOptions: EnvOption) => {
     if (txOptions.gasSponsor?.sponsorAddress && txOptions.gasSponsor?.token) {
-        return TOKEN_SPONSOR_TYPE
+        return PaymasterType.TokenSponsor
     } else if (txOptions.gasSponsor?.sponsorAddress) {
-        return GASLESS_SPONSOR_TYPE
+        return PaymasterType.GaslessSponsor
     } else {
         throw Error("Invalid paymaster type")
     }

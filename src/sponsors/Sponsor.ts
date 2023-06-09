@@ -1,23 +1,27 @@
 import { BigNumber, Contract, ContractInterface } from "ethers"
 import { Interface } from "ethers/lib/utils"
+import { PaymasterType } from "./types"
 import { ActionData, ActionFunction, ActionResult } from "../actions"
 import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
 import { EnvOption } from "../config"
 import { Chain, getChainFromData } from "../data"
-
-export const BASE_SPONSOR_TYPE = "baseSponsor"
 
 export abstract class Sponsor {
     sponsorAddress: string
     interface: Interface
     abi: ContractInterface
     name: string
-    paymasterType: string
+    paymasterType: PaymasterType
     paymasterAddress?: string
     chainId?: string
     contract?: Contract
 
-    constructor(options: EnvOption = (globalThis as any).globalEnvOption, abi: ContractInterface, name: string, paymasterType: string) {
+    constructor(
+        options: EnvOption = (globalThis as any).globalEnvOption,
+        abi: ContractInterface,
+        name: string,
+        paymasterType: PaymasterType
+    ) {
         this.sponsorAddress = options.gasSponsor!.sponsorAddress!
         if (abi instanceof Interface) {
             this.interface = abi

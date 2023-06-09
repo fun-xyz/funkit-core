@@ -1,16 +1,15 @@
 import { BigNumber } from "ethers"
 import { Sponsor } from "./Sponsor"
+import { PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_ABI } from "../common"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 
-export const GASLESS_SPONSOR_TYPE = "gaslessSponsor"
-
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, GASLESS_PAYMASTER_ABI, "gaslessSponsorAddress", GASLESS_SPONSOR_TYPE)
+        super(options, GASLESS_PAYMASTER_ABI, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)
     }
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
@@ -73,10 +72,7 @@ export class GaslessSponsor extends Sponsor {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getProvider()
         const currentBlock = await provider.getBlockNumber()
-        if (1 <= unlockBlock && unlockBlock <= currentBlock) {
-            return false
-        }
-        return true
+        return unlockBlock > 0 && unlockBlock > currentBlock
     }
 
     async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {

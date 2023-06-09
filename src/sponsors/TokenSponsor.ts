@@ -1,6 +1,7 @@
-import { BigNumber, Contract, constants } from "ethers"
+import { Contract, constants } from "ethers"
 import { defaultAbiCoder } from "ethers/lib/utils"
 import { Sponsor } from "./Sponsor"
+import { AllTokenData, PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { addPaymasterToken, addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
@@ -8,18 +9,11 @@ import { TOKEN_PAYMASTER_ABI, WALLET_ABI } from "../common/constants"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 
-export const TOKEN_SPONSOR_TYPE = "tokenSponsor"
-
-export interface AllTokenData {
-    unlockBlock: BigNumber
-    tokenAmount: BigNumber
-}
-
 export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, TOKEN_PAYMASTER_ABI, "tokenSponsorAddress", TOKEN_SPONSOR_TYPE)
+        super(options, TOKEN_PAYMASTER_ABI, "tokenSponsorAddress", PaymasterType.TokenSponsor)
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
@@ -105,10 +99,7 @@ export class TokenSponsor extends Sponsor {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getProvider()
         const currentBlock = await provider.getBlockNumber()
-        if (1 <= unlockBlock && unlockBlock <= currentBlock) {
-            return false
-        }
-        return true
+        return unlockBlock > 0 && unlockBlock > currentBlock
     }
 
     async getTokenInfo(token: string, options: EnvOption = (globalThis as any).globalEnvOption) {

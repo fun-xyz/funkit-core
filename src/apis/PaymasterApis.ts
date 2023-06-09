@@ -1,4 +1,5 @@
 import { API_URL } from "../common/constants"
+import { PaymasterType } from "../sponsors/types"
 import { sendPostRequest } from "../utils/ApiUtils"
 
 export interface PaymasterTransaction {
@@ -11,7 +12,12 @@ export interface PaymasterTransaction {
     txid?: string
 }
 
-export async function updatePaymasterMode(chainId: string, updateObj: any, paymasterType: string, sponsorAddress: string): Promise<any> {
+export async function updatePaymasterMode(
+    chainId: string,
+    updateObj: any,
+    paymasterType: PaymasterType,
+    sponsorAddress: string
+): Promise<any> {
     return await sendPostRequest(API_URL, "paymasters/update-paymaster", {
         chain: chainId,
         sponsorAddress,
@@ -24,7 +30,7 @@ export async function removeFromList(
     chainId: string,
     address: string[],
     listType: string,
-    paymasterType: string,
+    paymasterType: PaymasterType,
     sponsorAddress: string
 ): Promise<any> {
     return await sendPostRequest(API_URL, "paymasters/remove-from-list", {
@@ -40,7 +46,7 @@ export async function addToList(
     chainId: string,
     address: string[],
     listType: string,
-    paymasterType: string,
+    paymasterType: PaymasterType,
     sponsorAddress: string
 ): Promise<any> {
     return await sendPostRequest(API_URL, "paymasters/add-to-list", {
@@ -55,7 +61,7 @@ export async function addToList(
 export async function addTransaction(
     chainId: string,
     transaction: PaymasterTransaction,
-    paymasterType: string,
+    paymasterType: PaymasterType,
     sponsorAddress: string
 ): Promise<any> {
     return await sendPostRequest(API_URL, "paymasters/add-transaction", {
@@ -78,7 +84,7 @@ export async function batchOperation(
     addresses: string[],
     modes: boolean[],
     list: string,
-    paymasterType: string,
+    paymasterType: PaymasterType,
     sponsorAddress: string
 ): Promise<any> {
     const addList = addresses.filter((_, i) => {
