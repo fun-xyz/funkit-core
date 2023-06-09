@@ -1,3 +1,4 @@
+import { TransactionReceipt } from "viem"
 import { API_URL, TEST_API_KEY, TRANSACTION_TYPE } from "../common/constants"
 import { GlobalEnvOption } from "../config"
 import { UserOperation, getChainFromData } from "../data"
@@ -26,7 +27,7 @@ export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) 
     await sendPostRequest(API_URL, "save-user-op", body)
 }
 
-export async function storeEVMCall(receipt: any) {
+export async function storeEVMCall(receipt: TransactionReceipt) {
     const globalEnvOption: GlobalEnvOption = (globalThis as any).globalEnvOption
     if (!globalEnvOption.apiKey) {
         throw new DataFormatError("apiKey", "string", "configureEnvironment")
