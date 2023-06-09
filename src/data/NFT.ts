@@ -3,19 +3,18 @@ import { getChainFromData } from "./Chain"
 import { getNftAddress, getNftName } from "../apis/NFTApis"
 import { TransactionData, erc721ContractInterface } from "../common"
 import { EnvOption } from "../config"
-import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
+import { Helper, ServerMissingDataError } from "../errors"
 
 export class NFT {
-    address: Address
+    address?: Address
     name = ""
 
-    constructor(input: string, location = "NFT constructor") {
+    constructor(input: string) {
         if (isAddress(input)) {
             this.address = input
             return
         }
         this.name = input
-        throw new MissingParameterError(location)
     }
 
     async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
@@ -31,7 +30,7 @@ export class NFT {
     }
 
     async getAddress(): Promise<Address> {
-        if (this.name && !this.address) {
+        if (!this.address) {
             const nft = await getNftAddress(this.name)
             if (nft.error) {
                 const helper = new Helper("getName", "", "call failed")
@@ -40,8 +39,9 @@ export class NFT {
             } else {
                 return nft.address
             }
+        } else {
+            return this.address
         }
-        return this.address
     }
 
     async getName(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {

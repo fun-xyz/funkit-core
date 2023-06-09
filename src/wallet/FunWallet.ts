@@ -193,8 +193,8 @@ export class FunWallet extends FirstClassActions {
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
-            preVerificationGas: 0n,
-            callGasLimit: 0n,
+            preVerificationGas: BigInt(1e5),
+            callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
         }
         const res = await chain.estimateOpGas(estimateOp)

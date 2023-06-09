@@ -134,6 +134,7 @@ export class Chain {
         await this.init()
         return this.id!
     }
+
     async getClient(): Promise<PublicClient> {
         await this.init()
         return this.client!
