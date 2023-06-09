@@ -39,7 +39,7 @@ class SwapToken {
         if (!quoteCallReturnData.data) {
             throw new Error("No data returned from quote call")
         }
-        return BigInt(decodeAbiParameters([{ name: "return", type: "uint256" }], quoteCallReturnData.data)[0])
+        return decodeAbiParameters([{ name: "return", type: "uint256" }], quoteCallReturnData.data)[0] as bigint
     }
 
     async getPoolInfo(tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
