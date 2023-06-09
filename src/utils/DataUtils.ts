@@ -89,6 +89,9 @@ export const deepHexlify = (obj: any): any => {
         return undefined
     }
     if (!obj || typeof obj === "string" || typeof obj === "boolean") {
+        if (Number(obj) === 0) {
+            return "0x0"
+        }
         return obj
     } else if (obj._isBigNumber || typeof obj !== "object") {
         return toHex(obj).replace(/^0x0/, "0x")

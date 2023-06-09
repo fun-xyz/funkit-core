@@ -70,7 +70,7 @@ async function getPriceData(chainCurrency: string): Promise<number> {
 export const stringifyOp = (op: any) => {
     return JSON.stringify(
         op,
-        (_, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+        (_, value) => (typeof value === "bigint" ? toHex(value) : value) // return everything else unchanged
     )
 }
 

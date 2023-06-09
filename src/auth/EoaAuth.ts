@@ -1,4 +1,15 @@
-import { Hex, JsonRpcAccount, PrivateKeyAccount, TransactionReceipt, WalletClient, createWalletClient, http, pad, toBytes } from "viem"
+import {
+    Hex,
+    JsonRpcAccount,
+    PrivateKeyAccount,
+    TransactionReceipt,
+    WalletClient,
+    createWalletClient,
+    http,
+    pad,
+    parseUnits,
+    toBytes
+} from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
 import { Auth } from "./Auth"
@@ -91,12 +102,15 @@ export class Eoa extends Auth {
                 to,
                 value: BigInt(value),
                 data,
-                gasPrice: BigInt(gasSpecificChain[chain!.id!])
+                maxFeePerGas: BigInt(gasSpecificChain[chain!.id!])
             }
         } else {
-            tx = { to, value: BigInt(value), data }
+            tx = { to, value: BigInt(value), data, maxFeePerGas: parseUnits("2", 9) }
         }
-        const hash = await txClient.sendTransaction({ ...tx, chain: chains[preProcessesChains[await chain.getChainId()]] })
+        const hash = await txClient.sendTransaction({
+            ...tx,
+            chain: chains[preProcessesChains[await chain.getChainId()]]
+        })
 
         const receipt = await client.waitForTransactionReceipt({ hash })
         await storeEVMCall(receipt)

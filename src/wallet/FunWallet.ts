@@ -193,8 +193,8 @@ export class FunWallet extends FirstClassActions {
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
-            preVerificationGas: 0n,
-            callGasLimit: 0n,
+            preVerificationGas: 100_000n,
+            callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
         }
         const res = await chain.estimateOpGas(estimateOp)
@@ -403,7 +403,7 @@ export class FunWallet extends FirstClassActions {
     async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         if (status) {
             const chain = await getChainFromData(txOptions.chain)
-            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+            return await getLidoWithdrawals(await chain.getChainId(), await this.getAddress())
         }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())

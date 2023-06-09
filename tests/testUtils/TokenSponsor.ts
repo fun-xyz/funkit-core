@@ -90,8 +90,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const depositInfoE = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
             const depositInfo1E = await gasSponsor.getTokenBalance("eth", funderAddress)
 
-            assert(depositInfo1E.gt(depositInfo1S), "Base Stake Failed")
-            assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+            assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
+            assert(depositInfoE > depositInfoS, "Token Stake Failed")
         })
 
         const runSwap = async (wallet: FunWallet) => {

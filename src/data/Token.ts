@@ -56,12 +56,12 @@ export class Token {
 
     async getBalanceBN(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(options.chain)
-        let amount: bigint
+        let amount = 0n
         if (this.isNative) {
             const client = await chain.getClient()
             amount = await client.getBalance({ address })
         } else {
-            amount = await erc20ContractInterface.readFromChain(address, "balanceOf", [address], chain)
+            amount = await erc20ContractInterface.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
         }
         return amount
     }
