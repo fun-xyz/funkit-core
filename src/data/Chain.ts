@@ -88,7 +88,7 @@ export class Chain {
                 this.name = chain.key
                 this.currency = chain.currency
                 const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
-                    result[key] = CONTRACT_ADDRESSES[key][chainId]
+                    result[key] = CONTRACT_ADDRESSES[key][this.id]
                     return result
                 }, {})
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
