@@ -74,7 +74,7 @@ export const _finishUnstake = (params: FinishUnstakeParams): ActionFunction => {
         const provider = await actionData.chain.getProvider()
         const withdrawalQueue = new ethers.Contract(getWithdrawalQueueAddr(await chain.getChainId()), WITHDRAW_QUEUE_ABI, provider)
 
-        const readyToWithdrawRequestIds = await getReadyToWithdrawRequests(actionData)
+        const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(actionData)).slice(0, 5)
         if (readyToWithdrawRequestIds.length === 0) {
             const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
             throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)

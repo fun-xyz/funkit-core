@@ -42,7 +42,7 @@ export const StakeTest = (config: StakeTestConfig) => {
 
         it("Should be able to start unstaking", async () => {
             const withdrawalsBefore = await wallet.getAssets(false, true)
-            await wallet.unstake(auth, { amounts: [0.001, 0.001] })
+            await wallet.unstake(auth, { amounts: [0.001] })
             const withdrawalsAfter = await wallet.getAssets(false, true)
             assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
         })
