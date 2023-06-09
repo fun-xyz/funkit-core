@@ -22,4 +22,8 @@ export class MagicAuthEoa extends Eoa {
         if (this.signer?.address === undefined) throw new Error("No signer")
         return [this.signer.address]
     }
+
+    override async getAddress(): Promise<string> {
+        return await this.getOwnerAddr()[0]
+    }
 }

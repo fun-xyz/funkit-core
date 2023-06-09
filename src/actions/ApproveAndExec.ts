@@ -1,5 +1,5 @@
 import { Hex } from "viem"
-import { ActionData, ActionFunction, ApproveAndExecParams, FirstClassActionResult } from "./types"
+import { ActionData, ActionFunction, ActionResult, ApproveAndExecParams } from "./types"
 import { approveAndExecContractInterface } from "../common/constants"
 
 const errorData = {
@@ -13,7 +13,7 @@ export const approveAndExecToCalldata = (params: ApproveAndExecParams): Hex => {
 }
 
 export const approveAndExec = (params: ApproveAndExecParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<FirstClassActionResult> => {
+    return async (actionData: ActionData): Promise<ActionResult> => {
         const approveAndExecAddress = await actionData.chain.getAddress("approveAndExecAddress")
         const calldata = approveAndExecToCalldata(params)
         const txData = { to: approveAndExecAddress, data: calldata }

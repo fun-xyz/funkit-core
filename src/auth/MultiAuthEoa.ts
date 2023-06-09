@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
-import { Hex } from "viem"
+import { Address, Hex } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput } from "./types"
 import { Helper, ParameterFormatError } from "../errors"
@@ -51,8 +51,12 @@ export class MultiAuthEoa extends Eoa {
         })
     }
 
-    override async getEstimateGasSignature(): Promise<string> {
+    override async getEstimateGasSignature(): Promise<Hex> {
         const ownerAddr = await this.getOwnerAddr()
         return ownerAddr[0]
+    }
+
+    override async getAddress(): Promise<Address> {
+        return await this.getOwnerAddr()[0]
     }
 }

@@ -1,15 +1,18 @@
 import { Address, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
-import { ActionFunction } from "../actions"
+import { AllTokenData, PaymasterType } from "./types"
+import { ActionData, ActionFunction } from "../actions"
+import { addPaymasterToken, addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { AddressZero, tokenPaymasterContractInterface, walletContractInterface } from "../common/constants"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
+
 export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, tokenPaymasterContractInterface, "tokenSponsorAddress")
+        super(options, tokenPaymasterContractInterface, "tokenSponsorAddress", PaymasterType.TokenSponsor)
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
@@ -43,29 +46,80 @@ export class TokenSponsor extends Sponsor {
     }
 
     stake(walletAddress: string, amount: number): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const amountdec = await Token.getDecimalAmount("eth", amount, options)
-
+        return async (actionData: ActionData) => {
+            const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("addEthDepositTo", [walletAddress, amountdec])
-            return await this.encode(data, options, amountdec)
+
+            await addTransaction(
+                await actionData.chain.getChainId(),
+                {
+                    action: "stake",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    timestamp: Date.now(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token: "eth"
+                },
+                this.paymasterType,
+                walletAddress
+            )
+
+            return await this.encode(data, actionData.options, amountdec)
         }
     }
 
     unstake(walletAddress: string, amount: number): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const amountdec = await Token.getDecimalAmount("eth", amount, options)
+        return async (actionData: ActionData) => {
+            const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("withdrawEthDepositTo", [walletAddress, amountdec])
-            return await this.encode(data, options)
+            await addTransaction(
+                await actionData.chain.getChainId(),
+                {
+                    action: "unstake",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    timestamp: Date.now(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token: "eth"
+                },
+                this.paymasterType,
+                walletAddress
+            )
+            return await this.encode(data, actionData.options)
         }
+    }
+
+    async getUnlockBlock(tokenAddr: string, sponsor: string): Promise<number> {
+        return Number((await this.getAllTokenData(tokenAddr, sponsor)).unlockBlock.toString())
+    }
+
+    // false means unlocked, true means locked
+    async getLockState(token: string, sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+        const tokenAddr = (await Token.isNative(token)) ? AddressZero : token
+        const unlockBlock = await this.getUnlockBlock(tokenAddr, sponsor)
+        const chain = await getChainFromData(options.chain)
+        const provider = await chain.getClient()
+        const currentBlock = await provider.getBlockNumber()
+        return unlockBlock === 0 || unlockBlock > currentBlock
     }
 
     async getTokenInfo(token: string, options: EnvOption = (globalThis as any).globalEnvOption) {
         const tokenAddress = await Token.getAddress(token, options)
         const chain = await getChainFromData(options.chain)
-        return await tokenPaymasterContractInterface.readFromChain(
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getToken", [tokenAddress], chain)
+    }
+
+    async getAllTokenData(
+        tokenAddr: string,
+        spender: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<AllTokenData> {
+        const tokenAddress = await Token.getAddress(tokenAddr, options)
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
-            "getToken",
-            [tokenAddress],
+            "getAllTokenData",
+            [tokenAddress, spender],
             chain
         )
     }
@@ -80,7 +134,7 @@ export class TokenSponsor extends Sponsor {
         }
 
         const chain = await getChainFromData(options.chain)
-        return await tokenPaymasterContractInterface.readFromChain(
+        return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getTokenBalance",
             [tokenAddress, spender],
@@ -88,92 +142,254 @@ export class TokenSponsor extends Sponsor {
         )
     }
 
-    async getListMode(spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(options.chain)
-        return await tokenPaymasterContractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [spender], chain)
-    }
-
     async getAllTokens(options: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(options.chain)
-        return await tokenPaymasterContractInterface.readFromChain(await this.getPaymasterAddress(options), "getAllTokens", [], chain)
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getAllTokens", [], chain)
     }
 
     addUsableToken(oracle: string, token: string, aggregator: string): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const decimals = await Token.getDecimals(token, options)
-            const tokenAddress = await Token.getAddress(token, options)
+        return async (actionData: ActionData) => {
+            const decimals = await Token.getDecimals(token, actionData.options)
+            const tokenAddress = await Token.getAddress(token, actionData.options)
             const data = [oracle, tokenAddress, decimals, aggregator]
             const calldata = this.contractInterface.encodeData("setTokenData", [data])
-            return await this.encode(calldata, options)
+
+            const chain = await getChainFromData(actionData.chain)
+            await addPaymasterToken(await chain.getChainId(), token)
+            return await this.encode(calldata, actionData.options)
         }
     }
 
     stakeToken(token: string, walletAddress: string, amount: number): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+        return async (actionData: ActionData) => {
             const tokenObj = new Token(token)
 
-            const tokenAddress = await tokenObj.getAddress(options)
-            const amountdec = await tokenObj.getDecimalAmount(amount, options)
+            const tokenAddress = await tokenObj.getAddress(actionData.options)
+            const amountdec = await tokenObj.getDecimalAmount(amount, actionData.options)
 
             const data = this.contractInterface.encodeData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
-            return await this.encode(data, options)
+
+            const chain = await getChainFromData(actionData.chain)
+            addTransaction(
+                await chain.getChainId(),
+                {
+                    action: "stakeToken",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    timestamp: Date.now(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                this.paymasterType,
+                walletAddress
+            )
+            return await this.encode(data, actionData.options)
         }
     }
 
     unstakeToken(token: string, walletAddress: string, amount: number): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+        return async (actionData: ActionData) => {
             const tokenObj = new Token(token)
 
-            const tokenAddress = await tokenObj.getAddress(options)
-            const amountdec = await tokenObj.getDecimalAmount(amount, options)
+            const tokenAddress = await tokenObj.getAddress(actionData.options)
+            const amountdec = await tokenObj.getDecimalAmount(amount, actionData.options)
 
             const data = this.contractInterface.encodeData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
-            return await this.encode(data, options)
-        }
-    }
 
-    addWhitelistTokens(tokens: string[]): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const sendTokens = await Promise.all(
-                tokens.map((token) => {
-                    return Token.getAddress(token, options)
-                })
+            const chain = await getChainFromData(actionData.chain)
+            addTransaction(
+                await chain.getChainId(),
+                {
+                    action: "unstakeToken",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    timestamp: Date.now(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                this.paymasterType,
+                walletAddress
             )
-            const data = this.contractInterface.encodeData("useTokens", [sendTokens])
-            return await this.encode(data, options)
-        }
-    }
-
-    removeWhitelistTokens(tokens: string[]): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const sendTokens = await Promise.all(
-                tokens.map((token) => {
-                    return Token.getAddress(token, options)
-                })
-            )
-            const data = this.contractInterface.encodeData("removeTokens", [sendTokens])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
         }
     }
 
     lockTokenDeposit(token: string): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+        return async (actionData: ActionData) => {
             const data = this.contractInterface.encodeData("lockTokenDeposit", [token])
-            return await this.encode(data, options)
+
+            return await this.encode(data, actionData.options)
         }
     }
 
     unlockTokenDepositAfter(token: string, blocksToWait: number): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
+        return async (actionData: ActionData) => {
             const data = this.contractInterface.encodeData("unlockTokenDepositAfter", [token, blocksToWait])
-            return await this.encode(data, options)
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    lockDeposit(): ActionFunction {
+        return async (actionData: ActionData) => {
+            const data = this.contractInterface.encodeData("lockTokenDeposit", [AddressZero])
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    unlockDepositAfter(blocksToWait: number): ActionFunction {
+        return async (actionData: ActionData) => {
+            const data = this.contractInterface.encodeData("unlockTokenDepositAfter", [AddressZero, blocksToWait])
+            return await this.encode(data, actionData.options)
         }
     }
 
     approve(token: string, amount: number): ActionFunction {
-        return async (options: EnvOption = (globalThis as any).globalEnvOption) => {
-            const gasSponsorAddress = await this.getPaymasterAddress(options)
-            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "" } }
+        return async (actionData: ActionData) => {
+            const gasSponsorAddress = await this.getPaymasterAddress(actionData.options)
+
+            const chain = await getChainFromData(actionData.chain)
+            addTransaction(
+                await chain.getChainId(),
+                {
+                    action: "approve",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    timestamp: Date.now(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
+        }
+    }
+
+    async getSpenderBlacklisted(
+        spender: string,
+        sponsor: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<boolean> {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getSpenderBlacklisted",
+            [spender, sponsor],
+            chain
+        )
+    }
+
+    async getSpenderWhitelisted(
+        spender: string,
+        sponsor: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<boolean> {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getSpenderWhitelisted",
+            [spender, sponsor],
+            chain
+        )
+    }
+
+    async getTokenWhitelisted(
+        tokenAddr: string,
+        sponsor: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<boolean> {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getTokenWhitelisted",
+            [tokenAddr, sponsor],
+            chain
+        )
+    }
+
+    setTokenToWhiteListMode(): ActionFunction {
+        return async (actionData: ActionData) => {
+            const data = this.contractInterface.encodeData("setTokenListMode", [false])
+            const chain = await getChainFromData(actionData.chain)
+            await updatePaymasterMode(
+                await chain.getChainId(),
+                { tokenMode: "whitelist" },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    batchWhitelistTokens(tokens: string[], modes: boolean[]): ActionFunction {
+        return async (actionData: ActionData) => {
+            const calldata: string[] = []
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenAddress = await Token.getAddress(tokens[i], actionData.options)
+                calldata.push(this.contractInterface.encodeData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
+            }
+            const data = this.contractInterface.encodeData("batchActions", [calldata])
+            const chain = await getChainFromData(actionData.chain)
+            await batchOperation(
+                await chain.getChainId(),
+                tokens,
+                modes,
+                "tokensWhiteList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    async getTokenBlacklisted(
+        tokenAddr: string,
+        sponsor: string,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<boolean> {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getTokenBlacklisted",
+            [tokenAddr, sponsor],
+            chain
+        )
+    }
+
+    setTokenToBlackListMode(): ActionFunction {
+        return async (actionData: ActionData) => {
+            const data = this.contractInterface.encodeData("setTokenListMode", [true])
+            const chain = await getChainFromData(actionData.chain)
+
+            await updatePaymasterMode(
+                await chain.getChainId(),
+                { tokenMode: "blacklist" },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+            return await this.encode(data, actionData.options)
+        }
+    }
+
+    batchBlacklistTokens(tokens: string[], modes: boolean[]): ActionFunction {
+        return async (actionData: ActionData) => {
+            const calldata: string[] = []
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenAddress = await Token.getAddress(tokens[i], actionData.options)
+                calldata.push(this.contractInterface.encodeData("setTokenBlacklistMode", [tokenAddress, modes[i]]))
+            }
+            const data = this.contractInterface.encodeData("batchActions", [calldata])
+
+            const chain = await getChainFromData(actionData.chain)
+            await batchOperation(
+                await chain.getChainId(),
+                tokens,
+                modes,
+                "tokensBlackList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
+            return await this.encode(data, actionData.options)
         }
     }
 }

@@ -1,4 +1,5 @@
 import { Address } from "viem"
+import { Auth } from "../auth"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -11,7 +12,7 @@ export interface ApproveAndExecParams {
 }
 
 export interface ActionData {
-    wallet: FunWallet
+    wallet: FunWallet | Auth
     chain: Chain
     options: EnvOption
 }
@@ -95,9 +96,9 @@ export interface UniswapParams extends SwapParam {
 
 export type SwapParams = OneInchSwapParams | UniswapParams
 
-export type FirstClassActionResult = {
+export type ActionResult = {
     data: TransactionData
     errorData: ErrorData
 }
 
-export type ActionFunction = (obj: ActionData) => Promise<FirstClassActionResult>
+export type ActionFunction = (obj: ActionData) => Promise<ActionResult>

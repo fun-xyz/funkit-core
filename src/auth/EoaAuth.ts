@@ -14,10 +14,11 @@ import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
 import { Auth } from "./Auth"
 import { EoaAuthInput } from "./types"
+import { ActionFunction } from "../actions"
 import { storeEVMCall } from "../apis"
 import { TransactionData } from "../common/"
 import { EnvOption } from "../config"
-import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
+import { Chain, UserOp, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
 import { Helper, MissingParameterError } from "../errors"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
@@ -79,11 +80,12 @@ export class Eoa extends Auth {
     }
 
     async sendTx(
-        txData: TransactionData | Function,
+        txData: TransactionData | ActionFunction,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionReceipt> {
         if (typeof txData === "function") {
-            txData = (await txData(options)).data
+            const chain = await getChainFromData(options.chain)
+            txData = (await txData({ wallet: this, chain, options })).data
         }
         const { to, data, chain } = txData as TransactionData
         let { value } = txData as TransactionData
@@ -115,5 +117,9 @@ export class Eoa extends Auth {
         const receipt = await client.waitForTransactionReceipt({ hash })
         await storeEVMCall(receipt)
         return receipt
+    }
+
+    async getAddress(): Promise<string> {
+        return await this.getUniqueId()
     }
 }
