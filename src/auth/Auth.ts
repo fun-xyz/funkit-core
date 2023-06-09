@@ -1,5 +1,5 @@
-import { Hex, TransactionReceipt } from "viem"
-import { TransactionData, entrypointContractInterface } from "../common"
+import { Address, Hex, TransactionReceipt } from "viem"
+import { ENTRYPOINT_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { Chain, UserOp, getChainFromData } from "../data"
 export abstract class Auth {
@@ -9,7 +9,7 @@ export abstract class Auth {
     abstract getOwnerAddr(): Promise<Hex[]>
     abstract getEstimateGasSignature(): Promise<string>
     abstract sendTx(txData: TransactionData | Function): Promise<TransactionReceipt>
-    abstract getAddress(): Promise<string>
+    abstract getAddress(): Promise<Address>
 
     async sendTxs(txs: TransactionData[] | Function[]): Promise<TransactionReceipt[]> {
         const receipts: TransactionReceipt[] = []
@@ -22,6 +22,6 @@ export abstract class Auth {
     async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        return BigInt(await entrypointContractInterface.readFromChain(entryPointAddress, "getNonce", [sender, key], chain))
+        return BigInt(await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain))
     }
 }

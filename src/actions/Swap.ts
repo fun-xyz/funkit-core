@@ -1,3 +1,4 @@
+import { Address } from "viem"
 import { approveAndExec } from "./ApproveAndExec"
 import {
     ActionData,
@@ -43,7 +44,7 @@ export const _swap = (params: SwapParams): ActionFunction => {
     }
 }
 
-const _uniswapSwap = (params: UniswapParams, address: string, options: EnvOption): ActionFunction => {
+const _uniswapSwap = (params: UniswapParams, address: Address, options: EnvOption): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
         const client = await actionData.chain.getClient()
         const tokenSwapAddress = await actionData.chain.getAddress("tokenSwapAddress")

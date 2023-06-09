@@ -1,5 +1,5 @@
 import { assert, expect } from "chai"
-import { Hex } from "viem"
+import { Address, Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -28,9 +28,9 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         let wallet: FunWallet
         let wallet1: FunWallet
         let sponsor: GaslessSponsor
-        let funderAddress: string
-        let walletAddress: string
-        let walletAddress1: string
+        let funderAddress: Address
+        let walletAddress: Address
+        let walletAddress1: Address
         before(async function () {
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })

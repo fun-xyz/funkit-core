@@ -1,7 +1,7 @@
 import { Address, isAddress } from "viem"
 import { getChainFromData } from "./Chain"
 import { getNftAddress, getNftName } from "../apis/NFTApis"
-import { TransactionData, erc721ContractInterface } from "../common"
+import { ERC721_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 
@@ -21,15 +21,15 @@ export class NFT {
         this.name = input
     }
 
-    async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
-        const data = await erc721ContractInterface.encodeTransactionData(await this.getAddress(), "approve", [spender, tokenId])
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "approve", [spender, tokenId])
         return { ...data, chain }
     }
 
     async approveForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
-        const data = await erc721ContractInterface.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, true])
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, true])
         return { ...data, chain }
     }
 
@@ -64,19 +64,19 @@ export class NFT {
         return this.name
     }
 
-    async getBalance(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+    async getBalance(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(options.chain)
-        return await erc721ContractInterface.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
+        return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
     }
 
-    async getApproved(tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+    async getApproved(tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         const chain = await getChainFromData(options.chain)
-        return await erc721ContractInterface.readFromChain(await this.getAddress(), "getApproved", [tokenId], chain)
+        return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "getApproved", [tokenId], chain)
     }
 
-    async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
-        const data = await erc721ContractInterface.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, false])
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, false])
         return { ...data, chain }
     }
 
@@ -87,7 +87,7 @@ export class NFT {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<any> {
         const chain = await getChainFromData(options.chain)
-        const data = await erc721ContractInterface.encodeTransactionData(await this.getAddress(), "transferFrom", [
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "transferFrom", [
             sender,
             spender,
             tokenId

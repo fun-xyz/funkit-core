@@ -2,13 +2,13 @@ import { Sponsor } from "./Sponsor"
 import { PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { addTransaction } from "../apis/PaymasterApis"
-import { gaslessPaymasterContractInterface } from "../common"
+import { GASLESS_PAYMASTER_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, gaslessPaymasterContractInterface, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)
+        super(options, GASLESS_PAYMASTER_CONTRACT_INTERFACE, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)
     }
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {

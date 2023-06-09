@@ -2,7 +2,7 @@ import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
-import { erc20ContractInterface, poolContractInterface } from "../common"
+import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
@@ -50,33 +50,27 @@ class SwapToken {
             fee: poolFee
         })
 
-        const [token0, token1, fee, tickSpacing, liquidity, slot0] = await poolContractInterface.batchReadFromChain(
+        const [token0, token1, fee, tickSpacing, liquidity, slot0] = await POOL_CONTRACT_INTERFACE.batchReadFromChain(
             currentPoolAddress as Address,
             this.client,
             [
                 {
-                    functionName: "token0",
-                    args: []
+                    functionName: "token0"
                 },
                 {
-                    functionName: "token1",
-                    args: []
+                    functionName: "token1"
                 },
                 {
-                    functionName: "fee",
-                    args: []
+                    functionName: "fee"
                 },
                 {
-                    functionName: "tickSpacing",
-                    args: []
+                    functionName: "tickSpacing"
                 },
                 {
-                    functionName: "liquidity",
-                    args: []
+                    functionName: "liquidity"
                 },
                 {
-                    functionName: "slot0",
-                    args: []
+                    functionName: "slot0"
                 }
             ]
         )
@@ -93,7 +87,7 @@ class SwapToken {
     }
 
     async getTokenDecimals(tokenAddr: Address) {
-        return await erc20ContractInterface.readFromChain(tokenAddr, "decimals", [], this.client)
+        return await ERC20_CONTRACT_INTERFACE.readFromChain(tokenAddr, "decimals", [], this.client)
     }
 
     async createTrade(amountIn: number, tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
@@ -142,11 +136,25 @@ const fees = {
     high: 10000
 }
 
-export async function swapExec(client: PublicClient, uniswapAddrs: any, swapParams: any, chainId: number) {
+type SwapParamsUtils = {
+    tokenInAddress: Address
+    tokenOutAddress: Address
+    amountIn: number
+    returnAddress: Address
+    percentDecimal: number
+    slippage: number
+    poolFee: string
+}
+type UniswapAddrs = {
+    univ3quoter: Address
+    univ3factory: Address
+    univ3router: Address
+}
+export async function swapExec(client: PublicClient, uniswapAddrs: UniswapAddrs, swapParams: SwapParamsUtils, chainId: number) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
 
     const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
-    const _poolFee = (fees as any)[poolFee]
+    const _poolFee = fees[poolFee]
 
     const swapper = new SwapToken(client, univ3quoter, univ3factory)
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)

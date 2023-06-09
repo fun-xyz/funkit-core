@@ -108,15 +108,15 @@ export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT.abi
 export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT.abi
 export const ERC_721_ABI = ERC_721_CONTRACT.abi
 
-export const entrypointContractInterface = new ContractInterface(ENTRYPOINT_ABI)
-export const erc721ContractInterface = new ContractInterface(ERC_721_ABI)
-export const erc20ContractInterface = new ContractInterface(ERC20_ABI)
-export const factoryContractInterface = new ContractInterface(FACTORY_ABI)
-export const gaslessPaymasterContractInterface = new ContractInterface(GASLESS_PAYMASTER_ABI)
-export const tokenPaymasterContractInterface = new ContractInterface(TOKEN_PAYMASTER_ABI)
-export const walletContractInterface = new ContractInterface(WALLET_ABI)
-export const poolContractInterface = new ContractInterface(IUniswapV3PoolABI.abi)
-export const approveAndExecContractInterface = new ContractInterface(APPROVE_AND_EXEC_ABI)
+export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
+export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
+export const ERC20_CONTRACT_INTERFACE = new ContractInterface(ERC20_ABI)
+export const FACTORY_CONTRACT_INTERFACE = new ContractInterface(FACTORY_ABI)
+export const GASLESS_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(GASLESS_PAYMASTER_ABI)
+export const TOKEN_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(TOKEN_PAYMASTER_ABI)
+export const WALLET_CONTRACT_INTERFACE = new ContractInterface(WALLET_ABI)
+export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI.abi)
+export const APPROVE_AND_EXEC_CONTRACT_INTERFACE = new ContractInterface(APPROVE_AND_EXEC_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT?.addresses,

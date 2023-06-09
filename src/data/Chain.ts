@@ -77,11 +77,7 @@ export class Chain {
                 const helper = new Helper(`${currentLocation} was given these parameters`, this, helperMainMessage)
                 throw new MissingParameterError(currentLocation, helper)
             }
-            this.bundler = new Bundler(
-                this.id,
-                "https://api.pimlico.io/v1/goerli/rpc?apikey=176ee560-e982-41fb-a908-fc5dd044643d",
-                this.addresses.entryPointAddress
-            )
+            this.bundler = new Bundler(this.id, this.bundlerUrl, this.addresses.entryPointAddress)
             await this.bundler.validateChainId()
         }
     }
@@ -152,7 +148,7 @@ export class Chain {
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
-    async getFeeData(): Promise<any> {
+    async getFeeData(): Promise<bigint> {
         await this.init()
         return this.client!.getGasPrice()
     }

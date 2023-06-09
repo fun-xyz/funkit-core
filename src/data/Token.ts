@@ -1,7 +1,7 @@
 import { Address, formatUnits, isAddress, parseUnits } from "viem"
 import { getChainFromData } from "./Chain"
 import { getTokenInfo } from "../apis"
-import { TransactionData, erc20ContractInterface } from "../common"
+import { ERC20_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { Helper, TransactionError } from "../errors"
 
@@ -45,7 +45,7 @@ export class Token {
             return 18n
         }
         const chain = await getChainFromData(options.chain)
-        return await erc20ContractInterface.readFromChain(await this.getAddress(options), "decimals", [], chain)
+        return await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(options), "decimals", [], chain)
     }
 
     async getBalance(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
@@ -61,7 +61,7 @@ export class Token {
             const client = await chain.getClient()
             amount = await client.getBalance({ address })
         } else {
-            amount = await erc20ContractInterface.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
+            amount = await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
         }
         return amount
     }
@@ -72,7 +72,7 @@ export class Token {
             throw new TransactionError("Token.getApproval", helper)
         }
         const chain = await getChainFromData(options.chain)
-        return BigInt(await erc20ContractInterface.readFromChain(await this.getAddress(options), "allowance", [owner, spender], chain))
+        return BigInt(await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(options), "allowance", [owner, spender], chain))
     }
 
     async getDecimalAmount(amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
@@ -83,7 +83,10 @@ export class Token {
     async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
         const amountDec = await this.getDecimalAmount(amount)
-        const calldata = await erc20ContractInterface.encodeTransactionData(await this.getAddress(options), "approve", [spender, amountDec])
+        const calldata = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(options), "approve", [
+            spender,
+            amountDec
+        ])
         const { to, data, value } = calldata
         return { to: to!, data: data!, value: value!, chain }
     }
@@ -91,7 +94,7 @@ export class Token {
     async transfer(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
         const amountDec = await this.getDecimalAmount(amount)
-        const calldata = await erc20ContractInterface.encodeTransactionData(await this.getAddress(options), "transfer", [
+        const calldata = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(options), "transfer", [
             spender,
             amountDec
         ])

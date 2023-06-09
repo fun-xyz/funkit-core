@@ -1,5 +1,5 @@
 import { concat, encodeAbiParameters } from "viem"
-import { AddressZero, TransactionDataWithFee, factoryContractInterface, walletContractInterface } from "../common"
+import { AddressZero, FACTORY_CONTRACT_INTERFACE, TransactionDataWithFee, WALLET_CONTRACT_INTERFACE } from "../common"
 import { InitCodeParams, encodeLoginData } from "../data"
 import { verifyFunctionParams } from "../utils/DataUtils"
 
@@ -19,7 +19,7 @@ export class WalletAbiManager {
         value ??= 0
         data ??= "0x"
 
-        return walletContractInterface.encodeData(callFunctionName, [dest, value, data])
+        return WALLET_CONTRACT_INTERFACE.encodeData(callFunctionName, [dest, value, data])
     }
 
     encodeFeeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeFeeCall") {
@@ -36,7 +36,7 @@ export class WalletAbiManager {
         }
 
         const feedata = [token, recipient, oracle, amount]
-        return walletContractInterface.encodeData(feeCallFunctionName, [dest, value, data, feedata])
+        return WALLET_CONTRACT_INTERFACE.encodeData(feeCallFunctionName, [dest, value, data, feedata])
     }
 
     getInitCode(input: InitCodeParams) {
@@ -53,11 +53,14 @@ export class WalletAbiManager {
             ],
             [input.verificationAddresses, input.verificationData]
         )
-        const initializerCallData = walletContractInterface.encodeData("initialize", [input.entryPointAddress, encodedVerificationInitdata])
+        const initializerCallData = WALLET_CONTRACT_INTERFACE.encodeData("initialize", [
+            input.entryPointAddress,
+            encodedVerificationInitdata
+        ])
 
         const implementationAddress = input.implementationAddress ? input.implementationAddress : AddressZero
 
-        const data = factoryContractInterface.encodeData("createAccount", [
+        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [
             initializerCallData,
             implementationAddress,
             encodeLoginData(input.loginData)

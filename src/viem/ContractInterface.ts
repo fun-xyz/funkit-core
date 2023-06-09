@@ -4,7 +4,7 @@ import { Chain } from "../data"
 
 type ChainReadCall = {
     functionName: string
-    args: any[]
+    args?: any[]
 }
 
 export class ContractInterface {
@@ -27,7 +27,7 @@ export class ContractInterface {
         const client = await parseClient(chainOrClient)
         return await Promise.all(
             calls.map(async (call) => {
-                return this.readFromChain(address, call.functionName, call.args, client)
+                return this.readFromChain(address, call.functionName, call.args ? call.args : [], client)
             })
         )
     }

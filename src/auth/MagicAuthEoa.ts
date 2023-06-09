@@ -1,4 +1,4 @@
-import { Hex } from "viem"
+import { Address, Hex } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput } from "./types"
 
@@ -23,7 +23,7 @@ export class MagicAuthEoa extends Eoa {
         return [this.signer.address]
     }
 
-    override async getAddress(): Promise<string> {
+    override async getAddress(): Promise<Address> {
         return await this.getOwnerAddr()[0]
     }
 }

@@ -4,7 +4,7 @@ import { AllTokenData, PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { addPaymasterToken, addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
-import { AddressZero, tokenPaymasterContractInterface, walletContractInterface } from "../common/constants"
+import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 
@@ -12,7 +12,7 @@ export class TokenSponsor extends Sponsor {
     token: string
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, tokenPaymasterContractInterface, "tokenSponsorAddress", PaymasterType.TokenSponsor)
+        super(options, TOKEN_PAYMASTER_CONTRACT_INTERFACE, "tokenSponsorAddress", PaymasterType.TokenSponsor)
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
@@ -28,10 +28,10 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<string> {
         const chain = await getChainFromData(options.chain)
-        const nonce = await walletContractInterface.readFromChain(walletAddr, "getNonce", [0], chain)
+        const nonce = await WALLET_CONTRACT_INTERFACE.readFromChain(walletAddr, "getNonce", [0], chain)
         const paymasterAddress = await this.getPaymasterAddress(options)
         const tokenAddress = await Token.getAddress(this.token, options)
-        const hash = await walletContractInterface.readFromChain(
+        const hash = await WALLET_CONTRACT_INTERFACE.readFromChain(
             walletAddr,
             "getPermitHash",
             [tokenAddress, paymasterAddress, amount, nonce],

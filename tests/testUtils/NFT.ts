@@ -1,7 +1,7 @@
 import { assert } from "chai"
 import { Address } from "viem"
 import { Auth, Eoa } from "../../src/auth"
-import { erc721ContractInterface } from "../../src/common"
+import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { getChainFromData } from "../../src/data"
 import { NFT } from "../../src/data/NFT"
@@ -45,7 +45,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             const chain = await getChainFromData(options.chain)
             await chain.init()
             nftId = Math.floor(Math.random() * 10_000_000_000)
-            const data = erc721ContractInterface.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])
+            const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])
             data.chain = chain
             await auth.sendTx(data)
         })

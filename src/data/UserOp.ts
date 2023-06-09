@@ -3,7 +3,7 @@ import { Chain, getChainFromData } from "./Chain"
 import { encodeWalletSignature } from "./SolidityData"
 import { UserOperation, WalletSignature } from "./types"
 import { Auth } from "../auth/Auth"
-import { entrypointContractInterface } from "../common/constants"
+import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
 import { calcPreVerificationGas } from "../utils"
 
@@ -26,7 +26,7 @@ export class UserOp {
 
     async getOpHashData(chain: Chain) {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        return await entrypointContractInterface.readFromChain(entryPointAddress, "getUserOpHash", [this.op], chain)
+        return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [this.op], chain)
     }
 
     getMaxTxCost() {

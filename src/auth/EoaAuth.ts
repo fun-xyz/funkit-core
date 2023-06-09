@@ -1,4 +1,5 @@
 import {
+    Address,
     Hex,
     JsonRpcAccount,
     PrivateKeyAccount,
@@ -119,7 +120,7 @@ export class Eoa extends Auth {
         return receipt
     }
 
-    async getAddress(): Promise<string> {
+    async getAddress(): Promise<Address> {
         return await this.getUniqueId()
     }
 }

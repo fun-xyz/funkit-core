@@ -1,4 +1,3 @@
-import { JsonRpcProvider } from "@ethersproject/providers"
 import { estimateUserOpGas, getChainId, sendUserOpToBundler, validateChainId } from "../apis"
 import { EstimateGasResult } from "../common"
 import { UserOperation } from "../data/"
@@ -9,19 +8,17 @@ export class Bundler {
     chainId: string
     bundlerUrl: string
     entryPointAddress: string
-    userOpJsonRpcProvider?: JsonRpcProvider
 
     constructor(chainId: string, bundlerUrl: string, entryPointAddress: string) {
         this.chainId = chainId
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
-        this.userOpJsonRpcProvider = new JsonRpcProvider(this.bundlerUrl)
     }
     async validateChainId() {
         // validate chainId is in sync with expected chainid
         let response
         try {
-            response = await validateChainId(this.chainId, this.userOpJsonRpcProvider)
+            response = await validateChainId(this.chainId)
         } catch (e) {
             console.log(e)
             const helper = new Helper("Chain ID", this.chainId, "Cannot connect to bundler.")
@@ -35,13 +32,13 @@ export class Bundler {
 
     async sendUserOpToBundler(userOp: UserOperation): Promise<string> {
         const hexifiedUserOp = deepHexlify(userOp)
-        const response = await sendUserOpToBundler(hexifiedUserOp, this.entryPointAddress, this.chainId, this.userOpJsonRpcProvider)
+        const response = await sendUserOpToBundler(hexifiedUserOp, this.entryPointAddress, this.chainId)
         return response
     }
 
     async estimateUserOpGas(userOp: UserOperation): Promise<EstimateGasResult> {
         const hexifiedUserOp = deepHexlify(userOp)
-        const res = await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId, this.userOpJsonRpcProvider)
+        const res = await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId)
         if (!(res.preVerificationGas || res.verificationGas || res.callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }

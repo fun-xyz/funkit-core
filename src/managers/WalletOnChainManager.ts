@@ -1,5 +1,5 @@
 import { Address, Hash, Hex, TransactionReceipt, createPublicClient, http } from "viem"
-import { OFF_CHAIN_ORACLE_ABI, entrypointContractInterface, factoryContractInterface } from "../common/constants"
+import { ENTRYPOINT_CONTRACT_INTERFACE, FACTORY_CONTRACT_INTERFACE, OFF_CHAIN_ORACLE_ABI } from "../common/constants"
 import { Chain, WalletIdentifier, encodeLoginData } from "../data"
 import { isContract } from "../utils"
 import { ContractInterface } from "../viem/ContractInterface"
@@ -17,21 +17,21 @@ export class WalletOnChainManager {
         const uniqueId = await this.walletIdentifier.getIdentifier()
         const data = encodeLoginData({ salt: uniqueId })
         const factoryAddress = await this.chain.getAddress("factoryAddress")
-        return await factoryContractInterface.readFromChain(factoryAddress, "getAddress", [data], this.chain)
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data], this.chain)
     }
 
     static async getWalletAddress(identifier: string, rpcUrl: string, factoryAddress: Address): Promise<Address> {
         const client = await createPublicClient({
             transport: http(rpcUrl)
         })
-        return await factoryContractInterface.readFromChain(factoryAddress, "getAddress", [identifier], client)
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [identifier], client)
     }
 
     async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000): Promise<Hex | null> {
         const endtime = Date.now() + timeout
         const client = await this.chain.getClient()
         const entrypointAddress = await this.chain.getAddress("entryPointAddress")
-        const filter = await entrypointContractInterface.createFilter(entrypointAddress, "UserOperationEvent", [userOpHash], client)
+        const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(entrypointAddress, "UserOperationEvent", [userOpHash], client)
         while (Date.now() < endtime) {
             const events = await client.getFilterLogs({ filter })
             if (events.length > 0) {
