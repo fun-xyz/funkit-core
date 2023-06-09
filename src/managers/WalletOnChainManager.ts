@@ -1,4 +1,4 @@
-import { Address, Hash, createPublicClient, http } from "viem"
+import { Address, Hash, Hex, TransactionReceipt, createPublicClient, http } from "viem"
 import { OFF_CHAIN_ORACLE_ABI, entrypointContractInterface, factoryContractInterface } from "../common/constants"
 import { Chain, WalletIdentifier, encodeLoginData } from "../data"
 import { isContract } from "../utils"
@@ -20,14 +20,14 @@ export class WalletOnChainManager {
         return await factoryContractInterface.readFromChain(factoryAddress, "getAddress", [data], this.chain)
     }
 
-    static async getWalletAddress(identifier: string, rpcUrl: string, factoryAddress: Address): Promise<string> {
+    static async getWalletAddress(identifier: string, rpcUrl: string, factoryAddress: Address): Promise<Address> {
         const client = await createPublicClient({
             transport: http(rpcUrl)
         })
         return await factoryContractInterface.readFromChain(factoryAddress, "getAddress", [identifier], client)
     }
 
-    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000) {
+    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000): Promise<Hex | null> {
         const endtime = Date.now() + timeout
         const client = await this.chain.getClient()
         const entrypointAddress = await this.chain.getAddress("entryPointAddress")
@@ -43,16 +43,16 @@ export class WalletOnChainManager {
         return null
     }
 
-    async getReceipt(hash: Hash) {
+    async getReceipt(hash: Hash): Promise<TransactionReceipt | undefined> {
         const client = await this.chain.getClient()
         const txReceipt = await client.waitForTransactionReceipt({ hash })
         if (txReceipt && txReceipt.blockNumber) {
             return txReceipt
         }
-        return null
+        return undefined
     }
 
-    async addressIsContract(address: Address) {
+    async addressIsContract(address: Address): Promise<boolean> {
         const client = await this.chain.getClient()
         return isContract(address, client)
     }

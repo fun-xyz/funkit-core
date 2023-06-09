@@ -74,7 +74,7 @@ export const stringifyOp = (op: any) => {
     )
 }
 
-export const objectfy = (op: any): any => {
+export const objectify = (op: any): any => {
     return JSON.parse(stringifyOp(op))
 }
 
