@@ -39,7 +39,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
             const uid = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex ? config.walletIndex : 129856341 })
-            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 12341238465411 })
+            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 1792811340 })
             if (config.prefund) {
                 await fundWallet(funder, wallet, config.stakeAmount / 8)
                 await fundWallet(auth, wallet1, config.stakeAmount / 8)

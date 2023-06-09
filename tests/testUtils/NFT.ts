@@ -19,7 +19,7 @@ export interface NFTTestConfig {
     testNFTAddress: string
 }
 export const NFTTest = (config: NFTTestConfig) => {
-    const { chainId, prefund, nftAddress } = config
+    const { prefund, nftAddress } = config
 
     describe("NFT Tests", function () {
         this.timeout(120_000)
@@ -31,7 +31,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         before(async function () {
             apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey
             }
             await configureEnvironment(options)
@@ -60,14 +60,19 @@ export const NFTTest = (config: NFTTestConfig) => {
                         tokenId: nftId
                     })
                 } catch (error) {
-                    console.log("NFT transfer error: ", error)
                     transferError = true
                 }
-                await wallet2.transfer(auth, {
-                    to: await wallet1.getAddress(),
-                    token: nftAddress,
-                    tokenId: nftId
-                })
+
+                try {
+                    await wallet2.transfer(auth, {
+                        to: await wallet1.getAddress(),
+                        token: nftAddress,
+                        tokenId: nftId
+                    })
+                } catch (error) {
+                    transferError = true
+                }
+
                 assert(!transferError, "Transfer should have failed")
             })
 
@@ -89,6 +94,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 await nft.getAddress()
                 assert(nft.address === nftAddress, "Address is not correct")
             })
+
             it("getBalance", async () => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())

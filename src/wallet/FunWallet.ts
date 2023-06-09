@@ -1,5 +1,5 @@
 import { Address } from "viem"
-import { ActionFunction, FirstClassActions } from "../actions"
+import { ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common"
@@ -53,10 +53,10 @@ export class FunWallet extends FirstClassActions {
      */
     async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
         const chain = await getChainFromData(txOptions.chain)
-        const actionData = {
+        const actionData: ActionData = {
             wallet: this,
             chain,
-            txOptions
+            options: txOptions
         }
         const { data } = await transactionFunc(actionData)
 
@@ -193,7 +193,7 @@ export class FunWallet extends FirstClassActions {
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
-            preVerificationGas: BigInt(1e5),
+            preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
         }
@@ -403,7 +403,7 @@ export class FunWallet extends FirstClassActions {
     async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         if (status) {
             const chain = await getChainFromData(txOptions.chain)
-            return await getLidoWithdrawals(chain.chainId!, await this.getAddress())
+            return await getLidoWithdrawals(await chain.getChainId(), await this.getAddress())
         }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())

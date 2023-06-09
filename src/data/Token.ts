@@ -56,12 +56,12 @@ export class Token {
 
     async getBalanceBN(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(options.chain)
-        let amount: bigint
+        let amount = 0n
         if (this.isNative) {
             const client = await chain.getClient()
             amount = await client.getBalance({ address })
         } else {
-            amount = await erc20ContractInterface.readFromChain(address, "balanceOf", [address], chain)
+            amount = await erc20ContractInterface.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
         }
         return amount
     }
@@ -75,7 +75,7 @@ export class Token {
         return BigInt(await erc20ContractInterface.readFromChain(await this.getAddress(options), "allowance", [owner, spender], chain))
     }
 
-    async getDecimalAmount(amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigInt> {
+    async getDecimalAmount(amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const decimals = await this.getDecimals(options)
         return parseUnits(`${amount}`, Number(decimals))
     }
@@ -128,7 +128,7 @@ export class Token {
         const token = new Token(data)
         return await token.getApproval(owner, spender, options)
     }
-    static async getDecimalAmount(data: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigInt> {
+    static async getDecimalAmount(data: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const token = new Token(data)
         return await token.getDecimalAmount(amount, options)
     }

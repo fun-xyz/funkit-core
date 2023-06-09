@@ -38,7 +38,7 @@ export class ContractInterface {
             functionName,
             args
         })
-        return { to: address, data, value: "0x0" }
+        return { to: address, data, value: 0n }
     }
 
     encodeData(functionName: string, args: any[]): Hex {

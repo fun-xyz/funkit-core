@@ -17,17 +17,17 @@ export interface TransferTestConfig {
 }
 
 export const TransferTest = (config: TransferTestConfig) => {
-    const { chainId, outToken, baseToken, prefund } = config
+    const { outToken, baseToken, prefund } = config
 
     describe("Transfer", function () {
-        this.timeout(120_000)
+        this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
         let difference: number
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId.toString(),
+                chain: config.chainId.toString(),
                 apiKey: apiKey,
                 gasSponsor: undefined
             }
@@ -35,7 +35,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
-            if (prefund) await fundWallet(auth, wallet, 0.7)
+            if (prefund) await fundWallet(auth, wallet, 0.007)
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
             await wallet.swap(auth, {

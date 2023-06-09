@@ -3,8 +3,8 @@ import { AddressZero, TransactionDataWithFee, factoryContractInterface, walletCo
 import { InitCodeParams, encodeLoginData } from "../data"
 import { verifyFunctionParams } from "../utils/DataUtils"
 
-const encodeCallExpectedKeys = ["to", "data"]
-const encodeFeeCallExpectedKeys = ["to", "data", "token", "amount", "recipient"]
+const encodeCallExpectedKeys = ["to"]
+const encodeFeeCallExpectedKeys = ["to", "token", "amount", "recipient"]
 const callFunctionName = "execFromEntryPoint"
 const feeCallFunctionName = "execFromEntryPointWithFee"
 
@@ -16,14 +16,8 @@ export class WalletAbiManager {
         verifyFunctionParams(location, input, encodeCallExpectedKeys)
         const { to: dest } = input
         let { data, value } = input
-        if (Array.isArray(data)) {
-            data = data[1]
-        }
-        if (Array.isArray(value)) {
-            value = value[1]
-        } else {
-            value = value ? value : 0
-        }
+        value ??= 0
+        data ??= "0x"
 
         return walletContractInterface.encodeData(callFunctionName, [dest, value, data])
     }
