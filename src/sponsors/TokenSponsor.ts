@@ -49,7 +49,6 @@ export class TokenSponsor extends Sponsor {
         return async (actionData: ActionData) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("addEthDepositTo", [walletAddress, amountdec])
-
             await addTransaction(
                 await actionData.chain.getChainId(),
                 {
@@ -89,8 +88,8 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    async getUnlockBlock(tokenAddr: string, sponsor: string): Promise<number> {
-        return Number((await this.getAllTokenData(tokenAddr, sponsor)).unlockBlock.toString())
+    async getUnlockBlock(tokenAddr: string, sponsor: string): Promise<bigint> {
+        return (await this.getAllTokenData(tokenAddr, sponsor)).unlockBlock
     }
 
     // false means unlocked, true means locked
@@ -100,7 +99,7 @@ export class TokenSponsor extends Sponsor {
         const chain = await getChainFromData(options.chain)
         const provider = await chain.getClient()
         const currentBlock = await provider.getBlockNumber()
-        return unlockBlock === 0 || unlockBlock > currentBlock
+        return unlockBlock === 0n || unlockBlock > currentBlock
     }
 
     async getTokenInfo(token: string, options: EnvOption = (globalThis as any).globalEnvOption) {
@@ -116,12 +115,17 @@ export class TokenSponsor extends Sponsor {
     ): Promise<AllTokenData> {
         const tokenAddress = await Token.getAddress(tokenAddr, options)
         const chain = await getChainFromData(options.chain)
-        return await this.contractInterface.readFromChain(
+
+        const data = await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getAllTokenData",
             [tokenAddress, spender],
             chain
         )
+        return {
+            unlockBlock: data[0],
+            tokenAmount: data[1]
+        }
     }
 
     async getTokenBalance(token: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
@@ -214,17 +218,21 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    lockTokenDeposit(token: string): ActionFunction {
+    lockTokenDeposit(tokenData: string): ActionFunction {
         return async (actionData: ActionData) => {
-            const data = this.contractInterface.encodeData("lockTokenDeposit", [token])
+            const token = new Token(tokenData)
+            const tokenAddress = token.isNative ? AddressZero : await token.getAddress(actionData.options)
+            const data = this.contractInterface.encodeData("lockTokenDeposit", [tokenAddress])
 
             return await this.encode(data, actionData.options)
         }
     }
 
-    unlockTokenDepositAfter(token: string, blocksToWait: number): ActionFunction {
+    unlockTokenDepositAfter(tokenData: string, blocksToWait: number): ActionFunction {
         return async (actionData: ActionData) => {
-            const data = this.contractInterface.encodeData("unlockTokenDepositAfter", [token, blocksToWait])
+            const token = new Token(tokenData)
+            const tokenAddress = token.isNative ? AddressZero : await token.getAddress(actionData.options)
+            const data = this.contractInterface.encodeData("unlockTokenDepositAfter", [tokenAddress, blocksToWait])
             return await this.encode(data, actionData.options)
         }
     }

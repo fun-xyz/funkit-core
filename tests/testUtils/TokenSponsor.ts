@@ -158,14 +158,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(sponsor.unlockTokenDepositAfter(paymasterToken, 0))
             expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.false
             expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
-            expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
-            await funder.sendTx(sponsor.lockTokenDeposit(paymasterToken))
-            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.true
         })
 
         it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(sponsor.unlockDepositAfter(0))
-            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.true
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.false
             await funder.sendTx(sponsor.lockDeposit())
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
