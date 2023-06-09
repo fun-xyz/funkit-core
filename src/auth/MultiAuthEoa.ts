@@ -1,6 +1,6 @@
 import { Web3Provider } from "@ethersproject/providers"
 import { Signer } from "ethers"
-import { hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
+import { BytesLike, arrayify, hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
 import { v4 as uuidv4 } from "uuid"
 import { Eoa, EoaAuthInput } from "./EoaAuth"
 import { WalletSignature, encodeWalletSignature } from "../data"
@@ -57,6 +57,15 @@ export class MultiAuthEoa extends Eoa {
         const walletSignature: WalletSignature = {
             userId: (await this.getOwnerAddr())[0],
             signature: hexZeroPad(toUtf8Bytes(""), 65)
+        }
+        return encodeWalletSignature(walletSignature)
+    }
+
+    override async signHash(hash: BytesLike): Promise<string> {
+        await this.init()
+        const walletSignature: WalletSignature = {
+            signature: await await this.signer!.signMessage(arrayify(hash)),
+            userId: (await this.getOwnerAddr())[0]
         }
         return encodeWalletSignature(walletSignature)
     }
