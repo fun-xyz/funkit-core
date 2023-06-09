@@ -1,7 +1,9 @@
 import { Web3Provider } from "@ethersproject/providers"
 import { Signer } from "ethers"
+import { hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
 import { v4 as uuidv4 } from "uuid"
 import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { WalletSignature, encodeWalletSignature } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
 
@@ -52,8 +54,11 @@ export class MultiAuthEoa extends Eoa {
     }
 
     override async getEstimateGasSignature(): Promise<string> {
-        const ownerAddr = await this.getOwnerAddr()
-        return ownerAddr[0]
+        const walletSignature: WalletSignature = {
+            userId: await this.getOwnerAddr()[0],
+            signature: hexZeroPad(toUtf8Bytes(""), 65)
+        }
+        return encodeWalletSignature(walletSignature)
     }
 
     override async getSignerFromProvider(provider: Web3Provider): Promise<Signer> {
