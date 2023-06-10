@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from "uuid"
-import { Address, Hex } from "viem"
+import { Address, Hex, pad, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput } from "./types"
+import { WalletSignature, encodeWalletSignature } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
 
@@ -51,12 +52,33 @@ export class MultiAuthEoa extends Eoa {
         })
     }
 
-    override async getEstimateGasSignature(): Promise<Hex> {
-        const ownerAddr = await this.getOwnerAddr()
-        return ownerAddr[0]
-    }
-
     override async getAddress(): Promise<Address> {
         return await this.getOwnerAddr()[0]
+    }
+
+    override async getEstimateGasSignature(): Promise<Hex> {
+        await this.init()
+        const walletSignature: WalletSignature = {
+            userId: await this.getAddress(),
+            signature: pad("0x", { size: 65 })
+        }
+        return encodeWalletSignature(walletSignature)
+    }
+
+    override async signHash(hash: Hex): Promise<Hex> {
+        await this.init()
+        let signature
+        if (this.signer?.type === "local") {
+            signature = await this.signer.signMessage({ message: { raw: toBytes(hash) } })
+        } else if (this.client && this.account) {
+            signature = await this.client.signMessage({ account: this.account, message: hash })
+        } else {
+            throw new Error("No signer or client")
+        }
+        const walletSignature: WalletSignature = {
+            userId: await this.getAddress(),
+            signature: signature
+        }
+        return encodeWalletSignature(walletSignature)
     }
 }
