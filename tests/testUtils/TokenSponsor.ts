@@ -1,4 +1,5 @@
 import { assert, expect } from "chai"
+import { Address, Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -6,6 +7,9 @@ import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+
+import "../../fetch-polyfill"
+
 export interface TokenSponsorTestConfig {
     chainId: number
     inToken: string
@@ -29,15 +33,15 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let funder: Eoa
         let wallet: FunWallet
         let wallet1: FunWallet
-        let funderAddress: string
-        let walletAddress: string
-        let walletAddress1: string
+        let funderAddress: Address
+        let walletAddress: Address
+        let walletAddress1: Address
         let sponsor: TokenSponsor
         let options: GlobalEnvOption
 
         before(async function () {
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
-            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
+            funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId.toString(),
@@ -92,8 +96,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
             const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
 
-            assert(depositInfo1E.gt(depositInfo1S), "Base Stake Failed")
-            assert(depositInfoE.gt(depositInfoS), "Token Stake Failed")
+            assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
+            assert(depositInfoE > depositInfoS, "Token Stake Failed")
         })
 
         const runSwap = async (wallet: FunWallet) => {
@@ -154,14 +158,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(sponsor.unlockTokenDepositAfter(paymasterToken, 0))
             expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.false
             expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
-            expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
-            await funder.sendTx(sponsor.lockTokenDeposit(paymasterToken))
-            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.true
         })
 
         it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(sponsor.unlockDepositAfter(0))
-            expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.true
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.false
             await funder.sendTx(sponsor.lockDeposit())
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.true

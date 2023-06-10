@@ -1,9 +1,9 @@
-import { TransactionReceipt } from "@ethersproject/providers"
+import { TransactionReceipt } from "viem"
 import { API_URL, TEST_API_KEY, TRANSACTION_TYPE } from "../common/constants"
 import { GlobalEnvOption } from "../config"
 import { UserOperation, getChainFromData } from "../data"
 import { DataFormatError } from "../errors"
-import { getPromiseFromOp } from "../utils"
+import { objectify } from "../utils"
 import { sendPostRequest } from "../utils/ApiUtils"
 
 export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) {
@@ -14,13 +14,12 @@ export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) 
     if (globalEnvOption.apiKey === TEST_API_KEY) {
         return
     }
-    const userOp = await getPromiseFromOp(op)
     const chain = await getChainFromData(globalEnvOption.chain)
     const body = {
-        userOp,
+        userOp: objectify(op),
         type: TRANSACTION_TYPE,
         balance,
-        receipt,
+        receipt: objectify(receipt),
         organization: globalEnvOption.orgInfo?.id,
         orgName: globalEnvOption.orgInfo?.name,
         chainId: chain.id

@@ -1,9 +1,8 @@
-import { FeeData, JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
-import { Contract, Signer } from "ethers"
+import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
-import { CONTRACT_ADDRESSES, ENTRYPOINT_ABI } from "../common/constants"
+import { CONTRACT_ADDRESSES } from "../common/constants"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -13,12 +12,14 @@ export class Chain {
     rpcUrl?: string
     chainName?: string
     bundlerUrl?: string
-    provider?: JsonRpcProvider
     bundler?: Bundler
     id?: string
     name?: string
     addresses: Addresses = {}
     currency?: string
+
+    // viem
+    client?: PublicClient
 
     constructor(chainInput: ChainInput) {
         if (chainInput.chainId) {
@@ -38,8 +39,8 @@ export class Chain {
         } else if (this.chainName) {
             await this.loadChainData(this.chainName)
         } else if (this.rpcUrl) {
-            await this.loadProvider()
-            const { chainId } = await this.provider!.getNetwork()
+            await this.loadClient()
+            const chainId = await this.client!.getChainId()
             await this.loadChainData(chainId.toString())
         } else if (this.bundlerUrl) {
             const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
@@ -54,15 +55,17 @@ export class Chain {
         }
 
         try {
-            await this.loadProvider()
+            await this.loadClient()
         } catch {
             // ignore
         }
     }
 
-    async loadProvider() {
-        if (!this.provider) {
-            this.provider = new JsonRpcProvider(this.rpcUrl)
+    async loadClient() {
+        if (!this.client) {
+            this.client = createPublicClient({
+                transport: http(this.rpcUrl)
+            })
         }
     }
 
@@ -91,7 +94,7 @@ export class Chain {
                     result[key] = CONTRACT_ADDRESSES[key][this.id]
                     return result
                 }, {})
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
+                const addresses = { ...abisAddresses, ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
@@ -102,7 +105,7 @@ export class Chain {
         }
     }
 
-    async getAddress(name: string): Promise<string> {
+    async getAddress(name: string): Promise<Address> {
         await this.init()
         const res = this.addresses![name]
         if (!res) {
@@ -121,7 +124,7 @@ export class Chain {
 
     async getActualChainId(): Promise<string> {
         await this.init()
-        const { chainId } = await this.provider!.getNetwork()
+        const chainId = await this.client!.getChainId()
         return chainId.toString()
     }
 
@@ -130,12 +133,12 @@ export class Chain {
         return this.id!
     }
 
-    async getProvider(): Promise<JsonRpcProvider> {
+    async getClient(): Promise<PublicClient> {
         await this.init()
-        return this.provider!
+        return this.client!
     }
 
-    setAddress(name: string, address: string) {
+    setAddress(name: string, address: Address) {
         if (!this.addresses) this.addresses = {}
         this.addresses[name] = address
     }
@@ -145,37 +148,23 @@ export class Chain {
         return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
-    async sendOpToEntryPoint(userOp: UserOperation, signer: Signer): Promise<TransactionResponse> {
-        const provider = await this.getProvider()
-        const entrypointContract = new Contract(this.addresses.entryPointAddress, ENTRYPOINT_ABI, provider)
-        const tx = await entrypointContract.populateTransaction.handleOps([userOp], await signer.getAddress())
-        return await signer.sendTransaction(tx)
-    }
-
-    async getFeeData(): Promise<FeeData> {
+    async getFeeData(): Promise<bigint> {
         await this.init()
-        return await this.provider!.getFeeData()
+        return this.client!.getGasPrice()
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
         const res = await this.bundler!.estimateUserOpGas(partialOp)
-        const { callGasLimit } = res
-        let { preVerificationGas, verificationGasLimit } = res
+        let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
-
-        preVerificationGas = preVerificationGas.mul(2)
-        verificationGasLimit = verificationGasLimit.add(100_000)
+        callGasLimit = BigInt(callGasLimit)
+        preVerificationGas = BigInt(preVerificationGas) * 2n
+        verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
-}
-
-const verifyBundlerUrl = async (url: string) => {
-    const provider = new JsonRpcProvider(url)
-    const data = await provider.send("web3_clientVersion", [])
-    return data.indexOf("aa-bundler") + 1
 }
 
 export const getChainFromData = async (chainIdentifier?: string | Chain): Promise<Chain> => {
@@ -188,11 +177,7 @@ export const getChainFromData = async (chainIdentifier?: string | Chain): Promis
     }
 
     if (chainIdentifier.indexOf("http") + 1) {
-        if (await verifyBundlerUrl(chainIdentifier)) {
-            return new Chain({ bundlerUrl: chainIdentifier })
-        } else {
-            return new Chain({ rpcUrl: chainIdentifier })
-        }
+        return new Chain({ rpcUrl: chainIdentifier })
     }
     return new Chain({ chainName: chainIdentifier })
 }

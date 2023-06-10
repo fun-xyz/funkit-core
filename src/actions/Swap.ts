@@ -1,4 +1,4 @@
-import { Contract } from "ethers"
+import { Address } from "viem"
 import { approveAndExec } from "./ApproveAndExec"
 import {
     ActionData,
@@ -15,6 +15,7 @@ import { EnvOption } from "../config"
 import { Token } from "../data/Token"
 import { sendRequest } from "../utils"
 import { fromReadableAmount, oneInchAPIRequest, swapExec } from "../utils/SwapUtils"
+import { ContractInterface } from "../viem/ContractInterface"
 
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 
@@ -24,6 +25,8 @@ const errorData = {
 }
 
 const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
+
+const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
 export const _swap = (params: SwapParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
@@ -41,17 +44,13 @@ export const _swap = (params: SwapParams): ActionFunction => {
     }
 }
 
-const _uniswapSwap = (params: UniswapParams, address: string, options: EnvOption): ActionFunction => {
+const _uniswapSwap = (params: UniswapParams, address: Address, options: EnvOption): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
-        const provider = await actionData.chain.getProvider()
-
+        const client = await actionData.chain.getClient()
         const tokenSwapAddress = await actionData.chain.getAddress("tokenSwapAddress")
         const univ3quoter = await actionData.chain.getAddress("univ3quoter")
         const univ3factory = await actionData.chain.getAddress("univ3factory")
         const univ3router = await actionData.chain.getAddress("univ3router")
-
-        const actionContract = new Contract(tokenSwapAddress, APPROVE_AND_SWAP_ABI, provider)
-
         const tokenIn = new Token(params.in)
         const tokenOut = new Token(params.out)
 
@@ -85,12 +84,19 @@ const _uniswapSwap = (params: UniswapParams, address: string, options: EnvOption
             slippage,
             poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
         }
-        const { data, to, amount } = await swapExec(provider, uniswapAddrs, swapParams)
+        const chainId = Number(await actionData.chain.getChainId())
+
+        const { data, to, amount } = await swapExec(client, uniswapAddrs, swapParams, chainId)
         let swapData
         if (tokenIn.isNative) {
-            swapData = await actionContract.populateTransaction.executeSwapETH(to, amount, data)
+            swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
         } else {
-            swapData = await actionContract.populateTransaction.executeSwapERC20(tokenInAddress, univ3router, amount, data)
+            swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
+                tokenInAddress,
+                univ3router,
+                amount,
+                data
+            ])
         }
         const txData = { to: tokenSwapAddress, data: swapData.data }
         return { data: txData, errorData }
@@ -117,7 +123,7 @@ const _1inchSwap = async (swapParams: OneInchSwapParams, address: string, option
 const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption): Promise<TransactionData> => {
     const inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, options)
     tokenAddress = await Token.getAddress(tokenAddress, options)
-    const amount = fromReadableAmount(amt, inTokenDecimals).toString()
+    const amount = fromReadableAmount(amt, Number(inTokenDecimals)).toString()
     const url = await oneInchAPIRequest("/approve/transaction", amount ? { tokenAddress, amount } : { tokenAddress })
     const transaction = await sendRequest(url, "GET", "")
     return transaction as TransactionData
@@ -127,7 +133,7 @@ const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: str
     const inTokenDecimals = await _get1inchTokenDecimals(swapParams.in, options)
     const fromTokenAddress = await Token.getAddress(swapParams.in, options)
     const toTokenAddress = await Token.getAddress(swapParams.out, options)
-    const amount = fromReadableAmount(swapParams.amount, inTokenDecimals)
+    const amount = fromReadableAmount(swapParams.amount, Number(inTokenDecimals))
     const formattedSwap = {
         fromTokenAddress,
         toTokenAddress,

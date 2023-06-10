@@ -1,25 +1,14 @@
-import { ContractInterface, constants } from "ethers"
-import { Interface, defaultAbiCoder, hexConcat } from "ethers/lib/utils"
-import { TransactionDataWithFee } from "../common"
-import { FactoryCreateAccountParams, InitCodeParams, WalletInitialzeParams, encodeLoginData } from "../data"
-import { checkAbi, encodeContractCall, verifyValidParamsFromAbi } from "../utils/ChainUtils"
-import { verifyFunctionParams, verifyIsArray } from "../utils/DataUtils"
+import { concat, encodeAbiParameters } from "viem"
+import { AddressZero, FACTORY_CONTRACT_INTERFACE, TransactionDataWithFee, WALLET_CONTRACT_INTERFACE } from "../common"
+import { InitCodeParams, encodeLoginData } from "../data"
+import { verifyFunctionParams } from "../utils/DataUtils"
 
-const encodeCallExpectedKeys = ["to", "data"]
-const encodeFeeCallExpectedKeys = ["to", "data", "token", "amount", "recipient"]
+const encodeCallExpectedKeys = ["to"]
+const encodeFeeCallExpectedKeys = ["to", "token", "amount", "recipient"]
 const callFunctionName = "execFromEntryPoint"
 const feeCallFunctionName = "execFromEntryPointWithFee"
 
 export class WalletAbiManager {
-    walletInterface: Interface
-    factoryInterface: Interface
-
-    constructor(walletAbi: ContractInterface, factoryAbi: ContractInterface) {
-        const errorLocation = "WalletAbiManager constructor"
-        this.walletInterface = checkAbi(walletAbi, "FunWallet", errorLocation, true)
-        this.factoryInterface = checkAbi(factoryAbi, "FunWalletFactory", errorLocation, true)
-    }
-
     encodeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeCall") {
         if (input.token) {
             return this.encodeFeeCall(input)
@@ -27,16 +16,10 @@ export class WalletAbiManager {
         verifyFunctionParams(location, input, encodeCallExpectedKeys)
         const { to: dest } = input
         let { data, value } = input
-        if (Array.isArray(data)) {
-            data = data[1]
-        }
-        if (Array.isArray(value)) {
-            value = value[1]
-        } else {
-            value = value ? value : 0
-        }
-        const encodeObj = { dest, data, value }
-        return this.encodeWalletCall(callFunctionName, encodeObj)
+        value ??= 0
+        data ??= "0x"
+
+        return WALLET_CONTRACT_INTERFACE.encodeData(callFunctionName, [dest, value, data])
     }
 
     encodeFeeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeFeeCall") {
@@ -53,70 +36,35 @@ export class WalletAbiManager {
         }
 
         const feedata = [token, recipient, oracle, amount]
-        const encodeObj = { dest, data, value, feedata }
-        return this.encodeWalletCall(feeCallFunctionName, encodeObj)
-    }
-
-    encodeInitExecCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeInitExecCall", isInternal = false) {
-        if (input.token) {
-            return this.encodeInitExecFeeCall(input)
-        }
-        verifyFunctionParams(location, input, encodeCallExpectedKeys)
-        const { to: dest, data } = input
-        let { value } = input
-        verifyIsArray(data, location)
-        if (value) {
-            verifyIsArray(value, location)
-        } else {
-            value = [0, 0]
-        }
-        const encodeObj = { dest, data, value }
-        return encodeContractCall(this.walletInterface, "initAndExec", encodeObj, location, isInternal)
-    }
-
-    encodeInitExecFeeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeInitExecFeeCall", isInternal = false) {
-        verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
-        const { to: dest, data, token, amount, recipient } = input
-        let { value } = input
-        verifyIsArray(data, location)
-        if (value) {
-            verifyIsArray(value, location)
-        } else {
-            value = [0, 0]
-        }
-        const feedata = [token, recipient, amount]
-        const encodeObj = { dest, data, value, feedata }
-        return encodeContractCall(this.walletInterface, "initAndExec", encodeObj, location, isInternal)
-    }
-
-    encodeWalletCall(encodeFunctionName: string, input: any, location = "WalletAbiManager.encodeWalletCall", isInternal = false) {
-        return encodeContractCall(this.walletInterface, encodeFunctionName, input, location, isInternal)
-    }
-
-    encodeFactoryCall(encodeFunctionName: string, input: any, location = "WalletAbiManager.encodeFactoryCall", isInternal = false) {
-        return encodeContractCall(this.factoryInterface, encodeFunctionName, input, location, isInternal)
+        return WALLET_CONTRACT_INTERFACE.encodeData(feeCallFunctionName, [dest, value, data, feedata])
     }
 
     getInitCode(input: InitCodeParams) {
-        const walletInitialzeParams: WalletInitialzeParams = {
-            _newEntryPoint: input.entryPointAddress,
-            validationInitData: defaultAbiCoder.encode(["address[]", "bytes[]"], [input.verificationAddresses, input.verificationData])
-        }
-
-        verifyValidParamsFromAbi(this.walletInterface.fragments, "initialize", walletInitialzeParams, "WalletAbiManager.getInitCode")
-        const factoryCreateAccountParams: FactoryCreateAccountParams = {
-            initializerCallData: this.encodeWalletCall("initialize", walletInitialzeParams),
-            implementation: input.implementationAddress ? input.implementationAddress : constants.AddressZero,
-            data: encodeLoginData(input.loginData)
-        }
-
-        verifyValidParamsFromAbi(
-            this.factoryInterface.fragments,
-            "createAccount",
-            factoryCreateAccountParams,
-            "WalletAbiManager.getInitCode"
+        const encodedVerificationInitdata = encodeAbiParameters(
+            [
+                {
+                    type: "address[]",
+                    name: "verificationAddresses"
+                },
+                {
+                    type: "bytes[]",
+                    name: "verificationData"
+                }
+            ],
+            [input.verificationAddresses, input.verificationData]
         )
-        const data = this.encodeFactoryCall("createAccount", factoryCreateAccountParams, "WalletAbiManager.getInitCode")
-        return hexConcat([input.factoryAddress, data])
+        const initializerCallData = WALLET_CONTRACT_INTERFACE.encodeData("initialize", [
+            input.entryPointAddress,
+            encodedVerificationInitdata
+        ])
+
+        const implementationAddress = input.implementationAddress ? input.implementationAddress : AddressZero
+
+        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [
+            initializerCallData,
+            implementationAddress,
+            encodeLoginData(input.loginData)
+        ])
+        return concat([input.factoryAddress, data])
     }
 }

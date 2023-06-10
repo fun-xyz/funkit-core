@@ -1,10 +1,9 @@
-import { Web3Provider } from "@ethersproject/providers"
-import { Signer } from "ethers"
+import { Hex } from "viem"
 
 export interface EoaAuthInput {
-    signer?: Signer
-    privateKey?: string
-    provider?: Web3Provider
+    privateKey?: Hex
+    windowEth?: any
+    rpc?: string
 }
 
 export interface GroupAuthInput {

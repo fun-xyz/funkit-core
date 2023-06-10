@@ -1,41 +1,41 @@
-import { Contract, ethers } from "ethers"
+import { Address, isAddress } from "viem"
 import { getChainFromData } from "./Chain"
 import { getNftAddress, getNftName } from "../apis/NFTApis"
-import { ERC_721_ABI, TransactionData } from "../common"
+import { ERC721_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
-export class NFT {
-    address = ""
-    name = ""
-    contract?: Contract
 
-    constructor(input: string, location = "NFT constructor") {
-        if (!input) {
-            throw new MissingParameterError(location)
-        }
-        if (ethers.utils.isAddress(input)) {
+export class NFT {
+    address?: Address
+    name = ""
+
+    constructor(input: string, location = "NFT") {
+        if (isAddress(input)) {
             this.address = input
             return
+        } else if (input) {
+            this.name = input
+        } else {
+            throw new MissingParameterError(location)
         }
         this.name = input
     }
 
-    async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
-        const contract = await this.getContract(options)
-        const data = await contract.populateTransaction.approve(spender, tokenId)
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "approve", [spender, tokenId])
         return { ...data, chain }
     }
 
     async approveForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
-        const contract = await this.getContract(options)
-        const data = await contract.populateTransaction.setApprovalForAll(spender, true)
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, true])
         return { ...data, chain }
     }
 
-    async getAddress(): Promise<string> {
-        if (this.name && !this.address) {
+    async getAddress(): Promise<Address> {
+        if (!this.address) {
+            if (!this.name) throw new MissingParameterError("NFT.getAddress")
             const nft = await getNftAddress(this.name)
             if (nft.error) {
                 const helper = new Helper("getName", "", "call failed")
@@ -44,8 +44,9 @@ export class NFT {
             } else {
                 return nft.address
             }
+        } else {
+            return this.address
         }
-        return this.address
     }
 
     async getName(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
@@ -63,30 +64,19 @@ export class NFT {
         return this.name
     }
 
-    async getContract(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Contract> {
+    async getBalance(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(options.chain)
-        if (!this.contract) {
-            const provider = await chain.getProvider()
-            const addr = await this.getAddress()
-            this.contract = new ethers.Contract(addr, ERC_721_ABI, provider)
-        }
-        return this.contract
+        return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
     }
 
-    async getBalance(address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
-        const contract = await this.getContract(options)
-        return await contract.balanceOf(address)
-    }
-
-    async getApproved(tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
-        const contract = await this.getContract(options)
-        return await contract.getApproved(tokenId)
-    }
-
-    async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
+    async getApproved(tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         const chain = await getChainFromData(options.chain)
-        const contract = await this.getContract(options)
-        const data = await contract.populateTransaction.setApprovalForAll(spender, false)
+        return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "getApproved", [tokenId], chain)
+    }
+
+    async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
+        const chain = await getChainFromData(options.chain)
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, false])
         return { ...data, chain }
     }
 
@@ -97,8 +87,11 @@ export class NFT {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<any> {
         const chain = await getChainFromData(options.chain)
-        const contract = await this.getContract(options)
-        const data = await contract.populateTransaction.transferFrom(sender, spender, tokenId)
+        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "transferFrom", [
+            sender,
+            spender,
+            tokenId
+        ])
         return { ...data, chain }
     }
 
@@ -129,11 +122,6 @@ export class NFT {
     static async getApproved(data: string, tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const nft = new NFT(data)
         return await nft.getApproved(tokenId, options)
-    }
-
-    static async getBalance(data: string, address: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
-        const nft = new NFT(data)
-        return await nft.getBalance(address, options)
     }
 
     static async revokeForAll(

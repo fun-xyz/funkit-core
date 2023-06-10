@@ -20,6 +20,7 @@
     "license": "ISC",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.315.0",
+        "@ethersproject/contracts": "^5.7.0",
         "@lifeomic/attempt": "^3.0.3",
         "@uniswap/sdk": "^3.0.3",
         "@uniswap/v3-core": "^1.0.1",
@@ -27,7 +28,8 @@
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "node-fetch": "2.0.0",
-        "uuid": "^9.0.0"
+        "uuid": "^9.0.0",
+        "viem": "^0.3.50"
     },
     "devDependencies": {
         "@types/chai": "^4.3.5",

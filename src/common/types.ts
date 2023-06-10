@@ -1,10 +1,10 @@
-import { BigNumber, BigNumberish } from "ethers"
+import { Address, Hex } from "viem"
 import { Chain } from "../data"
-
+type BigIntIsh = bigint | number | string | undefined
 export type TransactionParams = {
-    to: string
-    value?: BigNumberish
-    data?: string
+    to: Address
+    value?: BigIntIsh
+    data?: Hex
 }
 
 export interface TransactionData extends TransactionParams {
@@ -13,20 +13,21 @@ export interface TransactionData extends TransactionParams {
 
 export interface TransactionDataWithFee extends TransactionData {
     token?: string
-    amount?: number
-    gasPercent?: number
-    recipient?: string
-    oracle?: string
+    amount?: BigIntIsh
+    gasPercent?: BigIntIsh
+    recipient?: Address
+    oracle?: Address
 }
 export interface ExecutionReceipt {
     opHash: string
-    txid?: string
-    gasUsed: number
-    gasUSD: number
+    txid?: Hex
+    gasUsed: bigint
+    gasUSD: bigint
 }
 
 export type EstimateGasResult = {
-    preVerificationGas: BigNumber
-    verificationGasLimit: BigNumber
-    callGasLimit: BigNumber
+    verificationGas?: bigint
+    preVerificationGas: bigint
+    verificationGasLimit: bigint
+    callGasLimit: bigint
 }
