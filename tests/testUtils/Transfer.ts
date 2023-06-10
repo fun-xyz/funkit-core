@@ -34,8 +34,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
-
-            if (prefund) await fundWallet(auth, wallet, 0.007)
+            if (prefund) await fundWallet(auth, wallet, 1)
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
             await wallet.swap(auth, {

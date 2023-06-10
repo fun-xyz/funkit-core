@@ -34,7 +34,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {
-                await fundWallet(auth, wallet, 0.005)
+                await fundWallet(auth, wallet, config.amount ? config.amount : 0.005)
             }
         })
         let difference: number
