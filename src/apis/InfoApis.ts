@@ -32,7 +32,6 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
     if ((symbol === "weth" || symbol === "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
         return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
-
     const tokenInfo = await sendPostRequest(API_URL, "get-erc-token", body).then((r) => {
         return r.data
     })

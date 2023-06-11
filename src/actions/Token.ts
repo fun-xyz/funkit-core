@@ -85,7 +85,8 @@ const erc721Transfer = (params: ERC721TransferParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
         const from = await actionData.wallet.getAddress()
         const transferData = await NFT.transfer(token!, from, to, tokenId, { chain: actionData.chain })
-
+        console.log("transferData", transferData)
+        console.log("erc721 transfer", token, from, to, tokenId, actionData.chain)
         const txDetails: ErrorTransactionDetails = {
             method: "transferFrom",
             params: [to, tokenId.toString()],

@@ -34,8 +34,8 @@ export class WalletOnChainManager {
         const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(entrypointAddress, "UserOperationEvent", [userOpHash], client)
         while (Date.now() < endtime) {
             const events = await client.getFilterLogs({ filter })
+            console.log("events")
             if (events.length > 0) {
-                console
                 return events[0].transactionHash
             }
             await new Promise((resolve) => setTimeout(resolve, interval))

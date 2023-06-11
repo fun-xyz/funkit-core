@@ -27,7 +27,7 @@ export const fundWallet = async (
 export const isContract = async (address: Address, client: PublicClient): Promise<boolean> => {
     try {
         const code = await client.getBytecode({ address })
-        return code !== "0x"
+        return !!code
     } catch (error) {
         return false
     }

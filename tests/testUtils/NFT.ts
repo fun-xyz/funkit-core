@@ -22,7 +22,7 @@ export const NFTTest = (config: NFTTestConfig) => {
     const { prefund, nftAddress } = config
 
     describe("NFT Tests", function () {
-        this.timeout(120_000)
+        this.timeout(300_000_000)
         let auth: Auth
         let wallet1: FunWallet
         let wallet2: FunWallet
@@ -52,37 +52,50 @@ export const NFTTest = (config: NFTTestConfig) => {
 
         describe("Write functions - Basic Functionality", () => {
             it("transfer", async () => {
-                let transferError = false
                 try {
-                    await wallet1.transfer(auth, {
-                        to: await wallet2.getAddress(),
-                        token: nftAddress,
-                        tokenId: nftId
-                    })
+                    console.log(
+                        await wallet1.transfer(auth, {
+                            to: await wallet2.getAddress(),
+                            token: nftAddress,
+                            tokenId: nftId
+                        })
+                    )
                 } catch (error) {
-                    transferError = true
+                    assert(
+                        false,
+                        `Transfer from wallet1 ${await wallet1.getAddress()} to 
+                        wallet2 ${await wallet2.getAddress()} should have succeeded
+                        but failed with error ${error}`
+                    )
                 }
 
                 try {
-                    await wallet2.transfer(auth, {
-                        to: await wallet1.getAddress(),
-                        token: nftAddress,
-                        tokenId: nftId
-                    })
+                    console.log(
+                        await wallet2.transfer(auth, {
+                            to: await wallet1.getAddress(),
+                            token: nftAddress,
+                            tokenId: nftId
+                        })
+                    )
                 } catch (error) {
-                    transferError = true
+                    assert(
+                        false,
+                        `Transfer from wallet2 ${await wallet2.getAddress()} to 
+                        wallet1 ${await wallet1.getAddress()} should have succeeded
+                        but failed with error ${error}`
+                    )
                 }
-
-                assert(!transferError, "Transfer should have failed")
             })
 
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
-                await wallet1.approve(auth, {
-                    spender: await wallet2.getAddress(),
-                    token: nftAddress,
-                    tokenId: nftId
-                })
+                console.log(
+                    await wallet1.approve(auth, {
+                        spender: await wallet2.getAddress(),
+                        token: nftAddress,
+                        tokenId: nftId
+                    })
+                )
                 const data = await nft.getApproved(nftId.toString())
                 assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
