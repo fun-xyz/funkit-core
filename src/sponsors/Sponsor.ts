@@ -1,39 +1,32 @@
-import { BigNumber, Contract, ContractInterface } from "ethers"
-import { Interface } from "ethers/lib/utils"
+import { Address, Hex } from "viem"
 import { PaymasterType } from "./types"
 import { ActionData, ActionFunction, ActionResult } from "../actions"
 import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
 import { EnvOption } from "../config"
 import { Chain, getChainFromData } from "../data"
+import { ContractInterface } from "../viem/ContractInterface"
 
 export abstract class Sponsor {
     sponsorAddress: string
-    interface: Interface
-    abi: ContractInterface
+    contractInterface: ContractInterface
     name: string
+    paymasterAddress?: Address
     paymasterType: PaymasterType
-    paymasterAddress?: string
     chainId?: string
-    contract?: Contract
 
     constructor(
         options: EnvOption = (globalThis as any).globalEnvOption,
-        abi: ContractInterface,
+        contractInterface: ContractInterface,
         name: string,
         paymasterType: PaymasterType
     ) {
         this.sponsorAddress = options.gasSponsor!.sponsorAddress!
-        if (abi instanceof Interface) {
-            this.interface = abi
-        } else {
-            this.interface = new Interface(abi)
-        }
-        this.abi = abi
+        this.contractInterface = contractInterface
         this.name = name
         this.paymasterType = paymasterType
     }
 
-    async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
+    async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         const chain = await getChainFromData(options.chain)
         const chainId = await chain.getChainId()
         if (!this.paymasterAddress && chainId !== this.chainId) {
@@ -43,17 +36,7 @@ export abstract class Sponsor {
         return this.paymasterAddress!
     }
 
-    async getContract(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Contract> {
-        if (!this.contract) {
-            const chain = await getChainFromData(options.chain)
-            const provider = await chain.getProvider()
-            const paymasterAddress = await this.getPaymasterAddress(options)
-            this.contract = new Contract(paymasterAddress, this.abi, provider)
-        }
-        return this.contract
-    }
-
-    async encode(data: string, options: EnvOption = (globalThis as any).globalEnvOption, value?: BigNumber): Promise<ActionResult> {
+    async encode(data: Hex, options: EnvOption = (globalThis as any).globalEnvOption, value?: bigint): Promise<ActionResult> {
         const to = await this.getPaymasterAddress(options)
         let chain: Chain
         if (typeof options.chain === "string") {
@@ -79,8 +62,8 @@ export abstract class Sponsor {
     abstract unlockDepositAfter(blocksToWait: number): ActionFunction
 
     async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
-        const contract = await this.getContract(options)
-        return await contract.getListMode(sponsor)
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [sponsor], chain)
     }
 
     setToBlacklistMode(): ActionFunction {
@@ -93,7 +76,7 @@ export abstract class Sponsor {
                 await actionData.wallet.getAddress()
             )
 
-            const data = this.interface.encodeFunctionData("setListMode", [true])
+            const data = this.contractInterface.encodeData("setListMode", [true])
             return await this.encode(data, actionData.options)
         }
     }
@@ -107,7 +90,7 @@ export abstract class Sponsor {
                 this.paymasterType,
                 await actionData.wallet.getAddress()
             )
-            const data = this.interface.encodeFunctionData("setListMode", [false])
+            const data = this.contractInterface.encodeData("setListMode", [false])
             return await this.encode(data, actionData.options)
         }
     }
@@ -118,7 +101,7 @@ export abstract class Sponsor {
             for (let i = 0; i < transactions.length; i++) {
                 calldata.push(await transactions[i](await actionData.wallet.getAddress(), actionData.options))
             }
-            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            const data = this.contractInterface.encodeData("batchActions", [calldata])
             return await this.encode(data, actionData.options)
         }
     }
@@ -134,7 +117,7 @@ export abstract class Sponsor {
                 await actionData.wallet.getAddress()
             )
 
-            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, true])
+            const data = this.contractInterface.encodeData("setSpenderWhitelistMode", [spender, true])
             return await this.encode(data, actionData.options)
         }
     }
@@ -150,7 +133,7 @@ export abstract class Sponsor {
                 await actionData.wallet.getAddress()
             )
 
-            const data = this.interface.encodeFunctionData("setSpenderWhitelistMode", [spender, false])
+            const data = this.contractInterface.encodeData("setSpenderWhitelistMode", [spender, false])
             return await this.encode(data, actionData.options)
         }
     }
@@ -159,10 +142,10 @@ export abstract class Sponsor {
         return async (actionData: ActionData) => {
             const calldata: string[] = []
             for (let i = 0; i < users.length; i++) {
-                calldata.push(this.interface.encodeFunctionData("setSpenderWhitelistMode", [users[i], modes[i]]))
+                calldata.push(this.contractInterface.encodeData("setSpenderWhitelistMode", [users[i], modes[i]]))
             }
 
-            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            const data = this.contractInterface.encodeData("batchActions", [calldata])
 
             const chain = await getChainFromData(actionData.chain)
             batchOperation(
@@ -188,7 +171,7 @@ export abstract class Sponsor {
                 await actionData.wallet.getAddress()
             )
 
-            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, true])
+            const data = this.contractInterface.encodeData("setSpenderBlacklistMode", [spender, true])
             return await this.encode(data, actionData.options)
         }
     }
@@ -204,7 +187,7 @@ export abstract class Sponsor {
                 await actionData.wallet.getAddress()
             )
 
-            const data = this.interface.encodeFunctionData("setSpenderBlacklistMode", [spender, false])
+            const data = this.contractInterface.encodeData("setSpenderBlacklistMode", [spender, false])
             return await this.encode(data, actionData.options)
         }
     }
@@ -213,7 +196,7 @@ export abstract class Sponsor {
         return async (actionData: ActionData) => {
             const calldata: string[] = []
             for (let i = 0; i < users.length; i++) {
-                calldata.push(this.interface.encodeFunctionData("setSpenderBlacklistMode", [users[i], modes[i]]))
+                calldata.push(this.contractInterface.encodeData("setSpenderBlacklistMode", [users[i], modes[i]]))
             }
 
             const chain = await getChainFromData(actionData.chain)
@@ -226,7 +209,7 @@ export abstract class Sponsor {
                 await actionData.wallet.getAddress()
             )
 
-            const data = this.interface.encodeFunctionData("batchActions", [calldata])
+            const data = this.contractInterface.encodeData("batchActions", [calldata])
             return await this.encode(data, actionData.options)
         }
     }

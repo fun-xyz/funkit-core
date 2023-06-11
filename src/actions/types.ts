@@ -1,3 +1,4 @@
+import { Address } from "viem"
 import { Auth } from "../auth"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -18,7 +19,7 @@ export interface ActionData {
 
 // Transfer Param types
 export type TransferParam = {
-    to: string
+    to: Address
 }
 
 export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
@@ -75,7 +76,7 @@ export type SwapParam = {
     out: string
     amount: number
     slippage?: number
-    returnAddress?: string
+    returnAddress?: Address
 }
 
 export interface OneInchSwapParams extends SwapParam {

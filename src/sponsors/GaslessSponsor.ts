@@ -1,15 +1,14 @@
-import { BigNumber } from "ethers"
 import { Sponsor } from "./Sponsor"
 import { PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { addTransaction } from "../apis/PaymasterApis"
-import { GASLESS_PAYMASTER_ABI } from "../common"
+import { GASLESS_PAYMASTER_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
-        super(options, GASLESS_PAYMASTER_ABI, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)
+        super(options, GASLESS_PAYMASTER_CONTRACT_INTERFACE, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)
     }
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
@@ -19,7 +18,7 @@ export class GaslessSponsor extends Sponsor {
     stake(walletAddress: string, amount: number): ActionFunction {
         return async (actionData: ActionData) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
-            const data = this.interface.encodeFunctionData("addDepositTo", [walletAddress, amountdec])
+            const data = this.contractInterface.encodeData("addDepositTo", [walletAddress, amountdec])
 
             const chain = await getChainFromData(actionData.chain)
             await addTransaction(
@@ -43,7 +42,7 @@ export class GaslessSponsor extends Sponsor {
     unstake(walletAddress: string, amount: number): ActionFunction {
         return async (actionData: ActionData) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
-            const data = this.interface.encodeFunctionData("withdrawDepositTo", [walletAddress, amountdec])
+            const data = this.contractInterface.encodeData("withdrawDepositTo", [walletAddress, amountdec])
             const chain = await getChainFromData(actionData.chain)
             await addTransaction(
                 await chain.getChainId(),
@@ -63,33 +62,33 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async getUnlockBlock(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<number> {
-        const contract = await this.getContract(options)
-        return await contract.getUnlockBlock(sponsor)
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getUnlockBlock", [sponsor], chain)
     }
 
     async getLockState(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const unlockBlock = Number(await this.getUnlockBlock(sponsor, options))
         const chain = await getChainFromData(options.chain)
-        const provider = await chain.getProvider()
-        const currentBlock = await provider.getBlockNumber()
+        const client = await chain.getClient()
+        const currentBlock = await client.getBlockNumber()
         return unlockBlock === 0 || unlockBlock > currentBlock
     }
 
-    async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigNumber> {
-        const contract = await this.getContract(options)
-        return await contract.getBalance(sponsor)
+    async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getBalance", [sponsor], chain)
     }
 
     lockDeposit(): ActionFunction {
         return async (actionData: ActionData) => {
-            const data = this.interface.encodeFunctionData("lockDeposit", [])
+            const data = this.contractInterface.encodeData("lockDeposit", [])
             return await this.encode(data, actionData.options)
         }
     }
 
     unlockDepositAfter(blocksToWait: number): ActionFunction {
         return async (actionData: ActionData) => {
-            const data = this.interface.encodeFunctionData("unlockDepositAfter", [blocksToWait])
+            const data = this.contractInterface.encodeData("unlockDepositAfter", [blocksToWait])
             return await this.encode(data, actionData.options)
         }
     }
@@ -99,8 +98,13 @@ export class GaslessSponsor extends Sponsor {
         sponsor: string,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
-        const contract = await this.getContract(options)
-        return await contract.getSpenderBlacklistMode(spender, sponsor)
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getSpenderBlacklistMode",
+            [spender, sponsor],
+            chain
+        )
     }
 
     async getSpenderWhitelistMode(
@@ -108,7 +112,12 @@ export class GaslessSponsor extends Sponsor {
         sponsor: string,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
-        const contract = await this.getContract(options)
-        return await contract.getSpenderWhitelistMode(spender, sponsor)
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(
+            await this.getPaymasterAddress(options),
+            "getSpenderWhitelistMode",
+            [spender, sponsor],
+            chain
+        )
     }
 }

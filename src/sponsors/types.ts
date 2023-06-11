@@ -1,5 +1,3 @@
-import { BigNumber } from "ethers"
-
 export enum PaymasterType {
     BaseSponsor = "BaseSponsor",
     GaslessSponsor = "gasless",
@@ -7,6 +5,6 @@ export enum PaymasterType {
 }
 
 export interface AllTokenData {
-    unlockBlock: BigNumber
-    tokenAmount: BigNumber
+    unlockBlock: bigint
+    tokenAmount: bigint
 }
