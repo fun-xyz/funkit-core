@@ -73,7 +73,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             })
 
             options.gasSponsor = {
-                sponsorAddress: funderAddress,
                 token: paymasterToken
             }
             await configureEnvironment(options)
