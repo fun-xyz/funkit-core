@@ -20,12 +20,17 @@ export class MagicAuthEoa extends Eoa {
     }
 
     override async getOwnerAddr(): Promise<Hex[]> {
-        if (this.signer?.address === undefined) throw new Error("No signer")
-        return [this.signer.address]
+        await this.init()
+        const address = await this.client?.getAddresses()
+        if (!address) {
+            throw new Error("No address")
+        }
+        return address
     }
 
     override async getAddress(): Promise<Address> {
-        return await this.getOwnerAddr()[0]
+        const address = await this.getOwnerAddr()
+        return address[0]
     }
 
     override async getEstimateGasSignature(): Promise<Hex> {
@@ -43,7 +48,7 @@ export class MagicAuthEoa extends Eoa {
         if (this.signer?.type === "local") {
             signature = await this.signer.signMessage({ message: { raw: toBytes(hash) } })
         } else if (this.client && this.account) {
-            signature = await this.client.signMessage({ account: this.account, message: hash })
+            signature = await this.client.signMessage({ account: this.account, message: { raw: toBytes(hash) } })
         } else {
             throw new Error("No signer or client")
         }
@@ -53,22 +58,22 @@ export class MagicAuthEoa extends Eoa {
         }
         return encodeWalletSignature(walletSignature)
     }
-    override async getEstimateGasSignature(): Promise<string> {
-        const signer = await this.getSigner()
-        const walletSignature: WalletSignature = {
-            userId: await signer.getAddress(),
-            signature: hexZeroPad(toUtf8Bytes(""), 65)
-        }
-        return encodeWalletSignature(walletSignature)
-    }
+    // override async getEstimateGasSignature(): Promise<string> {
+    //     const signer = await this.getSigner()
+    //     const walletSignature: WalletSignature = {
+    //         userId: await signer.getAddress(),
+    //         signature: hexZeroPad(toUtf8Bytes(""), 65)
+    //     }
+    //     return encodeWalletSignature(walletSignature)
+    // }
 
-    override async signHash(hash: BytesLike): Promise<string> {
-        await this.init()
-        const signer = await this.getSigner()
-        const walletSignature: WalletSignature = {
-            signature: await this.signer!.signMessage(arrayify(hash)),
-            userId: await signer.getAddress()
-        }
-        return encodeWalletSignature(walletSignature)
-    }
+    // override async signHash(hash: BytesLike): Promise<string> {
+    //     await this.init()
+    //     const signer = await this.getSigner()
+    //     const walletSignature: WalletSignature = {
+    //         signature: await this.signer!.signMessage(arrayify(hash)),
+    //         userId: await signer.getAddress()
+    //     }
+    //     return encodeWalletSignature(walletSignature)
+    // }
 }

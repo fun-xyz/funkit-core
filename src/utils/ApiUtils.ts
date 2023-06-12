@@ -20,13 +20,16 @@ export const DEFAULT_RETRY_OPTIONS = {
 
 export const sendRequest = async (uri: string, method: string, apiKey: string, body?: object) => {
     try {
+        const headers = {
+            "Content-Type": "application/json"
+        }
+        if (apiKey) {
+            headers["X-Api-Key"] = apiKey
+        }
         return retry(async function () {
             return await fetch(uri, {
                 method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Api-Key": apiKey
-                },
+                headers,
                 redirect: "follow",
                 body: method !== "GET" ? stringifyOp(body) : undefined
             }).then((r) => r.json())

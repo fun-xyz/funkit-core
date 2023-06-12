@@ -4,6 +4,7 @@ export interface EoaAuthInput {
     privateKey?: Hex
     windowEth?: any
     rpc?: string
+    provider?: any
 }
 
 export interface GroupAuthInput {
