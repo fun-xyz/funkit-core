@@ -228,7 +228,6 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
     const wethAddr = await getTokenInfo("weth", chainId.toString())
     let swapTxData
-    console.log(amountIn)
     if (wethAddr === tokenInAddress) {
         swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactETHForTokens", [
             0,
