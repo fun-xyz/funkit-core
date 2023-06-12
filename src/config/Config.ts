@@ -33,7 +33,7 @@ export function parseOptions(option: EnvOption) {
 
 export async function configureEnvironment(option: GlobalEnvOption) {
     const global = globalThis as any
-    global.globalEnvOption = global.globalEnvOption ? global.globalEnvOption : {}
+    global.globalEnvOption = {}
     const globalEnvOption = global.globalEnvOption as GlobalEnvOption
     if (!option.chain && !globalEnvOption.chain) {
         globalEnvOption.chain = await getChainFromData(5)
@@ -48,7 +48,9 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     }
 
     globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
-    globalEnvOption.gasSponsor = option.gasSponsor ? option.gasSponsor : globalEnvOption.gasSponsor
+    globalEnvOption.gasSponsor =
+        option.gasSponsor === null || option.gasSponsor === undefined ? globalEnvOption.gasSponsor : option.gasSponsor
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
-    globalEnvOption.sendTxLater = option.sendTxLater ? option.sendTxLater : globalEnvOption.sendTxLater
+    globalEnvOption.sendTxLater =
+        option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
 }
