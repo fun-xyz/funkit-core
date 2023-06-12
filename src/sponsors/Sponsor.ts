@@ -20,10 +20,22 @@ export abstract class Sponsor {
         name: string,
         paymasterType: PaymasterType
     ) {
-        this.sponsorAddress = options.gasSponsor!.sponsorAddress!
+        if (options.gasSponsor !== undefined && options.gasSponsor.sponsorAddress !== undefined) {
+            this.sponsorAddress = options.gasSponsor.sponsorAddress
+        } else {
+            this.setPaymasterAddress(options)
+        }
         this.contractInterface = contractInterface
         this.name = name
         this.paymasterType = paymasterType
+        if (this!.sponsorAddress === undefined) {
+            throw new Error("sponsorAddress is undefined")
+        }
+    }
+
+    async setPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption) {
+        const chain = await getChainFromData(options.chain)
+        this.sponsorAddress = await chain.getAddress("sponsorAddress")
     }
 
     async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
