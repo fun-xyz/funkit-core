@@ -18,7 +18,7 @@ export class TokenSponsor extends Sponsor {
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
-        return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2)
+        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options)).slice(2) + tokenAddress.slice(2)
     }
 
     async getPaymasterAndDataPermit(
@@ -42,7 +42,12 @@ export class TokenSponsor extends Sponsor {
             [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
             [tokenAddress, paymasterAddress, amount, nonce, sig]
         )
-        return (await this.getPaymasterAddress(options)) + this.sponsorAddress.slice(2) + tokenAddress.slice(2) + encoded.slice(2)
+        return (
+            (await this.getPaymasterAddress(options)) +
+            (await this.getSponsorAddress(options)).slice(2) +
+            tokenAddress.slice(2) +
+            encoded.slice(2)
+        )
     }
 
     stake(walletAddress: string, amount: number): ActionFunction {
