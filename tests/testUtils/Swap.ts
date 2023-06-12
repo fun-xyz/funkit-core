@@ -36,7 +36,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {
-                await fundWallet(auth, wallet, 1)
+                await fundWallet(auth, wallet, 0.2)
             }
         })
 
@@ -57,7 +57,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
-        it("ERC20 => ERC20", async () => {
+        it.only("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
             console.log(

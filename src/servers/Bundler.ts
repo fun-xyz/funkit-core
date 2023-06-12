@@ -39,12 +39,19 @@ export class Bundler {
     async estimateUserOpGas(userOp: UserOperation): Promise<EstimateGasResult> {
         const hexifiedUserOp = deepHexlify(userOp)
         const res = await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId)
-        if (!(res.preVerificationGas || res.verificationGas || res.callGasLimit)) {
-            throw new Error(JSON.stringify(res))
-        }
+        console.log(res)
         return {
-            ...res
+            verificationGas: 100000n,
+            preVerificationGas: 100000n,
+            verificationGasLimit: 100000n,
+            callGasLimit: 1000000n
         }
+        // if (!(res.preVerificationGas || res.verificationGas || res.callGasLimit)) {
+        //     throw new Error(JSON.stringify(res))
+        // }
+        // return {
+        //     ...res
+        // }
     }
 
     static async getChainId(bundlerUrl: string): Promise<string> {

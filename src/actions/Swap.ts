@@ -32,19 +32,21 @@ const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 export const _swap = (params: SwapParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
         params.slippage = params.slippage ? params.slippage : 1
-        const address = await actionData.wallet.getAddress()
+        const walletAddress = await actionData.wallet.getAddress()
         if (oneInchSupported.includes(parseInt(actionData.chain.id!))) {
-            const data = await _1inchSwap(params, address, actionData.options)
+            const data = await _1inchSwap(params, walletAddress, actionData.options)
             if (!data.approveTx) {
                 return { data: data.swapTx, errorData }
             } else {
                 return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
             }
         }
+        console.log("in _swap")
         if (uniswapV3Supported.includes(parseInt(actionData.chain.id!))) {
-            return await _uniswapSwap(params, address, actionData.options)(actionData)
+            return await _uniswapSwap(params, walletAddress, actionData.options)(actionData)
         } else {
-            return await _uniswapV2Swap(params, address, actionData.options)(actionData)
+            console.log("Swapping with ", params, " on wallet ", walletAddress)
+            return await _uniswapV2Swap(params, walletAddress, actionData.options)(actionData)
         }
     }
 }
@@ -151,7 +153,9 @@ const _uniswapV2Swap = (params: UniswapParams, address: Address, options: EnvOpt
 
         const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId)
         let swapData
+        console.log(tokenIn, tokenIn.isNative)
         if (tokenIn.isNative) {
+            console.log(to, amount, data)
             swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
         } else {
             swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [

@@ -27,11 +27,18 @@ export class WalletOnChainManager {
         return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [identifier], client)
     }
 
-    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000): Promise<Hex | null> {
+    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
         const endtime = Date.now() + timeout
         const client = await this.chain.getClient()
         const entrypointAddress = await this.chain.getAddress("entryPointAddress")
-        const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(entrypointAddress, "UserOperationEvent", [userOpHash], client)
+        fromBlock = fromBlock ? fromBlock : (await client.getBlockNumber()) - 100n
+        const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
+            entrypointAddress,
+            "UserOperationEvent",
+            [userOpHash],
+            client,
+            fromBlock
+        )
         while (Date.now() < endtime) {
             const events = await client.getFilterLogs({ filter })
             if (events.length > 0) {

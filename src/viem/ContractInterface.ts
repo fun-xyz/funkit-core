@@ -49,14 +49,14 @@ export class ContractInterface {
         })
     }
 
-    async createFilter(address: Address, eventName: any, args: any, chainOrClient: PublicClient | Chain) {
+    async createFilter(address: Address, eventName: any, args: any, chainOrClient: PublicClient | Chain, fromBlock: bigint) {
         const client = await parseClient(chainOrClient)
         return await client.createContractEventFilter({
             abi: this.abi,
             address,
             eventName,
             args,
-            fromBlock: (await client.getBlockNumber()) - 100n
+            fromBlock: fromBlock
         })
     }
 }

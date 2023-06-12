@@ -38,11 +38,11 @@ export const TransferTest = (config: TransferTestConfig) => {
             if (prefund) await fundWallet(auth, wallet, 0.007)
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
-            // await wallet.swap(auth, {
-            //     in: baseToken,
-            //     amount: config.amount ? config.amount : 0.01,
-            //     out: outToken
-            // })
+            await wallet.swap(auth, {
+                in: baseToken,
+                amount: config.amount ? config.amount : 0.01,
+                out: outToken
+            })
             const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)
             difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
             // assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
