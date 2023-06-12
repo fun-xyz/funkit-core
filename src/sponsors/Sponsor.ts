@@ -7,7 +7,7 @@ import { Chain, getChainFromData } from "../data"
 import { ContractInterface } from "../viem/ContractInterface"
 
 export abstract class Sponsor {
-    sponsorAddress: string
+    sponsorAddress?: string
     contractInterface: ContractInterface
     name: string
     paymasterAddress?: Address
@@ -22,20 +22,18 @@ export abstract class Sponsor {
     ) {
         if (options.gasSponsor !== undefined && options.gasSponsor.sponsorAddress !== undefined) {
             this.sponsorAddress = options.gasSponsor.sponsorAddress
-        } else {
-            this.setPaymasterAddress(options)
         }
         this.contractInterface = contractInterface
         this.name = name
         this.paymasterType = paymasterType
-        if (this!.sponsorAddress === undefined) {
-            throw new Error("sponsorAddress is undefined")
-        }
     }
 
-    async setPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(options.chain)
-        this.sponsorAddress = await chain.getAddress("sponsorAddress")
+    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption) {
+        if (this.sponsorAddress === undefined) {
+            const chain = await getChainFromData(options.chain)
+            this.sponsorAddress = await chain.getAddress("sponsorAddress")
+        }
+        return this.sponsorAddress
     }
 
     async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
