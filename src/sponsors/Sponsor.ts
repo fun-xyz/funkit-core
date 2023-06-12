@@ -49,8 +49,8 @@ export abstract class Sponsor {
     async encode(data: Hex, options: EnvOption = (globalThis as any).globalEnvOption, value?: bigint): Promise<ActionResult> {
         const to = await this.getPaymasterAddress(options)
         let chain: Chain
-        if (typeof options.chain === "string") {
-            chain = new Chain({ chainId: options.chain })
+        if (typeof options.chain === "string" || typeof options.chain === "number") {
+            chain = new Chain({ chainId: options.chain.toString() })
         } else {
             chain = options.chain
         }

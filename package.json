@@ -62,7 +62,10 @@
         "SDK"
     ],
     "files": [
-        "dist"
+        "dist/src",
+        "dist/index.d.ts",
+        "dist/index.js",
+        "dist/index.js.map"
     ],
     "bugs": {
         "url": "https://github.com/TheFunGroup/wallet-sdk-v1/issues"

@@ -25,7 +25,9 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     }
 
     globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
-    globalEnvOption.gasSponsor = option.gasSponsor ? option.gasSponsor : globalEnvOption.gasSponsor
+    globalEnvOption.gasSponsor =
+        option.gasSponsor === null || option.gasSponsor === undefined ? globalEnvOption.gasSponsor : option.gasSponsor
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
-    globalEnvOption.sendTxLater = option.sendTxLater ? option.sendTxLater : globalEnvOption.sendTxLater
+    globalEnvOption.sendTxLater =
+        option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
 }

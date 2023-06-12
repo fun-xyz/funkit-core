@@ -27,7 +27,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: undefined
             }
