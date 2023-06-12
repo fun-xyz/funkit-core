@@ -96,17 +96,17 @@ export const CHAIN_INFO_MAPPER = {
     rbacAddress: "RoleBasedAccessControl"
 }
 
-export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT.abi
-export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT.abi
-export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT.abi
-export const ERC20_ABI = ERC20_CONTRACT.abi
-export const WALLET_ABI = FUN_WALLET_CONTRACT.abi
-export const FACTORY_ABI = FACTORY_CONTRACT.abi
-export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT.abi
-export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT.abi
-export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT.abi
-export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT.abi
-export const ERC_721_ABI = ERC_721_CONTRACT.abi
+export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT["abi"]
+export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT["abi"]
+export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT["abi"]
+export const ERC20_ABI = ERC20_CONTRACT["abi"]
+export const WALLET_ABI = FUN_WALLET_CONTRACT["abi"]
+export const FACTORY_ABI = FACTORY_CONTRACT["abi"]
+export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT["abi"]
+export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT["abi"]
+export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT["abi"]
+export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
+export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
 
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
@@ -115,22 +115,22 @@ export const FACTORY_CONTRACT_INTERFACE = new ContractInterface(FACTORY_ABI)
 export const GASLESS_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(GASLESS_PAYMASTER_ABI)
 export const TOKEN_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(TOKEN_PAYMASTER_ABI)
 export const WALLET_CONTRACT_INTERFACE = new ContractInterface(WALLET_ABI)
-export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI.abi)
+export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI["abi"])
 export const APPROVE_AND_EXEC_CONTRACT_INTERFACE = new ContractInterface(APPROVE_AND_EXEC_ABI)
 
 export const CONTRACT_ADDRESSES = {
-    approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT?.addresses,
-    tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT?.addresses,
-    entryPointAddress: ENTRYPOINT_CONTRACT?.addresses,
-    factoryAddress: FACTORY_CONTRACT?.addresses,
-    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT?.addresses,
-    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT?.addresses,
-    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT?.addresses,
-    oracle: TOKEN_PRICE_ORACLE_CONTRACT?.addresses,
-    userAuthAddress: USER_AUTHENTICATION_CONTRACT?.addresses,
-    rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT?.addresses,
-    feeOracle: FEE_PERCENT_ORACLE_CONTRACT?.addresses,
-    univ3factory: UNIV3_FACTORY?.addresses,
-    univ3quoter: UNIV3_QUOTER?.addresses,
-    univ3router: UNIV3_ROUTER?.addresses
+    approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["address"],
+    tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT["address"],
+    entryPointAddress: ENTRYPOINT_CONTRACT["address"],
+    factoryAddress: FACTORY_CONTRACT["address"],
+    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT["address"],
+    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT["address"],
+    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT["address"],
+    oracle: TOKEN_PRICE_ORACLE_CONTRACT["address"],
+    userAuthAddress: USER_AUTHENTICATION_CONTRACT["address"],
+    rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT["address"],
+    feeOracle: FEE_PERCENT_ORACLE_CONTRACT["address"],
+    univ3factory: UNIV3_FACTORY["address"],
+    univ3quoter: UNIV3_QUOTER["address"],
+    univ3router: UNIV3_ROUTER["address"]
 }
