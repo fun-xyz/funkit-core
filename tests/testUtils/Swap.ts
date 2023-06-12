@@ -1,8 +1,9 @@
 import { assert } from "chai"
 import { Hex } from "viem"
 import { Eoa } from "../../src/auth"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -19,7 +20,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { inToken, outToken, baseToken, prefund } = config
+    const { inToken, outToken, baseToken, prefund, amount } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
@@ -33,7 +34,15 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+            console.log(await auth.getAddress())
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
+
+            const chain = await getChainFromData(options.chain)
+            await chain.init()
+            const inTokenAddress = await Token.getAddress(inToken, options)
+            const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), amount])
+            data.chain = chain
+            await auth.sendTx(data)
 
             if (prefund) {
                 await fundWallet(auth, wallet, 0.2)
