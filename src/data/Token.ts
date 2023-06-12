@@ -51,6 +51,7 @@ export class Token {
     async getBalance(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const amount = await this.getBalanceBN(address, options)
         const decimals = await this.getDecimals(options)
+        console.log(amount, decimals)
         return formatUnits(amount, Number(decimals))
     }
 
