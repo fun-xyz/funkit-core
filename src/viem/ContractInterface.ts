@@ -55,7 +55,8 @@ export class ContractInterface {
             abi: this.abi,
             address,
             eventName,
-            args
+            args,
+            fromBlock: (await client.getBlockNumber()) - 100n
         })
     }
 }

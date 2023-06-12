@@ -39,8 +39,8 @@ export const NFTTest = (config: NFTTestConfig) => {
             wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
             wallet2 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811341 })
             if (prefund) {
-                await fundWallet(auth, wallet1, 0.02)
-                await fundWallet(auth, wallet2, 0.02)
+                await fundWallet(auth, wallet1, 0.2)
+                await fundWallet(auth, wallet2, 0.2)
             }
             const chain = await getChainFromData(options.chain)
             await chain.init()
@@ -48,6 +48,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])
             data.chain = chain
             await auth.sendTx(data)
+            console.log(await wallet1.getAddress(), await wallet2.getAddress())
         })
 
         describe("Write functions - Basic Functionality", () => {
