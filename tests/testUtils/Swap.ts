@@ -36,10 +36,10 @@ export const SwapTest = (config: SwapTestConfig) => {
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {
-                await fundWallet(auth, wallet, 0.005)
+                await fundWallet(auth, wallet, 1)
             }
         })
-        let difference: number
+
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
@@ -49,18 +49,17 @@ export const SwapTest = (config: SwapTestConfig) => {
                 out: inToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
-            difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
+            // const difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
-            console.log(inToken, outToken)
             console.log(
                 await wallet.swap(auth, {
                     in: inToken,
-                    amount: Math.floor(difference / 2),
+                    amount: 100,
                     out: outToken
                 })
             )
