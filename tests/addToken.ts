@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv"
-import { Eoa } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { TokenSponsor } from "../../src/sponsors"
-import { getTestApiKey } from "../getAWSSecrets"
+import { getTestApiKey } from "./getAWSSecrets"
+import { Eoa } from "../src/auth"
+import { GlobalEnvOption, configureEnvironment } from "../src/config"
+import { TokenSponsor } from "../src/sponsors"
 dotenv.config()
 
 const getOptions = async (chain = 36865) => {

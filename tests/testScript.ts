@@ -1,7 +1,7 @@
-import { Eoa } from "../../src/auth"
-import { configureEnvironment } from "../../src/config"
-import { TokenSponsor } from "../../src/sponsors"
-import { FunWallet } from "../../src/wallet"
+import { Eoa } from "../src/auth"
+import { configureEnvironment } from "../src/config"
+import { TokenSponsor } from "../src/sponsors"
+import { FunWallet } from "../src/wallet"
 const API_KEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
 const PRIVATE_KEY = "0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064"
 
