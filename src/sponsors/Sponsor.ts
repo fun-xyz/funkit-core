@@ -6,7 +6,7 @@ import { Chain, getChainFromData } from "../data"
 import { ContractInterface } from "../viem/ContractInterface"
 
 export abstract class Sponsor {
-    sponsorAddress?: string
+    sponsorAddress?: Address
     contractInterface: ContractInterface
     name: string
     paymasterAddress?: Address
