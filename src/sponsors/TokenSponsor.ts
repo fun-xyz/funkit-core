@@ -15,9 +15,17 @@ export class TokenSponsor extends Sponsor {
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
+    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption) {
+        if (this.sponsorAddress === undefined && this.paymasterType === PaymasterType.TokenSponsor) {
+            const chain = await getChainFromData(options.chain)
+            this.sponsorAddress = await chain.getAddress("sponsorAddress")
+        }
+        return this.sponsorAddress
+    }
+
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
-        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options)).slice(2) + tokenAddress.slice(2)
+        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options))!.slice(2) + tokenAddress.slice(2)
     }
 
     async getPaymasterAndDataPermit(
@@ -43,7 +51,7 @@ export class TokenSponsor extends Sponsor {
         )
         return (
             (await this.getPaymasterAddress(options)) +
-            (await this.getSponsorAddress(options)).slice(2) +
+            (await this.getSponsorAddress(options))!.slice(2) +
             tokenAddress.slice(2) +
             encoded.slice(2)
         )
