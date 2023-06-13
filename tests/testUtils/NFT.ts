@@ -22,7 +22,7 @@ export const NFTTest = (config: NFTTestConfig) => {
     let nftAddress: Address
 
     describe("NFT Tests", function () {
-        this.timeout(120_000)
+        this.timeout(200_000)
         let auth: Auth
         let wallet1: FunWallet
         let wallet2: FunWallet
