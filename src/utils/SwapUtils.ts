@@ -228,32 +228,24 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
     const wethAddr = await getTokenInfo("weth", chainId.toString())
     let swapTxData
-    if (wethAddr === tokenInAddress) {
-        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactETHForTokens", [
-            0,
-            [tokenInAddress, tokenOutAddress],
-            returnAddress,
-            Date.now() + 180000 // Long enough to rarely fail
-        ])
-        return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal) }
-    } else if (wethAddr === tokenOutAddress) {
+    if (wethAddr === tokenOutAddress) {
         swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForETH", [
-            amountIn,
+            fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
             returnAddress,
             Date.now() + 180000 // Long enough to rarely fail
         ])
-        return { data: swapTxData.data, to: swapTxData.to, amount: amountIn }
+        return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
     } else {
         swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForTokens", [
-            amountIn,
+            fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
             returnAddress,
             Date.now() + 180000 // Long enough to rarely fail
         ])
-        return { data: swapTxData.data, to: swapTxData.to, amount: amountIn }
+        return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
     }
 }
 

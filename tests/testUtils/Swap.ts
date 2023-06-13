@@ -47,22 +47,23 @@ export const SwapTest = (config: SwapTestConfig) => {
             if (prefund) {
                 await fundWallet(auth, wallet, 0.2)
             }
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
         })
 
-        it("ETH => ERC20", async () => {
+        it.only("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            console.log("Wallet Address", await wallet.getAddress())
-            console.log("ETH Balance Before", await Token.getBalance(baseToken, walletAddress))
-            console.log("ERC20 Balance Before", tokenBalanceBefore)
-
+            console.log("baseToken", await Token.getBalance(baseToken, walletAddress))
+            console.log("inToken", await Token.getBalance(inToken, walletAddress))
             await wallet.swap(auth, {
                 in: baseToken,
-                amount: config.amount ? config.amount : 0.001,
+                amount: 0.001,
                 out: inToken
             })
+            console.log("baseToken", await Token.getBalance(baseToken, walletAddress))
+            console.log("inToken", await Token.getBalance(inToken, walletAddress))
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
-            // const difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
@@ -71,7 +72,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: 1000,
+                amount: 0.001,
                 out: outToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
