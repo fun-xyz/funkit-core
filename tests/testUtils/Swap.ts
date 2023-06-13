@@ -34,7 +34,6 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            console.log(await auth.getAddress())
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             const chain = await getChainFromData(options.chain)

@@ -77,9 +77,6 @@ class SwapToken {
             tokenB: tokenOut,
             fee: poolFee
         })
-        console.log("currentPoolAddress", currentPoolAddress)
-        console.log("tokenIn", tokenIn, "tokenOut", tokenOut, "poolFee", poolFee)
-
         const [token0, token1, fee, tickSpacing, liquidity, slot0] = await POOL_CONTRACT_INTERFACE.batchReadFromChain(
             currentPoolAddress as Address,
             this.client,

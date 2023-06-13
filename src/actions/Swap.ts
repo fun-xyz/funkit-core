@@ -41,11 +41,9 @@ export const _swap = (params: SwapParams): ActionFunction => {
                 return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
             }
         }
-        console.log("in _swap")
         if (uniswapV3Supported.includes(parseInt(actionData.chain.id!))) {
             return await _uniswapSwap(params, walletAddress, actionData.options)(actionData)
         } else {
-            console.log("Swapping with ", params, " on wallet ", walletAddress)
             return await _uniswapV2Swap(params, walletAddress, actionData.options)(actionData)
         }
     }
@@ -153,9 +151,7 @@ const _uniswapV2Swap = (params: UniswapParams, address: Address, options: EnvOpt
 
         const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId)
         let swapData
-        console.log(tokenIn, tokenIn.isNative)
         if (tokenIn.isNative) {
-            console.log(to, amount, data)
             swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
         } else {
             swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
