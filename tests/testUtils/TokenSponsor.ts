@@ -130,7 +130,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         }
 
         it("Only User Whitelisted", async () => {
-            if (!(await sponsor.getTokenListMode(await sponsor.getSponsorAddress()))) {
+            if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())
             }
             await funder.sendTx(sponsor.setToWhitelistMode())
