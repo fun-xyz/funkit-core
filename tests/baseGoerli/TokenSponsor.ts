@@ -1,7 +1,7 @@
 import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSponsor"
 
 const config: TokenSponsorTestConfig = {
-    chainId: 36865,
+    chainId: 84531,
     inToken: "usdc",
     outToken: "dai",
     paymasterToken: "usdc",

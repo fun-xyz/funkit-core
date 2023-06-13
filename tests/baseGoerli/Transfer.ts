@@ -1,7 +1,7 @@
 import { TransferTest, TransferTestConfig } from "../testUtils/Transfer"
 
 const config: TransferTestConfig = {
-    chainId: 36865,
+    chainId: 84531,
     outToken: "dai",
     baseToken: "eth",
     prefund: false

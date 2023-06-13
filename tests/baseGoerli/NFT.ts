@@ -3,7 +3,7 @@ import { NFTTest, NFTTestConfig } from "../testUtils/NFT"
 dotenv.config()
 
 const config: NFTTestConfig = {
-    chainId: 36865,
+    chainId: 84531,
     baseToken: "eth",
     prefund: true,
     tokenId: 10,

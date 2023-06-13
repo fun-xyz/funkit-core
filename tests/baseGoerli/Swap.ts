@@ -1,7 +1,7 @@
 import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 
 const config: SwapTestConfig = {
-    chainId: 36865,
+    chainId: 84531,
     inToken: "usdc",
     outToken: "dai",
     baseToken: "weth",
