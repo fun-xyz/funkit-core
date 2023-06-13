@@ -39,7 +39,6 @@ export class Bundler {
     async estimateUserOpGas(userOp: UserOperation): Promise<EstimateGasResult> {
         const hexifiedUserOp = deepHexlify(userOp)
         const res = await estimateUserOpGas(hexifiedUserOp, this.entryPointAddress, this.chainId)
-        console.log(res)
         if (!(res.preVerificationGas || res.verificationGas || res.callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }

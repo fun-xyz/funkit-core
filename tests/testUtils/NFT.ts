@@ -49,19 +49,16 @@ export const NFTTest = (config: NFTTestConfig) => {
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])
             data.chain = chain
             await auth.sendTx(data)
-            console.log(await wallet1.getAddress(), await wallet2.getAddress())
         })
 
         describe("Write functions - Basic Functionality", () => {
             it("transfer", async () => {
                 try {
-                    console.log(
-                        await wallet1.transfer(auth, {
-                            to: await wallet2.getAddress(),
-                            token: nftAddress,
-                            tokenId: nftId
-                        })
-                    )
+                    await wallet1.transfer(auth, {
+                        to: await wallet2.getAddress(),
+                        token: nftAddress,
+                        tokenId: nftId
+                    })
                 } catch (error) {
                     assert(
                         false,
@@ -72,13 +69,11 @@ export const NFTTest = (config: NFTTestConfig) => {
                 }
 
                 try {
-                    console.log(
-                        await wallet2.transfer(auth, {
-                            to: await wallet1.getAddress(),
-                            token: nftAddress,
-                            tokenId: nftId
-                        })
-                    )
+                    await wallet2.transfer(auth, {
+                        to: await wallet1.getAddress(),
+                        token: nftAddress,
+                        tokenId: nftId
+                    })
                 } catch (error) {
                     assert(
                         false,
@@ -91,13 +86,12 @@ export const NFTTest = (config: NFTTestConfig) => {
 
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
-                console.log(
-                    await wallet1.approve(auth, {
-                        spender: await wallet2.getAddress(),
-                        token: nftAddress,
-                        tokenId: nftId
-                    })
-                )
+                await wallet1.approve(auth, {
+                    spender: await wallet2.getAddress(),
+                    token: nftAddress,
+                    tokenId: nftId
+                })
+
                 const data = await nft.getApproved(nftId.toString())
                 assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
