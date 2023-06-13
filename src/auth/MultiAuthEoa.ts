@@ -1,8 +1,7 @@
-import { Web3Provider } from "@ethersproject/providers"
-import { Signer } from "ethers"
-import { BytesLike, arrayify, hexZeroPad, toUtf8Bytes } from "ethers/lib/utils"
 import { v4 as uuidv4 } from "uuid"
-import { Eoa, EoaAuthInput } from "./EoaAuth"
+import { Address, Hex, pad, toBytes } from "viem"
+import { Eoa } from "./EoaAuth"
+import { EoaAuthInput } from "./types"
 import { WalletSignature, encodeWalletSignature } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { getStoredUniqueId, setStoredUniqueId } from "../utils/AuthUtils"
@@ -20,7 +19,7 @@ export class MultiAuthEoa extends Eoa {
         this.authIds = authInput.authIds //[["twitter###Chazzz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["google###chaz@fun.xyz", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"], ["0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4", "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"]]
     }
 
-    override async getUniqueId(): Promise<string> {
+    override async getUniqueId(): Promise<Hex> {
         const uniqueIds = new Set<string>()
         for (const authId of this.authIds) {
             const storedUniqueId = await getStoredUniqueId(authId[0])
@@ -44,33 +43,42 @@ export class MultiAuthEoa extends Eoa {
             await setStoredUniqueId(authId[0], this.uniqueId, authId[1])
         }
 
-        return this.uniqueId
+        return this.uniqueId as Hex
     }
 
-    override async getOwnerAddr(): Promise<string[]> {
+    override async getOwnerAddr(): Promise<Hex[]> {
         return this.authIds.map((authId) => {
             return authId[1]
         })
     }
 
-    override async getEstimateGasSignature(): Promise<string> {
-        const walletSignature: WalletSignature = {
-            userId: (await this.getOwnerAddr())[0],
-            signature: hexZeroPad(toUtf8Bytes(""), 65)
-        }
-        return encodeWalletSignature(walletSignature)
+    override async getAddress(): Promise<Address> {
+        return (await this.getOwnerAddr())[0]
     }
 
-    override async signHash(hash: BytesLike): Promise<string> {
+    override async getEstimateGasSignature(): Promise<Hex> {
         await this.init()
         const walletSignature: WalletSignature = {
-            signature: await await this.signer!.signMessage(arrayify(hash)),
-            userId: (await this.getOwnerAddr())[0]
+            userId: await this.getAddress(),
+            signature: pad("0x", { size: 65 })
         }
         return encodeWalletSignature(walletSignature)
     }
 
-    override async getSignerFromProvider(provider: Web3Provider): Promise<Signer> {
-        return await provider.getSigner()
+    override async signHash(hash: Hex): Promise<Hex> {
+        await this.init()
+        let signature
+        if (this.signer?.type === "local") {
+            signature = await this.signer.signMessage({ message: { raw: toBytes(hash) } })
+        } else if (this.client && this.account) {
+            signature = await this.client.signMessage({ account: this.account, message: { raw: toBytes(hash) } })
+        } else {
+            throw new Error("No signer or client")
+        }
+        const walletSignature: WalletSignature = {
+            userId: await this.getAddress(),
+            signature: signature
+        }
+        return encodeWalletSignature(walletSignature)
     }
 }

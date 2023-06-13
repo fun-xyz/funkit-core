@@ -1,15 +1,14 @@
 import { assert } from "chai"
-import { Wallet } from "ethers"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet } from "../../src/utils"
+import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface TransferTestConfig {
     chainId: number
-    authPrivateKey: string
     outToken: string
     baseToken: string
     prefund: boolean
@@ -18,25 +17,25 @@ export interface TransferTestConfig {
 }
 
 export const TransferTest = (config: TransferTestConfig) => {
-    const { chainId, authPrivateKey, outToken, baseToken, prefund } = config
+    const { outToken, baseToken, prefund } = config
 
     describe("Transfer", function () {
-        this.timeout(120_000)
+        this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
         let difference: number
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId,
+                chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: undefined
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
-            if (prefund) await fundWallet(auth, wallet, 0.7)
+            if (prefund) await fundWallet(auth, wallet, 0.007)
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
             await wallet.swap(auth, {
@@ -50,8 +49,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("transfer baseToken directly", async () => {
-            var wallet1 = Wallet.createRandom()
-            const randomAddress = wallet1.address
+            const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(baseToken, randomAddress)
@@ -68,8 +66,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("wallet should have lower balance of specified token", async () => {
-            var wallet1 = Wallet.createRandom()
-            const randomAddress = wallet1.address
+            const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(outToken, randomAddress)

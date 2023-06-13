@@ -1,25 +1,20 @@
-import { BigNumber, Transaction } from "ethers"
-import { FinishUnstakeParams, RequestUnstakeParams, StakeParams, _finishUnstake, _requestUnstake, _stake } from "./Stake"
-import { SwapParams, _swap } from "./Swap"
-import { ApproveParams, TransferParams, _approve, _transfer } from "./Token"
+import { Address } from "viem"
+import { _finishUnstake, _requestUnstake, _stake } from "./Stake"
+import { _swap } from "./Swap"
+import { _approve, _transfer } from "./Token"
+import { ApproveParams, FinishUnstakeParams, RequestUnstakeParams, StakeParams, SwapParams, TransferParams } from "./types"
 import { Auth } from "../auth"
+import { ExecutionReceipt, TransactionData } from "../common/types"
 import { EnvOption } from "../config"
-import { Chain, UserOp, getChainFromData } from "../data"
+import { UserOp, getChainFromData } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 import { isContract } from "../utils"
-import { FunWallet } from "../wallet"
 
-export interface ActionData {
-    wallet: FunWallet
-    chain: Chain
-    options: EnvOption
+const isRequestUnstakeParams = (input: any) => {
+    return input.amounts !== undefined
 }
-
-export interface ExecutionReceipt {
-    opHash: string
-    txid?: string
-    gasUsed: number
-    gasUSD: number
+const isFinishUnstakeParams = (input: any) => {
+    return input.recipient !== undefined
 }
 
 export abstract class FirstClassActions {
@@ -28,15 +23,15 @@ export abstract class FirstClassActions {
         transactionFunc: Function,
         txOptions: EnvOption,
         estimate: boolean
-    ): Promise<ExecutionReceipt | UserOp | BigNumber>
-    abstract getAddress(options?: EnvOption): Promise<string>
+    ): Promise<ExecutionReceipt | UserOp | bigint>
+    abstract getAddress(options?: EnvOption): Promise<Address>
 
     async transfer(
         auth: Auth,
         input: TransferParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         return await this.execute(auth, _transfer(input), options, estimate)
     }
 
@@ -45,7 +40,7 @@ export abstract class FirstClassActions {
         input: ApproveParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         return await this.execute(auth, _approve(input), options, estimate)
     }
 
@@ -54,7 +49,7 @@ export abstract class FirstClassActions {
         input: SwapParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
@@ -63,22 +58,16 @@ export abstract class FirstClassActions {
         input: StakeParams,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         return await this.execute(auth, _stake(input), options, estimate)
     }
 
     async unstake(
         auth: Auth,
         input: RequestUnstakeParams | FinishUnstakeParams,
-        options: EnvOption = globalEnvOption,
+        options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
-        const isRequestUnstakeParams = (input: any) => {
-            return input.amounts !== undefined
-        }
-        const isFinishUnstakeParams = (input: any) => {
-            return input.recipient !== undefined
-        }
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         if (isRequestUnstakeParams(input)) {
             return await this.execute(auth, _requestUnstake(input as RequestUnstakeParams), options, estimate)
         } else if (isFinishUnstakeParams(input)) {
@@ -92,35 +81,31 @@ export abstract class FirstClassActions {
         auth: Auth,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         const address = await this.getAddress()
-        if (await isContract(address)) {
+        const chain = await getChainFromData(options.chain)
+
+        if (await isContract(address, await chain.getClient())) {
             throw new Error("Wallet already exists as contract.")
         } else {
-            const chain = await getChainFromData(options.chain)
-            return await this.execRawTx(
-                auth,
-                { to: address, data: "0x", nonce: 0, value: BigNumber.from(0), chainId: Number(chain.id!), gasLimit: BigNumber.from(0) },
-                options,
-                estimate
-            )
+            return await this.execRawTx(auth, { to: address, data: "0x" }, options, estimate)
         }
     }
 
     async execRawTx(
         auth: Auth,
-        input: Transaction,
+        input: TransactionData,
         options: EnvOption = (globalThis as any).globalEnvOption,
         estimate = false
-    ): Promise<ExecutionReceipt | UserOp | BigNumber> {
+    ): Promise<ExecutionReceipt | UserOp | bigint> {
         return await this.execute(auth, genCall(input), options, estimate)
     }
 }
 
-export const genCall = (data: Transaction) => {
+export const genCall = (data: TransactionData) => {
     return async () => {
         if (!data.value) {
-            data.value = BigNumber.from(0)
+            data.value = 0n
         }
         if (!data.data) {
             data.data = "0x"

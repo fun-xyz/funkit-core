@@ -1,4 +1,27 @@
+import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
+import { padHex } from "viem"
+import AAVE_WITHDRAW_CONTRACT from "../abis/AaveWithdraw.json"
+import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
+import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
+import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
+import ERC20_CONTRACT from "../abis/ERC20.json"
+import ERC_721_CONTRACT from "../abis/ERC721.json"
+import FEE_PERCENT_ORACLE_CONTRACT from "../abis/FeePercentOracle.json"
+import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
+import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
+import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
+import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
+import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
+import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
+import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
+import TOKEN_PRICE_ORACLE_CONTRACT from "../abis/TokenPriceOracle.json"
+import UNIV3_FACTORY from "../abis/univ3factory.json"
+import UNIV3_QUOTER from "../abis/univ3quoter.json"
+import UNIV3_ROUTER from "../abis/univ3router.json"
+import USER_AUTHENTICATION_CONTRACT from "../abis/UserAuthentication.json"
+import { ContractInterface } from "../viem/ContractInterface"
 // local fork environment
+
 export const LOCAL_FORK_CHAIN_ID = 31337
 export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
@@ -53,20 +76,25 @@ export const BASE_WRAP_TOKEN_ADDR = {
     }
 }
 
+export const AddressZero = padHex("0x", { size: 20 })
+export const HashZero = padHex("0x", { size: 32 })
+
 export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
 export const TRANSACTION_TYPE = "FunWalletInteraction"
-
-// abis
-import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
-import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
-import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
-import ERC20_CONTRACT from "../abis/ERC20.json"
-import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
-import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
-import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
-import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
-import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
+export const CHAIN_INFO_MAPPER = {
+    eoaAaveWithdrawAddress: "AaveWithdraw",
+    approveAndExecAddress: "ApproveAndExec",
+    tokenSwapAddress: "ApproveAndSwap",
+    gaslessSponsorAddress: "GaslessPaymaster",
+    tokenSponsorAddress: "TokenPaymaster",
+    oracle: "TokenPriceOracle",
+    entryPointAddress: "EntryPoint",
+    factoryAddress: "FunWalletFactory",
+    feeOracle: "FeePercentOracle",
+    userAuthAddress: "UserAuthentication",
+    rbacAddress: "RoleBasedAccessControl"
+}
 
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT.abi
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT.abi
@@ -77,3 +105,32 @@ export const FACTORY_ABI = FACTORY_CONTRACT.abi
 export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT.abi
 export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT.abi
 export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT.abi
+export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT.abi
+export const ERC_721_ABI = ERC_721_CONTRACT.abi
+
+export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
+export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
+export const ERC20_CONTRACT_INTERFACE = new ContractInterface(ERC20_ABI)
+export const FACTORY_CONTRACT_INTERFACE = new ContractInterface(FACTORY_ABI)
+export const GASLESS_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(GASLESS_PAYMASTER_ABI)
+export const TOKEN_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(TOKEN_PAYMASTER_ABI)
+export const WALLET_CONTRACT_INTERFACE = new ContractInterface(WALLET_ABI)
+export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI.abi)
+export const APPROVE_AND_EXEC_CONTRACT_INTERFACE = new ContractInterface(APPROVE_AND_EXEC_ABI)
+
+export const CONTRACT_ADDRESSES = {
+    approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT?.addresses,
+    tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT?.addresses,
+    entryPointAddress: ENTRYPOINT_CONTRACT?.addresses,
+    factoryAddress: FACTORY_CONTRACT?.addresses,
+    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT?.addresses,
+    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT?.addresses,
+    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT?.addresses,
+    oracle: TOKEN_PRICE_ORACLE_CONTRACT?.addresses,
+    userAuthAddress: USER_AUTHENTICATION_CONTRACT?.addresses,
+    rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT?.addresses,
+    feeOracle: FEE_PERCENT_ORACLE_CONTRACT?.addresses,
+    univ3factory: UNIV3_FACTORY?.addresses,
+    univ3quoter: UNIV3_QUOTER?.addresses,
+    univ3router: UNIV3_ROUTER?.addresses
+}

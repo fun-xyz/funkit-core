@@ -1,24 +1,11 @@
-import { BigNumber, Contract } from "ethers"
+import { Hex } from "viem"
 import { Chain, getChainFromData } from "./Chain"
-import { WalletSignature, encodeWalletSignature } from "./SolidityData"
+import { encodeWalletSignature } from "./SolidityData"
+import { UserOperation, WalletSignature } from "./types"
 import { Auth } from "../auth/Auth"
-import { ENTRYPOINT_ABI } from "../common/constants"
-import { EnvOption } from "../config/Config"
+import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common/constants"
+import { EnvOption } from "../config"
 import { calcPreVerificationGas } from "../utils"
-
-export interface UserOperation {
-    sender: string
-    nonce: BigNumber
-    initCode?: string | "0x"
-    callData: string
-    callGasLimit: BigNumber
-    verificationGasLimit: BigNumber
-    preVerificationGas?: BigNumber
-    maxFeePerGas: BigNumber
-    maxPriorityFeePerGas: BigNumber
-    paymasterAndData?: string | "0x"
-    signature?: string | "0x"
-}
 
 export class UserOp {
     op: UserOperation
@@ -31,24 +18,22 @@ export class UserOp {
     async sign(auth: Auth, chain: Chain) {
         const opHash = await this.getOpHashData(chain)
         const walletSignature: WalletSignature = {
-            signature: await auth.signHash(opHash),
-            userId: await auth.getUniqueId()
+            signature: (await auth.signHash(opHash)) as Hex,
+            userId: (await auth.getUniqueId()) as Hex
         }
         this.op.signature = encodeWalletSignature(walletSignature)
     }
 
     async getOpHashData(chain: Chain) {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const provider = await chain.getProvider()
-        const contract = new Contract(entryPointAddress, ENTRYPOINT_ABI, provider)
-        return await contract.getUserOpHash(this.op)
+        return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [this.op], chain)
     }
 
     getMaxTxCost() {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.op
-        const mul = this.op.paymasterAndData !== "0x" ? 3 : 1
-        const requiredGas = callGasLimit.add(verificationGasLimit.mul(mul)).add(preVerificationGas!)
-        return maxFeePerGas.mul(requiredGas)
+        const mul: number = this.op.paymasterAndData !== "0x" ? 3 : 1
+        const requiredGas = callGasLimit + verificationGasLimit * BigInt(mul) + preVerificationGas! ? preVerificationGas : 0n
+        return maxFeePerGas * requiredGas!
     }
 
     async estimateGas(auth: Auth, option: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
@@ -59,11 +44,11 @@ export class UserOp {
         const res = await chain.estimateOpGas({
             ...this.op,
             paymasterAndData: "0x",
-            maxFeePerGas: BigNumber.from(0),
-            maxPriorityFeePerGas: BigNumber.from(0),
-            preVerificationGas: BigNumber.from(0),
-            callGasLimit: BigNumber.from(0),
-            verificationGasLimit: BigNumber.from(10e6)
+            maxFeePerGas: 0n,
+            maxPriorityFeePerGas: 0n,
+            preVerificationGas: 0n,
+            callGasLimit: 0n,
+            verificationGasLimit: BigInt(10e6)
         })
 
         this.op.preVerificationGas = res.preVerificationGas

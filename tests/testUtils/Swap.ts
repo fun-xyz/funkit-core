@@ -1,14 +1,15 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface SwapTestConfig {
     chainId: number
-    authPrivateKey: string
     inToken: string
     outToken: string
     baseToken: string
@@ -18,7 +19,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { chainId, authPrivateKey, inToken, outToken, baseToken, prefund } = config
+    const { inToken, outToken, baseToken, prefund } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
@@ -27,15 +28,15 @@ export const SwapTest = (config: SwapTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId,
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
 
             if (prefund) {
-                await fundWallet(auth, wallet, 1)
+                await fundWallet(auth, wallet, 0.005)
             }
         })
         let difference: number
@@ -44,7 +45,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: baseToken,
-                amount: config.amount ? config.amount : 0.01,
+                amount: config.amount ? config.amount : 0.001,
                 out: inToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)

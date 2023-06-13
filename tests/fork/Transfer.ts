@@ -7,7 +7,6 @@ var REMOTE_TEST = process.env.REMOTE_TEST
 const FORK_CHAIN_ID = REMOTE_TEST === "true" ? FUN_TESTNET_CHAIN_ID : LOCAL_FORK_CHAIN_ID
 const config: TransferTestConfig = {
     chainId: FORK_CHAIN_ID,
-    authPrivateKey: process.env.TEST_PRIVATE_KEY!,
     outToken: "usdc",
     baseToken: "eth",
     prefund: true

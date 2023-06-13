@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc",
+        "build": "rm -rf dist && tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
@@ -13,20 +13,23 @@
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "postinstall": "npx ts-node tests/contractLoader.ts"
     },
     "author": "The Fun Group (https://fun.xyz/)",
     "license": "ISC",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.315.0",
+        "@ethersproject/contracts": "^5.7.0",
         "@lifeomic/attempt": "^3.0.3",
         "@uniswap/sdk": "^3.0.3",
         "@uniswap/v3-core": "^1.0.1",
         "@uniswap/v3-sdk": "^3.9.0",
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
-        "node-fetch": "2.0.0",
-        "uuid": "^9.0.0"
+        "node-fetch": "^2.6.11",
+        "uuid": "^9.0.0",
+        "viem": "^0.3.50"
     },
     "devDependencies": {
         "@types/chai": "^4.3.5",

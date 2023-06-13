@@ -1,21 +1,22 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
-import { getTestApiKey } from "../getTestApiKey"
+import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface StakeTestConfig {
     chainId: number
-    authPrivateKey: string
     baseToken: string
     prefund: boolean
     steth: string
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
-    const { chainId, authPrivateKey, baseToken, prefund } = config
+    const { baseToken, prefund } = config
 
     describe("Stake", function () {
         this.timeout(120_000)
@@ -24,26 +25,26 @@ export const StakeTest = (config: StakeTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: chainId,
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: authPrivateKey })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
-            if (prefund) await fundWallet(auth, wallet, 0.002)
+            if (prefund) await fundWallet(auth, wallet, 0.02)
         })
 
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: 0.001 })
+            await wallet.stake(auth, { amount: 0.01 })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })
 
         it("Should be able to start unstaking", async () => {
             const withdrawalsBefore = await wallet.getAssets(false, true)
-            await wallet.unstake(auth, { amounts: [0.001, 0.001] })
+            await wallet.unstake(auth, { amounts: [0.001] })
             const withdrawalsAfter = await wallet.getAssets(false, true)
             assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
         })
