@@ -45,7 +45,6 @@ export const TransferTest = (config: TransferTestConfig) => {
             })
             const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)
             difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
-            // assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("transfer baseToken directly", async () => {

@@ -67,12 +67,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             ])
             paymasterTokenMint.chain = chain
             await auth.sendTx(paymasterTokenMint)
-            // await wallet.swap(auth, {
-            //     in: config.inToken,
-            //     amount: config.amount ? config.amount : config.stakeAmount / 4,
-            //     out: config.outToken,
-            //     returnAddress: funderAddress
-            // })
 
             await configureEnvironment({
                 ...options,

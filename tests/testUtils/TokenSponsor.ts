@@ -84,13 +84,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const wethAddr = await Token.getAddress("weth", options)
             await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
 
-            // await wallet.swap(auth, {
-            //     in: config.inToken,
-            //     amount: config.swapAmount,
-            //     out: paymasterToken,
-            //     returnAddress: funderAddress
-            // })
-
             options.gasSponsor = {
                 token: paymasterToken
             }
@@ -175,20 +168,20 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it.skip("Lock/Unlock Tokens", async () => {
+        it("Lock/Unlock Tokens", async () => {
             await funder.sendTx(sponsor.unlockTokenDepositAfter(paymasterToken, 0))
             expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.false
             expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
         })
 
-        it.skip("Lock/Unlock Base Tokens", async () => {
+        it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(sponsor.unlockDepositAfter(0))
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.false
             await funder.sendTx(sponsor.lockDeposit())
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
         })
 
-        it.skip("Batch Blacklist/Whitelist Users", async () => {
+        it("Batch Blacklist/Whitelist Users", async () => {
             await funder.sendTx(sponsor.setToBlacklistMode())
             await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [false, false]))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
