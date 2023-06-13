@@ -27,6 +27,11 @@ export class NFT {
         return { ...data, chain }
     }
 
+    async ownerOf(tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+        const chain = await getChainFromData(options.chain)
+        return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "ownerOf", [tokenId], chain)
+    }
+
     async approveForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
         const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, true])
@@ -142,5 +147,10 @@ export class NFT {
     ): Promise<TransactionData> {
         const nft = new NFT(data)
         return await nft.transfer(sender, spender, tokenId, options)
+    }
+
+    static async ownerOf(data: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+        const nft = new NFT(data)
+        return await nft.ownerOf(tokenId, options)
     }
 }

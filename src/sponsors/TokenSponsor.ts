@@ -407,4 +407,26 @@ export class TokenSponsor extends Sponsor {
             return await this.encode(data, actionData.options)
         }
     }
+
+    static approve(token: string, amount: number): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.options.chain)
+            const gasSponsorAddress = await chain.getAddress("tokenSponsorAddress")
+            // const chain = await getChainFromData(actionData.chain)
+            // addTransaction(
+            //     await chain.getChainId(),
+            //     {
+            //         action: "approve",
+            //         amount,
+            //         from: await actionData.wallet.getAddress(),
+            //         timestamp: Date.now(),
+            //         to: await this.getPaymasterAddress(actionData.options),
+            //         token
+            //     },
+            //     this.paymasterType,
+            //     await actionData.wallet.getAddress()
+            // )
+            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
+        }
+    }
 }

@@ -110,6 +110,9 @@ export class FunWallet extends FirstClassActions {
             if (fee.amount) {
                 fee.amount = Number(await token.getDecimalAmount(fee.amount))
             } else if (fee.gasPercent) {
+                if (!token.isNative) {
+                    throw new Error("gasPercent is not supported for ERC20 tokens")
+                }
                 const emptyFunc = async () => {
                     return {
                         data,
@@ -135,6 +138,8 @@ export class FunWallet extends FirstClassActions {
                     const denominator = BigInt(10) ** 18n // eth decimals
                     const price = (ethTokenPairing * numerator) / denominator
                     eth = (price * numerator) / ((eth * percentNum) / percentBase)
+                } else {
+                    eth = (eth * percentNum) / percentBase
                 }
 
                 fee.amount = Number(eth)
