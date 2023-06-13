@@ -167,17 +167,23 @@ export class Chain {
     }
 }
 
-export const getChainFromData = async (chainIdentifier?: string | Chain): Promise<Chain> => {
+export const getChainFromData = async (chainIdentifier?: string | Chain | number): Promise<Chain> => {
     if (!chainIdentifier) {
         const helper = new Helper("getChainFromData", chainIdentifier, "chainIdentifier is required")
         throw new MissingParameterError("Chain.getChainFromData", helper)
     }
+
+    let chain: Chain
     if (chainIdentifier instanceof Chain) {
         return chainIdentifier
     }
 
-    if (chainIdentifier.indexOf("http") + 1) {
-        return new Chain({ rpcUrl: chainIdentifier })
+    if (typeof chainIdentifier === "number" || Number(chainIdentifier)) {
+        chain = new Chain({ chainId: chainIdentifier.toString() })
+    } else if (chainIdentifier.indexOf("http") + 1) {
+        chain = new Chain({ rpcUrl: chainIdentifier })
+    } else {
+        chain = new Chain({ chainName: chainIdentifier })
     }
-    return new Chain({ chainName: chainIdentifier })
+    return chain
 }

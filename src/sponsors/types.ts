@@ -1,7 +1,7 @@
 export enum PaymasterType {
-    BaseSponsor = "BaseSponsor",
-    GaslessSponsor = "GaslessSponsor",
-    TokenSponsor = "TokenSponsor"
+    BaseSponsor = "base",
+    GaslessSponsor = "gasless",
+    TokenSponsor = "token"
 }
 
 export interface AllTokenData {

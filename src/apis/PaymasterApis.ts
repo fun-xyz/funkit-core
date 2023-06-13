@@ -1,7 +1,6 @@
 import { API_URL } from "../common/constants"
 import { PaymasterType } from "../sponsors/types"
 import { sendPostRequest } from "../utils/ApiUtils"
-
 export interface PaymasterTransaction {
     action: string
     amount: number

@@ -53,7 +53,7 @@ export class MultiAuthEoa extends Eoa {
     }
 
     override async getAddress(): Promise<Address> {
-        return await this.getOwnerAddr()[0]
+        return (await this.getOwnerAddr())[0]
     }
 
     override async getEstimateGasSignature(): Promise<Hex> {
@@ -71,7 +71,7 @@ export class MultiAuthEoa extends Eoa {
         if (this.signer?.type === "local") {
             signature = await this.signer.signMessage({ message: { raw: toBytes(hash) } })
         } else if (this.client && this.account) {
-            signature = await this.client.signMessage({ account: this.account, message: hash })
+            signature = await this.client.signMessage({ account: this.account, message: { raw: toBytes(hash) } })
         } else {
             throw new Error("No signer or client")
         }

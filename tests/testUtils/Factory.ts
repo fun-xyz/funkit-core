@@ -29,7 +29,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
@@ -50,7 +50,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
                 const index = Math.random() * 10000
                 const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
-                const chain = await getChainFromData(chainId.toString())
+                const chain = await getChainFromData(chainId)
                 let iscontract = await isContract(walletAddress, await chain.getClient())
                 expect(iscontract).to.be.false
                 await fundWallet(auth, wallet1, config.prefundAmt ? config.prefundAmt : 0.5)

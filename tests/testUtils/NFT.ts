@@ -13,13 +13,13 @@ export interface NFTTestConfig {
     chainId: number
     baseToken: string
     prefund: boolean
-    nftAddress: Address
     tokenId: number
     testNFTName: string
     testNFTAddress: string
 }
 export const NFTTest = (config: NFTTestConfig) => {
-    const { prefund, nftAddress } = config
+    const { prefund } = config
+    let nftAddress: Address
 
     describe("NFT Tests", function () {
         this.timeout(120_000)
@@ -31,7 +31,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         before(async function () {
             apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
@@ -45,6 +45,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             const chain = await getChainFromData(options.chain)
             await chain.init()
             nftId = Math.floor(Math.random() * 10_000_000_000)
+            nftAddress = await chain.getAddress("TestNFT")
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])
             data.chain = chain
             await auth.sendTx(data)

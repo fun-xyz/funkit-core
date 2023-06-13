@@ -36,7 +36,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
