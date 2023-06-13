@@ -17,7 +17,7 @@
         "add-token": "ts-node tests/addToken.ts",
         "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
         "prepare": "husky install",
-        "postinstall": "npx ts-node tests/scripts/contractLoader.ts"
+        "postinstall": "env NODE_ENV=prod npx ts-node tests/scripts/contractLoader.ts"
     },
     "author": "The Fun Group (https://fun.xyz/)",
     "license": "ISC",

@@ -44,7 +44,7 @@ export const FUN_TESTNET_CHAIN_KEY = "fun-testnet"
 export const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 
 // prod
-let API_URL
+let API_URL = "https://api.fun.xyz"
 
 switch (process.env.NODE_ENV) {
     case "staging":
