@@ -147,7 +147,6 @@ export class FunWallet extends FirstClassActions {
                 const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execute", helper)
             }
-            fee.oracle = await onChainDataManager.chain.getAddress("feeOracle")
         }
 
         return this.abiManager.encodeCall({ ...data, ...fee })
