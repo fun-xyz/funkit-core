@@ -2,6 +2,7 @@ import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
 import { EstimateGasResult } from "../common"
+import { CONTRACT_ADDRESSES } from "../common/constants"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -89,11 +90,11 @@ export class Chain {
                 this.id = chain.chain
                 this.name = chain.key
                 this.currency = chain.currency
-                // const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
-                //     result[key] = CONTRACT_ADDRESSES[key][this.id]
-                //     return result
-                // }, {})
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+                const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
+                    result[key] = CONTRACT_ADDRESSES[key][this.id]
+                    return result
+                }, {})
+                const addresses = { ...abisAddresses, ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
