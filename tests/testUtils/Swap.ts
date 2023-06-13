@@ -23,7 +23,7 @@ export const SwapTest = (config: SwapTestConfig) => {
     const { inToken, outToken, baseToken, prefund, amount } = config
 
     describe("Swap", function () {
-        this.timeout(120_000)
+        this.timeout(200_000)
         let auth: Eoa
         let wallet: FunWallet
         before(async function () {
@@ -34,9 +34,9 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
+            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 17928113400 })
             if (prefund) {
-                await fundWallet(auth, wallet, 0.2)
+                await fundWallet(auth, wallet, 0.4)
             }
 
             const chain = await getChainFromData(options.chain)
@@ -45,9 +45,9 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), amount])
                 data.chain = chain
                 await auth.sendTx(data)
+                const wethAddr = await Token.getAddress("weth", options)
+                await wallet.transfer(auth, { to: wethAddr, amount: 0.02 })
             }
-            const wethAddr = await Token.getAddress("weth", options)
-            await wallet.transfer(auth, { to: wethAddr, amount: 0.002 })
         })
 
         it("ETH => ERC20", async () => {
@@ -67,7 +67,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: 0.001,
+                amount: 1,
                 out: outToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
@@ -79,7 +79,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: 100,
+                amount: 1,
                 out: baseToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)

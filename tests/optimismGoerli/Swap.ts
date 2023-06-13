@@ -4,8 +4,8 @@ const config: SwapTestConfig = {
     chainId: 420,
     inToken: "usdc",
     outToken: "dai",
-    baseToken: "weth",
-    prefund: true,
+    baseToken: "eth",
+    prefund: false,
     amount: 1000
 }
 SwapTest(config)
