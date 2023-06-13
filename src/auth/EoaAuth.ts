@@ -51,6 +51,11 @@ export class Eoa extends Auth {
                 transport: http(authInput.rpc)
             })
         }
+        if (authInput.provider) {
+            this.client = createWalletClient({
+                transport: custom(authInput.provider)
+            })
+        }
     }
 
     async init(): Promise<void> {
