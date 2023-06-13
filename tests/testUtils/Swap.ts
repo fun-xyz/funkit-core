@@ -42,12 +42,12 @@ export const SwapTest = (config: SwapTestConfig) => {
             const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), amount])
             data.chain = chain
             await auth.sendTx(data)
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
 
             if (prefund) {
                 await fundWallet(auth, wallet, 0.2)
             }
-            const wethAddr = await Token.getAddress("weth", options)
-            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
         })
 
         it("ETH => ERC20", async () => {

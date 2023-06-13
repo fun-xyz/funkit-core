@@ -2,7 +2,7 @@ import { assert, expect } from "chai"
 import { Address, Hex } from "viem"
 import { Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -52,6 +52,11 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await fundWallet(funder, wallet, config.stakeAmount / 8)
                 await fundWallet(auth, wallet1, config.stakeAmount / 8)
             }
+            const chain = await getChainFromData(options.chain)
+            await chain.init()
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
+
             funderAddress = await funder.getUniqueId()
             await wallet.swap(auth, {
                 in: config.inToken,
