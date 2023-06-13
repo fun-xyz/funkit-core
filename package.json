@@ -1,11 +1,11 @@
 {
     "name": "fun-wallet",
-    "version": "0.2.7",
+    "version": "0.2.9",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc",
+        "build": "rm -rf dist && tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
@@ -27,7 +27,7 @@
         "@uniswap/v3-sdk": "^3.9.0",
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
-        "node-fetch": "2.0.0",
+        "node-fetch": "^2.6.11",
         "uuid": "^9.0.0",
         "viem": "^0.3.50"
     },
@@ -62,7 +62,13 @@
         "SDK"
     ],
     "files": [
-        "dist"
+        "dist/src",
+        "dist/index.d.ts",
+        "dist/index.js",
+        "dist/index.js.map",
+        "dist/fetch-polyfill.d.ts",
+        "dist/fetch-polyfill.js",
+        "dist/fetch-polyfill.js.map"
     ],
     "bugs": {
         "url": "https://github.com/TheFunGroup/wallet-sdk-v1/issues"
