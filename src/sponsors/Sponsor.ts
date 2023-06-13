@@ -21,20 +21,10 @@ export abstract class Sponsor {
     ) {
         if (options.gasSponsor !== undefined && options.gasSponsor.sponsorAddress !== undefined) {
             this.sponsorAddress = options.gasSponsor.sponsorAddress
-        } else {
-            this.sponsorAddress = "0x175C5611402815Eba550Dad16abd2ac366a63329"
         }
         this.contractInterface = contractInterface
         this.name = name
         this.paymasterType = paymasterType
-    }
-
-    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption) {
-        if (this.sponsorAddress === undefined) {
-            const chain = await getChainFromData(options.chain)
-            this.sponsorAddress = await chain.getAddress("sponsorAddress")
-        }
-        return this.sponsorAddress
     }
 
     async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
