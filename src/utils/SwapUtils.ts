@@ -2,9 +2,11 @@ import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
-import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE } from "../common"
+import { getTokenInfo } from "../apis"
+import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
+
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
 export function fromReadableAmount(amount: number, decimals: number) {
@@ -13,13 +15,39 @@ export function fromReadableAmount(amount: number, decimals: number) {
 
 class SwapToken {
     client: PublicClient
-    quoterContractAddr: Address
-    poolFactoryContractAddr: string
+    version: 2 | 3
+    quoterContractAddr?: Address
+    poolFactoryContractAddr?: string
+    v2router?: string
+    v2Factory?: string
 
-    constructor(client: PublicClient, quoterContractAddr: Address, poolFactoryContractAddr: string) {
+    constructor(
+        client: PublicClient,
+        version: 2 | 3,
+        quoterContractAddr?: Address,
+        poolFactoryContractAddr?: string,
+        v2router?: string,
+        v2Factory?: string
+    ) {
         this.client = client
-        this.quoterContractAddr = quoterContractAddr
-        this.poolFactoryContractAddr = poolFactoryContractAddr
+        this.version = version
+        if (version === 3) {
+            if (quoterContractAddr !== undefined && poolFactoryContractAddr !== undefined) {
+                this.quoterContractAddr = quoterContractAddr
+                this.poolFactoryContractAddr = poolFactoryContractAddr
+            } else {
+                throw new Error("quoterContractAddr and poolFactoryContractAddr must be provided")
+            }
+        } else if (version === 2) {
+            if (v2router !== undefined && v2Factory !== undefined) {
+                this.v2Factory = v2Factory
+                this.v2router = v2router
+            } else {
+                throw new Error("v2quoter and v2Factory must be provided")
+            }
+        } else {
+            throw new Error("Invalid version")
+        }
     }
 
     async getOutputQuote(route: Route<Currency, Currency>, token0: Token, amountIn: number): Promise<BigInt> {
@@ -44,12 +72,11 @@ class SwapToken {
 
     async getPoolInfo(tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
         const currentPoolAddress = computePoolAddress({
-            factoryAddress: this.poolFactoryContractAddr,
+            factoryAddress: this.poolFactoryContractAddr!,
             tokenA: tokenIn,
             tokenB: tokenOut,
             fee: poolFee
         })
-
         const [token0, token1, fee, tickSpacing, liquidity, slot0] = await POOL_CONTRACT_INTERFACE.batchReadFromChain(
             currentPoolAddress as Address,
             this.client,
@@ -107,6 +134,23 @@ class SwapToken {
         return { uncheckedTrade, tokenInAmount }
     }
 
+    async createTradeV2(amountIn: number, tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
+        const poolInfo = await this.getPoolInfo(tokenIn, tokenOut, poolFee)
+        const pool = new Pool(tokenIn, tokenOut, poolFee, poolInfo.sqrtPriceX96.toString(), poolInfo.liquidity.toString(), poolInfo.tick)
+        const swapRoute = new Route([pool], tokenIn, tokenOut)
+
+        const amountOut = await this.getOutputQuote(swapRoute, tokenIn, amountIn)
+        const tokenInAmount = fromReadableAmount(amountIn, tokenIn.decimals).toString()
+        const uncheckedTrade = Trade.createUncheckedTrade({
+            route: swapRoute,
+            inputAmount: CurrencyAmount.fromRawAmount(tokenIn, tokenInAmount),
+            outputAmount: CurrencyAmount.fromRawAmount(tokenOut, JSBI.BigInt(amountOut.toString())),
+            tradeType: TradeType.EXACT_INPUT
+        })
+
+        return { uncheckedTrade, tokenInAmount }
+    }
+
     executeTrade(
         trade: Trade<Currency, Currency, TradeType>,
         routerAddr: string,
@@ -145,18 +189,22 @@ type SwapParamsUtils = {
     slippage: number
     poolFee: string
 }
-type UniswapAddrs = {
+export type UniswapV3Addrs = {
     univ3quoter: Address
     univ3factory: Address
     univ3router: Address
 }
-export async function swapExec(client: PublicClient, uniswapAddrs: UniswapAddrs, swapParams: SwapParamsUtils, chainId: number) {
+export type UniswapV2Addrs = {
+    factory: Address
+    router: Address
+}
+export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addrs, swapParams: SwapParamsUtils, chainId: number) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
 
     const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
     const _poolFee = fees[poolFee]
 
-    const swapper = new SwapToken(client, univ3quoter, univ3factory)
+    const swapper = new SwapToken(client, 3, univ3quoter, univ3factory)
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
     const tokenOutDecimal = await swapper.getTokenDecimals(tokenOutAddress)
 
@@ -166,6 +214,36 @@ export async function swapExec(client: PublicClient, uniswapAddrs: UniswapAddrs,
     const { uncheckedTrade, tokenInAmount } = await swapper.createTrade(amountIn, tokenIn, tokenOut, _poolFee)
     const data = swapper.executeTrade(uncheckedTrade, univ3router, returnAddress, slippage, percentDecimal)
     return { ...data, amount: tokenInAmount }
+}
+
+export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Addrs, swapParams: SwapParamsUtils, chainId: number) {
+    const { router, factory } = uniswapAddrs
+
+    const { tokenInAddress, tokenOutAddress, amountIn, returnAddress } = swapParams
+
+    const swapper = new SwapToken(client, 2, undefined, undefined, router, factory)
+    const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
+    const wethAddr = await getTokenInfo("weth", chainId.toString())
+    let swapTxData
+    if (wethAddr === tokenOutAddress) {
+        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForETH", [
+            fromReadableAmount(amountIn, tokenInDecimal).toString(),
+            0,
+            [tokenInAddress, tokenOutAddress],
+            returnAddress,
+            Date.now() + 180000 // Long enough to rarely fail
+        ])
+        return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
+    } else {
+        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForTokens", [
+            fromReadableAmount(amountIn, tokenInDecimal).toString(),
+            0,
+            [tokenInAddress, tokenOutAddress],
+            returnAddress,
+            Date.now() + 180000 // Long enough to rarely fail
+        ])
+        return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
+    }
 }
 
 const testIds = [36864, 31337]

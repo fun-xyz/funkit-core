@@ -1,11 +1,11 @@
 import { SwapTest, SwapTestConfig } from "../testUtils/Swap"
 
 const config: SwapTestConfig = {
-    chainId: 5,
-    inToken: "dai",
-    outToken: "weth",
+    chainId: 420,
+    inToken: "usdc",
+    outToken: "dai",
     baseToken: "eth",
-    prefund: true,
-    amount: 10_000
+    prefund: false,
+    amount: 1000
 }
 SwapTest(config)

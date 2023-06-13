@@ -11,7 +11,7 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
-        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options)).slice(2)
+        return (await this.getPaymasterAddress(options)) + this.sponsorAddress!.slice(2)
     }
 
     stake(walletAddress: string, amount: number): ActionFunction {

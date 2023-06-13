@@ -1,8 +1,7 @@
 import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
-import { EstimateGasResult } from "../common"
-import { CONTRACT_ADDRESSES } from "../common/constants"
+import { AddressZero, CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -91,13 +90,17 @@ export class Chain {
                 this.name = chain.key
                 this.currency = chain.currency
                 const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
-                    result[key] = CONTRACT_ADDRESSES[key][this.id]
-                    return result
+                    if (CONTRACT_ADDRESSES[key]) {
+                        result[key] = CONTRACT_ADDRESSES[key][this.id]
+                        return result
+                    }
+                    return AddressZero
                 }, {})
                 const addresses = { ...abisAddresses, ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
+            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 

@@ -15,9 +15,17 @@ export class TokenSponsor extends Sponsor {
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
+    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+        if (this.sponsorAddress === undefined) {
+            const chain = await getChainFromData(options.chain)
+            this.sponsorAddress = await chain.getAddress("sponsorAddress")
+        }
+        return this.sponsorAddress
+    }
+
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
-        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options)).slice(2) + tokenAddress.slice(2)
+        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options))!.slice(2) + tokenAddress.slice(2)
     }
 
     async getPaymasterAndDataPermit(
@@ -43,7 +51,7 @@ export class TokenSponsor extends Sponsor {
         )
         return (
             (await this.getPaymasterAddress(options)) +
-            (await this.getSponsorAddress(options)).slice(2) +
+            (await this.getSponsorAddress(options))!.slice(2) +
             tokenAddress.slice(2) +
             encoded.slice(2)
         )
@@ -353,6 +361,11 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
+    async getTokenListMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption) {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getTokenListMode", [sponsor], chain)
+    }
+
     async getTokenBlacklisted(
         tokenAddr: string,
         sponsor: string,
@@ -400,6 +413,28 @@ export class TokenSponsor extends Sponsor {
             //     await actionData.wallet.getAddress()
             // )
             return await this.encode(data, actionData.options)
+        }
+    }
+
+    static approve(token: string, amount: number): ActionFunction {
+        return async (actionData: ActionData) => {
+            const chain = await getChainFromData(actionData.options.chain)
+            const gasSponsorAddress = await chain.getAddress("tokenSponsorAddress")
+            // const chain = await getChainFromData(actionData.chain)
+            // addTransaction(
+            //     await chain.getChainId(),
+            //     {
+            //         action: "approve",
+            //         amount,
+            //         from: await actionData.wallet.getAddress(),
+            //         timestamp: Date.now(),
+            //         to: await this.getPaymasterAddress(actionData.options),
+            //         token
+            //     },
+            //     this.paymasterType,
+            //     await actionData.wallet.getAddress()
+            // )
+            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
         }
     }
 }

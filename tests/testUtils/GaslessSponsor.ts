@@ -1,12 +1,14 @@
 import { assert, expect } from "chai"
 import { Address, Hex } from "viem"
 import { Eoa } from "../../src/auth"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+
 import "../../fetch-polyfill"
 
 export interface GaslessSponsorTestConfig {
@@ -49,17 +51,24 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             walletAddress1 = await wallet1.getAddress()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, config.stakeAmount / 8)
+                await fundWallet(auth, wallet, config.stakeAmount / 8)
                 await fundWallet(auth, wallet1, config.stakeAmount / 8)
             }
-            funderAddress = await funder.getUniqueId()
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.amount ? config.amount : config.stakeAmount / 4,
-                out: config.outToken,
-                returnAddress: funderAddress
-            })
+            const chain = await getChainFromData(options.chain)
+            await chain.init()
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
 
+            funderAddress = await funder.getUniqueId()
+            if ((await chain.getChainId()) !== "5") {
+                const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
+                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                    funderAddress,
+                    1000000000000000000000n
+                ])
+                paymasterTokenMint.chain = chain
+                await auth.sendTx(paymasterTokenMint)
+            }
             await configureEnvironment({
                 ...options,
                 gasSponsor: {
@@ -69,7 +78,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 2)
+            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 4)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
@@ -96,6 +105,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 
+            await funder.sendTx(await sponsor.lockDeposit())
             await funder.sendTx(await sponsor.setToWhitelistMode())
             await funder.sendTx(await sponsor.addSpenderToWhiteList(walletAddress))
             await funder.sendTx(await sponsor.removeSpenderFromWhiteList(walletAddress1))

@@ -40,7 +40,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
             await wallet.swap(auth, {
                 in: baseToken,
-                amount: config.amount ? config.amount : 0.01,
+                amount: config.amount ? config.amount : 0.001,
                 out: outToken
             })
             const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)
@@ -54,7 +54,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             const b1 = Token.getBalance(baseToken, randomAddress)
             const b2 = Token.getBalance(baseToken, walletAddress)
-            await wallet.transfer(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.01, token: baseToken })
+            await wallet.transfer(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.001, token: baseToken })
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
 
