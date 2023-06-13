@@ -1,6 +1,6 @@
 {
     "name": "fun-wallet",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -13,8 +13,7 @@
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
-        "prepare": "husky install",
-        "postinstall": "npx ts-node tests/contractLoader.ts"
+        "prepare": "husky install"
     },
     "author": "The Fun Group (https://fun.xyz/)",
     "license": "ISC",
