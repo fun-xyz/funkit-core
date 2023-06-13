@@ -1,4 +1,4 @@
-import { Address, formatUnits } from "viem"
+import { Address } from "viem"
 import { ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
@@ -143,8 +143,6 @@ export class FunWallet extends FirstClassActions {
                 }
 
                 fee.amount = Number(eth)
-                console.log(fee.amount)
-                console.log(formatUnits(BigInt(fee.amount), 18))
             } else {
                 const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execute", helper)

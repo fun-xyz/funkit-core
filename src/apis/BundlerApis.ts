@@ -5,7 +5,6 @@ import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function sendUserOpToBundler(userOp: any, entryPointAddress: string, chainId: string): Promise<any> {
     const data = await sendPostRequest(API_URL, "bundler/send-user-op", { userOp: objectify(userOp), entryPointAddress, chainId })
-    console.log(data)
     return data
 }
 
