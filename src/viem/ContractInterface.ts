@@ -1,4 +1,4 @@
-import { Address, Hex, PublicClient, encodeFunctionData } from "viem"
+import { Address, Hex, PublicClient, decodeFunctionData, encodeFunctionData } from "viem"
 import { TransactionData } from "../common"
 import { Chain } from "../data"
 
@@ -56,6 +56,12 @@ export class ContractInterface {
             address,
             eventName,
             args
+        })
+    }
+    decodeFunctionData(data: Hex) {
+        return decodeFunctionData({
+            abi: this.abi,
+            data
         })
     }
 }

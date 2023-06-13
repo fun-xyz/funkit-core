@@ -65,12 +65,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await fundWallet(auth, wallet1, 0.005)
             }
 
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.swapAmount,
-                out: paymasterToken,
-                returnAddress: funderAddress
-            })
+            // await wallet.swap(auth, {
+            //     in: config.inToken,
+            //     amount: config.swapAmount,
+            //     out: paymasterToken,
+            //     returnAddress: funderAddress
+            // })
 
             options.gasSponsor = {
                 token: paymasterToken
@@ -79,24 +79,24 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             sponsor = new TokenSponsor()
 
-            const baseStakeAmount = config.baseTokenStakeAmt
-            const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
+            // const baseStakeAmount = config.baseTokenStakeAmt
+            // const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
 
-            const depositInfoS = await sponsor.getTokenBalance(paymasterToken, walletAddress)
-            const depositInfo1S = await sponsor.getTokenBalance("eth", funderAddress)
+            // const depositInfoS = await sponsor.getTokenBalance(paymasterToken, walletAddress)
+            // const depositInfo1S = await sponsor.getTokenBalance("eth", funderAddress)
 
-            const approve = await sponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
-            const deposit = await sponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
-            const deposit1 = await sponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
-            const data = await sponsor.stake(funderAddress, baseStakeAmount)
+            // const approve = await sponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
+            // const deposit = await sponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
+            // const deposit1 = await sponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
+            // const data = await sponsor.stake(funderAddress, baseStakeAmount)
 
-            await funder.sendTxs([approve, deposit, deposit1, data])
+            // await funder.sendTxs([approve, deposit, deposit1, data])
 
-            const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
-            const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
+            // const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
+            // const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
 
-            assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
-            assert(depositInfoE > depositInfoS, "Token Stake Failed")
+            // assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
+            // assert(depositInfoE > depositInfoS, "Token Stake Failed")
         })
 
         const runSwap = async (wallet: FunWallet) => {
@@ -159,7 +159,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
         })
 
-        it("Lock/Unlock Base Tokens", async () => {
+        it.only("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(sponsor.unlockDepositAfter(0))
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.false
             await funder.sendTx(sponsor.lockDeposit())

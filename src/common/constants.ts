@@ -134,3 +134,21 @@ export const CONTRACT_ADDRESSES = {
     univ3quoter: UNIV3_QUOTER?.addresses,
     univ3router: UNIV3_ROUTER?.addresses
 }
+
+// const data = [
+//     ENTRYPOINT_CONTRACT_INTERFACE,
+//     ERC721_CONTRACT_INTERFACE,
+//     ERC20_CONTRACT_INTERFACE,
+//     FACTORY_CONTRACT_INTERFACE,
+//     GASLESS_PAYMASTER_CONTRACT_INTERFACE,
+//     TOKEN_PAYMASTER_CONTRACT_INTERFACE,
+//     WALLET_CONTRACT_INTERFACE,
+//     POOL_CONTRACT_INTERFACE,
+//     APPROVE_AND_EXEC_CONTRACT_INTERFACE
+// ]
+
+// data.forEach((iface) => {
+//     try {
+//         console.log(iface.decodeFunctionData("0x833b1fce"))
+//     } catch {}
+// })

@@ -9,10 +9,9 @@ import {
     custom,
     http,
     pad,
-    parseUnits,
     toBytes
 } from "viem"
-import { privateKeyToAccount } from "viem/accounts"
+import { privateKeyToAccount, toAccount } from "viem/accounts"
 import * as chains from "viem/chains"
 import { Auth } from "./Auth"
 import { EoaAuthInput } from "./types"
@@ -76,7 +75,7 @@ export class Eoa extends Auth {
         if (this.signer?.type === "local") {
             signature = await this.signer.signMessage({ message: { raw: toBytes(hash) } })
         } else if (this.client && this.account) {
-            signature = await this.client.signMessage({ account: this.account, message: hash })
+            signature = await this.client.signMessage({ account: this.account, message: { raw: toBytes(hash) } })
         } else {
             throw new Error("No signer or client")
         }
@@ -134,7 +133,17 @@ export class Eoa extends Auth {
         const client = await chain.getClient()
         let tx
         value ??= 0n
-        const txClient = createWalletClient({ account: this.signer!, transport: http(client.transport.url) })
+
+        let txClient
+        if (this.client) txClient = this.client
+        else {
+            txClient = createWalletClient({
+                account: this.signer!,
+                transport: http(client.transport.url),
+                chain: chains[preProcessesChains[await chain.getChainId()]]
+            })
+        }
+
         if ((gasSpecificChain as any)[chain!.id!]) {
             tx = {
                 to,
@@ -143,12 +152,16 @@ export class Eoa extends Auth {
                 maxFeePerGas: BigInt(gasSpecificChain[chain!.id!])
             }
         } else {
-            tx = { to, value: BigInt(value), data, maxFeePerGas: parseUnits("2", 9) }
+            tx = { to, value: BigInt(value), data }
         }
-        const hash = await txClient.sendTransaction({
+
+        const action = {
+            account: this.account ? toAccount(this.account) : undefined,
             ...tx,
             chain: chains[preProcessesChains[await chain.getChainId()]]
-        })
+        }
+
+        const hash = await txClient.sendTransaction(action)
 
         const receipt = await client.waitForTransactionReceipt({ hash })
         await storeEVMCall(receipt)

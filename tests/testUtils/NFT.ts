@@ -43,7 +43,6 @@ export const NFTTest = (config: NFTTestConfig) => {
                 await fundWallet(auth, wallet2, 0.02)
             }
             const chain = await getChainFromData(options.chain)
-            await chain.init()
             nftId = Math.floor(Math.random() * 10_000_000_000)
             nftAddress = await chain.getAddress("TestNFT")
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])

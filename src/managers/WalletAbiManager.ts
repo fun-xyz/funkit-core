@@ -24,7 +24,7 @@ export class WalletAbiManager {
 
     encodeFeeCall(input: TransactionDataWithFee, location = "WalletAbiManager.encodeFeeCall") {
         verifyFunctionParams(location, input, encodeFeeCallExpectedKeys)
-        const { to: dest, token, amount, recipient, oracle } = input
+        const { to: dest, token, amount, recipient } = input
         let { data, value } = input
         if (Array.isArray(data)) {
             data = data[1]
@@ -35,7 +35,7 @@ export class WalletAbiManager {
             value = value ? value : 0
         }
 
-        const feedata = [token, recipient, oracle, amount]
+        const feedata = [token, recipient, amount]
         return WALLET_CONTRACT_INTERFACE.encodeData(feeCallFunctionName, [dest, value, data, feedata])
     }
 

@@ -1,4 +1,4 @@
-import { Address } from "viem"
+import { Address, formatUnits } from "viem"
 import { ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { Auth } from "../auth"
@@ -110,6 +110,9 @@ export class FunWallet extends FirstClassActions {
             if (fee.amount) {
                 fee.amount = Number(await token.getDecimalAmount(fee.amount))
             } else if (fee.gasPercent) {
+                if (!token.isNative) {
+                    throw new Error("gasPercent is not supported for ERC20 tokens")
+                }
                 const emptyFunc = async () => {
                     return {
                         data,
@@ -135,9 +138,13 @@ export class FunWallet extends FirstClassActions {
                     const denominator = BigInt(10) ** 18n // eth decimals
                     const price = (ethTokenPairing * numerator) / denominator
                     eth = (price * numerator) / ((eth * percentNum) / percentBase)
+                } else {
+                    eth = (eth * percentNum) / percentBase
                 }
 
                 fee.amount = Number(eth)
+                console.log(fee.amount)
+                console.log(formatUnits(BigInt(fee.amount), 18))
             } else {
                 const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execute", helper)
