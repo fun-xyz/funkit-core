@@ -29,7 +29,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId,
+                chain: chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
