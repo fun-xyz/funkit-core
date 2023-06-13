@@ -77,7 +77,6 @@ export class FunWallet extends FirstClassActions {
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
-
         const partialOp = {
             callData,
             paymasterAndData,
