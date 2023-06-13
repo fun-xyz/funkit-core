@@ -4,8 +4,7 @@ import { objectify } from "../utils"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function sendUserOpToBundler(userOp: any, entryPointAddress: string, chainId: string): Promise<any> {
-    const data = await sendPostRequest(API_URL, "bundler/send-user-op", { userOp: objectify(userOp), entryPointAddress, chainId })
-    return data
+    return await sendPostRequest(API_URL, "bundler/send-user-op", { userOp: objectify(userOp), entryPointAddress, chainId })
 }
 
 export async function estimateUserOpGas(userOp: UserOperation, entryPointAddress: string, chainId: string): Promise<any> {
