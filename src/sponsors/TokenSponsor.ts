@@ -353,6 +353,11 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
+    async getTokenListMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption) {
+        const chain = await getChainFromData(options.chain)
+        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getTokenListMode", [sponsor], chain)
+    }
+
     async getTokenBlacklisted(
         tokenAddr: string,
         sponsor: string,

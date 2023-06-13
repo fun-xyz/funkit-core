@@ -3,7 +3,7 @@ import { approveAndExec } from "./ApproveAndExec"
 import { ActionData, ActionFunction, ActionResult, FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
 import { TransactionData, WITHDRAW_QUEUE_ABI } from "../common"
 import { Token } from "../data"
-import { Helper, StatusError } from "../errors"
+import { Helper, ParameterError, StatusError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
 
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
@@ -134,34 +134,37 @@ export const _finishUnstake = (params: FinishUnstakeParams): ActionFunction => {
 }
 
 export const getLidoAddress = (chainId: string): Address => {
+    const helper = new Helper("getLidoAddress", chainId, "Staking available only on Ethereum mainnet and Goerli")
     switch (parseInt(chainId)) {
         case 1:
             return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
         case 5:
             return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
         default:
-            return "0x"
+            throw new ParameterError("Invalid Chain Id", "getLidoAddress", helper, false)
     }
 }
 
 export const getWithdrawalQueueAddr = (chainId: string): Address => {
+    const helper = new Helper("getWithdrawalQueueAddr", chainId, "Staking available only on Ethereum mainnet and Goerli")
     switch (parseInt(chainId)) {
         case 1:
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         case 5:
             return "0xCF117961421cA9e546cD7f50bC73abCdB3039533"
         default:
-            return "0x"
+            throw new ParameterError("Invalid Chain Id", "getWithdrawalQueueAddr", helper, false)
     }
 }
 
 export const getSteth = (chainId: string): Address => {
+    const helper = new Helper("getSteth", chainId, "Staking available only on Ethereum mainnet and Goerli")
     switch (parseInt(chainId)) {
         case 1:
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         case 5:
             return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
         default:
-            return "0x"
+            throw new ParameterError("Invalid Chain Id", "getSteth", helper, false)
     }
 }
