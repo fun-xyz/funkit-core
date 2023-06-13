@@ -35,6 +35,9 @@ export const SwapTest = (config: SwapTestConfig) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
+            if (prefund) {
+                await fundWallet(auth, wallet, 0.2)
+            }
 
             const chain = await getChainFromData(options.chain)
             await chain.init()
@@ -43,11 +46,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             data.chain = chain
             await auth.sendTx(data)
             const wethAddr = await Token.getAddress("weth", options)
-            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
-
-            if (prefund) {
-                await fundWallet(auth, wallet, 0.2)
-            }
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.002 })
         })
 
         it("ETH => ERC20", async () => {

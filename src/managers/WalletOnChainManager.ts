@@ -32,21 +32,28 @@ export class WalletOnChainManager {
         const client = await this.chain.getClient()
         const entryPointAddress = await this.chain.getAddress("entryPointAddress")
         fromBlock = fromBlock ? fromBlock : (await client.getBlockNumber()) - 100n
-        // const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
-        //     entrypointAddress,
-        //     "UserOperationEvent",
-        //     [userOpHash],
-        //     client,
-        //     fromBlock
-        // )
+        let filter
         while (Date.now() < endtime) {
-            const events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
-                entryPointAddress,
-                "UserOperationEvent",
-                { userOpHash },
-                client,
-                fromBlock
-            )
+            let events
+            if ((await client.getChainId()) === 84531) {
+                events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    { userOpHash },
+                    client,
+                    fromBlock
+                )
+            } else {
+                filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    [userOpHash],
+                    client,
+                    fromBlock
+                )
+                events = await client.getFilterLogs({ filter })
+            }
+
             if (events.length > 0) {
                 return events[0].transactionHash
             }

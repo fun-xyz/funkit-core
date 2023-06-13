@@ -83,7 +83,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 2)
+            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 4)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
