@@ -68,7 +68,8 @@
         "dist/index.js.map",
         "dist/fetch-polyfill.d.ts",
         "dist/fetch-polyfill.js",
-        "dist/fetch-polyfill.js.map"    ],
+        "dist/fetch-polyfill.js.map"
+    ],
     "bugs": {
         "url": "https://github.com/TheFunGroup/wallet-sdk-v1/issues"
     },
