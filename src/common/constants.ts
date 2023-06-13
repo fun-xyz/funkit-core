@@ -100,7 +100,6 @@ export const CHAIN_INFO_MAPPER = {
     UniswapV2Router02: "UniswapV2Router02"
 }
 
-
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT["abi"]
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT["abi"]
 export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT["abi"]
@@ -114,7 +113,6 @@ export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
 export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
 export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
-
 
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
@@ -145,5 +143,4 @@ export const CONTRACT_ADDRESSES = {
     univ3router: UNIV3_ROUTER["address"],
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["address"],
     UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["address"]
-
 }
