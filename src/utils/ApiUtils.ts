@@ -1,5 +1,6 @@
 import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
+import { stringifyOp } from "./UseropUtils"
 import { API_URL } from "../common/constants"
 
 export const DEFAULT_RETRY_OPTIONS = {
@@ -19,15 +20,18 @@ export const DEFAULT_RETRY_OPTIONS = {
 
 export const sendRequest = async (uri: string, method: string, apiKey: string, body?: object) => {
     try {
+        const headers = {
+            "Content-Type": "application/json"
+        }
+        if (apiKey) {
+            headers["X-Api-Key"] = apiKey
+        }
         return retry(async function () {
             return await fetch(uri, {
                 method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Api-Key": apiKey
-                },
+                headers,
                 redirect: "follow",
-                body: JSON.stringify(body)
+                body: method !== "GET" ? stringifyOp(body) : undefined
             }).then((r) => r.json())
         }, DEFAULT_RETRY_OPTIONS)
     } catch (e) {

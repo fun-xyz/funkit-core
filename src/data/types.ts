@@ -1,4 +1,4 @@
-import { BigNumberish } from "ethers"
+import { Address, Hex } from "viem"
 
 export interface ChainInput {
     chainId?: string
@@ -14,16 +14,16 @@ export type FactoryCreateAccountParams = {
 }
 
 export type InitCodeParams = {
-    entryPointAddress: string
-    factoryAddress: string
-    implementationAddress?: string
+    entryPointAddress: Address
+    factoryAddress: Address
+    implementationAddress?: Address
     loginData: LoginData
-    verificationData: string[]
-    verificationAddresses: string[]
+    verificationData: readonly Hex[]
+    verificationAddresses: readonly Address[]
 }
 
 export type Addresses = {
-    [key: string]: string
+    [key: string]: Address
 }
 
 /**
@@ -36,10 +36,10 @@ export type Addresses = {
 
 export type LoginData = {
     loginType?: number
-    newFunWalletOwner?: string
-    index?: number
-    socialHandle?: string
-    salt?: string
+    newFunWalletOwner?: Hex
+    index?: number | bigint
+    socialHandle?: Hex
+    salt?: Hex
 }
 
 export type WalletInitialzeParams = {
@@ -49,21 +49,21 @@ export type WalletInitialzeParams = {
 
 export type WalletSignature = {
     authType?: number
-    userId: string
-    signature: string
-    extraData?: string
+    userId: Hex
+    signature: Hex
+    extraData?: Hex
 }
 
 export type UserOperation = {
     sender: string
-    nonce: BigNumberish
+    nonce: bigint
     initCode?: string
     callData: string
-    callGasLimit: BigNumberish
-    verificationGasLimit: BigNumberish
-    preVerificationGas?: BigNumberish
-    maxFeePerGas: BigNumberish
-    maxPriorityFeePerGas: BigNumberish
+    callGasLimit: bigint
+    verificationGasLimit: bigint
+    preVerificationGas?: bigint
+    maxFeePerGas: bigint
+    maxPriorityFeePerGas: bigint
     paymasterAndData?: string
     signature?: string
 }

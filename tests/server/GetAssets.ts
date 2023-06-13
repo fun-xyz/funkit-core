@@ -1,5 +1,5 @@
-import { BigNumber } from "@ethersproject/bignumber"
 import { expect } from "chai"
+import { Hex } from "viem"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
@@ -13,11 +13,11 @@ describe("GetAssets", function () {
     before(async function () {
         const apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
-            chain: chainId.toString(),
+            chain: chainId,
             apiKey: apiKey
         }
         await configureEnvironment(options)
-        auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+        auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
 
         wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 14142 })
     })
@@ -26,7 +26,7 @@ describe("GetAssets", function () {
         describe("Positive Unit Tests", () => {
             it("Goerli, Funwallet", async () => {
                 const res = await wallet.getTokens(true)
-                expect(BigNumber.from(Math.floor((Object.values(res) as any)[0].price)).gte(500)).to.be.true
+                expect(Math.floor((Object.values(res) as any)[0].price) >= 500).to.be.true
             })
 
             it("Mainnet, Binance 8", async () => {
@@ -37,7 +37,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getTokens(true)
-                expect(BigNumber.from(Math.ceil((Object.values(res) as any)[0].price)).gt(0)).to.be.true
+                expect(Math.ceil((Object.values(res) as any)[0].price) > 0).to.be.true
             })
 
             it("Optimism, Optimism Foundation", async () => {
@@ -48,8 +48,8 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getTokens(true)
-                expect(BigNumber.from((Object.values(res) as any)[0].tokenBalance).gte(BigNumber.from(0))).to.be.true
-                expect(BigNumber.from(Math.ceil((Object.values(res) as any)[0].price)).gt(0)).to.be.true
+                expect((Object.values(res) as any)[0].tokenBalance >= 0).to.be.true
+                expect(Math.ceil((Object.values(res) as any)[0].price) > 0).to.be.true
             })
 
             it("Polygon, Quickswap Team", async () => {
@@ -60,7 +60,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getTokens(true)
-                expect(BigNumber.from((Object.values(res) as any)[0].tokenBalance).gte(BigNumber.from(0))).to.be.true
+                expect((Object.values(res) as any)[0].tokenBalance >= 0).to.be.true
             })
 
             it("Arbitrum", async () => {
@@ -71,8 +71,8 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getTokens(true)
-                expect(BigNumber.from((Object.values(res) as any)[0].tokenBalance).gte(BigNumber.from(0))).to.be.true
-                expect(BigNumber.from(Math.ceil((Object.values(res) as any)[0].price)).gt(0)).to.be.true
+                expect((Object.values(res) as any)[0].tokenBalance >= 0).to.be.true
+                expect(Math.ceil((Object.values(res) as any)[0].price) > 0).to.be.true
             })
         })
     })

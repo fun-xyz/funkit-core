@@ -1,17 +1,18 @@
+import { Address } from "viem"
 import { Chain } from "../data"
 
 export interface EnvOption {
-    chain: string | Chain
+    chain: string | Chain | number
     gasSponsor?: {
-        sponsorAddress?: string
+        sponsorAddress?: Address
         token?: string
     }
     fee?: {
         token?: string
         amount?: number
         gasPercent?: number
-        recipient?: string
-        oracle?: string
+        recipient?: Address
+        oracle?: Address
     }
     sendTxLater?: boolean
 }

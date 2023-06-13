@@ -1,4 +1,4 @@
-import { parseEther } from "ethers/lib/utils"
+import { parseEther } from "viem"
 import {
     ActionData,
     ActionFunction,
@@ -14,7 +14,6 @@ import {
 import { TransactionData } from "../common"
 import { NFT, Token } from "../data"
 import { ErrorData, ErrorTransactionDetails, Helper, MissingParameterError } from "../errors"
-
 function isERC721TransferParams(obj: TransferParams): obj is ERC721TransferParams {
     return "tokenId" in obj
 }

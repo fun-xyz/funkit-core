@@ -1,11 +1,15 @@
 import { assert, expect } from "chai"
+import { Address, Hex } from "viem"
 import { Eoa } from "../../src/auth"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+
+import "../../fetch-polyfill"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
@@ -26,37 +30,43 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         let wallet: FunWallet
         let wallet1: FunWallet
         let sponsor: GaslessSponsor
-        let funderAddress: string
-        let walletAddress: string
-        let walletAddress1: string
+        let funderAddress: Address
+        let walletAddress: Address
+        let walletAddress1: Address
         before(async function () {
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+            funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
 
             const uid = await auth.getUniqueId()
             wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex ? config.walletIndex : 129856341 })
-            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 12341238465411 })
+            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 1792811340 })
 
             walletAddress = await wallet.getAddress()
             walletAddress1 = await wallet1.getAddress()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, config.stakeAmount / 8)
+                await fundWallet(auth, wallet, config.stakeAmount / 8)
                 await fundWallet(auth, wallet1, config.stakeAmount / 8)
             }
+            const chain = await getChainFromData(options.chain)
+            await chain.init()
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
+
             funderAddress = await funder.getUniqueId()
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.amount ? config.amount : config.stakeAmount / 4,
-                out: config.outToken,
-                returnAddress: funderAddress
-            })
+            const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
+            const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                funderAddress,
+                1000000000000000000000n
+            ])
+            paymasterTokenMint.chain = chain
+            await auth.sendTx(paymasterTokenMint)
 
             await configureEnvironment({
                 ...options,
@@ -67,11 +77,11 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 2)
+            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 4)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
-            assert(depositInfo1E.gt(depositInfo1S), "Stake Failed")
+            assert(depositInfo1E > depositInfo1S, "Stake Failed")
         })
 
         const runSwap = async (wallet: FunWallet) => {
@@ -80,7 +90,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
             await wallet.swap(auth, {
                 in: config.inToken,
-                amount: config.amount ? config.amount : 0.1,
+                amount: config.amount ? config.amount : 0.0001,
                 out: config.outToken
             })
 

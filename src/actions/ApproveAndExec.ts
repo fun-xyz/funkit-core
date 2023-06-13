@@ -1,16 +1,15 @@
-import { Interface } from "ethers/lib/utils"
+import { Hex } from "viem"
 import { ActionData, ActionFunction, ActionResult, ApproveAndExecParams } from "./types"
-import { APPROVE_AND_EXEC_ABI } from "../common/constants"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE } from "../common/constants"
 
-const approveAndExecInterface = new Interface(APPROVE_AND_EXEC_ABI)
 const errorData = {
     location: "actions.approveAndExec"
 }
 
-export const approveAndExecToCalldata = (params: ApproveAndExecParams): string => {
+export const approveAndExecToCalldata = (params: ApproveAndExecParams): Hex => {
     const { to: dest, value, data: executeData } = params.exec
     const { to: token, data: approveData } = params.approve
-    return approveAndExecInterface.encodeFunctionData("approveAndExecute", [dest, value, executeData, token, approveData])
+    return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeData("approveAndExecute", [dest, value, executeData, token, approveData])
 }
 
 export const approveAndExec = (params: ApproveAndExecParams): ActionFunction => {

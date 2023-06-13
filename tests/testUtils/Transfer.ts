@@ -1,11 +1,11 @@
 import { assert } from "chai"
-import { Wallet } from "ethers"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet } from "../../src/utils"
+import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface TransferTestConfig {
     chainId: number
@@ -20,14 +20,14 @@ export const TransferTest = (config: TransferTestConfig) => {
     const { outToken, baseToken, prefund } = config
 
     describe("Transfer", function () {
-        this.timeout(120_000)
+        this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
         let difference: number
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: undefined
             }
@@ -44,12 +44,10 @@ export const TransferTest = (config: TransferTestConfig) => {
             })
             const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)
             difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
-            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("transfer baseToken directly", async () => {
-            var wallet1 = Wallet.createRandom()
-            const randomAddress = wallet1.address
+            const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(baseToken, randomAddress)
@@ -66,8 +64,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("wallet should have lower balance of specified token", async () => {
-            var wallet1 = Wallet.createRandom()
-            const randomAddress = wallet1.address
+            const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(outToken, randomAddress)

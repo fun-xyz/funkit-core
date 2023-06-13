@@ -1,4 +1,4 @@
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
+import { Hex, keccak256, stringToBytes } from "viem"
 
 export class WalletIdentifier {
     uniqueId: string
@@ -10,14 +10,14 @@ export class WalletIdentifier {
         this.index = index
     }
 
-    async getIdentifier(forced = false): Promise<string> {
+    async getIdentifier(forced = false): Promise<Hex> {
         return this.getIdentifierFromuniqueId(forced)
     }
 
-    getIdentifierFromuniqueId(forced = false): string {
+    getIdentifierFromuniqueId(forced = false): Hex {
         if (!this.identifier || forced) {
-            this.identifier = keccak256(toUtf8Bytes(`${this.uniqueId}-${this.index}`))
+            this.identifier = keccak256(stringToBytes(`${this.uniqueId}-${this.index}`))
         }
-        return this.identifier!
+        return this.identifier! as Hex
     }
 }

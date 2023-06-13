@@ -1,10 +1,13 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { Eoa } from "../../src/auth"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
+import "../../fetch-polyfill"
 
 export interface SwapTestConfig {
     chainId: number
@@ -17,7 +20,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { inToken, outToken, baseToken, prefund } = config
+    const { inToken, outToken, baseToken, prefund, amount } = config
 
     describe("Swap", function () {
         this.timeout(120_000)
@@ -26,41 +29,60 @@ export const SwapTest = (config: SwapTestConfig) => {
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId.toString(),
+                chain: config.chainId,
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
-
             if (prefund) {
-                await fundWallet(auth, wallet, config.amount ? config.amount : 0.005)
+                await fundWallet(auth, wallet, config.amount ? config.amount : 0.2)
             }
+
+            const chain = await getChainFromData(options.chain)
+            await chain.init()
+            const inTokenAddress = await Token.getAddress(inToken, options)
+            const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), amount])
+            data.chain = chain
+            await auth.sendTx(data)
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.002 })
         })
-        let difference: number
+
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: baseToken,
-                amount: config.amount ? config.amount : 0.001,
+                amount: 0.001,
                 out: inToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
-            difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: Math.floor(difference / 2),
+                amount: 0.001,
                 out: outToken
             })
-            const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)
-            assert(Number(tokenBalanceAfter) > Number(tokenBalanceBefore), "Swap did not execute")
+            const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+            assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
+        })
+
+        it("ERC20 => ETH", async () => {
+            const walletAddress = await wallet.getAddress()
+            const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
+            await wallet.swap(auth, {
+                in: inToken,
+                amount: 100,
+                out: baseToken
+            })
+            const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+            assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
         })
     })
 }

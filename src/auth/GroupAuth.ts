@@ -1,14 +1,13 @@
-import { BigNumber } from "ethers"
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils"
 import { v4 as uuidv4 } from "uuid"
+import { Hex, keccak256, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput, GroupAuthInput } from "./types"
 import { getGroupById, setGroupById } from "../apis"
 import { Helper, ParameterFormatError } from "../errors"
 
 export class GroupAuth extends Eoa {
-    uniqueId?: string
-    userIds?: string[]
+    uniqueId?: Hex
+    userIds?: Hex[]
     requiredSignatures?: number
 
     constructor(authData: EoaAuthInput, groupData: GroupAuthInput) {
@@ -30,22 +29,22 @@ export class GroupAuth extends Eoa {
             if (!this.userIds.includes(authId)) {
                 this.userIds.push(authId)
                 this.userIds = this.userIds.sort((a: string, b: string) => {
-                    return BigNumber.from(a).gt(BigNumber.from(b)) ? -1 : 1
+                    return BigInt(a) > BigInt(b) ? -1 : 1
                 })
             }
-            this.uniqueId = keccak256(toUtf8Bytes(uuidv4()))
+            this.uniqueId = keccak256(toBytes(uuidv4())) as Hex
             await setGroupById(this.uniqueId!, this.userIds, this.requiredSignatures!)
         } else if (!this.userIds) {
             this.userIds = await getGroupById(this.uniqueId!)
         }
     }
 
-    async getMembers(): Promise<string[]> {
+    async getMembers(): Promise<Hex[]> {
         await this._init()
         return this.userIds!
     }
 
-    override async getUniqueId(): Promise<string> {
+    override async getUniqueId(): Promise<Hex> {
         await this._init()
         return this.uniqueId!
     }
@@ -54,7 +53,7 @@ export class GroupAuth extends Eoa {
         return await this.getUniqueId()
     }
 
-    override async getOwnerAddr(): Promise<string[]> {
+    override async getOwnerAddr(): Promise<Hex[]> {
         return await this.getMembers()
     }
 }
