@@ -105,6 +105,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 
+            await funder.sendTx(await sponsor.lockDeposit())
             await funder.sendTx(await sponsor.setToWhitelistMode())
             await funder.sendTx(await sponsor.addSpenderToWhiteList(walletAddress))
             await funder.sendTx(await sponsor.removeSpenderFromWhiteList(walletAddress1))

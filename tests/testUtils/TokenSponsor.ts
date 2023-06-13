@@ -130,6 +130,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         }
 
         it("Only User Whitelisted", async () => {
+            await funder.sendTx(sponsor.lockDeposit())
             if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())
             }
@@ -153,7 +154,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Blacklist Mode Approved", async () => {
             const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-
             await funder.sendTx(await sponsor.setToBlacklistMode())
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
@@ -174,12 +174,14 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Lock/Unlock Tokens", async () => {
             await funder.sendTx(sponsor.unlockTokenDepositAfter(paymasterToken, 0))
+            await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.false
             expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
         })
 
         it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(sponsor.unlockDepositAfter(0))
+            await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.false
             await funder.sendTx(sponsor.lockDeposit())
             expect(await sponsor.getLockState("eth", funderAddress)).to.be.true
@@ -188,17 +190,23 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         it("Batch Blacklist/Whitelist Users", async () => {
             await funder.sendTx(sponsor.setToBlacklistMode())
             await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [false, false]))
+            await new Promise((f) => setTimeout(f, 2000))
+
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
             expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.false
             await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [true, true]))
+            await new Promise((f) => setTimeout(f, 2000))
+
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.true
             expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.true
 
             await funder.sendTx(sponsor.setToWhitelistMode())
             await funder.sendTx(sponsor.batchWhitelistUsers([walletAddress, walletAddress1], [false, false]))
+            await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.false
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
             await funder.sendTx(sponsor.batchWhitelistUsers([walletAddress, walletAddress1], [true, true]))
+            await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.true
             await funder.sendTx(sponsor.setTokenToBlackListMode())
@@ -208,17 +216,25 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const usdtAddr = "0x509Ee0d083DdF8AC028f2a56731412edD63223B9"
             await funder.sendTx(sponsor.setTokenToBlackListMode())
             await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken, usdtAddr], [false, false]))
+            await new Promise((f) => setTimeout(f, 2000))
+
             expect(await sponsor.getTokenBlacklisted(paymasterToken, funderAddress)).to.be.false
             expect(await sponsor.getTokenBlacklisted(usdtAddr, funderAddress)).to.be.false
             await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken, usdtAddr], [true, true]))
+            await new Promise((f) => setTimeout(f, 2000))
+
             expect(await sponsor.getTokenBlacklisted(paymasterToken, funderAddress)).to.be.true
             expect(await sponsor.getTokenBlacklisted(usdtAddr, funderAddress)).to.be.true
 
             await funder.sendTx(sponsor.setTokenToWhiteListMode())
             await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken, usdtAddr], [false, false]))
+            await new Promise((f) => setTimeout(f, 2000))
+
             expect(await sponsor.getTokenWhitelisted(paymasterToken, funderAddress)).to.be.false
             expect(await sponsor.getTokenWhitelisted(usdtAddr, funderAddress)).to.be.false
             await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken, usdtAddr], [true, true]))
+            await new Promise((f) => setTimeout(f, 2000))
+
             expect(await sponsor.getTokenWhitelisted(paymasterToken, funderAddress)).to.be.true
             expect(await sponsor.getTokenWhitelisted(usdtAddr, funderAddress)).to.be.true
         })

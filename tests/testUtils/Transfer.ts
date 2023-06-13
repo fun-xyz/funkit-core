@@ -78,7 +78,6 @@ export const TransferTest = (config: TransferTestConfig) => {
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
 
-            console.log(walletTokenBalanceBefore, walletTokenBalanceAfter)
             assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
