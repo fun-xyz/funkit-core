@@ -21,6 +21,9 @@ export abstract class Sponsor {
     ) {
         if (options.gasSponsor !== undefined && options.gasSponsor.sponsorAddress !== undefined) {
             this.sponsorAddress = options.gasSponsor.sponsorAddress
+        } else {
+            this.sponsorAddress = "0x175C5611402815Eba550Dad16abd2ac366a63329"
+
         }
         this.contractInterface = contractInterface
         this.name = name
