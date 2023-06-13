@@ -1,5 +1,5 @@
 export enum PaymasterType {
-    BaseSponsor = "BaseSponsor",
+    BaseSponsor = "base",
     GaslessSponsor = "gasless",
     TokenSponsor = "token"
 }

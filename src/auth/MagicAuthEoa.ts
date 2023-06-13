@@ -58,22 +58,4 @@ export class MagicAuthEoa extends Eoa {
         }
         return encodeWalletSignature(walletSignature)
     }
-    // override async getEstimateGasSignature(): Promise<string> {
-    //     const signer = await this.getSigner()
-    //     const walletSignature: WalletSignature = {
-    //         userId: await signer.getAddress(),
-    //         signature: hexZeroPad(toUtf8Bytes(""), 65)
-    //     }
-    //     return encodeWalletSignature(walletSignature)
-    // }
-
-    // override async signHash(hash: BytesLike): Promise<string> {
-    //     await this.init()
-    //     const signer = await this.getSigner()
-    //     const walletSignature: WalletSignature = {
-    //         signature: await this.signer!.signMessage(arrayify(hash)),
-    //         userId: await signer.getAddress()
-    //     }
-    //     return encodeWalletSignature(walletSignature)
-    // }
 }
