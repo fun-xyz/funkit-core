@@ -27,15 +27,34 @@ export class WalletOnChainManager {
         return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [identifier], client)
     }
 
-    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000): Promise<Hex | null> {
+    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
         const endtime = Date.now() + timeout
         const client = await this.chain.getClient()
-        const entrypointAddress = await this.chain.getAddress("entryPointAddress")
-        const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(entrypointAddress, "UserOperationEvent", [userOpHash], client)
+        const entryPointAddress = await this.chain.getAddress("entryPointAddress")
+        fromBlock = fromBlock ? fromBlock : (await client.getBlockNumber()) - 100n
+        let filter
         while (Date.now() < endtime) {
-            const events = await client.getFilterLogs({ filter })
+            let events
+            if ((await client.getChainId()) === 84531) {
+                events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    { userOpHash },
+                    client,
+                    fromBlock
+                )
+            } else {
+                filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    [userOpHash],
+                    client,
+                    fromBlock
+                )
+                events = await client.getFilterLogs({ filter })
+            }
+
             if (events.length > 0) {
-                console
                 return events[0].transactionHash
             }
             await new Promise((resolve) => setTimeout(resolve, interval))

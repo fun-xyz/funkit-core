@@ -15,6 +15,8 @@ import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
 import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
 import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
 import TOKEN_PRICE_ORACLE_CONTRACT from "../abis/TokenPriceOracle.json"
+import UNISWAPV2FACTORY_CONTRACT from "../abis/UniswapV2Factory.json"
+import UNISWAPV2ROUTER02_CONTRACT from "../abis/UniswapV2Router02.json"
 import UNIV3_FACTORY from "../abis/univ3factory.json"
 import UNIV3_QUOTER from "../abis/univ3quoter.json"
 import UNIV3_ROUTER from "../abis/univ3router.json"
@@ -93,8 +95,11 @@ export const CHAIN_INFO_MAPPER = {
     factoryAddress: "FunWalletFactory",
     feeOracle: "FeePercentOracle",
     userAuthAddress: "UserAuthentication",
-    rbacAddress: "RoleBasedAccessControl"
+    rbacAddress: "RoleBasedAccessControl",
+    UniswapV2Factory: "UniswapV2Factory",
+    UniswapV2Router02: "UniswapV2Router02"
 }
+
 
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT["abi"]
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT["abi"]
@@ -107,6 +112,9 @@ export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT["abi"]
 export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT["abi"]
 export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
+export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
+export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
+
 
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
@@ -117,6 +125,8 @@ export const TOKEN_PAYMASTER_CONTRACT_INTERFACE = new ContractInterface(TOKEN_PA
 export const WALLET_CONTRACT_INTERFACE = new ContractInterface(WALLET_ABI)
 export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI["abi"])
 export const APPROVE_AND_EXEC_CONTRACT_INTERFACE = new ContractInterface(APPROVE_AND_EXEC_ABI)
+export const UNISWAPV2FACTORY_INTERFACE = new ContractInterface(UNISWAPV2FACTORY_ABI)
+export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER02_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["address"],
@@ -132,5 +142,8 @@ export const CONTRACT_ADDRESSES = {
     feeOracle: FEE_PERCENT_ORACLE_CONTRACT["address"],
     univ3factory: UNIV3_FACTORY["address"],
     univ3quoter: UNIV3_QUOTER["address"],
-    univ3router: UNIV3_ROUTER["address"]
+    univ3router: UNIV3_ROUTER["address"],
+    UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["address"],
+    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["address"]
+
 }

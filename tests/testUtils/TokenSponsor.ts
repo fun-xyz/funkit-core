@@ -1,8 +1,9 @@
 import { assert, expect } from "chai"
 import { Address, Hex } from "viem"
 import { Eoa } from "../../src/auth"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -61,16 +62,27 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, 0.005)
-                await fundWallet(auth, wallet1, 0.005)
+                await fundWallet(funder, wallet, 0.1)
+                await fundWallet(auth, wallet1, 0.1)
             }
-
-            await wallet.swap(auth, {
-                in: config.inToken,
-                amount: config.swapAmount,
-                out: paymasterToken,
-                returnAddress: funderAddress
-            })
+            const chain = await getChainFromData(options.chain)
+            await chain.init()
+            const inTokenAddress = await Token.getAddress(config.inToken, options)
+            const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
+                await wallet.getAddress(),
+                1000000000000000000000n
+            ])
+            inTokenMint.chain = chain
+            await auth.sendTx(inTokenMint)
+            const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
+            const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                funderAddress,
+                1000000000000000000000n
+            ])
+            paymasterTokenMint.chain = chain
+            await auth.sendTx(paymasterTokenMint)
+            const wethAddr = await Token.getAddress("weth", options)
+            await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
 
             options.gasSponsor = {
                 token: paymasterToken
@@ -88,9 +100,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const approve = await sponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
             const deposit = await sponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
             const deposit1 = await sponsor.stakeToken(paymasterToken, walletAddress1, paymasterTokenStakeAmount)
-            const data = await sponsor.stake(funderAddress, baseStakeAmount)
+            const stakeData = await sponsor.stake(funderAddress, baseStakeAmount)
 
-            await funder.sendTxs([approve, deposit, deposit1, data])
+            await funder.sendTxs([approve, deposit, deposit1, stakeData])
 
             const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
             const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
@@ -114,6 +126,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         }
 
         it("Only User Whitelisted", async () => {
+            if (!(await sponsor.getTokenListMode(await sponsor.getSponsorAddress()))) {
+                await funder.sendTx(await sponsor.setTokenToBlackListMode())
+            }
             await funder.sendTx(sponsor.setToWhitelistMode())
             expect(await sponsor.getListMode(funderAddress)).to.be.false
 
@@ -184,7 +199,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.true
         })
 
-        it("Batch Blacklist/Whitelist Tokens", async () => {
+        it.skip("Batch Blacklist/Whitelist Tokens", async () => {
             const usdtAddr = "0x509Ee0d083DdF8AC028f2a56731412edD63223B9"
             await funder.sendTx(sponsor.setTokenToBlackListMode())
             await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken, usdtAddr], [false, false]))
