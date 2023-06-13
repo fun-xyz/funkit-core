@@ -15,8 +15,8 @@ export class TokenSponsor extends Sponsor {
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
-    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption) {
-        if (this.sponsorAddress === undefined && this.paymasterType === PaymasterType.TokenSponsor) {
+    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+        if (this.sponsorAddress === undefined) {
             const chain = await getChainFromData(options.chain)
             this.sponsorAddress = await chain.getAddress("sponsorAddress")
         }
