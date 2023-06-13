@@ -21,6 +21,7 @@ import { TransactionData } from "../common/"
 import { EnvOption } from "../config"
 import { Chain, UserOp, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
 import { Helper, MissingParameterError } from "../errors"
+import { objectify } from "../utils"
 
 const gasSpecificChain = { "137": 850_000_000_000 }
 
@@ -127,7 +128,7 @@ export class Eoa extends Auth {
         if (!chain || !chain.id) {
             const currentLocation = "Eoa.sendTx"
             const helperMainMessage = "Chain object is missing or incorrect"
-            const helper = new Helper(`${currentLocation} was given these parameters`, txData, helperMainMessage)
+            const helper = new Helper(`${currentLocation} was given these parameters`, objectify(txData), helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
         const client = await chain.getClient()
