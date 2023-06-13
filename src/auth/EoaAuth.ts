@@ -38,6 +38,9 @@ export class Eoa extends Auth {
     account?: Address
     constructor(authInput: EoaAuthInput) {
         super()
+        if (authInput.client) {
+            this.client = authInput.client
+        }
         if (authInput.privateKey) {
             this.signer = privateKeyToAccount(authInput.privateKey)
         }

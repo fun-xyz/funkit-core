@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc",
+        "build": "rm -rf dist && tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
@@ -62,7 +62,10 @@
         "SDK"
     ],
     "files": [
-        "dist"
+        "dist/src",
+        "dist/index.d.ts",
+        "dist/index.js",
+        "dist/index.js.map"
     ],
     "bugs": {
         "url": "https://github.com/TheFunGroup/wallet-sdk-v1/issues"
