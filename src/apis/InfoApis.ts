@@ -2,7 +2,6 @@ import {
     API_URL,
     BASE_WRAP_TOKEN_ADDR,
     FORK_DEFAULT_ADDRESSES,
-    FUN_TESTNET_CHAIN_ID,
     LOCAL_API_URL,
     LOCAL_FORK_CHAIN_ID,
     LOCAL_FORK_CHAIN_KEY,
@@ -19,7 +18,7 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
         symbol,
         chain: chainId
     }
-    if (Number(chainId) === LOCAL_FORK_CHAIN_ID || Number(chainId) === FUN_TESTNET_CHAIN_ID) {
+    if (Number(chainId) === LOCAL_FORK_CHAIN_ID) {
         const addr = (LOCAL_TOKEN_ADDRS as any)[symbol]
         if (addr) {
             return addr

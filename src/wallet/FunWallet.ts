@@ -278,7 +278,14 @@ export class FunWallet extends FirstClassActions {
         await chain.sendOpToBundler(userOp)
         const opHash = await new UserOp(userOp).getOpHashData(chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-        const txid = await onChainDataManager.getTxId(opHash)
+
+        let txid
+        try {
+            txid = await onChainDataManager.getTxId(opHash)
+        } catch (e) {
+            txid = "Cannot find transaction hash."
+        }
+
         if (!txid) throw new Error("Txid not found")
         const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
         if (!(gasUsed || gasUSD)) throw new Error("Txid not found")

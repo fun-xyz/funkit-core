@@ -25,7 +25,7 @@ const errorData = {
 }
 
 const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
-const uniswapV3Supported = [1, 10, 56, 137, 31337, 36864, 42161]
+const uniswapV3Supported = [1, 10, 56, 137, 31337, 36864, 36865, 42161]
 
 const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
