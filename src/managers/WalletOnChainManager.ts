@@ -30,17 +30,23 @@ export class WalletOnChainManager {
     async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
         const endtime = Date.now() + timeout
         const client = await this.chain.getClient()
-        const entrypointAddress = await this.chain.getAddress("entryPointAddress")
+        const entryPointAddress = await this.chain.getAddress("entryPointAddress")
         fromBlock = fromBlock ? fromBlock : (await client.getBlockNumber()) - 100n
-        const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
-            entrypointAddress,
-            "UserOperationEvent",
-            [userOpHash],
-            client,
-            fromBlock
-        )
+        // const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
+        //     entrypointAddress,
+        //     "UserOperationEvent",
+        //     [userOpHash],
+        //     client,
+        //     fromBlock
+        // )
         while (Date.now() < endtime) {
-            const events = await client.getFilterLogs({ filter })
+            const events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
+                entryPointAddress,
+                "UserOperationEvent",
+                { userOpHash },
+                client,
+                fromBlock
+            )
             if (events.length > 0) {
                 return events[0].transactionHash
             }
