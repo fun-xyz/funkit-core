@@ -111,10 +111,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
                 assert(depositInfoE > depositInfoS, "Token Stake Failed")
                 await funder.sendTx(sponsor.setTokenToBlackListMode())
-                await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken], [false]))
+                await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken], [false]))
             }
-            await funder.sendTx(sponsor.setTokenToBlackListMode())
-            await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken], [false]))
         })
 
         const runSwap = async (wallet: FunWallet) => {
@@ -131,7 +129,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             if (!(await sponsor.getTokenListMode(await sponsor.getSponsorAddress()))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())
             }
