@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 
-const goerliDir = process.env.CODEBUILD_SRC_DIR_SmartContractSourceArtifact
+const goerliDir = process.env.CODEBUILD_SRC_DIR_SmartContractSourceArtifact + "/deployments/goerli"
 const abisDir = "src/abis"
 console.log(goerliDir)
 
