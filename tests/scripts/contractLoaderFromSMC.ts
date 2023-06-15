@@ -1,7 +1,8 @@
 import fs from "fs"
 import path from "path"
 
-const goerliDir = process.env.CODEBUILD_SRC_DIR_SmartContractSourceArtifact + "/deployments/goerli"
+const goerliDir = process.env.CODEBUILD_SRC_DIR_DeployedSmartContract + "/deployments/goerli"
+// const goerliDir = "/Users/pandaxu/Documents/GitHub/fun-wallet-smart-contract/deployments/goerli"
 const abisDir = "src/abis"
 console.log(goerliDir)
 
