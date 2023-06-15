@@ -18,7 +18,7 @@ phases:
             - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
     build:
         commands:
-            - npx ts-mocha $TEST_PATH
+            - npx ts-mocha --exit $TEST_PATH
 artifacts:
     files:
         - "**/*"

@@ -1,20 +1,20 @@
 import fs from "fs"
 import path from "path"
 
-const goerliDir = process.env.CODEBUILD_SRC_DIR_DeployedSmartContract + "/deployments/goerli"
-// const goerliDir = "/Users/pandaxu/Documents/GitHub/fun-wallet-smart-contract/deployments/goerli"
+const tenderlyDir = process.env.CODEBUILD_SRC_DIR_DeployedSmartContract + "/deployments/tenderly"
+// const tenderlyDir = "/Users/pandaxu/Documents/GitHub/fun-wallet-smart-contract/deployments/tenderly"
 const abisDir = "src/abis"
-console.log(goerliDir)
+console.log(tenderlyDir)
 
-if (goerliDir) {
-    const chainId = fs.readFileSync(path.join(goerliDir, ".chainId"), "utf8")
+if (tenderlyDir) {
+    const chainId = fs.readFileSync(path.join(tenderlyDir, ".chainId"), "utf8")
 
-    fs.readdir(goerliDir, (err, files) => {
+    fs.readdir(tenderlyDir, (err, files) => {
         if (err) throw err
 
         files.forEach((file) => {
             if (path.extname(file) === ".json") {
-                const originalJson = JSON.parse(fs.readFileSync(path.join(goerliDir, file), "utf8"))
+                const originalJson = JSON.parse(fs.readFileSync(path.join(tenderlyDir, file), "utf8"))
 
                 let transformedJson = {
                     name: path.basename(file, ".json"),
@@ -36,10 +36,6 @@ if (goerliDir) {
                             existingJson.abi = transformedJson.abi
                         }
 
-                        if (transformedJson.addresses) {
-                            existingJson.addresses.chainId = transformedJson.addresses
-                        }
-
                         transformedJson = existingJson
                     }
 
@@ -49,5 +45,5 @@ if (goerliDir) {
         })
     })
 } else {
-    console.error("goerliDir is undefined. Cannot proceed with the file operations.")
+    console.error("tenderlyDir is undefined. Cannot proceed with the file operations.")
 }
