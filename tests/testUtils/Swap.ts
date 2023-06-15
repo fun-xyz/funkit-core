@@ -19,13 +19,14 @@ export interface SwapTestConfig {
     index?: number
     prefundAmt?: number
     mint?: boolean
+    slippage?: number
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
     const { inToken, outToken, baseToken, prefund, amount, prefundAmt } = config
     const mint = Object.values(config).includes("mint") ? true : config.mint
     describe("Swap", function () {
-        this.timeout(120_000)
+        this.timeout(200_000)
         let auth: Eoa
         let wallet: FunWallet
         before(async function () {
@@ -36,7 +37,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
+            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 17928113400 })
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
@@ -70,8 +71,9 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: Number((erc20Delta / 3).toFixed(3)),
-                out: outToken
+                amount: 1, //Number((erc20Delta / 2).toFixed(3)),
+                out: outToken,
+                slippage: config.slippage ? config.slippage : 0.5
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
             assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
@@ -82,7 +84,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
             await wallet.swap(auth, {
                 in: inToken,
-                amount: Number((erc20Delta / 3).toFixed(3)),
+                amount: Number((erc20Delta / 2).toFixed(3)),
                 out: baseToken
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)

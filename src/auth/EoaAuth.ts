@@ -170,8 +170,7 @@ export class Eoa extends Auth {
         }
 
         const hash = await txClient.sendTransaction(action)
-
-        const receipt = await client.waitForTransactionReceipt({ hash })
+        const receipt = await client.waitForTransactionReceipt({ hash, timeout: 300_000 })
         await storeEVMCall(receipt)
         return receipt
     }

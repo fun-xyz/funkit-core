@@ -12,6 +12,7 @@ import {
 } from "./types"
 import { APPROVE_AND_SWAP_ABI, TransactionData } from "../common"
 import { EnvOption } from "../config"
+import { getChainFromData } from "../data"
 import { Token } from "../data/Token"
 import { sendRequest } from "../utils"
 import { UniswapV2Addrs, UniswapV3Addrs, fromReadableAmount, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
@@ -32,8 +33,9 @@ const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 export const _swap = (params: SwapParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
         params.slippage = params.slippage ? params.slippage : 1
+        const chain = await getChainFromData(actionData.chain)
         const walletAddress = await actionData.wallet.getAddress()
-        if (oneInchSupported.includes(parseInt(actionData.chain.id!))) {
+        if (oneInchSupported.includes(parseInt(await chain.getChainId()))) {
             const data = await _1inchSwap(params, walletAddress, actionData.options)
             if (!data.approveTx) {
                 return { data: data.swapTx, errorData }
@@ -41,7 +43,7 @@ export const _swap = (params: SwapParams): ActionFunction => {
                 return await approveAndExec({ approve: data.approveTx, exec: data.swapTx })(actionData)
             }
         }
-        if (uniswapV3Supported.includes(parseInt(actionData.chain.id!))) {
+        if (uniswapV3Supported.includes(parseInt(await chain.getChainId()))) {
             return await _uniswapSwap(params, walletAddress, actionData.options)(actionData)
         } else {
             return await _uniswapV2Swap(params, walletAddress, actionData.options)(actionData)

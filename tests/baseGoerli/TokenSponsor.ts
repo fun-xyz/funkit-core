@@ -7,7 +7,7 @@ const config: TokenSponsorTestConfig = {
     paymasterToken: "usdc",
     baseTokenStakeAmt: 0.3,
     paymasterTokenStakeAmt: 100,
-    prefund: true,
+    prefund: false,
     swapAmount: 0.001,
     stake: false
 }
