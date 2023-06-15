@@ -20,9 +20,12 @@ export interface GaslessSponsorTestConfig {
     amount?: number
     walletIndex?: number
     funderIndex?: number
+    mint?: boolean
 }
 
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
+    const mint = Object.values(config).includes("mint") ? true : config.mint
+
     describe("GaslessSponsor", function () {
         this.timeout(250_000)
         let funder: Eoa
@@ -56,17 +59,20 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             }
             const chain = await getChainFromData(options.chain)
             await chain.init()
-            const wethAddr = await Token.getAddress("weth", options)
-            await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
 
             funderAddress = await funder.getUniqueId()
-            const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
-            const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
-                funderAddress,
-                1000000000000000000000n
-            ])
-            paymasterTokenMint.chain = chain
-            await auth.sendTx(paymasterTokenMint)
+
+            if (mint) {
+                const wethAddr = await Token.getAddress("weth", options)
+                await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
+                const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
+                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                    funderAddress,
+                    1000000000000000000000n
+                ])
+                paymasterTokenMint.chain = chain
+                await auth.sendTx(paymasterTokenMint)
+            }
 
             await configureEnvironment({
                 ...options,

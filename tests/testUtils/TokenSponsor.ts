@@ -24,10 +24,14 @@ export interface TokenSponsorTestConfig {
     walletIndex?: number
     funderIndex?: number
     amount?: number
+    prefundAmt?: number
+    mint?: boolean
+    batchTokenAddress?: string
 }
 
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
+    const mint = Object.values(config).includes("mint") ? true : config.mint
 
     describe("TokenSponsor", function () {
         this.timeout(300_000)
@@ -63,38 +67,50 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, config.amount ? config.amount : 0.1)
-                await fundWallet(auth, wallet1, config.amount ? config.amount : 0.1)
+                await fundWallet(funder, wallet, config.prefundAmt ? config.prefundAmt : 0.1)
+                await fundWallet(auth, wallet1, config.prefundAmt ? config.prefundAmt : 0.1)
             }
-            const chain = await getChainFromData(options.chain)
-            await chain.init()
-            const inTokenAddress = await Token.getAddress(config.inToken, options)
-            const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
-                await wallet.getAddress(),
-                1000000000000000000000n
-            ])
-            inTokenMint.chain = chain
-            await auth.sendTx(inTokenMint)
-            const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
-            const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
-                funderAddress,
-                1000000000000000000000n
-            ])
-            paymasterTokenMint.chain = chain
-            await auth.sendTx(paymasterTokenMint)
-            const wethAddr = await Token.getAddress("weth", options)
-            await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
+            if (mint) {
+                const chain = await getChainFromData(options.chain)
+                await chain.init()
+                const inTokenAddress = await Token.getAddress(config.inToken, options)
+                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    1000000000000000000000n
+                ])
+                inTokenMint.chain = chain
+                await auth.sendTx(inTokenMint)
+                const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
+                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                    funderAddress,
+                    1000000000000000000000n
+                ])
+                paymasterTokenMint.chain = chain
+                await auth.sendTx(paymasterTokenMint)
+                const wethAddr = await Token.getAddress("weth", options)
+                await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
+            } else {
+                await wallet.swap(auth, {
+                    in: "eth",
+                    amount: config.swapAmount,
+                    out: config.paymasterToken,
+                    returnAddress: funderAddress
+                })
+            }
 
             options.gasSponsor = {
+                sponsorAddress: funderAddress,
                 token: paymasterToken
             }
             await configureEnvironment(options)
 
-            const gasSponsor = new TokenSponsor()
+            sponsor = new TokenSponsor()
+            console.log(await sponsor.getTokenInfo(paymasterToken))
+            console.log(await sponsor.getTokenWhitelisted(paymasterToken, funderAddress))
             const baseStakeAmount = config.baseTokenStakeAmt
             const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
-            const depositInfoS = await gasSponsor.getTokenBalance(paymasterToken, walletAddress)
-            const depositInfo1S = await gasSponsor.getTokenBalance("eth", funderAddress)
+            const depositInfoS = await sponsor.getTokenBalance(paymasterToken, walletAddress)
+            const depositInfo1S = await sponsor.getTokenBalance("eth", funderAddress)
 
             const approve = await sponsor.approve(paymasterToken, paymasterTokenStakeAmount * 2)
             const deposit = await sponsor.stakeToken(paymasterToken, walletAddress, paymasterTokenStakeAmount)
