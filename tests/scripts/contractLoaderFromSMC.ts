@@ -2,7 +2,6 @@ import fs from "fs"
 import path from "path"
 
 const tenderlyDir = process.env.CODEBUILD_SRC_DIR_DeployedSmartContract + "/deployments/tenderly"
-// const tenderlyDir = "/Users/pandaxu/Documents/GitHub/fun-wallet-smart-contract/deployments/tenderly"
 const abisDir = "src/abis"
 console.log(tenderlyDir)
 
