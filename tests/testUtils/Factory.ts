@@ -47,7 +47,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
 
         it("wallet.create should create a wallet", async () => {
             if (chainId === FUN_TESTNET_CHAIN_ID || chainId === LOCAL_FORK_CHAIN_ID || config.testCreate) {
-                const index = Math.random() * 10000
+                const index = Math.random() * 1000000
                 const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
                 const chain = await getChainFromData(chainId)
