@@ -16,6 +16,7 @@ export interface NFTTestConfig {
     tokenId: number
     testNFTName: string
     testNFTAddress: string
+    amount?: number
 }
 export const NFTTest = (config: NFTTestConfig) => {
     const { prefund } = config
@@ -39,8 +40,8 @@ export const NFTTest = (config: NFTTestConfig) => {
             wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
             wallet2 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811341 })
             if (prefund) {
-                await fundWallet(auth, wallet1, 0.2)
-                await fundWallet(auth, wallet2, 0.2)
+                await fundWallet(auth, wallet1, config.amount ? config.amount : 0.2)
+                await fundWallet(auth, wallet2, config.amount ? config.amount : 0.2)
             }
             const chain = await getChainFromData(options.chain)
             nftId = Math.floor(Math.random() * 10_000_000_000)

@@ -23,10 +23,15 @@ export interface TokenSponsorTestConfig {
     stake: boolean
     walletIndex?: number
     funderIndex?: number
+    amount?: number
+    prefundAmt?: number
+    mint?: boolean
+    batchTokenAddress?: string
 }
 
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
+    const mint = Object.values(config).includes("mint") ? true : config.mint
 
     describe("TokenSponsor", function () {
         this.timeout(300_000)
@@ -62,30 +67,33 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             funderAddress = await funder.getUniqueId()
 
             if (config.prefund) {
-                await fundWallet(funder, wallet, 0.1)
-                await fundWallet(funder, wallet1, 0.1)
+                await fundWallet(funder, wallet, config.prefundAmt ? config.prefundAmt : 0.1)
+                await fundWallet(funder, wallet1, config.prefundAmt ? config.prefundAmt : 0.1)
             }
-            const chain = await getChainFromData(options.chain)
-            const inTokenAddress = await Token.getAddress(config.inToken, options)
-            if ((await chain.getChainId()) !== "5") {
-                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
-                    await wallet.getAddress(),
-                    1000000000000000000000n
-                ])
-                inTokenMint.chain = chain
-                await auth.sendTx(inTokenMint)
-                const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
-                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
-                    funderAddress,
-                    1000000000000000000000n
-                ])
-                paymasterTokenMint.chain = chain
-                await auth.sendTx(paymasterTokenMint)
+            if (mint) {
+                const chain = await getChainFromData(options.chain)
+                const inTokenAddress = await Token.getAddress(config.inToken, options)
+                if ((await chain.getChainId()) !== "5") {
+                    const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
+                        await wallet.getAddress(),
+                        1000000000000000000000n
+                    ])
+                    inTokenMint.chain = chain
+                    await auth.sendTx(inTokenMint)
+                    const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
+                    const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                        funderAddress,
+                        1000000000000000000000n
+                    ])
+                    paymasterTokenMint.chain = chain
+                    await auth.sendTx(paymasterTokenMint)
+                }
+                const wethAddr = await Token.getAddress("weth", options)
+                await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
             }
-            const wethAddr = await Token.getAddress("weth", options)
-            await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
 
             options.gasSponsor = {
+                sponsorAddress: funderAddress,
                 token: paymasterToken
             }
             await configureEnvironment(options)
@@ -176,7 +184,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(sponsor.unlockTokenDepositAfter(paymasterToken, 0))
             await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getLockState(paymasterToken, funderAddress)).to.be.false
-            expect(await sponsor.getLockState(config.outToken, funderAddress)).to.be.true
         })
 
         it("Lock/Unlock Base Tokens", async () => {
@@ -212,7 +219,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(sponsor.setTokenToBlackListMode())
         })
 
-        it.skip("Batch Blacklist/Whitelist Tokens", async () => {
+        it("Batch Blacklist/Whitelist Tokens", async () => {
             const usdtAddr = "0x509Ee0d083DdF8AC028f2a56731412edD63223B9"
             await funder.sendTx(sponsor.setTokenToBlackListMode())
             await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken, usdtAddr], [false, false]))

@@ -1,7 +1,7 @@
 import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { getChainInfo, getModuleInfo } from "../apis"
-import { AddressZero, CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
+import { CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { flattenObj } from "../utils/DataUtils"
@@ -90,13 +90,10 @@ export class Chain {
                 this.name = chain.key
                 this.currency = chain.currency
                 const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
-                    if (CONTRACT_ADDRESSES[key]) {
-                        result[key] = CONTRACT_ADDRESSES[key][this.id]
-                        return result
-                    }
-                    return AddressZero
+                    result[key] = CONTRACT_ADDRESSES[key][this.id]
+                    return result
                 }, {})
-                const addresses = { ...abisAddresses, ...chain.aaData, ...flattenObj(chain.moduleAddresses) }
+                const addresses = { ...chain.aaData, ...abisAddresses, ...flattenObj(chain.moduleAddresses) }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {
@@ -163,7 +160,7 @@ export class Chain {
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
-        callGasLimit = BigInt(callGasLimit)
+        callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
         verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }

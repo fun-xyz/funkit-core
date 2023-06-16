@@ -29,9 +29,9 @@ export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
 export const LOCAL_API_URL = "http://127.0.0.1:3000"
 export const LOCAL_TOKEN_ADDRS = {
-    usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    usdc: "0x966bf8795c89AceFd79385aA61295a70fa24dEEC", //"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     usdt: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-    dai: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    dai: "0x401348dBC5C269028832f060859A0944B22106Ce", //"0x6B175474E89094C44Da98b954EedeAC495271d0F",
     weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 }
 export const FORK_DEFAULT_ADDRESSES = {
@@ -39,12 +39,12 @@ export const FORK_DEFAULT_ADDRESSES = {
 }
 
 // fun testnet environment
-export const FUN_TESTNET_CHAIN_ID = 36864
+export const FUN_TESTNET_CHAIN_ID = 36865
 export const FUN_TESTNET_CHAIN_KEY = "fun-testnet"
 export const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 
 // prod
-let API_URL
+let API_URL = "https://api.fun.xyz"
 
 switch (process.env.NODE_ENV) {
     case "staging":
@@ -69,6 +69,9 @@ export const BASE_WRAP_TOKEN_ADDR = {
     },
     "137": {
         wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
+    },
+    "36865": {
+        weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     },
     "43113": {
         weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
@@ -127,20 +130,20 @@ export const UNISWAPV2FACTORY_INTERFACE = new ContractInterface(UNISWAPV2FACTORY
 export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER02_ABI)
 
 export const CONTRACT_ADDRESSES = {
-    approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["address"],
-    tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT["address"],
-    entryPointAddress: ENTRYPOINT_CONTRACT["address"],
-    factoryAddress: FACTORY_CONTRACT["address"],
-    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT["address"],
-    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT["address"],
-    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT["address"],
-    oracle: TOKEN_PRICE_ORACLE_CONTRACT["address"],
-    userAuthAddress: USER_AUTHENTICATION_CONTRACT["address"],
-    rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT["address"],
-    feeOracle: FEE_PERCENT_ORACLE_CONTRACT["address"],
-    univ3factory: UNIV3_FACTORY["address"],
-    univ3quoter: UNIV3_QUOTER["address"],
-    univ3router: UNIV3_ROUTER["address"],
-    UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["address"],
-    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["address"]
+    approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["addresses"],
+    tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT["addresses"],
+    entryPointAddress: ENTRYPOINT_CONTRACT["addresses"],
+    factoryAddress: FACTORY_CONTRACT["addresses"],
+    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
+    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT["addresses"],
+    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
+    oracle: TOKEN_PRICE_ORACLE_CONTRACT["addresses"],
+    userAuthAddress: USER_AUTHENTICATION_CONTRACT["addresses"],
+    rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT["addresses"],
+    feeOracle: FEE_PERCENT_ORACLE_CONTRACT["addresses"],
+    univ3factory: UNIV3_FACTORY["addresses"],
+    univ3quoter: UNIV3_QUOTER["addresses"],
+    univ3router: UNIV3_ROUTER["addresses"],
+    UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
+    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"]
 }

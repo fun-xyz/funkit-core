@@ -1,9 +1,9 @@
 import fs from "fs"
 import path from "path"
-import { getTestApiKey } from "./getAWSSecrets"
-import { getContractAbi } from "../src/apis/ContractApis"
-import { GlobalEnvOption, configureEnvironment } from "../src/config"
-import { Chain } from "../src/data"
+import { getContractAbi } from "../../src/apis/ContractApis"
+import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { Chain } from "../../src/data/Chain"
+import { getTestApiKey } from "../getAWSSecrets"
 
 async function setGlobal() {
     const apiKey = await getTestApiKey()
@@ -16,7 +16,6 @@ async function setGlobal() {
 
 const loadAbis = async (): Promise<void> => {
     await setGlobal()
-
     const contracts = [
         "EntryPoint",
         "UserAuthentication",
@@ -41,7 +40,7 @@ const loadAbis = async (): Promise<void> => {
         try {
             const data = await getContractAbi(contract)
             const fileName = `${contract}.json`
-            const dir = path.resolve(__dirname, "../src/abis")
+            const dir = path.resolve(__dirname, "../../src/abis")
             const filePath = path.join(dir, fileName)
 
             fs.existsSync(dir) || fs.mkdirSync(dir, { recursive: true })
