@@ -1,5 +1,7 @@
 import fs from "fs"
 import path from "path"
+import * as dotenv from "dotenv"
+dotenv.config()
 
 const tenderlyDir = process.env.CODEBUILD_SRC_DIR_DeployedSmartContract + "/deployments/tenderly"
 const abisDir = "src/abis"
