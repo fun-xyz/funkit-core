@@ -14,12 +14,14 @@ export interface StakeTestConfig {
     prefund: boolean
     steth: string
     amount?: number
+    numRetry?: number
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
     const { baseToken, prefund } = config
 
     describe("Stake", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(120_000)
         let auth: Auth
         let wallet: FunWallet

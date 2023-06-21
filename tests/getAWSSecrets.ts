@@ -36,8 +36,8 @@ export async function getTestApiKey(): Promise<string> {
     switch (process.env.NODE_ENV) {
         case "staging":
             return secret.staging
-        case "internal":
-            return secret.internal
+        case "testing":
+            return secret.testing
         default:
             return secret.prod
     }

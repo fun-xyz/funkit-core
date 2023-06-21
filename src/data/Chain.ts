@@ -93,7 +93,7 @@ export class Chain {
                     result[key] = CONTRACT_ADDRESSES[key][this.id]
                     return result
                 }, {})
-                const addresses = { ...chain.aaData, ...abisAddresses, ...flattenObj(chain.moduleAddresses) }
+                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
             }
         } catch (e) {

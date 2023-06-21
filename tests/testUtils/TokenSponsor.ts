@@ -27,6 +27,7 @@ export interface TokenSponsorTestConfig {
     prefundAmt?: number
     mint?: boolean
     batchTokenAddress?: string
+    numRetry?: number
 }
 
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
@@ -34,6 +35,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
     describe("TokenSponsor", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
         let auth: Eoa
         let funder: Eoa
