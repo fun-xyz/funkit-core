@@ -14,12 +14,14 @@ export interface FactoryTestConfig {
     chainId: number
     testCreate?: boolean
     prefundAmt?: number
+    numRetry?: number
 }
 
 export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId } = config
 
     describe("Factory", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         let auth: Eoa
         let wallet: FunWallet
         let uniqueId: string

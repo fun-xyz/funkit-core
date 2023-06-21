@@ -15,6 +15,7 @@ export interface TransferTestConfig {
     index?: number
     amount?: number
     prefundAmt?: number
+    numRetry?: number
 }
 
 export const TransferTest = (config: TransferTestConfig) => {
@@ -26,6 +27,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         let wallet: FunWallet
         let difference: number
         before(async function () {
+            this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,

@@ -50,8 +50,8 @@ switch (process.env.NODE_ENV) {
     case "staging":
         API_URL = "https://api.fun.xyz/staging"
         break
-    case "internal":
-        API_URL = "https://api.fun.xyz/internal"
+    case "testing":
+        API_URL = "https://api.fun.xyz/testing"
         break
     default:
         API_URL = "https://api.fun.xyz"

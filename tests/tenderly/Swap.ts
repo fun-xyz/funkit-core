@@ -9,6 +9,7 @@ const config: SwapTestConfig = {
     amount: 0.1,
     mint: false,
     prefundAmt: 1,
-    slippage: 10
+    slippage: 10,
+    numRetry: 5
 }
 SwapTest(config)
