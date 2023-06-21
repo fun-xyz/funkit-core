@@ -4,6 +4,9 @@
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "publishConfig": {
+        "access": "public"
+    },
     "scripts": {
         "build": "rm -rf dist && tsc",
         "test": "env REMOTE_TEST=true mocha test/fork",
