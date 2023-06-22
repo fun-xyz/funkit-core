@@ -16,7 +16,7 @@ async function main() {
     })
     const auth = new Eoa({ privateKey: PRIVATE_KEY })
     const uniqueId = await auth.getUniqueId()
-    const funWallet = new FunWallet({ uniqueId, index: 13323230 })
+    const funWallet = new FunWallet({ uniqueId, index: 133223433230 })
     console.log(await funWallet.getAddress())
 
     const sponsor = new TokenSponsor({
@@ -31,7 +31,7 @@ async function main() {
     // await funWallet.execute(auth, approve)
 
     // // 2. Stake the token and the amount
-    const stake = await sponsor.stake("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", 0.03)
+    const stake = await sponsor.stake("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", 0.2)
     await funWallet.execute(auth, stake)
 
     // console.log(await sponsor.getTokenBalance("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", "0xeb32d09f0B46548Cdc604309D0611F05D8f706D3"))
