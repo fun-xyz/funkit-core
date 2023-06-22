@@ -17,12 +17,14 @@ export interface NFTTestConfig {
     testNFTName: string
     testNFTAddress: string
     amount?: number
+    numRetry?: number
 }
 export const NFTTest = (config: NFTTestConfig) => {
     const { prefund } = config
     let nftAddress: Address
 
     describe("NFT Tests", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000_000)
         let auth: Auth
         let wallet1: FunWallet

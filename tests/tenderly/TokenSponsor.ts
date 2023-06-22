@@ -14,6 +14,7 @@ const config: TokenSponsorTestConfig = {
     swapAmount: 1,
     stake: true,
     mint: false,
-    batchTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+    batchTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    numRetry: 5
 }
 TokenSponsorTest(config)

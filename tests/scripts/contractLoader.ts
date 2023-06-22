@@ -47,7 +47,6 @@ const loadAbis = async (): Promise<void> => {
 
             // Check if the file already exists, delete if it does
             if (fs.existsSync(filePath)) {
-                console.log(`File ${filePath} already exists. It will be replaced.`)
                 fs.unlinkSync(filePath)
             }
 

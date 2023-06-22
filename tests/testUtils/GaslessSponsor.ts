@@ -21,12 +21,14 @@ export interface GaslessSponsorTestConfig {
     walletIndex?: number
     funderIndex?: number
     mint?: boolean
+    numRetry?: number
 }
 
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
     describe("GaslessSponsor", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(250_000)
         let funder: Eoa
         let auth: Eoa
