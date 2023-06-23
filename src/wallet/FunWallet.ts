@@ -1,6 +1,7 @@
 import { Address } from "viem"
 import { ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
+import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common"
 import { AddressZero } from "../common/constants"
@@ -21,6 +22,7 @@ import { Helper, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
+import { getPaymasterType } from "../utils/PaymasterUtils"
 
 export interface FunWalletParams {
     uniqueId: string
@@ -297,23 +299,24 @@ export class FunWallet extends FirstClassActions {
         }
         await storeUserOp(userOp, 0, receipt)
 
-        // if (txOptions?.gasSponsor?.sponsorAddress) {
-        //     const paymasterType = getPaymasterType(txOptions)
-        //     addTransaction(
-        //         await chain.getChainId(),
-        //         {
-        //             action: "sponsor",
-        //             amount: -1, //Get amount from lazy processing
-        //             from: txOptions.gasSponsor.sponsorAddress,
-        //             timestamp: Date.now(),
-        //             to: await this.getAddress(),
-        //             token: "eth",
-        //             txid: txid
-        //         },
-        //         paymasterType,
-        //         txOptions.gasSponsor.sponsorAddress
-        //     )
-        // }
+        if (txOptions?.gasSponsor?.sponsorAddress) {
+            const paymasterType = getPaymasterType(txOptions)
+            addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                txid,
+                {
+                    action: "sponsor",
+                    amount: -1, //Get amount from lazy processing
+                    from: txOptions.gasSponsor.sponsorAddress,
+                    to: await this.getAddress(),
+                    token: "eth",
+                    txid: txid
+                },
+                paymasterType,
+                txOptions.gasSponsor.sponsorAddress
+            )
+        }
         return receipt
     }
 
