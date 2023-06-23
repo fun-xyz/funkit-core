@@ -29,9 +29,9 @@ export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
 export const LOCAL_API_URL = "http://127.0.0.1:3000"
 export const LOCAL_TOKEN_ADDRS = {
-    usdc: "0x966bf8795c89AceFd79385aA61295a70fa24dEEC", //"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    usdc: "0x966bf8795c89AceFd79385aA61295a70fa24dEEC",
     usdt: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-    dai: "0x401348dBC5C269028832f060859A0944B22106Ce", //"0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    dai: "0x401348dBC5C269028832f060859A0944B22106Ce",
     weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 }
 export const FORK_DEFAULT_ADDRESSES = {
@@ -59,7 +59,7 @@ switch (process.env.NODE_ENV) {
 
 export { API_URL }
 
-export const DASHBOARD_API_URL = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
+export const INTERNAL_API_URL = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
 export const BASE_WRAP_TOKEN_ADDR = {
     "1": {
         weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"

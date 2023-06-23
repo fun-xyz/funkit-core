@@ -1,4 +1,4 @@
-import { DASHBOARD_API_URL } from "../common/constants"
+import { INTERNAL_API_URL } from "../common/constants"
 import { PaymasterType } from "../sponsors/types"
 import { sendPostRequest } from "../utils/ApiUtils"
 export interface PaymasterTransaction {
@@ -17,7 +17,7 @@ export async function updatePaymasterMode(
     sponsorAddress: string
 ): Promise<any> {
     try {
-        return await sendPostRequest(DASHBOARD_API_URL, "paymasters/update", {
+        return await sendPostRequest(INTERNAL_API_URL, "paymasters/update", {
             chain: chainId,
             sponsorAddress,
             type: paymasterType,
@@ -36,7 +36,7 @@ export async function removeFromList(
     sponsorAddress: string
 ): Promise<any> {
     try {
-        return await sendPostRequest(DASHBOARD_API_URL, "paymasters/remove-from-list", {
+        return await sendPostRequest(INTERNAL_API_URL, "paymasters/remove-from-list", {
             chain: chainId,
             sponsorAddress,
             type: paymasterType,
@@ -56,7 +56,7 @@ export async function addToList(
     sponsorAddress: string
 ): Promise<any> {
     try {
-        return await sendPostRequest(DASHBOARD_API_URL, "paymasters/add-to-list", {
+        return await sendPostRequest(INTERNAL_API_URL, "paymasters/add-to-list", {
             chain: chainId,
             sponsorAddress,
             type: paymasterType,
@@ -77,7 +77,7 @@ export async function addTransaction(
     sponsorAddress: string
 ): Promise<any> {
     try {
-        return await sendPostRequest(DASHBOARD_API_URL, "paymasters/add-transaction", {
+        return await sendPostRequest(INTERNAL_API_URL, "paymasters/add-transaction", {
             chain: chainId,
             sponsorAddress,
             type: paymasterType,
@@ -92,7 +92,7 @@ export async function addTransaction(
 
 export async function addPaymasterToken(chainId: string, tokenAddress: string): Promise<any> {
     try {
-        return await sendPostRequest(DASHBOARD_API_URL, "paymasters/supported-tokens/add", {
+        return await sendPostRequest(INTERNAL_API_URL, "paymasters/supported-tokens/add", {
             chain: chainId,
             tokenAddress
         })
