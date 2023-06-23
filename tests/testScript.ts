@@ -8,11 +8,11 @@ const PRIVATE_KEY = "0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a
 async function main() {
     await configureEnvironment({
         chain: "5",
-        apiKey: API_KEY
-        // gasSponsor: {
-        //     sponsorAddress: "0x1c1adFD4b2c21D8a1e39153D394d8309Db383E43",
-        //     token: "0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093"
-        // }
+        apiKey: API_KEY,
+        gasSponsor: {
+            sponsorAddress: "0x175C5611402815Eba550Dad16abd2ac366a63329"
+            // token: "0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093"
+        }
     })
     const auth = new Eoa({ privateKey: PRIVATE_KEY })
     const uniqueId = await auth.getUniqueId()
@@ -31,21 +31,21 @@ async function main() {
     // await funWallet.execute(auth, approve)
     // const tx = await sponsor.setToWhitelistMode()
     // const tx = await sponsor.setTokenToWhiteListMode()
-    let tx = await sponsor.setToBlacklistMode()
+    const tx = await sponsor.setToBlacklistMode()
     // // 2. Stake the token and the amount
     // const tx = await sponsor.stake("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", 0.2)
     await funWallet.execute(auth, tx)
-    tx = await sponsor.batchBlacklistUsers(
-        [
-            "0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9",
-            "0xA8c2c6F54228302E106FCFE6b36909453976f400",
-            "0x17dCA013EE7927576d1797F7A3Dc7C0231D2646c"
-        ],
-        [false, false, false]
-    )
-    // // 2. Stake the token and the amount
-    // const tx = await sponsor.stake("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", 0.2)
-    await funWallet.execute(auth, tx)
+    // tx = await sponsor.batchBlacklistUsers(
+    //     [
+    //         "0x07Ac5A221e5b3263ad0E04aBa6076B795A91aef9",
+    //         "0xA8c2c6F54228302E106FCFE6b36909453976f400",
+    //         "0x17dCA013EE7927576d1797F7A3Dc7C0231D2646c"
+    //     ],
+    //     [false, false, false]
+    // )
+    // // // 2. Stake the token and the amount
+    // // const tx = await sponsor.stake("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", 0.2)
+    // await funWallet.execute(auth, tx)
 
     // console.log(await sponsor.getTokenBalance("0x855Af47Cdf980A650aDE1ad47c78ec1DEEbe9093", "0xeb32d09f0B46548Cdc604309D0611F05D8f706D3"))
 
