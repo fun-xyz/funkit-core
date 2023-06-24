@@ -2,8 +2,8 @@ import { Eoa } from "../src/auth"
 import { configureEnvironment } from "../src/config"
 import { GaslessSponsor } from "../src/sponsors/GaslessSponsor"
 import { FunWallet } from "../src/wallet"
-const API_KEY = "hnHevQR0y394nBprGrvNx4HgoZHUwMet5mXTOBhf"
-const PRIVATE_KEY = "0x6270ba97d41630c84de28dd8707b0d1c3a9cd465f7a2dba7d21b69e7a1981064"
+const API_KEY = ""
+const PRIVATE_KEY = ""
 
 async function main() {
     await configureEnvironment({
