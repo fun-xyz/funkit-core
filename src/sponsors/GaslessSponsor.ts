@@ -1,10 +1,11 @@
+import { Address } from "viem"
 import { Sponsor } from "./Sponsor"
 import { PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
+import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
-
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
         super(options, GASLESS_PAYMASTER_CONTRACT_INTERFACE, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)
@@ -19,20 +20,21 @@ export class GaslessSponsor extends Sponsor {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("addDepositTo", [walletAddress, amountdec])
 
-            // const chain = await getChainFromData(actionData.chain)
-            // await addTransaction(
-            //     await chain.getChainId(),
-            //     {
-            //         action: "stake",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token: "eth"
-            //     },
-            //     this.paymasterType,
-            //     walletAddress
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            await addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "stake",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token: "eth"
+                },
+                this.paymasterType,
+                walletAddress
+            )
 
             return await this.encode(data, actionData.options, amountdec)
         }
@@ -42,20 +44,21 @@ export class GaslessSponsor extends Sponsor {
         return async (actionData: ActionData) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("withdrawDepositTo", [walletAddress, amountdec])
-            // const chain = await getChainFromData(actionData.chain)
-            // await addTransaction(
-            //     await chain.getChainId(),
-            //     {
-            //         action: "unstake",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token: "eth"
-            //     },
-            //     this.paymasterType,
-            //     walletAddress
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            await addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "unstake",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token: "eth"
+                },
+                this.paymasterType,
+                walletAddress
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -118,5 +121,10 @@ export class GaslessSponsor extends Sponsor {
             [spender, sponsor],
             chain
         )
+    }
+
+    static async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+        const chain = await getChainFromData(options.chain)
+        return await chain.getAddress("gaslessSponsorAddress")
     }
 }

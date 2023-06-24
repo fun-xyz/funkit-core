@@ -1,6 +1,6 @@
 {
     "name": "@fun-xyz/core",
-    "version": "0.3.5",
+    "version": "0.3.6",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -9,14 +9,18 @@
     },
     "scripts": {
         "build": "rm -rf dist && tsc",
-        "test": "env REMOTE_TEST=true mocha test/fork",
+        "test": "ts-mocha tests/tenderly/*.ts",
+        "test-tenderly": "ts-mocha tests/tenderly/*.ts",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
-        "prepare": "husky install"
+        "add-token": "ts-node tests/addToken.ts",
+        "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
+        "prepare": "husky install",
+        "postinstall": "env NODE_ENV=prod npx ts-node tests/scripts/contractLoader.ts"
     },
     "author": "The Fun Group (https://fun.xyz/)",
     "license": "ISC",

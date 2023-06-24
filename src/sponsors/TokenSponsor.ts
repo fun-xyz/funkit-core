@@ -2,11 +2,11 @@ import { Address, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
 import { AllTokenData, PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
+import { addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
-
 export class TokenSponsor extends Sponsor {
     token: string
 
@@ -61,19 +61,20 @@ export class TokenSponsor extends Sponsor {
         return async (actionData: ActionData) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("addEthDepositTo", [walletAddress, amountdec])
-            // await addTransaction(
-            //     await actionData.chain.getChainId(),
-            //     {
-            //         action: "stake",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token: "eth"
-            //     },
-            //     this.paymasterType,
-            //     walletAddress
-            // )
+            await addTransaction(
+                await actionData.chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "stake",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token: "eth"
+                },
+                this.paymasterType,
+                walletAddress
+            )
 
             return await this.encode(data, actionData.options, amountdec)
         }
@@ -83,19 +84,20 @@ export class TokenSponsor extends Sponsor {
         return async (actionData: ActionData) => {
             const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
             const data = this.contractInterface.encodeData("withdrawEthDepositTo", [walletAddress, amountdec])
-            // await addTransaction(
-            //     await actionData.chain.getChainId(),
-            //     {
-            //         action: "unstake",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token: "eth"
-            //     },
-            //     this.paymasterType,
-            //     walletAddress
-            // )
+            await addTransaction(
+                await actionData.chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "unstake",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token: "eth"
+                },
+                this.paymasterType,
+                walletAddress
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -185,20 +187,21 @@ export class TokenSponsor extends Sponsor {
 
             const data = this.contractInterface.encodeData("addTokenDepositTo", [tokenAddress, walletAddress, amountdec])
 
-            // const chain = await getChainFromData(actionData.chain)
-            // addTransaction(
-            //     await chain.getChainId(),
-            //     {
-            //         action: "stakeToken",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token
-            //     },
-            //     this.paymasterType,
-            //     walletAddress
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "stakeToken",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                this.paymasterType,
+                walletAddress
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -212,20 +215,21 @@ export class TokenSponsor extends Sponsor {
 
             const data = this.contractInterface.encodeData("withdrawTokenDepositTo", [tokenAddress, walletAddress, amountdec])
 
-            // const chain = await getChainFromData(actionData.chain)
-            // addTransaction(
-            //     await chain.getChainId(),
-            //     {
-            //         action: "unstakeToken",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token
-            //     },
-            //     this.paymasterType,
-            //     walletAddress
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "unstakeToken",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                this.paymasterType,
+                walletAddress
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -266,20 +270,21 @@ export class TokenSponsor extends Sponsor {
         return async (actionData: ActionData) => {
             const gasSponsorAddress = await this.getPaymasterAddress(actionData.options)
 
-            // const chain = await getChainFromData(actionData.chain)
-            // addTransaction(
-            //     await chain.getChainId(),
-            //     {
-            //         action: "approve",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token
-            //     },
-            //     this.paymasterType,
-            //     await actionData.wallet.getAddress()
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "approve",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
             return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
         }
     }
@@ -329,13 +334,13 @@ export class TokenSponsor extends Sponsor {
     setTokenToWhiteListMode(): ActionFunction {
         return async (actionData: ActionData) => {
             const data = this.contractInterface.encodeData("setTokenListMode", [false])
-            // const chain = await getChainFromData(actionData.chain)
-            // await updatePaymasterMode(
-            //     await chain.getChainId(),
-            //     { tokenMode: "whitelist" },
-            //     this.paymasterType,
-            //     await actionData.wallet.getAddress()
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            await updatePaymasterMode(
+                await chain.getChainId(),
+                { tokenMode: "whitelist" },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -348,15 +353,15 @@ export class TokenSponsor extends Sponsor {
                 calldata.push(this.contractInterface.encodeData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
             }
             const data = this.contractInterface.encodeData("batchActions", [calldata])
-            // const chain = await getChainFromData(actionData.chain)
-            // await batchOperation(
-            //     await chain.getChainId(),
-            //     tokens,
-            //     modes,
-            //     "tokensWhiteList",
-            //     this.paymasterType,
-            //     await actionData.wallet.getAddress()
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            await batchOperation(
+                await chain.getChainId(),
+                tokens,
+                modes,
+                "tokensWhiteList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -383,13 +388,13 @@ export class TokenSponsor extends Sponsor {
     setTokenToBlackListMode(): ActionFunction {
         return async (actionData: ActionData) => {
             const data = this.contractInterface.encodeData("setTokenListMode", [true])
-            // const chain = await getChainFromData(actionData.chain)
-            // await updatePaymasterMode(
-            //     await chain.getChainId(),
-            //     { tokenMode: "blacklist" },
-            //     this.paymasterType,
-            //     await actionData.wallet.getAddress()
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            await updatePaymasterMode(
+                await chain.getChainId(),
+                { tokenMode: "blacklist" },
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -403,15 +408,15 @@ export class TokenSponsor extends Sponsor {
             }
             const data = this.contractInterface.encodeData("batchActions", [calldata])
 
-            // const chain = await getChainFromData(actionData.chain)
-            // await batchOperation(
-            //     await chain.getChainId(),
-            //     tokens,
-            //     modes,
-            //     "tokensBlackList",
-            //     this.paymasterType,
-            //     await actionData.wallet.getAddress()
-            // )
+            const chain = await getChainFromData(actionData.chain)
+            await batchOperation(
+                await chain.getChainId(),
+                tokens,
+                modes,
+                "tokensBlackList",
+                this.paymasterType,
+                await actionData.wallet.getAddress()
+            )
             return await this.encode(data, actionData.options)
         }
     }
@@ -420,21 +425,25 @@ export class TokenSponsor extends Sponsor {
         return async (actionData: ActionData) => {
             const chain = await getChainFromData(actionData.options.chain)
             const gasSponsorAddress = await chain.getAddress("tokenSponsorAddress")
-            // const chain = await getChainFromData(actionData.chain)
-            // addTransaction(
-            //     await chain.getChainId(),
-            //     {
-            //         action: "approve",
-            //         amount,
-            //         from: await actionData.wallet.getAddress(),
-            //         timestamp: Date.now(),
-            //         to: await this.getPaymasterAddress(actionData.options),
-            //         token
-            //     },
-            //     this.paymasterType,
-            //     await actionData.wallet.getAddress()
-            // )
+            addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                "0x",
+                {
+                    action: "approve",
+                    amount,
+                    from: await actionData.wallet.getAddress(),
+                    to: await this.getPaymasterAddress(actionData.options),
+                    token
+                },
+                PaymasterType.TokenSponsor,
+                await actionData.wallet.getAddress()
+            )
             return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
         }
+    }
+    static async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+        const chain = await getChainFromData(options.chain)
+        return await chain.getAddress("tokenSponsorAddress")
     }
 }

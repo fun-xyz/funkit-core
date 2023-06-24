@@ -30,6 +30,14 @@ for (const key in chains) {
     const chain = chains[key]
     preProcessesChains[chain.id] = key
 }
+preProcessesChains["36865"] = "funtestnet"
+chains["funtestnet"] = {
+    id: 36865,
+    name: "Fun Testnet",
+    network: "tenderly",
+    nativeCurrency: { name: "ethereum", symbol: "ETH", decimals: 18 },
+    rpcUrls: { default: { http: [Array] }, public: { http: [Array] } }
+}
 
 export class Eoa extends Auth {
     signer?: PrivateKeyAccount | JsonRpcAccount
@@ -134,7 +142,6 @@ export class Eoa extends Auth {
         const client = await chain.getClient()
         let tx
         value ??= 0n
-
         let txClient
         if (this.client) txClient = this.client
         else {

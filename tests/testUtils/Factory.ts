@@ -14,12 +14,14 @@ export interface FactoryTestConfig {
     chainId: number
     testCreate?: boolean
     prefundAmt?: number
+    numRetry?: number
 }
 
 export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId } = config
 
     describe("Factory", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         let auth: Eoa
         let wallet: FunWallet
         let uniqueId: string
@@ -47,7 +49,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
 
         it("wallet.create should create a wallet", async () => {
             if (chainId === FUN_TESTNET_CHAIN_ID || chainId === LOCAL_FORK_CHAIN_ID || config.testCreate) {
-                const index = Math.random() * 10000
+                const index = Math.random() * 1000000
                 const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
                 const chain = await getChainFromData(chainId)

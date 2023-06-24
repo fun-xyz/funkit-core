@@ -13,12 +13,15 @@ export interface StakeTestConfig {
     baseToken: string
     prefund: boolean
     steth: string
+    amount?: number
+    numRetry?: number
 }
 
 export const StakeTest = (config: StakeTestConfig) => {
     const { baseToken, prefund } = config
 
     describe("Stake", function () {
+        this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(120_000)
         let auth: Auth
         let wallet: FunWallet
@@ -31,7 +34,7 @@ export const StakeTest = (config: StakeTestConfig) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
-            if (prefund) await fundWallet(auth, wallet, 0.02)
+            if (prefund) await fundWallet(auth, wallet, config.amount ? config.amount : 0.002)
         })
 
         it("wallet should have lower balance of gas token", async () => {

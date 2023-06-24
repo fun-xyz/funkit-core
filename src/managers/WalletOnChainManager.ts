@@ -35,7 +35,7 @@ export class WalletOnChainManager {
         let filter
         while (Date.now() < endtime) {
             let events
-            if ((await client.getChainId()) === 84531) {
+            if ((await client.getChainId()) === 84531 || (await client.getChainId()) === 36865) {
                 events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
                     entryPointAddress,
                     "UserOperationEvent",

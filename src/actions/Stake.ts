@@ -137,9 +137,11 @@ export const getLidoAddress = (chainId: string): Address => {
     const helper = new Helper("getLidoAddress", chainId, "Staking available only on Ethereum mainnet and Goerli")
     switch (parseInt(chainId)) {
         case 1:
-            return "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
+            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         case 5:
             return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+        case 36865:
+            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
             throw new ParameterError("Invalid Chain Id", "getLidoAddress", helper, false)
     }
@@ -152,6 +154,8 @@ export const getWithdrawalQueueAddr = (chainId: string): Address => {
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         case 5:
             return "0xCF117961421cA9e546cD7f50bC73abCdB3039533"
+        case 36865:
+            return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         default:
             throw new ParameterError("Invalid Chain Id", "getWithdrawalQueueAddr", helper, false)
     }
@@ -164,6 +168,8 @@ export const getSteth = (chainId: string): Address => {
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         case 5:
             return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+        case 36865:
+            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
             throw new ParameterError("Invalid Chain Id", "getSteth", helper, false)
     }
