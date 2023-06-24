@@ -72,7 +72,7 @@ export class ContractInterface {
     }
 }
 
-const parseClient = async (chainOrClient: PublicClient | Chain): Promise<PublicClient> => {
+export const parseClient = async (chainOrClient: PublicClient | Chain): Promise<PublicClient> => {
     if (chainOrClient instanceof Chain) {
         const chain = chainOrClient as Chain
         return await chain.getClient()
