@@ -33,7 +33,8 @@ const loadAbis = async (): Promise<void> => {
         "WETH",
         "univ3factory",
         "univ3quoter",
-        "univ3router"
+        "univ3router",
+        "TestNFT"
     ]
 
     for (const contract of contracts) {

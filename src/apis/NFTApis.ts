@@ -1,5 +1,5 @@
 import { API_URL } from "../common/constants"
-import { sendPostRequest } from "../utils/ApiUtils"
+import { sendGetRequest } from "../utils/ApiUtils"
 
 /**
  * Get the name of an NFT collection
@@ -12,10 +12,11 @@ import { sendPostRequest } from "../utils/ApiUtils"
  * }
  */
 export async function getNftName(chainId: string, nftAddress: string): Promise<any> {
-    return await sendPostRequest(API_URL, "nfts/get-nft-name", {
-        chain: chainId,
-        address: nftAddress
-    })
+    // return await sendPostRequest(API_URL, "nfts/get-nft-name", {
+    //     chain: chainId,
+    //     address: nftAddress
+    // })
+    return await sendGetRequest(API_URL, `asset/nft/${chainId}/${nftAddress}`)
 }
 
 /**
@@ -29,7 +30,8 @@ export async function getNftName(chainId: string, nftAddress: string): Promise<a
  * }
  */
 export async function getNftAddress(name: string): Promise<any> {
-    return await sendPostRequest(API_URL, "nfts/get-nft-address", {
-        name: name
-    })
+    // return await sendPostRequest(API_URL, "nfts/get-nft-address", {
+    //     name: name
+    // })
+    return await sendGetRequest(API_URL, `asset/nft?name=${name}`)
 }

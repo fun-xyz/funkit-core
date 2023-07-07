@@ -1,5 +1,5 @@
 import { API_URL } from "../common/constants"
-import { sendPostRequest } from "../utils/ApiUtils"
+import { sendGetRequest } from "../utils/ApiUtils"
 
 /**
  * Get all tokens for a specific chain
@@ -18,11 +18,13 @@ import { sendPostRequest } from "../utils/ApiUtils"
  * }
  */
 export async function getTokens(chainId: string, holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    return await sendPostRequest(API_URL, "getAssets/get-tokens", {
-        chain: chainId,
-        address: holderAddr,
-        onlyVerifiedTokens: onlyVerifiedTokens
-    })
+    // return await sendPostRequest(API_URL, "getAssets/get-tokens", {
+    //     chain: chainId,
+    //     address: holderAddr,
+    //     onlyVerifiedTokens: onlyVerifiedTokens
+    // })
+    const res = await sendGetRequest(API_URL, `erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
+    return res
 }
 
 /**
@@ -39,10 +41,12 @@ export async function getTokens(chainId: string, holderAddr: string, onlyVerifie
  *  ]
  */
 export async function getNFTs(chainId: string, holderAddr: string): Promise<any> {
-    return await sendPostRequest(API_URL, "getAssets/get-nfts", {
-        chain: chainId,
-        address: holderAddr
-    })
+    // return await sendPostRequest(API_URL, "getAssets/get-nfts", {
+    //     chain: chainId,
+    //     address: holderAddr
+    // })
+    const res = await sendGetRequest(API_URL, `nfts/${holderAddr}/${chainId}`)
+    return res
 }
 
 /**
@@ -58,9 +62,11 @@ export async function getNFTs(chainId: string, holderAddr: string): Promise<any>
  *  }
  */
 export async function getAllNFTs(holderAddr: string): Promise<any> {
-    return await sendPostRequest(API_URL, "getAssets/get-all-nfts", {
-        address: holderAddr
-    })
+    // return await sendPostRequest(API_URL, "getAssets/get-all-nfts", {
+    //     address: holderAddr
+    // })
+    const res = await sendGetRequest(API_URL, `nfts/${holderAddr}`)
+    return res
 }
 
 /**
@@ -81,10 +87,12 @@ export async function getAllNFTs(holderAddr: string): Promise<any> {
  * }
  */
 export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    return await sendPostRequest(API_URL, "getAssets/get-all-tokens", {
-        address: holderAddr,
-        onlyVerifiedTokens: onlyVerifiedTokens
-    })
+    // return await sendPostRequest(API_URL, "getAssets/get-all-tokens", {
+    //     address: holderAddr,
+    //     onlyVerifiedTokens: onlyVerifiedTokens
+    // })
+    const res = await sendGetRequest(API_URL, `nfts/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
+    return res
 }
 
 /**
@@ -104,8 +112,10 @@ export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boole
  * ]
  */
 export async function getLidoWithdrawals(chainId: string, holderAddr: string): Promise<any> {
-    return await sendPostRequest(API_URL, "getAssets/get-lido-withdrawals", {
-        chain: chainId,
-        address: holderAddr
-    })
+    // return await sendPostRequest(API_URL, "getAssets/get-lido-withdrawals", {
+    //     chain: chainId,
+    //     address: holderAddr
+    // })
+    const res = await sendGetRequest(API_URL, `lido-withdrawals/${holderAddr}/${chainId}`)
+    return res
 }

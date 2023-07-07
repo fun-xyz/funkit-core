@@ -16,7 +16,6 @@ import * as chains from "viem/chains"
 import { Auth } from "./Auth"
 import { EoaAuthInput } from "./types"
 import { ActionFunction } from "../actions"
-import { storeEVMCall } from "../apis"
 import { TransactionData } from "../common/"
 import { EnvOption } from "../config"
 import { Chain, UserOp, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
@@ -171,7 +170,6 @@ export class Eoa extends Auth {
 
         const hash = await txClient.sendTransaction(action)
         const receipt = await client.waitForTransactionReceipt({ hash, timeout: 300_000 })
-        await storeEVMCall(receipt)
         return receipt
     }
 
