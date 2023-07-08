@@ -1,5 +1,5 @@
 import { Address } from "viem"
-import { ActionData, ActionFunction, FirstClassActions } from "../actions"
+import { Action, ActionData, ActionFunction, FirstClassActions } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
@@ -33,6 +33,7 @@ export class FunWallet extends FirstClassActions {
     identifier: WalletIdentifier
     abiManager: WalletAbiManager
     address?: Address
+    actions: Action[] = []
 
     /**
      * Creates FunWallet object
@@ -440,5 +441,26 @@ export class FunWallet extends FirstClassActions {
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
+    }
+
+    addAction(action: Action) {
+        this.actions.push(action)
+    }
+
+    /**
+     * Execute all actions in the actions array, you need to pull out the calldata from the userOp and combine it into a multicall
+     */
+    async executeActions(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        // deconstruct all userOps from actions and combine them into a single userOp
+        // use sendTx or sendUserOp
+        // find all userOps with initCode and execute them first
+        
+    }
+
+    /**
+     * Remove a specific action from the actions array
+     */
+    removeAction(action: Action) {
+        this.actions = this.actions.filter((a) => a !== action)
     }
 }

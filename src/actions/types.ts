@@ -102,3 +102,13 @@ export type ActionResult = {
 }
 
 export type ActionFunction = (obj: ActionData) => Promise<ActionResult>
+
+export interface Action {
+    id: string
+
+    sign(): Promise<void>
+    execute(): Promise<void>
+    sendToBeSigned(): Promise<void>
+    schedule(): Promise<void>
+    cancel(): Promise<void>
+}
