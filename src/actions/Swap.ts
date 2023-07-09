@@ -1,4 +1,4 @@
-import { Address } from "viem"
+import { Address, Hex } from "viem"
 import { approveAndExec } from "./ApproveAndExec"
 import {
     ActionData,
@@ -222,4 +222,10 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     }
 
     return 18
+}
+
+export const erc721ApproveCalldata = async (params: UniswapParams): Promise<Hex> => {
+    const { spender, tokenId, token } = params
+    const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, tokenId])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
 }
