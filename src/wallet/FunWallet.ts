@@ -2,6 +2,7 @@ import { Address, Hex } from "viem"
 import {
     ActionData,
     ActionFunction,
+    ApproveAndExecParams,
     ApproveERC20Params,
     ApproveERC721Params,
     ERC20TransferParams,
@@ -43,6 +44,7 @@ import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
+import { approveAndExecCalldata } from "src/actions/ApproveAndExec"
 export interface FunWalletParams {
     uniqueId: string
     index?: number
@@ -544,6 +546,11 @@ export class FunWallet extends FirstClassActions {
 
     async finishUnstake(auth: Auth, params: FinishUnstakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const callData = await finishUnstakeCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async approveAndExec(auth: Auth, params: ApproveAndExecParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await approveAndExecCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }

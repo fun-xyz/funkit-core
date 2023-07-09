@@ -7,8 +7,9 @@ import { ErrorData } from "../errors/"
 import { FunWallet } from "../wallet"
 
 export interface ApproveAndExecParams {
-    approve: TransactionParams
+    approve: ApproveERC20Params
     exec: TransactionParams
+    chainId: number
 }
 
 export interface ActionData {
