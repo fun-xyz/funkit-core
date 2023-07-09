@@ -443,7 +443,6 @@ export class FunWallet extends FirstClassActions {
     }
 
     async transferERC721(auth: Auth, params: ERC721TransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        console.log(1)
         const chain = await getChainFromData(txOptions.chain)
         const actionData: ActionData = {
             wallet: this,
@@ -452,11 +451,9 @@ export class FunWallet extends FirstClassActions {
         }
         const callData = await erc721TransferCalldata(params, actionData)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-        console.log(2)
 
         const sender = await this.getAddress({ chain })
         const maxFeePerGas = await chain.getFeeData()
-        console.log(3)
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
@@ -468,7 +465,6 @@ export class FunWallet extends FirstClassActions {
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
-        console.log(4)
 
         const partialOp = {
             callData,
@@ -480,7 +476,6 @@ export class FunWallet extends FirstClassActions {
             nonce: await auth.getNonce(sender)
         }
         const signature = await auth.getEstimateGasSignature()
-        console.log(5)
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase(),
@@ -494,9 +489,7 @@ export class FunWallet extends FirstClassActions {
             ...res,
             signature
         })
-        console.log(6)
         estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
-        console.log(7)
         return await this.sendTx(estimatedOp, parseOptions(txOptions))
     }
 }

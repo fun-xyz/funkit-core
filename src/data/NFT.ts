@@ -97,7 +97,6 @@ export class NFT {
             spender,
             tokenId
         ])
-        console.log(await this.getAddress(), sender, spender, tokenId)
         return { ...data, chain }
     }
 

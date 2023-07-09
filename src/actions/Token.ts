@@ -193,8 +193,6 @@ export const erc721TransferCalldata = async (params: ERC721TransferParams, actio
     const { to, tokenId, token } = params
     const from = await actionData.wallet.getAddress()
     const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "transferFrom", [from, to, tokenId])
-    console.log(token, from, to, tokenId)
-    console.log(await actionData.wallet.getAddress(), 0, transferData.data)
 
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
 }
