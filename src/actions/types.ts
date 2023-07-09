@@ -58,7 +58,8 @@ export type StakeParams = {
 
 export type RequestUnstakeParams = {
     amounts: number[] // denominated in ETH
-    recipient?: string
+    recipient: string
+    chainId: number
 }
 
 export type FinishUnstakeParams = {

@@ -1,8 +1,14 @@
 import { Address, Hex, parseEther } from "viem"
 import { approveAndExec } from "./ApproveAndExec"
 import { ActionData, ActionFunction, ActionResult, FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
-import { TransactionData, WALLET_CONTRACT_INTERFACE, WITHDRAW_QUEUE_ABI } from "../common"
-import { Token } from "../data"
+import {
+    APPROVE_AND_EXEC_CONTRACT_INTERFACE,
+    ERC20_CONTRACT_INTERFACE,
+    TransactionData,
+    WALLET_CONTRACT_INTERFACE,
+    WITHDRAW_QUEUE_ABI
+} from "../common"
+import { Chain, Token } from "../data"
 import { Helper, ParameterError, StatusError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
 
@@ -10,8 +16,36 @@ const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
 
 export const stakeCalldata = async (params: StakeParams): Promise<Hex> => {
     const lidoAddress = getLidoAddress(params.chainId.toString())
-    const data: TransactionData = { to: lidoAddress, data: "0x", value: parseEther(`${params.amount}`) }
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [lidoAddress, parseEther(`${params.amount}`), data.data])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [lidoAddress, parseEther(`${params.amount}`), "0x"])
+}
+
+export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Promise<Hex> => {
+    // Approve steth
+    const steth = getSteth(params.chainId.toString())
+    const withdrawalQueue: Address = getWithdrawalQueueAddr(params.chainId.toString())
+    if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
+        const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
+        throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
+    }
+    const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
+    const approveData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(steth, "approve", [withdrawalQueue, approveAmount])
+
+    // Request Withdrawal
+    const requestWithdrawalData = withdrawQueueInterface.encodeTransactionData(withdrawalQueue, "requestWithdrawals", [
+        params.amounts.map((amount) => parseEther(`${amount}`)),
+        params.recipient
+    ])
+    const chain = new Chain({ chainId: params.chainId.toString() })
+
+    const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    const requestUnstakeData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
+        withdrawalQueue,
+        0,
+        requestWithdrawalData.data,
+        steth,
+        approveData.data
+    ])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, requestUnstakeData])
 }
 
 export const _stake = (params: StakeParams): ActionFunction => {

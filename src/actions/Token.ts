@@ -209,12 +209,12 @@ export const ethTransferCalldata = async (params: NativeTransferParams): Promise
 
 export const erc20ApproveCalldata = async (params: ApproveERC20Params): Promise<Hex> => {
     const { spender, amount, token } = params
-    const transferData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, amount])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
+    const approveData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, amount])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, approveData.data])
 }
 
 export const erc721ApproveCalldata = async (params: ApproveERC721Params): Promise<Hex> => {
     const { spender, tokenId, token } = params
-    const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, tokenId])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
+    const approveData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, tokenId])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, approveData.data])
 }
