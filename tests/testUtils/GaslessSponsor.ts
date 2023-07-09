@@ -66,7 +66,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
             if (mint) {
                 const wethAddr = await Token.getAddress("weth", options)
-                await wallet.transfer(auth, { to: wethAddr, amount: 0.001 })
+                await wallet.transferEth(auth, { to: wethAddr, amount: 0.001 })
                 const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
                     funderAddress,

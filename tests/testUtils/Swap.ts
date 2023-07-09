@@ -51,7 +51,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 data.chain = chain
                 await auth.sendTx(data)
                 const wethAddr = await Token.getAddress("weth", options)
-                await wallet.transfer(auth, { to: wethAddr, amount: 0.002 })
+                await wallet.transferEth(auth, { to: wethAddr, amount: 0.002 })
             }
         })
         let erc20Delta = 0

@@ -199,7 +199,7 @@ export const erc721TransferCalldata = async (params: ERC721TransferParams, walle
 export const erc20TransferCalldata = async (params: ERC20TransferParams): Promise<Hex> => {
     const { to, amount, token } = params
     const transferData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "transfer", [to, amount])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [to, 0, transferData.data])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
 }
 
 export const ethTransferCalldata = async (params: NativeTransferParams): Promise<Hex> => {

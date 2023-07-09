@@ -91,7 +91,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     await auth.sendTx(paymasterTokenMint)
                 }
                 const wethAddr = await Token.getAddress("weth", options)
-                await wallet.transfer(auth, { to: wethAddr, amount: 0.1 })
+                await wallet.transferEth(auth, { to: wethAddr, amount: 0.1 })
             }
 
             options.gasSponsor = {

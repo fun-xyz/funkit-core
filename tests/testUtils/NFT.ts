@@ -142,7 +142,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
 
-            it.only("approve", async () => {
+            it("approve", async () => {
                 const nft = new NFT(nftAddress)
                 await wallet1.approveERC721(auth, {
                     spender: await wallet2.getAddress(),
