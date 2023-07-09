@@ -9,7 +9,7 @@ import {
     UniSwapPoolFeeOptions,
     UniswapParams
 } from "./types"
-import { APPROVE_AND_SWAP_ABI, TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { Chain, getChainFromData } from "../data"
 import { Token } from "../data/Token"
@@ -219,8 +219,36 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
         const inToken = new Token(tokenAddress)
         return await inToken.getDecimals(options)
     }
-
     return 18
+}
+
+export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<Hex> => {
+    const chain = new Chain({ chainId: swapParams.chainId.toString() })
+    const options: EnvOption = { chain }
+    const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    let approveTx: TransactionData | undefined
+
+    const inToken = new Token(swapParams.in)
+    const outToken = new Token(swapParams.out)
+    if (outToken.isNative) {
+        swapParams.out = eth1InchAddress
+    }
+    if (inToken.isNative) {
+        swapParams.in = eth1InchAddress
+        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
+        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, swapTx.data])
+    } else {
+        approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, options)
+        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
+        const data = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
+            swapTx.to,
+            swapTx.value,
+            swapTx.data,
+            inToken,
+            approveTx.data
+        ])
+        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, data.data])
+    }
 }
 
 export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
