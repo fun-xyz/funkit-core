@@ -92,7 +92,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 console.log("second transfer", bal2, bal1)
             })
 
-            it.only("transfer", async () => {
+            it("transfer", async () => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 try {
@@ -133,6 +133,18 @@ export const NFTTest = (config: NFTTestConfig) => {
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
                 await wallet1.approve(auth, {
+                    spender: await wallet2.getAddress(),
+                    token: nftAddress,
+                    tokenId: nftId
+                })
+
+                const data = await nft.getApproved(nftId.toString())
+                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
+            })
+
+            it.only("approve", async () => {
+                const nft = new NFT(nftAddress)
+                await wallet1.approveERC721(auth, {
                     spender: await wallet2.getAddress(),
                     token: nftAddress,
                     tokenId: nftId

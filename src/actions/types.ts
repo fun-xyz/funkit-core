@@ -39,7 +39,7 @@ export interface ERC20TransferParams extends NativeTransferParams {
 // Approval Param types
 export type ApproveParam = {
     spender: string
-    token: string
+    token: Address
 }
 export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 

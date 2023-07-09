@@ -1,5 +1,19 @@
 import { Address, Hex } from "viem"
-import { ActionData, ActionFunction, ERC721TransferParams, FirstClassActions, erc721TransferCalldata } from "../actions"
+import {
+    ActionData,
+    ActionFunction,
+    ApproveERC20Params,
+    ApproveERC721Params,
+    ERC20TransferParams,
+    ERC721TransferParams,
+    FirstClassActions,
+    NativeTransferParams,
+    erc20ApproveCalldata,
+    erc20TransferCalldata,
+    erc721ApproveCalldata,
+    erc721TransferCalldata,
+    ethTransferCalldata
+} from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
@@ -442,11 +456,6 @@ export class FunWallet extends FirstClassActions {
         return { tokens, nfts }
     }
 
-    async transferERC721(auth: Auth, params: ERC721TransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const callData = await erc721TransferCalldata(params, await this.getAddress())
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
     async generateUserOp(auth: Auth, callData: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
@@ -490,5 +499,30 @@ export class FunWallet extends FirstClassActions {
         })
         estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
         return await this.sendTx(estimatedOp, parseOptions(txOptions))
+    }
+
+    async transferERC721(auth: Auth, params: ERC721TransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await erc721TransferCalldata(params, await this.getAddress())
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async transferERC20(auth: Auth, params: ERC20TransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await erc20TransferCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async transferEth(auth: Auth, params: NativeTransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await ethTransferCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async approveERC20(auth: Auth, params: ApproveERC20Params, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await erc20ApproveCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async approveERC721(auth: Auth, params: ApproveERC721Params, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await erc721ApproveCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
     }
 }
