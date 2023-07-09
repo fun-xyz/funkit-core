@@ -1,7 +1,7 @@
-import { Chain } from "src/data"
 import { Hex } from "viem"
 import { ApproveAndExecParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common/constants"
+import { Chain } from "../data"
 
 export const approveAndExecCalldata = async (params: ApproveAndExecParams): Promise<Hex> => {
     const chain = new Chain({ chainId: params.chainId.toString() })

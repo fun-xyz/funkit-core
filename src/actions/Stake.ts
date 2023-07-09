@@ -1,14 +1,7 @@
 import { Address, Hex, parseEther } from "viem"
-import { approveAndExec } from "./ApproveAndExec"
-import { ActionData, ActionFunction, ActionResult, FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
-import {
-    APPROVE_AND_EXEC_CONTRACT_INTERFACE,
-    ERC20_CONTRACT_INTERFACE,
-    TransactionData,
-    WALLET_CONTRACT_INTERFACE,
-    WITHDRAW_QUEUE_ABI
-} from "../common"
-import { Chain, Token } from "../data"
+import { FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE, WITHDRAW_QUEUE_ABI } from "../common"
+import { Chain } from "../data"
 import { Helper, ParameterError, StatusError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
 
@@ -81,46 +74,6 @@ export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promis
     throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
 }
 
-export const _stake = (params: StakeParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const lidoAddress = getLidoAddress(await actionData.chain.getChainId())
-        const data = { to: lidoAddress!, value: parseEther(`${params.amount}`) }
-
-        const errorData = {
-            location: "action.stake",
-            error: {
-                reasonData: {
-                    title: "Possible reasons:",
-                    reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
-                }
-            }
-        }
-        return { data, errorData }
-    }
-}
-
-export const _requestUnstake = (params: RequestUnstakeParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        // Approve steth
-        const { chain, wallet } = actionData
-        const steth: string = getSteth(await chain.getChainId())
-        const withdrawalQueue: Address = getWithdrawalQueueAddr(await chain.getChainId())
-        if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
-            const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
-            throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
-        }
-        const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
-        const approveData: TransactionData = await Token.approve(steth, withdrawalQueue, approveAmount, { chain: actionData.chain })
-        // Request Withdrawal
-        const requestWithdrawalData = withdrawQueueInterface.encodeTransactionData(withdrawalQueue, "requestWithdrawals", [
-            params.amounts.map((amount) => parseEther(`${amount}`)),
-            params.recipient ? params.recipient : await wallet.getAddress()
-        ])
-        const approveAndExecData = { approve: approveData, exec: requestWithdrawalData }
-        return await approveAndExec(approveAndExecData)(actionData)
-    }
-}
-
 const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
     // check withdrawal requests
     const withdrawalQueueAddr: Address = getWithdrawalQueueAddr(params.chainId.toString())
@@ -148,61 +101,6 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
         return a > b ? 1 : -1
     })
     return readyToWithdrawRequestIds
-}
-
-export const _finishUnstake = (params: FinishUnstakeParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const { chain } = actionData
-        const withdrawQueueAddress = getWithdrawalQueueAddr(await chain.getChainId())
-        const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
-        if (readyToWithdrawRequestIds.length === 0) {
-            const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
-            throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
-        }
-
-        // claim batch withdrawal
-        const lastCheckpoint = await withdrawQueueInterface.readFromChain(withdrawQueueAddress, "getLastCheckpointIndex", [], chain)
-        const hints = await withdrawQueueInterface.readFromChain(
-            withdrawQueueAddress,
-            "findCheckpointHints",
-            [readyToWithdrawRequestIds, 1, lastCheckpoint],
-            chain
-        )
-        const claimBatchWithdrawalTx = withdrawQueueInterface.encodeTransactionData(withdrawQueueAddress, "claimWithdrawalsTo", [
-            readyToWithdrawRequestIds,
-            hints,
-            params.recipient
-        ])
-        if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to) {
-            const data = {
-                to: claimBatchWithdrawalTx.to.toString() as Address,
-                data: claimBatchWithdrawalTx.data
-            }
-
-            const txDetails = {
-                method: "finishUnstake",
-                params: [readyToWithdrawRequestIds, hints, params.recipient],
-                contractAddress: claimBatchWithdrawalTx.to,
-                chainId: actionData.chain.id
-            }
-
-            const reasonData = {
-                title: "Possible reasons:",
-                reasons: ["Incorrect Chain Id - Staking available only on Ethereum mainnet and Goerli"]
-            }
-
-            const errorData = {
-                location: "action.unstake.finishUnstake",
-                error: {
-                    txDetails,
-                    reasonData
-                }
-            }
-            return { data, errorData }
-        }
-        const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
-        throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
-    }
 }
 
 export const getLidoAddress = (chainId: string): Address => {
