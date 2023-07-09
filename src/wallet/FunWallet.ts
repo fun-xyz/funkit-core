@@ -8,11 +8,13 @@ import {
     ERC721TransferParams,
     FirstClassActions,
     NativeTransferParams,
+    StakeParams,
     erc20ApproveCalldata,
     erc20TransferCalldata,
     erc721ApproveCalldata,
     erc721TransferCalldata,
-    ethTransferCalldata
+    ethTransferCalldata,
+    stakeCalldata
 } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
@@ -523,6 +525,11 @@ export class FunWallet extends FirstClassActions {
 
     async approveERC721(auth: Auth, params: ApproveERC721Params, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const callData = await erc721ApproveCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await stakeCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }

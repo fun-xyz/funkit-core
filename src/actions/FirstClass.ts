@@ -1,8 +1,8 @@
 import { Address } from "viem"
-import { _finishUnstake, _requestUnstake, _stake } from "./Stake"
+import { _finishUnstake, _requestUnstake } from "./Stake"
 import { _swap } from "./Swap"
 import { _approve, _transfer } from "./Token"
-import { ApproveParams, FinishUnstakeParams, RequestUnstakeParams, StakeParams, SwapParams, TransferParams } from "./types"
+import { ApproveParams, FinishUnstakeParams, RequestUnstakeParams, SwapParams, TransferParams } from "./types"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common/types"
 import { EnvOption } from "../config"
@@ -53,14 +53,14 @@ export abstract class FirstClassActions {
         return await this.execute(auth, _swap(input), options, estimate)
     }
 
-    async stake(
-        auth: Auth,
-        input: StakeParams,
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        estimate = false
-    ): Promise<ExecutionReceipt | UserOp | bigint> {
-        return await this.execute(auth, _stake(input), options, estimate)
-    }
+    // async stake(
+    //     auth: Auth,
+    //     input: StakeParams,
+    //     options: EnvOption = (globalThis as any).globalEnvOption,
+    //     estimate = false
+    // ): Promise<ExecutionReceipt | UserOp | bigint> {
+    //     return await this.execute(auth, _stake(input), options, estimate)
+    // }
 
     async unstake(
         auth: Auth,

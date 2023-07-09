@@ -1,12 +1,18 @@
-import { Address, parseEther } from "viem"
+import { Address, Hex, parseEther } from "viem"
 import { approveAndExec } from "./ApproveAndExec"
 import { ActionData, ActionFunction, ActionResult, FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
-import { TransactionData, WITHDRAW_QUEUE_ABI } from "../common"
+import { TransactionData, WALLET_CONTRACT_INTERFACE, WITHDRAW_QUEUE_ABI } from "../common"
 import { Token } from "../data"
 import { Helper, ParameterError, StatusError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
 
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
+
+export const stakeCalldata = async (params: StakeParams): Promise<Hex> => {
+    const lidoAddress = getLidoAddress(params.chainId.toString())
+    const data: TransactionData = { to: lidoAddress, data: "0x", value: parseEther(`${params.amount}`) }
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [lidoAddress, parseEther(`${params.amount}`), data.data])
+}
 
 export const _stake = (params: StakeParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {

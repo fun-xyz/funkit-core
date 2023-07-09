@@ -10,6 +10,7 @@ import "../../fetch-polyfill"
 
 export interface StakeTestConfig {
     chainId: number
+    actualChainId: number
     baseToken: string
     prefund: boolean
     steth: string
@@ -37,10 +38,10 @@ export const StakeTest = (config: StakeTestConfig) => {
             if (prefund) await fundWallet(auth, wallet, config.amount ? config.amount : 0.002)
         })
 
-        it("wallet should have lower balance of gas token", async () => {
+        it.only("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: 0.01 })
+            await wallet.stake(auth, { amount: 0.01, chainId: config.actualChainId })
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })

@@ -53,6 +53,7 @@ export interface ApproveERC721Params extends ApproveParam {
 
 export type StakeParams = {
     amount: number // denominated in ETH
+    chainId: number
 }
 
 export type RequestUnstakeParams = {
