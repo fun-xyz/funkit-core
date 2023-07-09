@@ -443,13 +443,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     async transferERC721(auth: Auth, params: ERC721TransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        const actionData: ActionData = {
-            wallet: this,
-            chain,
-            options: txOptions
-        }
-        const callData = await erc721TransferCalldata(params, actionData)
+        const callData = await erc721TransferCalldata(params, await this.getAddress())
         return await this.generateUserOp(auth, callData, txOptions)
     }
 

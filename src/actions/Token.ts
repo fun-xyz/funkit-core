@@ -1,4 +1,4 @@
-import { Hex, parseEther } from "viem"
+import { Address, Hex, parseEther } from "viem"
 import {
     ActionData,
     ActionFunction,
@@ -189,10 +189,9 @@ const erc721Approve = (params: ApproveERC721Params): ActionFunction => {
     }
 }
 
-export const erc721TransferCalldata = async (params: ERC721TransferParams, actionData: ActionData): Promise<Hex> => {
+export const erc721TransferCalldata = async (params: ERC721TransferParams, walletAddress: Address): Promise<Hex> => {
     const { to, tokenId, token } = params
-    const from = await actionData.wallet.getAddress()
-    const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "transferFrom", [from, to, tokenId])
+    const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "transferFrom", [walletAddress, to, tokenId])
 
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
 }
