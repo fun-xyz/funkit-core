@@ -86,6 +86,38 @@ export const NFTTest = (config: NFTTestConfig) => {
                 }
             })
 
+            it.only("transferWithNew Method", async () => {
+                try {
+                    await wallet1.transferERC721(auth, {
+                        to: await wallet2.getAddress(),
+                        token: nftAddress,
+                        tokenId: nftId
+                    })
+                } catch (error) {
+                    assert(
+                        false,
+                        `Transfer from wallet1 ${await wallet1.getAddress()} to 
+                        wallet2 ${await wallet2.getAddress()} should have succeeded
+                        but failed with error ${error}`
+                    )
+                }
+
+                try {
+                    await wallet2.transferERC721(auth, {
+                        to: await wallet1.getAddress(),
+                        token: nftAddress,
+                        tokenId: nftId
+                    })
+                } catch (error) {
+                    assert(
+                        false,
+                        `Transfer from wallet2 ${await wallet2.getAddress()} to 
+                        wallet1 ${await wallet1.getAddress()} should have succeeded
+                        but failed with error ${error}`
+                    )
+                }
+            })
+
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
                 await wallet1.approve(auth, {

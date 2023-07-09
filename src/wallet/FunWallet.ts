@@ -1,5 +1,5 @@
 import { Address } from "viem"
-import { ActionData, ActionFunction, FirstClassActions } from "../actions"
+import { ActionData, ActionFunction, ERC721TransferParams, FirstClassActions, erc721TransferCalldata } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
@@ -23,7 +23,6 @@ import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
-
 export interface FunWalletParams {
     uniqueId: string
     index?: number
@@ -441,5 +440,59 @@ export class FunWallet extends FirstClassActions {
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
+    }
+
+    async transferERC721(auth: Auth, params: ERC721TransferParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const chain = await getChainFromData(txOptions.chain)
+        const actionData: ActionData = {
+            wallet: this,
+            chain,
+            options: txOptions
+        }
+        const callData = await erc721TransferCalldata(params, actionData)
+        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+
+        const sender = await this.getAddress({ chain })
+        const maxFeePerGas = await chain.getFeeData()
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        let paymasterAndData = "0x"
+        if (txOptions.gasSponsor) {
+            if (txOptions.gasSponsor.token) {
+                const sponsor = new TokenSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            } else {
+                const sponsor = new GaslessSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            }
+        }
+
+        const partialOp = {
+            callData,
+            paymasterAndData,
+            sender,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
+            initCode,
+            nonce: await auth.getNonce(sender)
+        }
+        const signature = await auth.getEstimateGasSignature()
+        const estimateOp: UserOperation = {
+            ...partialOp,
+            signature: signature.toLowerCase(),
+            preVerificationGas: 100_000n,
+            callGasLimit: BigInt(10e6),
+            verificationGasLimit: BigInt(10e6)
+        }
+        const res = await chain.estimateOpGas(estimateOp)
+        const estimatedOp = new UserOp({
+            ...partialOp,
+            ...res,
+            signature
+        })
+        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
+        if (txOptions.sendTxLater) {
+            return estimatedOp
+        }
+        return await this.sendTx(estimatedOp, parseOptions(txOptions))
     }
 }
