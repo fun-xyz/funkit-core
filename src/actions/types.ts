@@ -64,6 +64,8 @@ export type RequestUnstakeParams = {
 
 export type FinishUnstakeParams = {
     recipient: string
+    chainId: number
+    walletAddress: string
 }
 
 export enum UniSwapPoolFeeOptions {

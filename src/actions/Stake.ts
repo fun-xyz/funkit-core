@@ -48,6 +48,39 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, requestUnstakeData])
 }
 
+export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<Hex> => {
+    const chain = new Chain({ chainId: params.chainId.toString() })
+    const withdrawQueueAddress = getWithdrawalQueueAddr(params.chainId.toString())
+    const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
+    if (readyToWithdrawRequestIds.length === 0) {
+        const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
+        throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
+    }
+
+    // claim batch withdrawal
+    const lastCheckpoint = await withdrawQueueInterface.readFromChain(withdrawQueueAddress, "getLastCheckpointIndex", [], chain)
+    const hints = await withdrawQueueInterface.readFromChain(
+        withdrawQueueAddress,
+        "findCheckpointHints",
+        [readyToWithdrawRequestIds, 1, lastCheckpoint],
+        chain
+    )
+    const claimBatchWithdrawalTx = withdrawQueueInterface.encodeTransactionData(withdrawQueueAddress, "claimWithdrawalsTo", [
+        readyToWithdrawRequestIds,
+        hints,
+        params.recipient
+    ])
+    if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to) {
+        const data = {
+            to: claimBatchWithdrawalTx.to.toString() as Address,
+            data: claimBatchWithdrawalTx.data
+        }
+        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [data.to, 0, data.data])
+    }
+    const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
+    throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
+}
+
 export const _stake = (params: StakeParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
         const lidoAddress = getLidoAddress(await actionData.chain.getChainId())
@@ -88,23 +121,22 @@ export const _requestUnstake = (params: RequestUnstakeParams): ActionFunction =>
     }
 }
 
-const getReadyToWithdrawRequests = async (actionData: ActionData) => {
-    const { chain, wallet } = actionData
+const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
     // check withdrawal requests
-    const withdrawalQueueAddr: Address = getWithdrawalQueueAddr(await chain.getChainId())
+    const withdrawalQueueAddr: Address = getWithdrawalQueueAddr(params.chainId.toString())
 
     const withdrawalRequests: bigint[] = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,
         "getWithdrawalRequests",
-        [await wallet.getAddress()],
-        chain
+        [params.walletAddress],
+        new Chain({ chainId: params.chainId.toString() })
     )
     // get the state of a particular nft
     const withdrawalStatusTx = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,
         "getWithdrawalStatus",
         [withdrawalRequests],
-        chain
+        new Chain({ chainId: params.chainId.toString() })
     )
     const readyToWithdraw: bigint[] = []
     for (let i = 0; i < withdrawalStatusTx.length; i++) {
@@ -122,7 +154,7 @@ export const _finishUnstake = (params: FinishUnstakeParams): ActionFunction => {
     return async (actionData: ActionData): Promise<ActionResult> => {
         const { chain } = actionData
         const withdrawQueueAddress = getWithdrawalQueueAddr(await chain.getChainId())
-        const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(actionData)).slice(0, 5)
+        const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
         if (readyToWithdrawRequestIds.length === 0) {
             const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
             throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
