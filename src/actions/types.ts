@@ -81,7 +81,8 @@ export type SwapParam = {
     out: string
     amount: number
     slippage?: number
-    returnAddress?: Address
+    returnAddress: Address
+    chainId: number
 }
 
 export interface OneInchSwapParams extends SwapParam {

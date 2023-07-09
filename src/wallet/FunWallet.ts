@@ -12,6 +12,7 @@ import {
     NativeTransferParams,
     RequestUnstakeParams,
     StakeParams,
+    UniswapParams,
     erc20ApproveCalldata,
     erc20TransferCalldata,
     erc721ApproveCalldata,
@@ -19,8 +20,10 @@ import {
     ethTransferCalldata,
     finishUnstakeCalldata,
     requestUnstakeCalldata,
-    stakeCalldata
+    stakeCalldata,
+    uniswapV3SwapCalldata
 } from "../actions"
+import { approveAndExecCalldata } from "../actions/ApproveAndExec"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
@@ -44,7 +47,6 @@ import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
-import { approveAndExecCalldata } from "src/actions/ApproveAndExec"
 export interface FunWalletParams {
     uniqueId: string
     index?: number
@@ -551,6 +553,11 @@ export class FunWallet extends FirstClassActions {
 
     async approveAndExec(auth: Auth, params: ApproveAndExecParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const callData = await approveAndExecCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async uniswapV3Swap(auth: Auth, params: UniswapParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await uniswapV3SwapCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }
