@@ -260,21 +260,65 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
         poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
     }
 
-    const { data, to, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
+        tokenInAddress,
+        univ3router,
+        amount,
+        data
+    ])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+}
+
+export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
+    const chain = new Chain({ chainId: params.chainId.toString() })
+    const client = await chain.getClient()
+    const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
+    const factory = await chain.getAddress("UniswapV2Factory")
+    const router = await chain.getAddress("UniswapV2Router02")
+
+    const tokenIn = new Token(params.in)
+    const tokenOut = new Token(params.out)
+
+    const tokenInAddress = await tokenIn.getAddress()
+    const tokenOutAddress = await tokenOut.getAddress()
+
+    const uniswapAddrs: UniswapV2Addrs = {
+        factory,
+        router
+    }
+
+    let percentDecimal = 100
+    let slippage = params.slippage ? params.slippage : DEFAULT_SLIPPAGE
+    while (slippage < 1 || Math.trunc(slippage) !== slippage) {
+        percentDecimal *= 10
+        slippage *= 10
+    }
+
+    const swapParams = {
+        tokenInAddress,
+        tokenOutAddress,
+        amountIn: params.amount,
+        // optional
+        returnAddress: params.returnAddress,
+        percentDecimal,
+        slippage,
+        poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
+    }
+    const chainId = Number(await chain.getChainId())
+
+    const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId)
     let swapData
     if (tokenIn.isNative) {
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, amount, swapData.data])
+        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
     } else {
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
             tokenInAddress,
-            univ3router,
+            router,
             amount,
             data
         ])
-        console.log(amount)
-        console.log("swapData", swapData)
-        console.log("encodeData", WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data]))
         return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
     }
 }
