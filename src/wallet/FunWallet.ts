@@ -1,4 +1,4 @@
-import { Address } from "viem"
+import { Address, Hex } from "viem"
 import { ActionData, ActionFunction, ERC721TransferParams, FirstClassActions, erc721TransferCalldata } from "../actions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
@@ -450,6 +450,11 @@ export class FunWallet extends FirstClassActions {
             options: txOptions
         }
         const callData = await erc721TransferCalldata(params, actionData)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async generateUserOp(auth: Auth, callData: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const chain = await getChainFromData(txOptions.chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
