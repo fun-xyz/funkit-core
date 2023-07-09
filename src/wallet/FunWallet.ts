@@ -211,6 +211,7 @@ export class FunWallet extends FirstClassActions {
             signature
         })
     }
+
     async _getThisInitCode(chain: Chain, auth: Auth) {
         const owners = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()

@@ -1,4 +1,4 @@
-import { parseEther } from "viem"
+import { Hex, parseEther } from "viem"
 import {
     ActionData,
     ActionFunction,
@@ -11,7 +11,7 @@ import {
     NativeTransferParams,
     TransferParams
 } from "./types"
-import { TransactionData } from "../common"
+import { TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
 import { NFT, Token } from "../data"
 import { ErrorData, ErrorTransactionDetails, Helper, MissingParameterError } from "../errors"
 function isERC721TransferParams(obj: TransferParams): obj is ERC721TransferParams {
@@ -107,6 +107,18 @@ const erc721Transfer = (params: ERC721TransferParams): ActionFunction => {
         }
         return { data: transferData, errorData }
     }
+}
+
+export const erc721TransferCalldata = async (params: ERC721TransferParams, actionData: ActionData): Promise<Hex> => {
+    const { to, tokenId, token } = params
+    const from = await actionData.wallet.getAddress()
+    const transferData = await NFT.transfer(token!, from, to, tokenId, { chain: actionData.chain })
+
+    let { data, value } = transferData
+    value ??= 0
+    data ??= "0x"
+
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [to, value, data])
 }
 
 function isERC20ApproveParams(obj: ApproveParams): obj is ApproveERC20Params {
