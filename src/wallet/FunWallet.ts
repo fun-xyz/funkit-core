@@ -10,6 +10,8 @@ import {
     FinishUnstakeParams,
     FirstClassActions,
     NativeTransferParams,
+    OneInchCalldata,
+    OneInchSwapParams,
     RequestUnstakeParams,
     StakeParams,
     UniswapParams,
@@ -558,6 +560,11 @@ export class FunWallet extends FirstClassActions {
 
     async uniswapV3Swap(auth: Auth, params: UniswapParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const callData = await uniswapV3SwapCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async oneinchSwap(auth: Auth, params: OneInchSwapParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await OneInchCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }
