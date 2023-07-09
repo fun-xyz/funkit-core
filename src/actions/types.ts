@@ -26,14 +26,14 @@ export type TransferParams = ERC20TransferParams | ERC721TransferParams | Native
 
 export interface ERC721TransferParams extends TransferParam {
     tokenId: number
-    token: string
+    token: Address
 }
 export interface NativeTransferParams extends TransferParam {
     amount: number
 }
 
 export interface ERC20TransferParams extends NativeTransferParams {
-    token: string
+    token: Address
 }
 
 // Approval Param types

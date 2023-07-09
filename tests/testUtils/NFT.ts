@@ -54,7 +54,14 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it("transfer", async () => {
+            it.only("transfer", async () => {
+                console.log("Wallet1 Address", await wallet1.getAddress())
+                console.log("Wallet2 Address", await wallet2.getAddress())
+                console.log("NFT Address", nftAddress)
+                const nft = new NFT(nftAddress)
+                const bal = await nft.getBalance(await wallet1.getAddress())
+                console.log("balance", bal)
+
                 try {
                     await wallet1.transfer(auth, {
                         to: await wallet2.getAddress(),
@@ -69,6 +76,8 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                const bal1 = await nft.getBalance(await wallet1.getAddress())
+                console.log("balance1", bal1)
 
                 try {
                     await wallet2.transfer(auth, {
@@ -84,15 +93,23 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                const bal2 = await nft.getBalance(await wallet1.getAddress())
+                console.log("balance2", bal2)
             })
 
             it.only("transferWithNew Method", async () => {
+                const nft = new NFT(nftAddress)
+                const bal = await nft.getBalance(await wallet1.getAddress())
+
+                console.log("Balance Before Transfer: ", bal)
                 try {
-                    await wallet1.transferERC721(auth, {
-                        to: await wallet2.getAddress(),
-                        token: nftAddress,
-                        tokenId: nftId
-                    })
+                    console.log(
+                        await wallet1.transferERC721(auth, {
+                            to: await wallet2.getAddress(),
+                            token: nftAddress,
+                            tokenId: nftId
+                        })
+                    )
                 } catch (error) {
                     assert(
                         false,
@@ -101,6 +118,8 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                const bal2 = await nft.getBalance(await wallet1.getAddress())
+                console.log("Balance After Transfer: ", bal2)
 
                 try {
                     await wallet2.transferERC721(auth, {
@@ -116,6 +135,8 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                const bal3 = await nft.getBalance(await wallet1.getAddress())
+                console.log("Balance After Transfer: ", bal3)
             })
 
             it("approve", async () => {
