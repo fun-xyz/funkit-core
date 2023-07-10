@@ -1,29 +1,7 @@
-import { Address, Hex } from "viem"
+import { Hex } from "viem"
 import { CreateParams } from "./types"
-import { Auth } from "../auth"
 import { WALLET_CONTRACT_INTERFACE } from "../common"
-import { ExecutionReceipt, TransactionData } from "../common/types"
-import { EnvOption } from "../config"
-import { UserOp } from "../data"
-
-export abstract class FirstClassActions {
-    abstract execute(
-        auth: Auth,
-        transactionFunc: Function,
-        txOptions: EnvOption,
-        estimate: boolean
-    ): Promise<ExecutionReceipt | UserOp | bigint>
-    abstract getAddress(options?: EnvOption): Promise<Address>
-
-    async execRawTx(
-        auth: Auth,
-        input: TransactionData,
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        estimate = false
-    ): Promise<ExecutionReceipt | UserOp | bigint> {
-        return await this.execute(auth, genCall(input), options, estimate)
-    }
-}
+import { TransactionData } from "../common/types"
 
 export const genCall = (data: TransactionData) => {
     return async () => {

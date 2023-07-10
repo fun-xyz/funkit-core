@@ -9,7 +9,6 @@ import {
     ERC20TransferParams,
     ERC721TransferParams,
     FinishUnstakeParams,
-    FirstClassActions,
     NativeTransferParams,
     OneInchCalldata,
     OneInchSwapParams,
@@ -56,7 +55,7 @@ export interface FunWalletParams {
     index?: number
 }
 
-export class FunWallet extends FirstClassActions {
+export class FunWallet {
     identifier: WalletIdentifier
     abiManager: WalletAbiManager
     address?: Address
@@ -67,7 +66,6 @@ export class FunWallet extends FirstClassActions {
      * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
     constructor(params: FunWalletParams) {
-        super()
         const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
         this.abiManager = new WalletAbiManager()
