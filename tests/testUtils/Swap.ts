@@ -58,16 +58,14 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            console.log(
-                "Incorrect",
-                await wallet.uniswapV3Swap(auth, {
-                    in: baseToken,
-                    amount: config.amount ? config.amount : 0.001,
-                    out: inToken,
-                    returnAddress: walletAddress,
-                    chainId: config.chainId
-                })
-            )
+            await wallet.uniswapV3Swap(auth, {
+                in: baseToken,
+                amount: config.amount ? config.amount : 0.001,
+                out: inToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
+            })
+
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
