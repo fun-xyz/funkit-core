@@ -1,5 +1,4 @@
 import { assert } from "chai"
-import { Address } from "viem"
 import { Auth, Eoa } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -10,8 +9,8 @@ import "../../fetch-polyfill"
 
 export interface TransferTestConfig {
     chainId: number
-    outToken: Address
-    baseToken: Address
+    outToken: string
+    baseToken: string
     prefund: boolean
     index?: number
     amount?: number
@@ -76,7 +75,8 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             const b1 = Token.getBalance(outToken, randomAddress)
             const b2 = Token.getBalance(outToken, walletAddress)
-            await wallet.transferERC20(auth, { to: randomAddress, amount: Math.floor(difference / 2), token: outToken })
+            const outTokenAddress = await new Token(outToken).getAddress()
+            await wallet.transferERC20(auth, { to: randomAddress, amount: Math.floor(difference / 2), token: outTokenAddress })
             const b3 = Token.getBalance(outToken, randomAddress)
             const b4 = Token.getBalance(outToken, walletAddress)
 
