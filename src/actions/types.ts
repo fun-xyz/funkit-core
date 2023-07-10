@@ -75,7 +75,9 @@ export enum UniSwapPoolFeeOptions {
     medium = "medium",
     high = "high"
 }
-
+export type CreateParams = {
+    to: Address
+}
 export type SwapParam = {
     in: string
     out: string

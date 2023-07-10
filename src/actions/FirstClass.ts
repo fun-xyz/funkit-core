@@ -1,11 +1,10 @@
-import { Address } from "viem"
-import { _swap } from "./Swap"
-import { SwapParams } from "./types"
+import { Address, Hex } from "viem"
+import { CreateParams } from "./types"
 import { Auth } from "../auth"
+import { WALLET_CONTRACT_INTERFACE } from "../common"
 import { ExecutionReceipt, TransactionData } from "../common/types"
 import { EnvOption } from "../config"
-import { UserOp, getChainFromData } from "../data"
-import { isContract } from "../utils"
+import { UserOp } from "../data"
 
 export abstract class FirstClassActions {
     abstract execute(
@@ -15,30 +14,6 @@ export abstract class FirstClassActions {
         estimate: boolean
     ): Promise<ExecutionReceipt | UserOp | bigint>
     abstract getAddress(options?: EnvOption): Promise<Address>
-
-    async swap(
-        auth: Auth,
-        input: SwapParams,
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        estimate = false
-    ): Promise<ExecutionReceipt | UserOp | bigint> {
-        return await this.execute(auth, _swap(input), options, estimate)
-    }
-
-    async create(
-        auth: Auth,
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        estimate = false
-    ): Promise<ExecutionReceipt | UserOp | bigint> {
-        const address = await this.getAddress()
-        const chain = await getChainFromData(options.chain)
-
-        if (await isContract(address, await chain.getClient())) {
-            throw new Error("Wallet already exists as contract.")
-        } else {
-            return await this.execRawTx(auth, { to: address, data: "0x" }, options, estimate)
-        }
-    }
 
     async execRawTx(
         auth: Auth,
@@ -61,4 +36,12 @@ export const genCall = (data: TransactionData) => {
         const gasInfo = {}
         return { gasInfo, data, errorData: { location: "action.genCall" } }
     }
+}
+
+export const genCallCalldata = async (params: TransactionData): Promise<Hex> => {
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
+}
+
+export const createCalldata = async (params: CreateParams): Promise<Hex> => {
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, 0, "0x"])
 }

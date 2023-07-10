@@ -5,6 +5,7 @@ import {
     ApproveAndExecParams,
     ApproveERC20Params,
     ApproveERC721Params,
+    CreateParams,
     ERC20TransferParams,
     ERC721TransferParams,
     FinishUnstakeParams,
@@ -15,6 +16,7 @@ import {
     RequestUnstakeParams,
     StakeParams,
     UniswapParams,
+    createCalldata,
     erc20ApproveCalldata,
     erc20TransferCalldata,
     erc721ApproveCalldata,
@@ -565,6 +567,11 @@ export class FunWallet extends FirstClassActions {
 
     async oneinchSwap(auth: Auth, params: OneInchSwapParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const callData = await OneInchCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async create(auth: Auth, params: CreateParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await createCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }
