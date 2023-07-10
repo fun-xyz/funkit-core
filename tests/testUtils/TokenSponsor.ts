@@ -127,12 +127,13 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         const runSwap = async (wallet: FunWallet) => {
             const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
-            await wallet.swap(auth, {
+            await wallet.uniswapV3Swap(auth, {
                 in: config.inToken,
-                amount: config.swapAmount,
-                out: config.outToken
+                amount: config.amount ? config.amount : 0.0001,
+                out: config.outToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
             })
-
             await new Promise((f) => setTimeout(f, 2000))
 
             const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
