@@ -72,7 +72,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     )
                 }
                 const bal1 = await nft.getBalance(await wallet1.getAddress())
-                console.log("first transfer", bal1, bal)
+                assert(bal > bal1, "First nft transfer did not succeed")
 
                 try {
                     await wallet2.transferERC721(auth, {
@@ -89,7 +89,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     )
                 }
                 const bal2 = await nft.getBalance(await wallet1.getAddress())
-                console.log("second transfer", bal2, bal1)
+                assert(bal2 > bal1, "Second nft transfer did not succeed")
             })
 
             it("approve", async () => {

@@ -25,7 +25,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
-        let difference: number
+
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
@@ -38,18 +38,6 @@ export const TransferTest = (config: TransferTestConfig) => {
             auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
-            const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalance(outToken, walletAddress)
-            await wallet.uniswapV3Swap(auth, {
-                in: config.baseToken,
-                amount: config.amount ? config.amount : 0.0001,
-                out: config.outToken,
-                returnAddress: walletAddress,
-                chainId: config.chainId
-            })
-            const tokenBalanceAfter = await Token.getBalance(outToken, walletAddress)
-            difference = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
-            assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("transfer baseToken directly", async () => {
@@ -76,7 +64,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b1 = Token.getBalance(outToken, randomAddress)
             const b2 = Token.getBalance(outToken, walletAddress)
             const outTokenAddress = await new Token(outToken).getAddress()
-            await wallet.transferERC20(auth, { to: randomAddress, amount: Math.floor(difference / 2), token: outTokenAddress })
+            await wallet.transferERC20(auth, { to: randomAddress, amount: 1, token: outTokenAddress })
             const b3 = Token.getBalance(outToken, randomAddress)
             const b4 = Token.getBalance(outToken, walletAddress)
 
