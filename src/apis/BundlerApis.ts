@@ -9,11 +9,6 @@ export async function sendUserOpToBundler(userOp: any, entryPointAddress: string
 
 export async function estimateUserOpGas(userOp: UserOperation, entryPointAddress: string, chainId: string): Promise<any> {
     return await sendPostRequest(API_URL, "user-op/estimate-gas", { userOp: objectify(userOp), entryPointAddress, chainId })
-    // return await sendPostRequest("https://api.fun.xyz", "bundler/estimate-user-op-gas", {
-    //     userOp: objectify(userOp),
-    //     entryPointAddress,
-    //     chainId
-    // })
 }
 
 export async function validateChainId(chainId: string): Promise<any> {

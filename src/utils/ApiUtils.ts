@@ -2,7 +2,7 @@ import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
 import { stringifyOp } from "./UseropUtils"
 import { API_URL } from "../common/constants"
-import { Helper, NoServerConnectionError, ServerError, ServerMissingDataError } from "../errors"
+import { Helper, NoServerConnectionError, ServerMissingDataError } from "../errors"
 
 export const DEFAULT_RETRY_OPTIONS = {
     delay: 100,
@@ -38,11 +38,6 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             if (response.status === 404) {
                 const helper = new Helper(`Calling ${uri}`, method, "Data not found on server.")
                 throw new ServerMissingDataError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
-            }
-
-            if (!response.ok) {
-                const helper = new Helper(`Calling ${uri}`, method, "Cannot connect to Fun API Server.")
-                throw new ServerError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
             }
 
             const text = await response.text()

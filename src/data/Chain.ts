@@ -165,7 +165,7 @@ export class Chain {
             throw new MissingParameterError(currentLocation, helper)
         }
         const hexifiedUserOp = deepHexlify(partialOp)
-        const res = await estimateUserOpGas(hexifiedUserOp, this.addresses.entryPointAddress, this.id!)
+        const res = await estimateUserOpGas(hexifiedUserOp, this.addresses.entryPointAddress, this.chainId!)
         let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
