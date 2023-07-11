@@ -8,14 +8,14 @@ import { ContractInterface } from "../viem/ContractInterface"
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
 
 export const stakeCalldata = async (params: StakeParams): Promise<Hex> => {
-    const lidoAddress = getLidoAddress(params.chainId.toString())
+    const lidoAddress = getSteth(params.chainId.toString())
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [lidoAddress, parseEther(`${params.amount}`), "0x"])
 }
 
 export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Promise<Hex> => {
     // Approve steth
     const steth = getSteth(params.chainId.toString())
-    const withdrawalQueue: Address = getWithdrawalQueueAddr(params.chainId.toString())
+    const withdrawalQueue: Address = getWithdrawalQueue(params.chainId.toString())
     if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
         const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
         throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
@@ -43,7 +43,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
 
 export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<Hex> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
-    const withdrawQueueAddress = getWithdrawalQueueAddr(params.chainId.toString())
+    const withdrawQueueAddress = getWithdrawalQueue(params.chainId.toString())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
     if (readyToWithdrawRequestIds.length === 0) {
         const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
@@ -76,7 +76,7 @@ export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promis
 
 const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
     // check withdrawal requests
-    const withdrawalQueueAddr: Address = getWithdrawalQueueAddr(params.chainId.toString())
+    const withdrawalQueueAddr: Address = getWithdrawalQueue(params.chainId.toString())
 
     const withdrawalRequests: bigint[] = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,
@@ -103,25 +103,7 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
     return readyToWithdrawRequestIds
 }
 
-const getLidoAddress = (chainId: string): Address => {
-    switch (parseInt(chainId)) {
-        case 1:
-            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
-        case 5:
-            return "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
-        case 36865:
-            return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
-        default:
-            throw new ParameterError(
-                "Invalid Chain Id",
-                "getLidoAddress",
-                new Helper("getLidoAddress", chainId, "Staking available only on Ethereum mainnet and Goerli"),
-                false
-            )
-    }
-}
-
-const getWithdrawalQueueAddr = (chainId: string): Address => {
+const getWithdrawalQueue = (chainId: string): Address => {
     switch (parseInt(chainId)) {
         case 1:
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
@@ -132,8 +114,8 @@ const getWithdrawalQueueAddr = (chainId: string): Address => {
         default:
             throw new ParameterError(
                 "Invalid Chain Id",
-                "getWithdrawalQueueAddr",
-                new Helper("getWithdrawalQueueAddr", chainId, "Staking available only on Ethereum mainnet and Goerli"),
+                "getWithdrawalQueue",
+                new Helper("getWithdrawalQueue", chainId, "Staking available only on Ethereum mainnet and Goerli"),
                 false
             )
     }

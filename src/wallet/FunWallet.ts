@@ -5,7 +5,6 @@ import {
     ApproveAndExecParams,
     ApproveERC20Params,
     ApproveERC721Params,
-    CreateParams,
     ERC20TransferParams,
     ERC721TransferParams,
     FinishUnstakeParams,
@@ -569,8 +568,8 @@ export class FunWallet {
         return await this.generateUserOp(auth, callData, txOptions)
     }
 
-    async create(auth: Auth, params: CreateParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const callData = await createCalldata(params)
+    async create(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await createCalldata({ to: await this.getAddress({ chain: txOptions.chain }) })
         return await this.generateUserOp(auth, callData, txOptions)
     }
 

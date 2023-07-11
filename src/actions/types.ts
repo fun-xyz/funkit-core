@@ -23,8 +23,6 @@ export type TransferParam = {
     to: Address
 }
 
-export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
-
 export interface ERC721TransferParams extends TransferParam {
     tokenId: number
     token: Address
@@ -42,7 +40,6 @@ export type ApproveParam = {
     spender: string
     token: Address
 }
-export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
 export interface ApproveERC20Params extends ApproveParam {
     amount: number
@@ -92,17 +89,10 @@ export interface OneInchSwapParams extends SwapParam {
     allowPartialFill?: boolean
 }
 
-export type OneInchSwapReturn = {
-    approveTx?: TransactionData
-    swapTx: TransactionData
-}
-
 export interface UniswapParams extends SwapParam {
     poolFee?: UniSwapPoolFeeOptions
     percentDecimal?: number
 }
-
-export type SwapParams = OneInchSwapParams | UniswapParams
 
 export type ActionResult = {
     data: TransactionData
