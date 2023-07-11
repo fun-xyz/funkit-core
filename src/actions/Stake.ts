@@ -103,8 +103,7 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
     return readyToWithdrawRequestIds
 }
 
-export const getLidoAddress = (chainId: string): Address => {
-    const helper = new Helper("getLidoAddress", chainId, "Staking available only on Ethereum mainnet and Goerli")
+const getLidoAddress = (chainId: string): Address => {
     switch (parseInt(chainId)) {
         case 1:
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
@@ -113,12 +112,16 @@ export const getLidoAddress = (chainId: string): Address => {
         case 36865:
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
-            throw new ParameterError("Invalid Chain Id", "getLidoAddress", helper, false)
+            throw new ParameterError(
+                "Invalid Chain Id",
+                "getLidoAddress",
+                new Helper("getLidoAddress", chainId, "Staking available only on Ethereum mainnet and Goerli"),
+                false
+            )
     }
 }
 
-export const getWithdrawalQueueAddr = (chainId: string): Address => {
-    const helper = new Helper("getWithdrawalQueueAddr", chainId, "Staking available only on Ethereum mainnet and Goerli")
+const getWithdrawalQueueAddr = (chainId: string): Address => {
     switch (parseInt(chainId)) {
         case 1:
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
@@ -127,12 +130,16 @@ export const getWithdrawalQueueAddr = (chainId: string): Address => {
         case 36865:
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         default:
-            throw new ParameterError("Invalid Chain Id", "getWithdrawalQueueAddr", helper, false)
+            throw new ParameterError(
+                "Invalid Chain Id",
+                "getWithdrawalQueueAddr",
+                new Helper("getWithdrawalQueueAddr", chainId, "Staking available only on Ethereum mainnet and Goerli"),
+                false
+            )
     }
 }
 
-export const getSteth = (chainId: string): Address => {
-    const helper = new Helper("getSteth", chainId, "Staking available only on Ethereum mainnet and Goerli")
+const getSteth = (chainId: string): Address => {
     switch (parseInt(chainId)) {
         case 1:
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
@@ -141,6 +148,11 @@ export const getSteth = (chainId: string): Address => {
         case 36865:
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
-            throw new ParameterError("Invalid Chain Id", "getSteth", helper, false)
+            throw new ParameterError(
+                "Invalid Chain Id",
+                "getSteth",
+                new Helper("getSteth", chainId, "Staking available only on Ethereum mainnet and Goerli"),
+                false
+            )
     }
 }
