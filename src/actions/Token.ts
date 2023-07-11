@@ -17,7 +17,7 @@ export const erc20TransferCalldata = async (params: ERC20TransferParams): Promis
 
 export const ethTransferCalldata = async (params: NativeTransferParams): Promise<Hex> => {
     const data: TransactionData = { to: params.to, data: "0x", value: parseEther(`${params.amount}`) }
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.amount, data.data])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [data.to, data.value, data.data])
 }
 
 export const erc20ApproveCalldata = async (params: ApproveERC20Params): Promise<Hex> => {
