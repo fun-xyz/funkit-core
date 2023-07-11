@@ -51,7 +51,6 @@ export class TokenSponsor extends Sponsor {
             [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
         const sponsor = await this.getSponsorAddress(options)
-        tokenAddress
         const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])
         const encodedData = encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [encodedAddresses, encodedSig])
         return concat([paymasterAddress, encodedData])
