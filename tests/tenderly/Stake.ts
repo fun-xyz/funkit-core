@@ -1,10 +1,10 @@
 import { StakeTest, StakeTestConfig } from "../testUtils/Stake"
 
 const config: StakeTestConfig = {
-    chainId: 5,
-    actualChainId: 5,
+    chainId: 36865,
+    actualChainId: 1, //mainnet since we are using tenderly to fork mainnet
     baseToken: "eth",
     prefund: false,
-    steth: "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+    steth: "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
 }
 StakeTest(config)
