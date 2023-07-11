@@ -6,6 +6,7 @@ export interface EnvOption {
     gasSponsor?: {
         sponsorAddress?: Address
         token?: string
+        permitTokens?: number | bigint
     }
     fee?: {
         token?: string

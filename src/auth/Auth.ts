@@ -10,6 +10,7 @@ export abstract class Auth {
     abstract getEstimateGasSignature(): Promise<string>
     abstract sendTx(txData: TransactionData | Function): Promise<TransactionReceipt>
     abstract getAddress(): Promise<Address>
+    abstract getUserId(): Promise<Hex>
 
     async sendTxs(txs: TransactionData[] | Function[]): Promise<TransactionReceipt[]> {
         const receipts: TransactionReceipt[] = []

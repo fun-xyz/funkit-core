@@ -1,4 +1,4 @@
-import { Address, Hex, pad, toBytes } from "viem"
+import { Address, Hex, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput } from "./types"
 import { WalletSignature, encodeWalletSignature } from "../data"
@@ -31,15 +31,6 @@ export class MagicAuthEoa extends Eoa {
     override async getAddress(): Promise<Address> {
         const address = await this.getOwnerAddr()
         return address[0]
-    }
-
-    override async getEstimateGasSignature(): Promise<Hex> {
-        await this.init()
-        const walletSignature: WalletSignature = {
-            userId: await this.getAddress(),
-            signature: pad("0x", { size: 65 })
-        }
-        return encodeWalletSignature(walletSignature)
     }
 
     override async signHash(hash: Hex): Promise<Hex> {

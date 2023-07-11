@@ -1,7 +1,8 @@
 import { Address, PublicClient, parseEther, toHex } from "viem"
 import { Auth } from "../auth"
+import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
-import { getChainFromData } from "../data"
+import { Chain, getChainFromData } from "../data"
 import { FunWallet } from "../wallet"
 
 const gasSpecificChain = { 137: 350_000_000_000 }
@@ -40,4 +41,29 @@ export const randomBytes = (length: number) => {
     }
 
     return toHex(bytes)
+}
+
+export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
+    try {
+        return await WALLET_CONTRACT_INTERFACE.readFromChain(walletAddr, "getNonce", [nonceKey], chain)
+    } catch {
+        return 0
+    }
+}
+
+export const getWalletPermitHash = async (
+    factoryAddress: Address,
+    chain: Chain,
+    tokenAddress: Address,
+    targetAddress: Address,
+    amount: bigint,
+    nonce: bigint
+) => {
+    const walletImpAddr = await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "funWalletImpAddress", [], chain)
+    return await WALLET_CONTRACT_INTERFACE.readFromChain(
+        walletImpAddr,
+        "getPermitHash",
+        [tokenAddress, targetAddress, amount, nonce],
+        chain
+    )
 }

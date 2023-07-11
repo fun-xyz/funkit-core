@@ -64,7 +64,7 @@ export class FunWallet extends FirstClassActions {
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
-        const sender = await this.getAddress({ chain })
+        const sender = await this.getAddress(txOptions)
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
@@ -72,7 +72,17 @@ export class FunWallet extends FirstClassActions {
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                if (txOptions.gasSponsor.permitTokens) {
+                    const paymasterAndDataRaw = await sponsor.getPaymasterAndDataPermit(
+                        BigInt(txOptions.gasSponsor.permitTokens),
+                        sender,
+                        auth,
+                        txOptions
+                    )
+                    paymasterAndData = paymasterAndDataRaw.toLowerCase()
+                } else {
+                    paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                }
             } else {
                 const sponsor = new GaslessSponsor(txOptions)
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
@@ -204,7 +214,6 @@ export class FunWallet extends FirstClassActions {
             verificationGasLimit: BigInt(10e6)
         }
         const res = await chain.estimateOpGas(estimateOp)
-
         return new UserOp({
             ...partialOp,
             ...res,

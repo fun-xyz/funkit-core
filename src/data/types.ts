@@ -50,8 +50,17 @@ export type WalletInitialzeParams = {
 export type WalletSignature = {
     authType?: number
     userId: Hex
+    roleId?: Hex
+    ruleId?: Hex
     signature: Hex
-    extraData?: Hex
+    extraData?: ExtraDataType
+}
+
+export type ExtraDataType = {
+    targetPath?: Hex[]
+    selectorPath?: Hex[]
+    feeRecipientPath?: Hex[]
+    tokenPath?: Hex[]
 }
 
 export type UserOperation = {
