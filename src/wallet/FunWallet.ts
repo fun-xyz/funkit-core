@@ -16,6 +16,7 @@ import {
     StakeParams,
     UniswapParams,
     createCalldata,
+    createExecRawTxCalldata,
     erc20ApproveCalldata,
     erc20TransferCalldata,
     erc721ApproveCalldata,
@@ -30,7 +31,7 @@ import { approveAndExecCalldata } from "../actions/ApproveAndExec"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
-import { ExecutionReceipt, TransactionData } from "../common"
+import { ExecutionReceipt, TransactionData, TransactionParams } from "../common"
 import { AddressZero } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
@@ -570,6 +571,11 @@ export class FunWallet {
 
     async create(auth: Auth, params: CreateParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const callData = await createCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async execRawCalldata(auth: Auth, params: TransactionParams, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const callData = await createExecRawTxCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }

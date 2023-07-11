@@ -1,9 +1,9 @@
 import { Hex } from "viem"
 import { CreateParams } from "./types"
 import { WALLET_CONTRACT_INTERFACE } from "../common"
-import { TransactionData } from "../common/types"
+import { TransactionParams } from "../common/types"
 
-export const genCallCalldata = async (params: TransactionData): Promise<Hex> => {
+export const createExecRawTxCalldata = async (params: TransactionParams): Promise<Hex> => {
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
 }
 
