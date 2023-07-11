@@ -28,7 +28,7 @@ import { ContractInterface } from "../viem/ContractInterface"
 export const LOCAL_FORK_CHAIN_ID = 31337
 export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
 export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
-export const LOCAL_API_URL = "http://127.0.0.1:3002"
+export const LOCAL_API_URL = "http://127.0.0.1:3000"
 export const LOCAL_TOKEN_ADDRS = {
     usdc: "0x966bf8795c89AceFd79385aA61295a70fa24dEEC",
     usdt: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
