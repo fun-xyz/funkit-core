@@ -1,22 +1,21 @@
 import { Hex } from "viem"
-import { ActionData, ActionFunction, ActionResult, ApproveAndExecParams } from "./types"
-import { APPROVE_AND_EXEC_CONTRACT_INTERFACE } from "../common/constants"
+import { ApproveAndExecParams } from "./types"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common/constants"
+import { Chain } from "../data"
 
-const errorData = {
-    location: "actions.approveAndExec"
-}
-
-export const approveAndExecToCalldata = (params: ApproveAndExecParams): Hex => {
-    const { to: dest, value, data: executeData } = params.exec
-    const { to: token, data: approveData } = params.approve
-    return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeData("approveAndExecute", [dest, value, executeData, token, approveData])
-}
-
-export const approveAndExec = (params: ApproveAndExecParams): ActionFunction => {
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const approveAndExecAddress = await actionData.chain.getAddress("approveAndExecAddress")
-        const calldata = approveAndExecToCalldata(params)
-        const txData = { to: approveAndExecAddress, data: calldata }
-        return { data: txData, errorData }
-    }
+export const approveAndExecCalldata = async (params: ApproveAndExecParams): Promise<Hex> => {
+    const chain = new Chain({ chainId: params.chainId.toString() })
+    const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    const approveData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(params.approve.token, "approve", [
+        params.approve.spender,
+        params.approve.amount
+    ])
+    const data = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
+        params.exec.to,
+        params.exec.value,
+        params.exec.data,
+        params.approve.token,
+        approveData
+    ])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, data.data])
 }

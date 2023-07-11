@@ -1,188 +1,33 @@
-import { parseEther } from "viem"
-import {
-    ActionData,
-    ActionFunction,
-    ActionResult,
-    ApproveERC20Params,
-    ApproveERC721Params,
-    ApproveParams,
-    ERC20TransferParams,
-    ERC721TransferParams,
-    NativeTransferParams,
-    TransferParams
-} from "./types"
-import { TransactionData } from "../common"
-import { NFT, Token } from "../data"
-import { ErrorData, ErrorTransactionDetails, Helper, MissingParameterError } from "../errors"
-function isERC721TransferParams(obj: TransferParams): obj is ERC721TransferParams {
-    return "tokenId" in obj
-}
+import { Address, Hex, parseEther } from "viem"
+import { ApproveERC20Params, ApproveERC721Params, ERC20TransferParams, ERC721TransferParams, NativeTransferParams } from "./types"
+import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
 
-function isERC20TransferParams(obj: TransferParams): obj is ERC20TransferParams {
-    return "amount" in obj && "token" in obj && !Token.isNative(obj.token)
-}
-
-function isNativeTransferParams(obj: TransferParams): obj is NativeTransferParams {
-    return "amount" in obj && (!("token" in obj) || Token.isNative(obj.token))
-}
-
-export const _transfer = (params: TransferParams): ActionFunction => {
-    if (isERC721TransferParams(params)) {
-        return erc721Transfer(params)
-    }
-    if (isERC20TransferParams(params)) {
-        return erc20Transfer(params)
-    }
-    if (isNativeTransferParams(params)) {
-        return ethTransfer(params)
-    }
-    const currentLocation = "action.transfer"
-    const helperMainMessage = "params were missing or incorrect"
-    const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
-    throw new MissingParameterError(currentLocation, helper)
-}
-
-const ethTransfer = (params: NativeTransferParams): ActionFunction => {
-    return async (): Promise<ActionResult> => {
-        const data: TransactionData = { to: params.to, data: "0x", value: parseEther(`${params.amount}`) }
-        const errorData: ErrorData = {
-            location: "action.transfer.eth"
-        }
-        return { data, errorData }
-    }
-}
-
-const erc20Transfer = (params: ERC20TransferParams): ActionFunction => {
-    const { to, amount, token } = params
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const transferData = await Token.transfer(token!, to, amount, { chain: actionData.chain })
-
-        const txDetails = {
-            method: "transfer",
-            params: [to, amount.toString()],
-            contractAddress: transferData.to,
-            chainId: actionData.chain.id
-        }
-
-        const reasonData = {
-            title: "Possible reasons:",
-            reasons: ["Don't have a token balance", "Incorrect token address", "Incorrect parameters"]
-        }
-
-        const errorData = {
-            location: "action.transfer.erc20",
-            error: {
-                txDetails,
-                reasonData
-            }
-        }
-        return { data: transferData, errorData }
-    }
-}
-
-const erc721Transfer = (params: ERC721TransferParams): ActionFunction => {
+export const erc721TransferCalldata = async (params: ERC721TransferParams, walletAddress: Address): Promise<Hex> => {
     const { to, tokenId, token } = params
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const from = await actionData.wallet.getAddress()
-        const transferData = await NFT.transfer(token!, from, to, tokenId, { chain: actionData.chain })
+    const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "transferFrom", [walletAddress, to, tokenId])
 
-        const txDetails: ErrorTransactionDetails = {
-            method: "transferFrom",
-            params: [to, tokenId.toString()],
-            contractAddress: token,
-            chainId: actionData.chain.id!
-        }
-
-        const reasonData = {
-            title: "Possible reasons:",
-            reasons: ["Don't have a token balance", "Incorrect token address", "Incorrect parameters"]
-        }
-
-        const errorData = {
-            location: "action.transfer.erc20",
-            error: {
-                txDetails,
-                reasonData
-            }
-        }
-        return { data: transferData, errorData }
-    }
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
 }
 
-function isERC20ApproveParams(obj: ApproveParams): obj is ApproveERC20Params {
-    return "amount" in obj && "token" in obj
-}
-function isERC721ApproveParams(obj: ApproveParams): obj is ApproveERC721Params {
-    return "tokenId" in obj && "token" in obj
-}
-export const _approve = (params: ApproveParams): ActionFunction => {
-    // Handle ERC20 Approves
-    if (isERC721ApproveParams(params)) {
-        return erc721Approve(params)
-    }
-    if (isERC20ApproveParams(params)) {
-        return erc20Approve(params)
-    }
-    const currentLocation = "action.approve"
-    const helperMainMessage = "params were missing or incorrect"
-    const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
-    throw new MissingParameterError(currentLocation, helper)
+export const erc20TransferCalldata = async (params: ERC20TransferParams): Promise<Hex> => {
+    const { to, amount, token } = params
+    const transferData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "transfer", [to, amount])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
 }
 
-const erc20Approve = (params: ApproveERC20Params): ActionFunction => {
+export const ethTransferCalldata = async (params: NativeTransferParams): Promise<Hex> => {
+    const data: TransactionData = { to: params.to, data: "0x", value: parseEther(`${params.amount}`) }
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.amount, data.data])
+}
+
+export const erc20ApproveCalldata = async (params: ApproveERC20Params): Promise<Hex> => {
     const { spender, amount, token } = params
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const erc20token = new Token(token)
-        const approveData = await erc20token.approve(spender, amount, { chain: actionData.chain })
-        const tokenAddress = await erc20token.getAddress()
-        const txDetails = {
-            method: "approve",
-            params: [params.spender, params.amount.toString()],
-            contractAddress: tokenAddress,
-            chainId: actionData.chain.id
-        }
-
-        const reasonData = {
-            title: "Possible reasons:",
-            reasons: ["Incorrect parameters"]
-        }
-
-        const errorData = {
-            location: "action.approve.erc20",
-            error: {
-                txDetails,
-                reasonData
-            }
-        }
-        return { data: approveData, errorData }
-    }
+    const approveData = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, amount])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, approveData.data])
 }
 
-const erc721Approve = (params: ApproveERC721Params): ActionFunction => {
+export const erc721ApproveCalldata = async (params: ApproveERC721Params): Promise<Hex> => {
     const { spender, tokenId, token } = params
-    return async (actionData: ActionData): Promise<ActionResult> => {
-        const erc721token = new NFT(token)
-        const approveData = await erc721token.approve(spender, tokenId, { chain: actionData.chain })
-        const tokenAddress = await erc721token.getAddress()
-        const txDetails = {
-            method: "approve",
-            params: [spender, tokenId.toString()],
-            contractAddress: tokenAddress,
-            chainId: actionData.chain.id
-        }
-
-        const reasonData = {
-            title: "Possible reasons:",
-            reasons: ["Incorrect parameters"]
-        }
-
-        const errorData = {
-            location: "action.approve.erc721",
-            error: {
-                txDetails,
-                reasonData
-            }
-        }
-        return { data: approveData, errorData }
-    }
+    const approveData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, tokenId])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, approveData.data])
 }
