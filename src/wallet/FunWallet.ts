@@ -30,7 +30,7 @@ import { approveAndExecCalldata } from "../actions/ApproveAndExec"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
-import { ExecutionReceipt, TransactionData, TransactionParams } from "../common"
+import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionData, TransactionParams } from "../common"
 import { AddressZero } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
@@ -620,5 +620,48 @@ export class FunWallet {
     ): Promise<ExecutionReceipt> {
         const callData = await createExecRawTxCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        const chain = await getChainFromData(option.chain)
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        return BigInt(await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain))
+    }
+
+    async createOperation(
+        auth: Auth,
+        _: string, //userId - left unused for @Chazzzzzzz to implement
+        callData: Hex,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOperation> {
+        const chain = await getChainFromData(txOptions.chain)
+        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+
+        const sender = await this.getAddress({ chain })
+        const MAX_UINT192 = 6277101735386680763835789423207666416102355444464034512896
+        const nonceKey = Math.floor(Math.random() * (MAX_UINT192 - 1)) + 0
+        const maxFeePerGas = await chain.getFeeData()
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        let paymasterAndData = "0x"
+        if (txOptions.gasSponsor) {
+            if (txOptions.gasSponsor.token) {
+                const sponsor = new TokenSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            } else {
+                const sponsor = new GaslessSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            }
+        }
+        return {
+            sender: sender,
+            nonce: await this.getNonce(sender, nonceKey, txOptions),
+            initCode: initCode,
+            callData: callData,
+            callGasLimit: BigInt(10e6),
+            verificationGasLimit: BigInt(10e6),
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: BigInt(10e6),
+            paymasterAndData: paymasterAndData
+        }
     }
 }
