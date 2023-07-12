@@ -5,6 +5,6 @@ const config: GaslessSponsorTestConfig = {
     inToken: "eth",
     outToken: "usdc",
     stakeAmount: 0.0005,
-    prefund: false
+    prefund: true
 }
 GaslessSponsorTest(config)
