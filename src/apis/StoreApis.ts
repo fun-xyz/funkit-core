@@ -25,12 +25,12 @@ export async function storeUserOp(op: UserOperation, balance = 0, receipt: Execu
         orgName: globalEnvOption.orgInfo?.name,
         chainId: chain.id,
         walletAddr: op.sender,
-        actionType: "ACTION",
+        opType: "SINGLE_OPERATION",
         authType: 0,
         proposer: op.sender,
         txid: receipt?.txid
     }
-    await sendPostRequest(API_URL, "action", body) //CHANGE TO ACTION
+    await sendPostRequest("http://localhost:3000", "operation", body) //CHANGE
 }
 
 export async function storeEVMCall(receipt: TransactionReceipt) {
