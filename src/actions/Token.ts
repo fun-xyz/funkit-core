@@ -1,6 +1,6 @@
 import { Address, Hex, parseEther } from "viem"
 import { ApproveERC20Params, ApproveERC721Params, ERC20TransferParams, ERC721TransferParams, NativeTransferParams } from "./types"
-import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
+import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 
 export const erc721TransferCalldata = async (params: ERC721TransferParams, walletAddress: Address): Promise<Hex> => {
     const { to, tokenId, token } = params
@@ -16,8 +16,7 @@ export const erc20TransferCalldata = async (params: ERC20TransferParams): Promis
 }
 
 export const ethTransferCalldata = async (params: NativeTransferParams): Promise<Hex> => {
-    const data: TransactionData = { to: params.to, data: "0x", value: parseEther(`${params.amount}`) }
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [data.to, data.value, data.data])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, parseEther(`${params.amount}`), "0x"])
 }
 
 export const erc20ApproveCalldata = async (params: ApproveERC20Params): Promise<Hex> => {
