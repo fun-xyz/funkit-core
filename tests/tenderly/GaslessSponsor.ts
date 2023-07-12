@@ -7,6 +7,6 @@ const config: GaslessSponsorTestConfig = {
     stakeAmount: 10,
     prefund: true,
     mint: false,
-    numRetry: 5
+    numRetry: 0
 }
 GaslessSponsorTest(config)

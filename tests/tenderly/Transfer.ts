@@ -9,6 +9,6 @@ const config: TransferTestConfig = {
     baseToken: "eth",
     prefund: true,
     prefundAmt: 10,
-    numRetry: 5
+    numRetry: 0
 }
 TransferTest(config)

@@ -18,7 +18,6 @@ export class WalletAbiManager {
         let { data, value } = input
         value ??= 0
         data ??= "0x"
-
         return WALLET_CONTRACT_INTERFACE.encodeData(callFunctionName, [dest, value, data])
     }
 
