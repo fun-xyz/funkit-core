@@ -95,8 +95,6 @@ export class Chain {
                 }, {})
                 const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
                 Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-                this.rpcUrl = "http://localhost:8545"
-                this.bundlerUrl = "http://localhost:3000/rpc"
             }
         } catch (e) {
             console.log(e)
