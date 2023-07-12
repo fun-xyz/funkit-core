@@ -40,8 +40,7 @@ export class TokenSponsor extends Sponsor {
         const chain = await getChainFromData(options.chain)
         const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas(partialOp)
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const requiredGas =
-            callGasLimit + verificationGasLimit * BigInt(3) + preVerificationGas! ? preVerificationGas : 0n * partialOp.maxFeePerGas
+        const requiredGas = callGasLimit + verificationGasLimit * 3n + preVerificationGas * partialOp.maxFeePerGas
         const tokenAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
             paymasterAddress,
             "getTokenValueOfEth",
