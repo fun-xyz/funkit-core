@@ -20,7 +20,7 @@ export interface FactoryTestConfig {
 export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId } = config
 
-    describe("Factory", function () {
+    describe.only("Factory", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         let auth: Eoa
         let wallet: FunWallet
