@@ -1,6 +1,6 @@
 import { Address } from "viem"
 import { ActionData, ActionFunction, FirstClassActions } from "../actions"
-import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, getWalletTransactions, storeUserOp } from "../apis"
+import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { ExecutionReceipt, TransactionData } from "../common"
@@ -8,7 +8,6 @@ import { AddressZero } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
     Chain,
-    FunWalletOperationStatus,
     InitCodeParams,
     LoginData,
     Token,
@@ -441,10 +440,5 @@ export class FunWallet extends FirstClassActions {
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
-    }
-    async getOperations(status: FunWalletOperationStatus = { status: "" }, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        const result = await getWalletTransactions(await this.getAddress(), await chain.getChainId(), status.status)
-        return result
     }
 }

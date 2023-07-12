@@ -1,13 +1,12 @@
 import { TransactionReceipt } from "viem"
 import { API_URL, TEST_API_KEY, TRANSACTION_TYPE } from "../common/constants"
-import { ExecutionReceipt } from "../common/types"
 import { GlobalEnvOption } from "../config"
 import { UserOperation, getChainFromData } from "../data"
 import { DataFormatError } from "../errors"
 import { objectify } from "../utils"
 import { sendPostRequest } from "../utils/ApiUtils"
 
-export async function storeUserOp(op: UserOperation, balance = 0, receipt: ExecutionReceipt) {
+export async function storeUserOp(op: UserOperation, balance = 0, receipt = {}) {
     const globalEnvOption: GlobalEnvOption = (globalThis as any).globalEnvOption
     if (!globalEnvOption.apiKey) {
         throw new DataFormatError("apiKey", "string", "configureEnvironment")
@@ -23,14 +22,9 @@ export async function storeUserOp(op: UserOperation, balance = 0, receipt: Execu
         receipt: objectify(receipt),
         organization: globalEnvOption.orgInfo?.id,
         orgName: globalEnvOption.orgInfo?.name,
-        chainId: chain.id,
-        walletAddr: op.sender,
-        actionType: "ACTION",
-        authType: 0,
-        proposer: op.sender,
-        txid: receipt?.txid
+        chainId: chain.id
     }
-    await sendPostRequest(API_URL, "action", body) //CHANGE TO ACTION
+    await sendPostRequest(API_URL, "save-user-op", body)
 }
 
 export async function storeEVMCall(receipt: TransactionReceipt) {

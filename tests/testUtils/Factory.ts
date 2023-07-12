@@ -52,7 +52,6 @@ export const FactoryTest = (config: FactoryTestConfig) => {
                 const index = Math.random() * 1000000
                 const wallet1 = new FunWallet({ uniqueId, index })
                 const walletAddress = await wallet1.getAddress()
-                console.log(walletAddress)
                 const chain = await getChainFromData(chainId)
                 let iscontract = await isContract(walletAddress, await chain.getClient())
                 expect(iscontract).to.be.false
