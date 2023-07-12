@@ -43,7 +43,6 @@ export const TransferTest = (config: TransferTestConfig) => {
         it("transfer baseToken directly", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
-
             const b1 = Token.getBalance(baseToken, randomAddress)
             const b2 = Token.getBalance(baseToken, walletAddress)
             await wallet.transferEth(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.001 })

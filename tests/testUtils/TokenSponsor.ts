@@ -75,21 +75,22 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             if (mint) {
                 const chain = await getChainFromData(options.chain)
                 const inTokenAddress = await Token.getAddress(config.inToken, options)
-                if ((await chain.getChainId()) !== "5") {
-                    const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
-                        await wallet.getAddress(),
-                        1000000000000000000000n
-                    ])
-                    inTokenMint.chain = chain
-                    await auth.sendTx(inTokenMint)
-                    const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
-                    const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
-                        funderAddress,
-                        1000000000000000000000n
-                    ])
-                    paymasterTokenMint.chain = chain
-                    await auth.sendTx(paymasterTokenMint)
-                }
+
+                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    1000000000000000000000n
+                ])
+                await chain.init()
+                inTokenMint.chain = chain
+                await auth.sendTx(inTokenMint)
+                const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
+                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                    funderAddress,
+                    1000000000000000000000n
+                ])
+                paymasterTokenMint.chain = chain
+                await auth.sendTx(paymasterTokenMint)
+
                 const wethAddr = await Token.getAddress("weth", options)
                 await wallet.transferEth(auth, { to: wethAddr, amount: 0.1 })
             }
@@ -125,15 +126,26 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        const runSwap = async (wallet: FunWallet) => {
+        const runSwap = async (wallet: FunWallet, usePermit = false) => {
             const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
-            await wallet.uniswapV3Swap(auth, {
-                in: config.inToken,
-                amount: config.amount ? config.amount : 0.0001,
-                out: config.outToken,
-                returnAddress: walletAddress,
-                chainId: config.chainId
-            })
+            await wallet.uniswapV3Swap(
+                auth,
+                {
+                    in: config.inToken,
+                    amount: config.amount ? config.amount : 0.0001,
+                    out: config.outToken,
+                    returnAddress: walletAddress,
+                    chainId: config.chainId
+                },
+                {
+                    chain: config.chainId,
+                    gasSponsor: {
+                        sponsorAddress: funderAddress,
+                        token: paymasterToken,
+                        usePermit
+                    }
+                }
+            )
             await new Promise((f) => setTimeout(f, 2000))
 
             const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
@@ -163,6 +175,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
+        it("Only User Whitelisted with permit", async () => {
+            expect(await runSwap(wallet, true)).to.not.throw
+        })
+
         it("Blacklist Mode Approved", async () => {
             const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             await funder.sendTx(await sponsor.setToBlacklistMode())
@@ -175,6 +191,25 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
 
             expect(await runSwap(wallet)).not.to.throw
+            try {
+                await runSwap(wallet1)
+                throw new Error("Wallet is not blacklisted but transaction passed")
+            } catch (error: any) {
+                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+            }
+        })
+        it("Blacklist Mode Approved with permit", async () => {
+            const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            await funder.sendTx(await sponsor.setToBlacklistMode())
+            expect(await sponsor.getListMode(funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.addSpenderToBlackList(walletAddress1))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.true
+
+            await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
+
+            expect(await runSwap(wallet, true)).not.to.throw
             try {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not blacklisted but transaction passed")

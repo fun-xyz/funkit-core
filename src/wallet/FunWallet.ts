@@ -24,6 +24,7 @@ import {
     finishUnstakeCalldata,
     requestUnstakeCalldata,
     stakeCalldata,
+    uniswapV2SwapCalldata,
     uniswapV3SwapCalldata
 } from "../actions"
 import { approveAndExecCalldata } from "../actions/ApproveAndExec"
@@ -93,17 +94,20 @@ export class FunWallet {
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+
+        const partialOp = {
+            callData,
+            sender,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
+            initCode
+        }
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
-                if (txOptions.gasSponsor.permitTokens) {
-                    const paymasterAndDataRaw = await sponsor.getPaymasterAndDataPermit(
-                        BigInt(txOptions.gasSponsor.permitTokens),
-                        sender,
-                        auth,
-                        txOptions
-                    )
+                if (txOptions.gasSponsor.usePermit) {
+                    const paymasterAndDataRaw = await sponsor.getPaymasterAndDataPermit(partialOp, sender, auth, txOptions)
                     paymasterAndData = paymasterAndDataRaw.toLowerCase()
                 } else {
                     paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
@@ -114,16 +118,8 @@ export class FunWallet {
             }
         }
 
-        const partialOp = {
-            callData,
-            paymasterAndData,
-            sender,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
-            initCode
-        }
-        const nonce = await auth.getNonce(partialOp.sender)
-        return { ...partialOp, nonce }
+        const nonce = await auth.getNonce(sender)
+        return { ...partialOp, nonce, paymasterAndData }
     }
 
     async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
@@ -605,6 +601,15 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await uniswapV3SwapCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async uniswapV2Swap(
+        auth: Auth,
+        params: UniswapParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await uniswapV2SwapCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 

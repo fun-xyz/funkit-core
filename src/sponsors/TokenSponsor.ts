@@ -32,15 +32,24 @@ export class TokenSponsor extends Sponsor {
     }
 
     async getPaymasterAndDataPermit(
-        amount: bigint,
+        partialOp: any,
         walletAddr: Address,
         auth: Auth,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<string> {
-        const decAmount = await Token.getDecimalAmount(this.token, amount, options)
         const chain = await getChainFromData(options.chain)
-        const nonce = await getWalletPermitNonce(walletAddr, chain)
+        const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas(partialOp)
         const paymasterAddress = await this.getPaymasterAddress(options)
+        const requiredGas =
+            callGasLimit + verificationGasLimit * BigInt(3) + preVerificationGas! ? preVerificationGas : 0n * partialOp.maxFeePerGas
+        const tokenAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
+            paymasterAddress,
+            "getTokenValueOfEth",
+            [this.token, requiredGas],
+            chain
+        )
+        const decAmount = await Token.getDecimalAmount(this.token, tokenAmount, options)
+        const nonce = await getWalletPermitNonce(walletAddr, chain)
         const tokenAddress = await Token.getAddress(this.token, options)
         const factoryAddress = await chain.getAddress("factoryAddress")
         const hash = await getWalletPermitHash(factoryAddress, chain, tokenAddress, paymasterAddress, decAmount, nonce)

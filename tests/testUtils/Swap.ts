@@ -40,7 +40,6 @@ export const SwapTest = (config: SwapTestConfig) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 17928113400 })
-            console.log(await wallet.getAddress())
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
@@ -59,6 +58,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
+
             await wallet.uniswapV3Swap(auth, {
                 in: baseToken,
                 amount: config.amount ? config.amount : 0.001,
