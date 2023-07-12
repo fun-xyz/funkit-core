@@ -633,7 +633,7 @@ export class FunWallet {
         _: string, //userId - left unused for @Chazzzzzzz to implement
         callData: Hex,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<UserOperation> {
+    ): Promise<UserOp> {
         const chain = await getChainFromData(txOptions.chain)
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
@@ -652,7 +652,7 @@ export class FunWallet {
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
-        return {
+        return new UserOp({
             sender: sender,
             nonce: await this.getNonce(sender, nonceKey, txOptions),
             initCode: initCode,
@@ -662,6 +662,6 @@ export class FunWallet {
             maxFeePerGas: maxFeePerGas,
             maxPriorityFeePerGas: BigInt(10e6),
             paymasterAndData: paymasterAndData
-        }
+        })
     }
 }
