@@ -77,7 +77,8 @@ export class Token {
 
     async getDecimalAmount(amount: number | bigint, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const decimals = await this.getDecimals(options)
-        return parseUnits(`${Number(amount)}`, Number(decimals))
+        const numberViemTyping = amount.toString() as `${number}`
+        return parseUnits(numberViemTyping, Number(decimals))
     }
 
     async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {

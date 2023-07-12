@@ -129,9 +129,9 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
     let swapData
     if (tokenIn.isNative) {
-        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [amount, data])
+        swapData = approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [amount, data])
     } else {
-        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
+        swapData = approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
     }
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
 }

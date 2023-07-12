@@ -79,7 +79,7 @@ export class FunWallet {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption): Promise<UserOperation> {
         const chain = await getChainFromData(txOptions.chain)
         const actionData: ActionData = {
             wallet: this,
@@ -94,13 +94,18 @@ export class FunWallet {
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        const nonce = await auth.getNonce(sender)
 
-        const partialOp = {
+        const partialOp: UserOperation = {
             callData,
             sender,
+            nonce,
             maxFeePerGas: maxFeePerGas!,
             maxPriorityFeePerGas: maxFeePerGas!,
-            initCode
+            initCode,
+            verificationGasLimit: BigInt(10e6),
+            callGasLimit: BigInt(10e6),
+            preVerificationGas: BigInt(10e5)
         }
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
@@ -118,8 +123,7 @@ export class FunWallet {
             }
         }
 
-        const nonce = await auth.getNonce(sender)
-        return { ...partialOp, nonce, paymasterAndData }
+        return { ...partialOp, paymasterAndData }
     }
 
     async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
@@ -229,10 +233,7 @@ export class FunWallet {
         const signature = await auth.getEstimateGasSignature()
         const estimateOp: UserOperation = {
             ...partialOp,
-            signature: signature.toLowerCase(),
-            preVerificationGas: 100_000n,
-            callGasLimit: BigInt(10e6),
-            verificationGasLimit: BigInt(10e6)
+            signature: signature.toLowerCase()
         }
         const res = await chain.estimateOpGas(estimateOp)
         return new UserOp({

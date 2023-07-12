@@ -6,7 +6,7 @@ import { addTransaction, batchOperation, updatePaymasterMode } from "../apis/Pay
 import { Auth } from "../auth"
 import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
-import { Token, getChainFromData } from "../data"
+import { Token, UserOperation, getChainFromData } from "../data"
 import { getWalletPermitHash, getWalletPermitNonce } from "../utils"
 export class TokenSponsor extends Sponsor {
     token: string
@@ -32,15 +32,16 @@ export class TokenSponsor extends Sponsor {
     }
 
     async getPaymasterAndDataPermit(
-        partialOp: any,
+        partialOp: UserOperation,
         walletAddr: Address,
         auth: Auth,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<string> {
         const chain = await getChainFromData(options.chain)
+        const { maxFeePerGas } = partialOp
         const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas(partialOp)
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const requiredGas = callGasLimit + verificationGasLimit * 3n + preVerificationGas * partialOp.maxFeePerGas
+        const requiredGas = callGasLimit + verificationGasLimit * 3n + preVerificationGas * maxFeePerGas
         const tokenAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
             paymasterAddress,
             "getTokenValueOfEth",
