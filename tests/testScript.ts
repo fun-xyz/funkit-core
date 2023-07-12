@@ -3,7 +3,7 @@ import { configureEnvironment } from "../src/config"
 import { GaslessSponsor } from "../src/sponsors/GaslessSponsor"
 import { FunWallet } from "../src/wallet"
 const API_KEY = ""
-const PRIVATE_KEY = ""
+const PRIVATE_KEY = "0x"
 
 async function main() {
     await configureEnvironment({
