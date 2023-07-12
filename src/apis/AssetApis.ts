@@ -116,6 +116,6 @@ export async function getLidoWithdrawals(chainId: string, holderAddr: string): P
     //     chain: chainId,
     //     address: holderAddr
     // })
-    const res = await sendGetRequest(API_URL, `lido-withdrawals/${holderAddr}/${chainId}`)
+    const res = await sendGetRequest(API_URL, `assets/lido-withdrawals/${holderAddr}/${chainId}`)
     return res
 }
