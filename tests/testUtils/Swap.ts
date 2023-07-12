@@ -40,6 +40,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             await configureEnvironment(options)
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 17928113400 })
+            console.log(await wallet.getAddress())
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
