@@ -2,12 +2,6 @@ import { API_URL } from "../common/constants"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function setAuth(authId: string, method: string, addr: string, uniqueId: string) {
-    // await sendPostRequest(API_URL, "auth/set-auth", {
-    //     authId,
-    //     method,
-    //     addr,
-    //     uniqueId
-    // })
     return await sendPostRequest(API_URL, "auth/", {
         authId,
         method,
@@ -17,9 +11,6 @@ export async function setAuth(authId: string, method: string, addr: string, uniq
 }
 
 export async function getAuth(authId: string): Promise<any> {
-    // return await sendPostRequest(API_URL, "auth/", {
-    //     authId
-    // })
     return await sendGetRequest(API_URL, `auth/${authId}`)
 }
 

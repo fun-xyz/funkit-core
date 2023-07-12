@@ -18,3 +18,15 @@ export class NoServerConnectionError extends ServerError {
         super(`Server not found during ${serverType} call`, location, helper, isInternal)
     }
 }
+
+export class InvalidParameterError extends ServerError {
+    constructor(location: string, serverType: string, helper: Helper, isInternal = false) {
+        super(`Invalid parameters during ${serverType} call`, location, helper, isInternal)
+    }
+}
+
+export class InternalFailureError extends ServerError {
+    constructor(location: string, serverType: string, helper: Helper, isInternal = false) {
+        super(`Internal failure during ${serverType} call`, location, helper, isInternal)
+    }
+}

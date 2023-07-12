@@ -18,13 +18,7 @@ import { sendGetRequest } from "../utils/ApiUtils"
  * }
  */
 export async function getTokens(chainId: string, holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    // return await sendPostRequest(API_URL, "getAssets/get-tokens", {
-    //     chain: chainId,
-    //     address: holderAddr,
-    //     onlyVerifiedTokens: onlyVerifiedTokens
-    // })
-    const res = await sendGetRequest(API_URL, `erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
-    return res
+    return await sendGetRequest(API_URL, `erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
 }
 
 /**
@@ -45,8 +39,7 @@ export async function getNFTs(chainId: string, holderAddr: string): Promise<any>
     //     chain: chainId,
     //     address: holderAddr
     // })
-    const res = await sendGetRequest(API_URL, `nfts/${holderAddr}/${chainId}`)
-    return res
+    return await sendGetRequest(API_URL, `nfts/${holderAddr}/${chainId}`)
 }
 
 /**
@@ -65,8 +58,7 @@ export async function getAllNFTs(holderAddr: string): Promise<any> {
     // return await sendPostRequest(API_URL, "getAssets/get-all-nfts", {
     //     address: holderAddr
     // })
-    const res = await sendGetRequest(API_URL, `nfts/${holderAddr}`)
-    return res
+    return await sendGetRequest(API_URL, `nfts/${holderAddr}`)
 }
 
 /**
@@ -91,8 +83,7 @@ export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boole
     //     address: holderAddr,
     //     onlyVerifiedTokens: onlyVerifiedTokens
     // })
-    const res = await sendGetRequest(API_URL, `nfts/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
-    return res
+    return await sendGetRequest(API_URL, `nfts/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
 }
 
 /**
@@ -116,6 +107,5 @@ export async function getLidoWithdrawals(chainId: string, holderAddr: string): P
     //     chain: chainId,
     //     address: holderAddr
     // })
-    const res = await sendGetRequest(API_URL, `assets/lido-withdrawals/${holderAddr}/${chainId}`)
-    return res
+    return await sendGetRequest(API_URL, `assets/lido-withdrawals/${holderAddr}/${chainId}`)
 }

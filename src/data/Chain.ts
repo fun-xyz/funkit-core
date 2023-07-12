@@ -144,11 +144,10 @@ export class Chain {
         this.addresses[name] = address
     }
 
-    async sendOpToBundler(userOp: UserOperation): Promise<string> {
+    async sendOpToBundler(userOp: UserOperation): Promise<void> {
         await this.init()
-        // return await this.bundler!.sendUserOpToBundler(userOp)
         const hexifiedUserOp = deepHexlify(userOp)
-        return await sendUserOpToBundler(hexifiedUserOp, this.addresses.entryPointAddress, this.id as string)
+        await sendUserOpToBundler(hexifiedUserOp, this.addresses.entryPointAddress, this.id as string)
     }
 
     async getFeeData(): Promise<bigint> {
@@ -158,7 +157,6 @@ export class Chain {
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
-        // const res = await this.bundler!.estimateUserOpGas(partialOp)
         if (!this.addresses || !this.addresses.entryPointAddress) {
             const currentLocation = "data.chain"
             const helper = new Helper(currentLocation, "", "entryPointAddress is required.")

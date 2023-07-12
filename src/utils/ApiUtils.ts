@@ -2,7 +2,14 @@ import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
 import { stringifyOp } from "./UseropUtils"
 import { API_URL } from "../common/constants"
-import { Helper, NoServerConnectionError, ServerMissingDataError } from "../errors"
+import { Helper, InternalFailureError, InvalidParameterError, NoServerConnectionError, ServerMissingDataError } from "../errors"
+// import { Helper, NoServerConnectionError, ServerMissingDataError, InvalidParameterError, InternalFailureError } from "../errors"
+
+const errorHandler = (err: any, context: any) => {
+    if (err instanceof ServerMissingDataError) {
+        context.abort()
+    }
+}
 
 export const DEFAULT_RETRY_OPTIONS = {
     delay: 100,
@@ -13,7 +20,7 @@ export const DEFAULT_RETRY_OPTIONS = {
     timeout: 0,
     jitter: true,
     minDelay: 0,
-    handleError: null,
+    handleError: errorHandler,
     handleTimeout: null,
     beforeAttempt: null,
     calculateDelay: null
@@ -38,6 +45,15 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             if (response.status === 404) {
                 const helper = new Helper(`Calling ${uri}`, method, "Data not found on server.")
                 throw new ServerMissingDataError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+            } else if (response.status === 400) {
+                const helper = new Helper(`Calling ${uri}`, method, "Bad Request.")
+                throw new InvalidParameterError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+            } else if (response.status === 500) {
+                const helper = new Helper(`Calling ${uri}`, method, "Internal Server Error.")
+                throw new InternalFailureError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+            } else if (response.status !== 200) {
+                const helper = new Helper(`Calling ${uri}`, method, "Unknown Error.")
+                throw new NoServerConnectionError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
             }
 
             const text = await response.text()
