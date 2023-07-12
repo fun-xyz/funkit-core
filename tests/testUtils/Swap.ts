@@ -47,7 +47,8 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const chain = await getChainFromData(options.chain)
                 await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
-                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), amount])
+                const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
+                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), decAmount])
                 data.chain = chain
                 await auth.sendTx(data)
                 const wethAddr = await Token.getAddress("weth", options)

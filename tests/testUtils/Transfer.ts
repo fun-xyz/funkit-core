@@ -43,11 +43,11 @@ export const TransferTest = (config: TransferTestConfig) => {
         it("transfer baseToken directly", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
-            await wallet.transferEth(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.001 })
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalanceBN(baseToken, randomAddress)
+            const b2 = Token.getBalanceBN(baseToken, walletAddress)
+            console.log(await wallet.transferEth(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.001 }))
+            const b3 = Token.getBalanceBN(baseToken, randomAddress)
+            const b4 = Token.getBalanceBN(baseToken, walletAddress)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])

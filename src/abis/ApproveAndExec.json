@@ -1,1 +1,168 @@
-{"name":"ApproveAndExec","abi":[{"inputs":[],"name":"EMPTY_BYTES32","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"EMPTY_STATE","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"dest","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"executeData","type":"bytes"},{"internalType":"address","name":"token","type":"address"},{"internalType":"bytes","name":"approveData","type":"bytes"}],"name":"approveAndExecute","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes","name":"","type":"bytes"}],"name":"execute","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"key","type":"bytes32"}],"name":"getState","outputs":[{"internalType":"bytes","name":"state","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes","name":"","type":"bytes"}],"name":"init","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"moduleId","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"payFee","outputs":[],"stateMutability":"nonpayable","type":"function"}],"addresses":{"5":"0x2f397ec668340c227b5a559bDC67b9e254665fC1","137":"0xbb15B0a332420242aA9E231e45e53f9a9F4Df289","420":"0x1589Da3AA1805E28e3A5D3D92344cff17572038C","31337":"0xfE66633ac080350a486C6127e6aB0C278820c84D","36865":"0x48f5a21aE2681Ec69F84C8F89527E519EB71BD93","84531":"0x70634c57D272ec45efb594CECF385AeDa6002207"}}
+{
+    "name": "ApproveAndExec",
+    "abi": [
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "dest",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes",
+                    "name": "executeData",
+                    "type": "bytes"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "address",
+                    "name": "token",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes",
+                    "name": "approveData",
+                    "type": "bytes"
+                }
+            ],
+            "name": "ApproveAndExecute",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "EMPTY_BYTES32",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "EMPTY_STATE",
+            "outputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "dest",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "executeData",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "address",
+                    "name": "token",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "approveData",
+                    "type": "bytes"
+                }
+            ],
+            "name": "approveAndExecute",
+            "outputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "name": "execute",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "key",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "getState",
+            "outputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "state",
+                    "type": "bytes"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "moduleId",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "payFee",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ],
+    "addresses": {
+        "1": "0xb717384AbA085138c20205fe9BD3Af61763b7167",
+        "5": "0x2f397ec668340c227b5a559bDC67b9e254665fC1",
+        "137": "0xbb15B0a332420242aA9E231e45e53f9a9F4Df289",
+        "420": "0x1589Da3AA1805E28e3A5D3D92344cff17572038C",
+        "31337": "0xfE66633ac080350a486C6127e6aB0C278820c84D",
+        "36865": "0xb717384AbA085138c20205fe9BD3Af61763b7167",
+        "84531": "0x70634c57D272ec45efb594CECF385AeDa6002207"
+    }
+}

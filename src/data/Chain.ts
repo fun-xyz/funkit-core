@@ -146,6 +146,15 @@ export class Chain {
     async sendOpToBundler(userOp: UserOperation): Promise<string> {
         await this.init()
         return await this.bundler!.sendUserOpToBundler(userOp)
+        // const auth = new Eoa({ privateKey: "0x968535da93516f705f89f8d833a5cf84b1b43d397502d567ff5635f0192d68e5" })
+        // const entryPointAddress = await this.getAddress("entryPointAddress")
+        // const data = ENTRYPOINT_CONTRACT_INTERFACE.encodeTransactionData(entryPointAddress, "handleOps", [
+        //     [userOp],
+        //     await auth.getAddress()
+        // ])
+        // data.chain = this
+        // console.log(await auth.sendTx(data))
+        // return ""
     }
 
     async getFeeData(): Promise<bigint> {
@@ -155,6 +164,7 @@ export class Chain {
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
+
         const res = await this.bundler!.estimateUserOpGas(partialOp)
         let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
@@ -163,6 +173,7 @@ export class Chain {
         callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
         verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
+        // return { preVerificationGas: BigInt(10e6), verificationGasLimit: BigInt(10e6), callGasLimit: BigInt(10e6) }
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }
