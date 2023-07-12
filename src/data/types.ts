@@ -67,3 +67,7 @@ export type UserOperation = {
     paymasterAndData?: string
     signature?: string
 }
+
+export type FunWalletOperationStatus = {
+    status: "PENDING_APPROVED" | "APPROVED" | "CANCELLED" | "PENDING" | "OP_SUCCEED" | "OP_REVERTED" | ""
+}
