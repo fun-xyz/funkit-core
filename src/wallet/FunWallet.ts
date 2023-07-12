@@ -664,4 +664,21 @@ export class FunWallet {
             paymasterAndData: paymasterAndData
         })
     }
+
+    async signOperation(auth: Auth, userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
+        const chain = await getChainFromData(txOptions.chain)
+        const signature = await auth.getEstimateGasSignature()
+        const res = await chain.estimateOpGas(userOp.op)
+        const estimatedOp = new UserOp({
+            ...userOp.op,
+            ...res,
+            signature
+        })
+        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
+        return estimatedOp
+    }
+
+    async executeOperation(_: Auth, userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+        return await this.sendTx(userOp, parseOptions(txOptions))
+    }
 }
