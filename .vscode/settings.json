@@ -1,62 +1,62 @@
 {
-    "yaml.customTags": [
-      "!And",
-      "!And sequence",
-      "!If",
-      "!If sequence",
-      "!Not",
-      "!Not sequence",
-      "!Equals",
-      "!Equals sequence",
-      "!Or",
-      "!Or sequence",
-      "!FindInMap",
-      "!FindInMap sequence",
-      "!Base64",
-      "!Join",
-      "!Join sequence",
-      "!Cidr",
-      "!Ref",
-      "!Sub",
-      "!Sub sequence",
-      "!GetAtt",
-      "!GetAZs",
-      "!ImportValue",
-      "!ImportValue sequence",
-      "!Select",
-      "!Select sequence",
-      "!Split",
-      "!Split sequence"
-    ],
-    "solidity.telemetry": false,
-    "solidity.formatter": "prettier",
-    "javascript.updateImportsOnFileMove.enabled": "always",
-    "[javascript]": {
-      "editor.defaultFormatter": "vscode.typescript-language-features"
-    },
-    "[typescript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[json]": {
-      "editor.defaultFormatter": "vscode.json-language-features"
-    },
-    "[solidity]": {
-      "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
-    },
-    "editor.codeActionsOnSave": {
-      "source.fixAll": true,
-      "source.fixAll.eslint": true,
-      "source.fixAll.tslint": true
-    },
-    "eslint.validate": [
-      "javascript",
-      "typescript",
-      "javascriptreact",
-      "typescriptreact"
-    ],
-    "files.autoSave": "afterDelay",
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-    "editor.inlineSuggest.enabled": true,
-    "typescript.updateImportsOnFileMove.enabled": "always",
+  "yaml.customTags": [
+    "!And",
+    "!And sequence",
+    "!If",
+    "!If sequence",
+    "!Not",
+    "!Not sequence",
+    "!Equals",
+    "!Equals sequence",
+    "!Or",
+    "!Or sequence",
+    "!FindInMap",
+    "!FindInMap sequence",
+    "!Base64",
+    "!Join",
+    "!Join sequence",
+    "!Cidr",
+    "!Ref",
+    "!Sub",
+    "!Sub sequence",
+    "!GetAtt",
+    "!GetAZs",
+    "!ImportValue",
+    "!ImportValue sequence",
+    "!Select",
+    "!Select sequence",
+    "!Split",
+    "!Split sequence"
+  ],
+  "solidity.telemetry": false,
+  "solidity.formatter": "prettier",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[solidity]": {
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.fixAll.eslint": true,
+    "source.fixAll.tslint": true
+  },
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact"
+  ],
+  "files.autoSave": "afterDelay",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.inlineSuggest.enabled": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
 }
