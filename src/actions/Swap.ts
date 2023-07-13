@@ -127,12 +127,12 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
     }
 
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
-    const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
-        tokenInAddress,
-        univ3router,
-        amount,
-        data
-    ])
+    let swapData
+    if (tokenIn.isNative) {
+        swapData = approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [amount, data])
+    } else {
+        swapData = approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
+    }
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
 }
 
@@ -179,12 +179,7 @@ export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex>
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
         return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
     } else {
-        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
-            tokenInAddress,
-            router,
-            amount,
-            data
-        ])
+        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
         return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
     }
 }

@@ -138,9 +138,9 @@ export class Chain {
         return this.client!
     }
 
-    setAddress(name: string, address: Address) {
-        if (!this.addresses) this.addresses = {}
-        this.addresses[name] = address
+    setAddresses(addresses: Addresses) {
+        if (!this.addresses) this.addresses = addresses
+        else this.addresses = { ...this.addresses, ...addresses }
     }
 
     async sendOpToBundler(userOp: UserOperation): Promise<string> {
@@ -155,6 +155,7 @@ export class Chain {
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
+
         const res = await this.bundler!.estimateUserOpGas(partialOp)
         let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
@@ -162,7 +163,7 @@ export class Chain {
         }
         callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
-        verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
+        verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }

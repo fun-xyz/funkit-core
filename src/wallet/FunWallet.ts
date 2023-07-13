@@ -24,6 +24,7 @@ import {
     finishUnstakeCalldata,
     requestUnstakeCalldata,
     stakeCalldata,
+    uniswapV2SwapCalldata,
     uniswapV3SwapCalldata
 } from "../actions"
 import { approveAndExecCalldata } from "../actions/ApproveAndExec"
@@ -78,7 +79,7 @@ export class FunWallet {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption): Promise<UserOperation> {
         const chain = await getChainFromData(txOptions.chain)
         const actionData: ActionData = {
             wallet: this,
@@ -89,31 +90,40 @@ export class FunWallet {
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
-        const sender = await this.getAddress({ chain })
+        const sender = await this.getAddress(txOptions)
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        const nonce = await auth.getNonce(sender)
+
+        const partialOp: UserOperation = {
+            callData,
+            sender,
+            nonce,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
+            initCode,
+            verificationGasLimit: BigInt(10e6),
+            callGasLimit: BigInt(10e6),
+            preVerificationGas: BigInt(10e5)
+        }
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                if (txOptions.gasSponsor.usePermit) {
+                    const paymasterAndDataRaw = await sponsor.getPaymasterAndDataPermit(partialOp, sender, auth, txOptions)
+                    paymasterAndData = paymasterAndDataRaw.toLowerCase()
+                } else {
+                    paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                }
             } else {
                 const sponsor = new GaslessSponsor(txOptions)
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
 
-        const partialOp = {
-            callData,
-            paymasterAndData,
-            sender,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
-            initCode
-        }
-        const nonce = await auth.getNonce(partialOp.sender)
-        return { ...partialOp, nonce }
+        return { ...partialOp, paymasterAndData }
     }
 
     async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
@@ -223,13 +233,9 @@ export class FunWallet {
         const signature = await auth.getEstimateGasSignature()
         const estimateOp: UserOperation = {
             ...partialOp,
-            signature: signature.toLowerCase(),
-            preVerificationGas: 100_000n,
-            callGasLimit: BigInt(10e6),
-            verificationGasLimit: BigInt(10e6)
+            signature: signature.toLowerCase()
         }
         const res = await chain.estimateOpGas(estimateOp)
-
         return new UserOp({
             ...partialOp,
             ...res,
@@ -596,6 +602,15 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await uniswapV3SwapCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async uniswapV2Swap(
+        auth: Auth,
+        params: UniswapParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await uniswapV2SwapCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 

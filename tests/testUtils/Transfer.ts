@@ -1,7 +1,8 @@
 import { assert } from "chai"
 import { Auth, Eoa } from "../../src/auth"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -43,12 +44,11 @@ export const TransferTest = (config: TransferTestConfig) => {
         it("transfer baseToken directly", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
-
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalanceBN(baseToken, randomAddress)
+            const b2 = Token.getBalanceBN(baseToken, walletAddress)
             await wallet.transferEth(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.001 })
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalanceBN(baseToken, randomAddress)
+            const b4 = Token.getBalanceBN(baseToken, walletAddress)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -60,13 +60,25 @@ export const TransferTest = (config: TransferTestConfig) => {
         it("wallet should have lower balance of specified token", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
+            if (config.chainId === 5) {
+                const chain = await getChainFromData(config.chainId)
+                const outTokenAddress = await Token.getAddress(outToken)
 
-            const b1 = Token.getBalance(outToken, randomAddress)
-            const b2 = Token.getBalance(outToken, walletAddress)
+                const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(outTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    1000000000000000000000n
+                ])
+                await chain.init()
+                outTokenMint.chain = chain
+                await auth.sendTx(outTokenMint)
+            }
+
+            const b1 = Token.getBalanceBN(outToken, randomAddress)
+            const b2 = Token.getBalanceBN(outToken, walletAddress)
             const outTokenAddress = await new Token(outToken).getAddress()
             await wallet.transferERC20(auth, { to: randomAddress, amount: 1, token: outTokenAddress })
-            const b3 = Token.getBalance(outToken, randomAddress)
-            const b4 = Token.getBalance(outToken, walletAddress)
+            const b3 = Token.getBalanceBN(outToken, randomAddress)
+            const b4 = Token.getBalanceBN(outToken, walletAddress)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])

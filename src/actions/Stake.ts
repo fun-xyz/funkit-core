@@ -21,7 +21,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
     }
     const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
-    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(steth, "approve", [withdrawalQueue, approveAmount])
+    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(steth, "approve", [withdrawalQueue, parseEther(`${approveAmount}`)])
 
     // Request Withdrawal
     const requestWithdrawalData = withdrawQueueInterface.encodeTransactionData(withdrawalQueue, "requestWithdrawals", [
@@ -29,7 +29,6 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         params.recipient
     ])
     const chain = new Chain({ chainId: params.chainId.toString() })
-
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     const requestUnstakeData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
@@ -38,7 +37,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         steth,
         approveData.data
     ])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, requestUnstakeData])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, requestUnstakeData.data])
 }
 
 export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<Hex> => {
