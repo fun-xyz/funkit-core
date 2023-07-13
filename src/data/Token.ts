@@ -75,7 +75,7 @@ export class Token {
         return BigInt(await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(options), "allowance", [owner, spender], chain))
     }
 
-    async getDecimalAmount(amount: number | bigint, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+    async getDecimalAmount(amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const decimals = await this.getDecimals(options)
         const numberViemTyping = amount.toString() as `${number}`
         return parseUnits(numberViemTyping, Number(decimals))
@@ -132,11 +132,7 @@ export class Token {
         const token = new Token(data)
         return await token.getApproval(owner, spender, options)
     }
-    static async getDecimalAmount(
-        data: string,
-        amount: number | bigint,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<bigint> {
+    static async getDecimalAmount(data: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const token = new Token(data)
         return await token.getDecimalAmount(amount, options)
     }
