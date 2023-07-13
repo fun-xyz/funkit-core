@@ -1,6 +1,7 @@
 import { assert } from "chai"
+import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth, Eoa } from "../../src/auth"
-import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
+import { ERC20_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
@@ -85,6 +86,46 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+        })
+
+        describe("With Session Key", () => {
+            const user = createSessionUser()
+            before(async () => {
+                const second = 1000
+                const minute = 60 * second
+                const deadline = BigInt(Date.now() + 2 * minute)
+                const basetokenAddr = await Token.getAddress(baseToken)
+                const sessionKeyParams: SessionKeyParams = {
+                    user,
+                    targetWhitelist: [outToken, basetokenAddr],
+                    actionWhitelist: [
+                        {
+                            abi: ERC20_ABI,
+                            functionWhitelist: ["transfer"]
+                        }
+                    ],
+                    deadline,
+                    chainId: config.chainId
+                }
+                await wallet.createSessionKey(auth, sessionKeyParams)
+            })
+
+            it("wallet should have lower balance of specified token", async () => {
+                const randomAddress = randomBytes(20)
+                const walletAddress = await wallet.getAddress()
+                const b1 = Token.getBalanceBN(outToken, randomAddress)
+                const b2 = Token.getBalanceBN(outToken, walletAddress)
+                const outTokenAddress = await new Token(outToken).getAddress()
+                await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                const b3 = Token.getBalanceBN(outToken, randomAddress)
+                const b4 = Token.getBalanceBN(outToken, walletAddress)
+
+                const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                    await Promise.all([b1, b2, b3, b4])
+
+                assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+                assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+            })
         })
     })
 }
