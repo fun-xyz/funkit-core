@@ -519,7 +519,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await erc721TransferCalldata(params, await this.getAddress())
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async transferERC20(
@@ -528,7 +530,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await erc20TransferCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async transferEth(
@@ -537,7 +541,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await ethTransferCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async approveERC20(
@@ -546,7 +552,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await erc20ApproveCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async approveERC721(
@@ -555,12 +563,16 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await erc721ApproveCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const callData = await stakeCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async requestUnstake(
@@ -569,7 +581,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await requestUnstakeCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async finishUnstake(
@@ -578,7 +592,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await finishUnstakeCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async approveAndExec(
@@ -587,7 +603,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await approveAndExecCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async uniswapV3Swap(
@@ -596,7 +614,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await uniswapV3SwapCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async oneinchSwap(
@@ -605,12 +625,16 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await OneInchCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async create(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const callData = await createCalldata({ to: await this.getAddress(txOptions) })
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async execRawCalldata(
@@ -619,7 +643,9 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await createExecRawTxCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        const userOp = await this.createOperation(auth, "", callData, txOptions)
+        const signedOp = await this.signOperation(auth, userOp, txOptions)
+        return await this.executeOperation(auth, signedOp, txOptions)
     }
 
     async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
@@ -638,8 +664,6 @@ export class FunWallet {
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
         const sender = await this.getAddress({ chain })
-        const MAX_UINT192 = 6277101735386680763835789423207666416102355444464034512896
-        const nonceKey = Math.floor(Math.random() * (MAX_UINT192 - 1)) + 0
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
         let paymasterAndData = "0x"
@@ -652,22 +676,31 @@ export class FunWallet {
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
-        return new UserOp({
-            sender: sender,
-            nonce: await this.getNonce(sender, nonceKey, txOptions),
-            initCode: initCode,
-            callData: callData,
+
+        const partialOp = {
+            callData,
+            paymasterAndData,
+            sender,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
+            initCode,
+            nonce: await auth.getNonce(sender)
+        }
+        const signature = await auth.getEstimateGasSignature()
+        const estimateOp: UserOperation = {
+            ...partialOp,
+            signature: signature.toLowerCase(),
+            preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
-            verificationGasLimit: BigInt(10e6),
-            maxFeePerGas: maxFeePerGas,
-            maxPriorityFeePerGas: BigInt(10e6),
-            paymasterAndData: paymasterAndData
-        })
+            verificationGasLimit: BigInt(10e6)
+        }
+        return new UserOp(estimateOp)
     }
 
     async signOperation(auth: Auth, userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
         const chain = await getChainFromData(txOptions.chain)
         const signature = await auth.getEstimateGasSignature()
+
         const res = await chain.estimateOpGas(userOp.op)
         const estimatedOp = new UserOp({
             ...userOp.op,
