@@ -49,11 +49,8 @@ export class GroupAuth extends Eoa {
         await this._init()
         return this.uniqueId!
     }
-
-    override async getEstimateGasSignature(userOp: UserOp): Promise<string> {
-        {
-            userOp
-        }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    override async getEstimateGasSignature(_: UserOp): Promise<string> {
         return await this.getUniqueId()
     }
 
