@@ -56,7 +56,8 @@ export const FactoryTest = (config: FactoryTestConfig) => {
                 let iscontract = await isContract(walletAddress, await chain.getClient())
                 expect(iscontract).to.be.false
                 await fundWallet(auth, wallet1, config.prefundAmt ? config.prefundAmt : 0.5)
-                await wallet1.create(auth)
+                const userOp = await wallet1.create(auth)
+                await wallet1.executeOperation(auth, userOp)
                 iscontract = await isContract(walletAddress, await chain.getClient())
                 expect(iscontract).to.be.true
             }

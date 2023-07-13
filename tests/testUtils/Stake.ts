@@ -41,14 +41,20 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            await wallet.stake(auth, { amount: 0.01, chainId: config.actualChainId })
+            const userOp = await wallet.stake(auth, { amount: 0.01, chainId: config.actualChainId })
+            await wallet.executeOperation(auth, userOp)
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
         })
 
         it("Should be able to start unstaking", async () => {
             const withdrawalsBefore = await wallet.getAssets(false, true)
-            await wallet.requestUnstake(auth, { amounts: [0.001], recipient: await wallet.getAddress(), chainId: config.actualChainId })
+            const userOp = await wallet.requestUnstake(auth, {
+                amounts: [0.001],
+                recipient: await wallet.getAddress(),
+                chainId: config.actualChainId
+            })
+            await wallet.executeOperation(auth, userOp)
             const withdrawalsAfter = await wallet.getAssets(false, true)
             assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
         })
@@ -57,20 +63,22 @@ export const StakeTest = (config: StakeTestConfig) => {
             const withdrawals = await wallet.getAssets(false, true)
             if (withdrawals[0].length > 0) {
                 const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
-                await wallet.finishUnstake(auth, {
+                const userOp = await wallet.finishUnstake(auth, {
                     recipient: await wallet.getAddress(),
                     walletAddress: await wallet.getAddress(),
                     chainId: config.actualChainId
                 })
+                await wallet.executeOperation(auth, userOp)
                 const balAfter = await Token.getBalance(baseToken, await wallet.getAddress())
                 assert(balAfter > balBefore, "unable to finish unstaking")
             } else {
                 try {
-                    await wallet.finishUnstake(auth, {
+                    const userOp = await wallet.finishUnstake(auth, {
                         recipient: await wallet.getAddress(),
                         walletAddress: await wallet.getAddress(),
                         chainId: config.actualChainId
                     })
+                    await wallet.executeOperation(auth, userOp)
                 } catch (error: any) {
                     assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
                     return
