@@ -95,15 +95,13 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalanceBN(config.outToken, walletAddress)
 
-            console.log(
-                await wallet.uniswapV3Swap(auth, {
-                    in: config.inToken,
-                    amount: config.amount ? config.amount : 0.0001,
-                    out: config.outToken,
-                    returnAddress: walletAddress,
-                    chainId: config.chainId
-                })
-            )
+            await wallet.uniswapV3Swap(auth, {
+                in: config.inToken,
+                amount: config.amount ? config.amount : 0.0001,
+                out: config.outToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
+            })
 
             await new Promise((f) => setTimeout(f, 5000))
 
