@@ -22,7 +22,6 @@ export function encodeLoginData(data: LoginData): Hex {
     socialHandle = socialHandle ? socialHandle : "0x"
     salt = salt ? salt : HashZero
     loginType = loginType ? loginType : 0
-
     return encodeAbiParameters(
         [
             {
@@ -49,7 +48,6 @@ export function encodeWalletSignature(data: WalletSignature): Hex {
     roleId ??= HashZero
     ruleId ??= HashZero
     authType ??= 0
-
     const extraDataEncoded: Hex[][] = extraData ? parseExtraData(extraData) : [[], [], [], []]
     return encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded])
 }

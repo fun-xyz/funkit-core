@@ -1,5 +1,7 @@
 import { Hex, concat, keccak256 } from "viem"
 
+// Copied from contracts repo
+
 export const createMerkleHashes = (list: Hex[]) => {
     list = list.map((data) => keccak256(data))
     const treeSize = 2 ** Math.ceil(Math.log2(list.length)) * 2

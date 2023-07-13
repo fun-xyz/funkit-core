@@ -1,6 +1,7 @@
 import { AbiParameter } from "abitype"
 import { AbiItem } from "viem"
 
+// Copied from viem
 export function formatAbiItem(abiItem: AbiItem, { includeName = false }: { includeName?: boolean } = {}) {
     if (abiItem.type !== "function" && abiItem.type !== "event" && abiItem.type !== "error")
         throw new Error(`InvalidDefinitionTypeError: ${abiItem.type}`)
