@@ -29,7 +29,6 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         params.recipient
     ])
     const chain = new Chain({ chainId: params.chainId.toString() })
-    console.log(chain)
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     const requestUnstakeData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
