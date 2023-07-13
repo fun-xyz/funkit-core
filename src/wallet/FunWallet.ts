@@ -552,9 +552,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     async executeOperation(_: Auth, userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        if (userOp.op.signature === undefined) {
-            userOp = await this.signOperation(_, userOp, txOptions)
-        }
+        userOp = await this.signOperation(_, userOp, txOptions)
         return await this.sendTx(userOp, parseOptions(txOptions))
     }
 

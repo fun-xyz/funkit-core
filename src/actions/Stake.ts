@@ -21,7 +21,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
     }
     const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
-    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(steth, "approve", [withdrawalQueue, approveAmount])
+    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(steth, "approve", [withdrawalQueue, parseEther(`${approveAmount}`)])
 
     // Request Withdrawal
     const requestWithdrawalData = withdrawQueueInterface.encodeTransactionData(withdrawalQueue, "requestWithdrawals", [
