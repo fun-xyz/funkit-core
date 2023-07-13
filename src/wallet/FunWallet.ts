@@ -714,4 +714,14 @@ export class FunWallet {
     async executeOperation(_: Auth, userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         return await this.sendTx(userOp, parseOptions(txOptions))
     }
+
+    async estimateOperation(_: Auth, userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
+        const chain = await getChainFromData(txOptions.chain)
+        const res = await chain.estimateOpGas(userOp.op)
+        const estimatedOp = new UserOp({
+            ...userOp.op,
+            ...res
+        })
+        return estimatedOp
+    }
 }
