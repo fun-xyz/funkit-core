@@ -117,10 +117,8 @@ export class Eoa extends Auth {
         return [await this.getUniqueId()]
     }
 
-    async getEstimateGasSignature(userOp: UserOp): Promise<string> {
-        {
-            userOp
-        }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async getEstimateGasSignature(_: UserOp): Promise<string> {
         await this.init()
         const walletSignature: WalletSignature = {
             userId: await this.getUserId(),
