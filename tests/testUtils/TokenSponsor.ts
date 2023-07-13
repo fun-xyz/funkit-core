@@ -164,11 +164,13 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it.only("Blacklist Mode Approved", async () => {
+        it("Blacklist Mode Approved", async () => {
             const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())
             }
+            await funder.sendTx(sponsor.batchBlacklistTokens([paymasterToken], [false]))
+
             await funder.sendTx(await sponsor.setToBlacklistMode())
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
@@ -178,7 +180,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
-            console.log("is token whitelisted", await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!))
+            // should be false
+            console.log("is token blacklisted", await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getSponsorAddress())!))
 
             expect(await runSwap(wallet)).not.to.throw
             try {
