@@ -518,7 +518,7 @@ export class FunWallet {
         params: ERC721TransferParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
-        const callData = await erc721TransferCalldata(params, await this.getAddress())
+        const callData = await erc721TransferCalldata(params)
         const userOp = await this.createOperation(auth, "", callData, txOptions)
         const signedOp = await this.signOperation(auth, userOp, txOptions)
         return await this.executeOperation(auth, signedOp, txOptions)
