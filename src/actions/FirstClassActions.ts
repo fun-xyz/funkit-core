@@ -2,7 +2,7 @@ import { Address, Hex } from "viem"
 import { approveAndExecCalldata } from "./ApproveAndExec"
 import { createCalldata, createExecRawTxCalldata } from "./FirstClass"
 import { finishUnstakeCalldata, requestUnstakeCalldata, stakeCalldata } from "./Stake"
-import { OneInchCalldata, uniswapV3SwapCalldata } from "./Swap"
+import { OneInchCalldata, uniswapV2SwapCalldata, uniswapV3SwapCalldata } from "./Swap"
 import { erc20ApproveCalldata, erc20TransferCalldata, erc721ApproveCalldata, erc721TransferCalldata, ethTransferCalldata } from "./Token"
 import {
     ApproveAndExecParams,
@@ -111,6 +111,11 @@ export abstract class FirstClassActions {
 
     async uniswapV3Swap(auth: Auth, params: UniswapParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
         const callData = await uniswapV3SwapCalldata(params)
+        return await this.createOperation(auth, "", callData, txOptions)
+    }
+
+    async uniswapV2Swap(auth: Auth, params: UniswapParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
+        const callData = await uniswapV2SwapCalldata(params)
         return await this.createOperation(auth, "", callData, txOptions)
     }
 
