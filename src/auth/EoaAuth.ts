@@ -117,7 +117,10 @@ export class Eoa extends Auth {
         return [await this.getUniqueId()]
     }
 
-    async getEstimateGasSignature(): Promise<string> {
+    async getEstimateGasSignature(userOp: UserOp): Promise<string> {
+        {
+            userOp
+        }
         await this.init()
         const walletSignature: WalletSignature = {
             userId: await this.getUserId(),

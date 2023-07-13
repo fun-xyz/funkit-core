@@ -93,6 +93,7 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
+    console.log(chain.addresses)
     const univ3quoter = await chain.getAddress("univ3quoter")
     const univ3factory = await chain.getAddress("univ3factory")
     const univ3router = await chain.getAddress("univ3router")

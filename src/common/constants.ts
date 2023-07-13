@@ -83,6 +83,7 @@ export const BASE_WRAP_TOKEN_ADDR = {
 
 export const AddressZero = padHex("0x", { size: 20 })
 export const HashZero = padHex("0x", { size: 32 })
+export const HashOne = padHex("0x1", { size: 32 })
 
 export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
@@ -116,6 +117,7 @@ export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
 export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
 export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
+export const ROLE_BASED_ACCESS_CONTROL_ABI = ROLE_BASED_ACCESS_CONTROL_CONTRACT["abi"]
 
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
@@ -128,6 +130,7 @@ export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI["
 export const APPROVE_AND_EXEC_CONTRACT_INTERFACE = new ContractInterface(APPROVE_AND_EXEC_ABI)
 export const UNISWAPV2FACTORY_INTERFACE = new ContractInterface(UNISWAPV2FACTORY_ABI)
 export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER02_ABI)
+export const RBAC_CONTRACT_INTERFACE = new ContractInterface(ROLE_BASED_ACCESS_CONTROL_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["addresses"],
