@@ -134,7 +134,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            console.log("userOP", await wallet.executeOperation(auth, userOp))
+            await wallet.executeOperation(auth, userOp)
             await new Promise((f) => setTimeout(f, 2000))
 
             const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
@@ -180,8 +180,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
-            // should be false
-            console.log("is token blacklisted", await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getSponsorAddress())!))
+            expect(await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getSponsorAddress())!)).to.be.false
 
             expect(await runSwap(wallet)).not.to.throw
             try {

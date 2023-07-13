@@ -64,8 +64,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                         tokenId: nftId,
                         from: await wallet1.getAddress()
                     })
-                    console.log("wallet address", await wallet1.getAddress())
-                    console.log(await wallet1.executeOperation(auth, userOp))
+                    await wallet1.executeOperation(auth, userOp)
                 } catch (error) {
                     assert(
                         false,
@@ -84,8 +83,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                         tokenId: nftId,
                         from: await wallet2.getAddress()
                     })
-                    console.log("wallet address", await wallet2.getAddress())
-                    console.log(await wallet2.executeOperation(auth, userOp))
+                    await wallet2.executeOperation(auth, userOp)
                 } catch (error) {
                     assert(
                         false,
