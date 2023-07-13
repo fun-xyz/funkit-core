@@ -69,7 +69,7 @@ export class SessionKeyAuth extends Eoa {
             }
             return encodeWalletSignature(walletSignature)
         } catch {
-            throw new Error("Function  or target is not allowed in session key")
+            throw new Error("Function or target is not allowed in session key")
         }
     }
 

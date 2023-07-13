@@ -90,10 +90,10 @@ export const TransferTest = (config: TransferTestConfig) => {
 
         describe("With Session Key", () => {
             const user = createSessionUser()
+            const second = 1000
+            const minute = 60 * second
+            const deadline = BigInt(Date.now() + 0 * minute) / 1000n
             before(async () => {
-                const second = 1000
-                const minute = 60 * second
-                const deadline = BigInt(Date.now() + 2 * minute)
                 const basetokenAddr = await Token.getAddress(baseToken)
                 const sessionKeyParams: SessionKeyParams = {
                     user,
@@ -125,6 +125,48 @@ export const TransferTest = (config: TransferTestConfig) => {
 
                 assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+            })
+
+            it("Session key function out of scope", async () => {
+                it("Session key target out of scope", async () => {
+                    const randomAddress = randomBytes(20)
+                    const outTokenAddress = await new Token("usdc").getAddress()
+                    try {
+                        await wallet.approveERC20(user, { spender: randomAddress, amount: 1, token: outTokenAddress })
+                        assert(false, "call succeded when it should have failed")
+                    } catch {
+                        assert(true)
+                    }
+                })
+            })
+
+            it("Session key target out of scope", async () => {
+                const randomAddress = randomBytes(20)
+                const outTokenAddress = await new Token("usdc").getAddress()
+                try {
+                    await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                    assert(false, "call succeded when it should have failed")
+                } catch (e: any) {
+                    assert(
+                        e.message.includes("Function or target is not allowed in session key"),
+                        "call succeded when it should have failed"
+                    )
+                }
+            })
+
+            it("Session key expires", async () => {
+                const waitTime = BigInt(Date.now()) / 1000n
+                if (deadline - waitTime > 0n) {
+                    await new Promise((resolve) => setTimeout(resolve, Number(deadline - waitTime)))
+                }
+                const randomAddress = randomBytes(20)
+                const outTokenAddress = await new Token(outToken).getAddress()
+                try {
+                    await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                    assert(false, "call succeded when it should have failed")
+                } catch (e: any) {
+                    assert(e.message.includes("FW406"), "call succeded when it should have failed")
+                }
             })
         })
     })

@@ -108,7 +108,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const second = 1000
                 const minute = 60 * second
                 const chain = await getChainFromData(config.chainId)
-                const deadline = BigInt(Date.now() + 2 * minute)
+                const deadline = BigInt(Date.now() + 2 * minute) / 1000n
                 const targetAddr = await chain.getAddress("tokenSwapAddress")
                 const sessionKeyParams: SessionKeyParams = {
                     user,
