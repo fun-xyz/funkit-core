@@ -38,7 +38,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         steth,
         approveData.data
     ])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, requestUnstakeData])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, parseEther("0"), requestUnstakeData.data])
 }
 
 export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<Hex> => {
