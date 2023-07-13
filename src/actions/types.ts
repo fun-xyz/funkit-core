@@ -100,3 +100,15 @@ export type ActionResult = {
 }
 
 export type ActionFunction = (obj: ActionData) => Promise<ActionResult>
+
+export type SessionKeyParams = {
+    targetWhitelist: string[]
+    actionWhitelist: ActionWhitelistObject[]
+    feeTokenWhitelist?: string[]
+    feeRecipientWhitelist?: string[]
+}
+
+export type ActionWhitelistObject = {
+    abi: any
+    functionWhitelist: string[]
+}
