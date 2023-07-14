@@ -97,7 +97,6 @@ export const getSelectorFromCall = (callData: Hex) => {
 
 export const decodeCalldata = (callData: Hex): WalletCallData => {
     if (callData.includes(execFromEntryPointFeeSelector)) {
-        console.log("FEEE")
         return _decodeExecWithFee(callData)
     } else if (callData.includes(execFromEntryPointSelector)) {
         return _decodeExec(callData)

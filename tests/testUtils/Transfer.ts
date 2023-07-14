@@ -169,7 +169,6 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
-                    console.log(e.message)
                     assert(e.message.includes("FW406"), "call succeded when it should have failed")
                 }
             })
