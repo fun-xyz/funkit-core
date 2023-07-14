@@ -126,14 +126,19 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
         poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
     }
 
-    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
-    const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
-        tokenInAddress,
-        univ3router,
-        amount,
-        data
-    ])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+    const { to, data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    if (tokenIn.isNative) {
+        const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
+        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+    } else {
+        const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
+            tokenInAddress,
+            univ3router,
+            amount,
+            data
+        ])
+        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+    }
 }
 
 export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
