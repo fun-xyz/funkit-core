@@ -16,13 +16,14 @@ import {
     RequestUnstakeParams,
     StakeParams,
     SwapParam,
+    TransferParams,
     UniswapParams
 } from "./types"
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
-import { UserOp } from "../data"
-
+import { Token, UserOp } from "../data"
+import { Helper, MissingParameterError } from "../errors"
 export abstract class FirstClassActions {
     abstract createOperation(
         auth: Auth,
@@ -45,6 +46,40 @@ export abstract class FirstClassActions {
             callData = await uniswapV2SwapCalldata(params as UniswapParams)
         }
         return await this.createOperation(auth, userId, callData, txOption)
+    }
+
+    isERC721TransferParams(obj: TransferParams): obj is ERC721TransferParams {
+        return "tokenId" in obj
+    }
+
+    isERC20TransferParams(obj: TransferParams): obj is ERC20TransferParams {
+        return "amount" in obj && "token" in obj && !Token.isNative(obj.token)
+    }
+
+    isNativeTransferParams(obj: TransferParams): obj is NativeTransferParams {
+        return "amount" in obj && (!("token" in obj) || Token.isNative(obj.token))
+    }
+
+    async transfer(
+        auth: Auth,
+        userId: string,
+        params: TransferParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOp> {
+        let callData
+        if (this.isERC721TransferParams(params)) {
+            callData = await erc721TransferCalldata(params)
+        } else if (this.isERC20TransferParams(params)) {
+            callData = await erc20TransferCalldata(params)
+        } else if (this.isNativeTransferParams(params)) {
+            callData = await ethTransferCalldata(params)
+        } else {
+            const currentLocation = "action.transfer"
+            const helperMainMessage = "params were missing or incorrect"
+            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
+            throw new MissingParameterError(currentLocation, helper)
+        }
+        return await this.createOperation(auth, userId, callData, txOptions)
     }
 
     async transferERC721(

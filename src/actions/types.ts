@@ -36,6 +36,8 @@ export interface ERC20TransferParams extends NativeTransferParams {
     token: Address
 }
 
+export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
+
 // Approval Param types
 export type ApproveParam = {
     spender: string

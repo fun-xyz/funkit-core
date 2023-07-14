@@ -58,7 +58,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 try {
-                    const userOp = await wallet1.transferERC721(auth, {
+                    const userOp = await wallet1.transfer(auth, "", {
                         to: await wallet2.getAddress(),
                         token: nftAddress,
                         tokenId: nftId,
@@ -77,7 +77,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 assert(bal > bal1, "First nft transfer did not succeed")
 
                 try {
-                    const userOp = await wallet2.transferERC721(auth, {
+                    const userOp = await wallet2.transfer(auth, "", {
                         to: await wallet1.getAddress(),
                         token: nftAddress,
                         tokenId: nftId,
