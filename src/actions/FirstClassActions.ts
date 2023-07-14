@@ -82,6 +82,21 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
+    async _stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
+        const callData = await stakeCalldata(params)
+        return await this.createOperation(auth, "", callData, txOptions)
+    }
+
+    async stake(
+        auth: Auth,
+        userId: string,
+        params: StakeParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOp> {
+        const callData = await stakeCalldata(params)
+        return await this.createOperation(auth, userId, callData, txOptions)
+    }
+
     async transferERC721(
         auth: Auth,
         params: ERC721TransferParams,
@@ -124,11 +139,6 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<UserOp> {
         const callData = await erc721ApproveCalldata(params)
-        return await this.createOperation(auth, "", callData, txOptions)
-    }
-
-    async stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
-        const callData = await stakeCalldata(params)
         return await this.createOperation(auth, "", callData, txOptions)
     }
 
