@@ -55,3 +55,20 @@ export async function sendPostRequest(
 ): Promise<any> {
     return await sendRequest(`${uri}/${endpoint}`, "POST", apiKey, body)
 }
+
+export async function sendDeleteRequest(
+    uri: string = API_URL,
+    endpoint: string,
+    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+): Promise<void> {
+    await sendRequest(`${uri}/${endpoint}`, "DELETE", apiKey)
+}
+
+export async function sendPutRequest(
+    uri: string = API_URL,
+    endpoint: string,
+    body: object,
+    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+): Promise<void> {
+    await sendRequest(`${uri}/${endpoint}`, "PUT", apiKey, body)
+}

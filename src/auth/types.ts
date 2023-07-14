@@ -1,6 +1,7 @@
 import { Hex, WalletClient } from "viem"
 
 export interface EoaAuthInput {
+    web2AuthId?: string
     client?: WalletClient
     privateKey?: Hex
     windowEth?: any

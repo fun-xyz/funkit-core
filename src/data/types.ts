@@ -67,3 +67,8 @@ export type UserOperation = {
     paymasterAndData?: string
     signature?: string
 }
+
+export enum AuthType {
+    ECDSA = 0,
+    MULTI_SIG = 1
+}
