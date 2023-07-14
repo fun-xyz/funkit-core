@@ -43,6 +43,7 @@ export type ApproveParam = {
     spender: string
     token: Address
 }
+export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
 export interface ApproveERC20Params extends ApproveParam {
     amount: number

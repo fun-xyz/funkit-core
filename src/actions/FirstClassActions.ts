@@ -8,6 +8,7 @@ import {
     ApproveAndExecParams,
     ApproveERC20Params,
     ApproveERC721Params,
+    ApproveParams,
     ERC20TransferParams,
     ERC721TransferParams,
     FinishUnstakeParams,
@@ -82,6 +83,35 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
+    isERC20ApproveParams(obj: ApproveParams): obj is ApproveERC20Params {
+        return "amount" in obj && "token" in obj
+    }
+
+    isERC721ApproveParams(obj: ApproveParams): obj is ApproveERC721Params {
+        return "tokenId" in obj && "token" in obj
+    }
+
+    async tokenApprove(
+        auth: Auth,
+        userId: string,
+        params: ApproveParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOp> {
+        let callData
+        if (params.token === undefined) {
+            const currentLocation = "action.tokenApprove"
+            const helperMainMessage = "params were missing or incorrect"
+            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
+            throw new MissingParameterError(currentLocation, helper)
+        }
+        if (this.isERC20ApproveParams(params)) {
+            callData = await erc20ApproveCalldata(params)
+        } else if (this.isERC721ApproveParams(params)) {
+            callData = await erc721ApproveCalldata(params)
+        }
+        return await this.createOperation(auth, userId, callData, txOptions)
+    }
+
     async _stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
         const callData = await stakeCalldata(params)
         return await this.createOperation(auth, "", callData, txOptions)
@@ -116,6 +146,16 @@ export abstract class FirstClassActions {
         } else if (this.isFinishUnstakeParams(params)) {
             callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
         }
+        return await this.createOperation(auth, userId, callData, txOptions)
+    }
+
+    async execRawTx(
+        auth: Auth,
+        userId: string,
+        params: TransactionParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOp> {
+        const callData = await createExecRawTxCalldata(params)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
