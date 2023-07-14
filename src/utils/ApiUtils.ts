@@ -41,6 +41,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 redirect: "follow",
                 body: method !== "GET" ? stringifyOp(body) : undefined
             })
+            const text = await response.text()
 
             if (response.status === 404) {
                 const helper = new Helper(`Calling ${uri}`, method, "Data not found on server.")
@@ -49,14 +50,12 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 const helper = new Helper(`Calling ${uri}`, method, "Bad Request.")
                 throw new InvalidParameterError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
             } else if (response.status === 500) {
-                const helper = new Helper(`Calling ${uri}`, method, "Internal Server Error.")
+                const helper = new Helper(`Calling ${uri}`, method, text)
                 throw new InternalFailureError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
-            } else if (response.status !== 200) {
+            } else if (!response.ok) {
                 const helper = new Helper(`Calling ${uri}`, method, "Unknown Error.")
                 throw new NoServerConnectionError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
             }
-
-            const text = await response.text()
 
             if (text) {
                 return JSON.parse(text)
