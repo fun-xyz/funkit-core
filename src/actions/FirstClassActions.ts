@@ -15,6 +15,7 @@ import {
     OneInchSwapParams,
     RequestUnstakeParams,
     StakeParams,
+    SwapParam,
     UniswapParams
 } from "./types"
 import { Auth } from "../auth"
@@ -31,6 +32,20 @@ export abstract class FirstClassActions {
     ): Promise<UserOp>
 
     abstract getAddress(options: EnvOption): Promise<Address>
+
+    async swap(auth: Auth, userId: string, params: SwapParam, txOption: EnvOption = (globalThis as any).globalEnvOption): Promise<UserOp> {
+        const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
+        const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
+        let callData
+        if (oneInchSupported.includes(params.chainId)) {
+            callData = await OneInchCalldata(params as OneInchSwapParams)
+        } else if (uniswapV3Supported.includes(params.chainId)) {
+            callData = await uniswapV3SwapCalldata(params as UniswapParams)
+        } else {
+            callData = await uniswapV2SwapCalldata(params as UniswapParams)
+        }
+        return await this.createOperation(auth, userId, callData, txOption)
+    }
 
     async transferERC721(
         auth: Auth,

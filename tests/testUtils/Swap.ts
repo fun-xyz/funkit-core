@@ -58,7 +58,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            const userOp = await wallet.uniswapV3Swap(auth, {
+            const userOp = await wallet.swap(auth, "", {
                 in: baseToken,
                 amount: config.amount ? config.amount : 0.001,
                 out: inToken,
@@ -74,7 +74,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            const userOp = await wallet.uniswapV3Swap(auth, {
+            const userOp = await wallet.swap(auth, "", {
                 in: inToken,
                 amount: 1, //Number((erc20Delta / 2).toFixed(3)),
                 out: outToken,
@@ -90,7 +90,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ERC20 => ETH", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            const userOp = await wallet.uniswapV3Swap(auth, {
+            const userOp = await wallet.swap(auth, "", {
                 in: inToken,
                 amount: 1,
                 out: baseToken,
