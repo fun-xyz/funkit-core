@@ -2,7 +2,7 @@ import { Hex } from "viem"
 import { Chain, getChainFromData } from "./Chain"
 import { encodeWalletSignature } from "./SolidityData"
 import { UserOperation, WalletSignature } from "./types"
-import { Auth } from "../auth/Auth"
+import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
 import { calcPreVerificationGas } from "../utils"
@@ -19,7 +19,7 @@ export class UserOp {
         const opHash = await this.getOpHashData(chain)
         const walletSignature: WalletSignature = {
             signature: (await auth.signHash(opHash)) as Hex,
-            userId: (await auth.getUniqueId()) as Hex
+            userId: (await auth.getAddress()) as Hex
         }
         this.op.signature = encodeWalletSignature(walletSignature)
     }

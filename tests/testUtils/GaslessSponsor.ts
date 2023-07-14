@@ -1,6 +1,6 @@
 import { assert, expect } from "chai"
 import { Address, Hex } from "viem"
-import { Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
@@ -30,8 +30,8 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     describe("GaslessSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(250_000)
-        let funder: Eoa
-        let auth: Eoa
+        let funder: Auth
+        let auth: Auth
         let wallet: FunWallet
         let wallet1: FunWallet
         let sponsor: GaslessSponsor
@@ -39,8 +39,8 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         let walletAddress: Address
         let walletAddress1: Address
         before(async function () {
-            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
+            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,
@@ -48,9 +48,15 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             }
             await configureEnvironment(options)
 
-            const uid = await auth.getUniqueId()
-            wallet = new FunWallet({ uniqueId: uid, index: config.walletIndex ? config.walletIndex : 129856341 })
-            wallet1 = new FunWallet({ uniqueId: uid, index: config.funderIndex ? config.funderIndex : 1792811340 })
+            wallet = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.walletIndex ? config.walletIndex : 129856341)
+            })
+
+            wallet1 = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.funderIndex ? config.funderIndex : 1792811340)
+            })
 
             walletAddress = await wallet.getAddress()
             walletAddress1 = await wallet1.getAddress()
@@ -62,7 +68,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const chain = await getChainFromData(options.chain)
             await chain.init()
 
-            funderAddress = await funder.getUniqueId()
+            funderAddress = await funder.getAddress()
 
             if (mint) {
                 const wethAddr = await Token.getAddress("weth", options)

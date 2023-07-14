@@ -1,6 +1,5 @@
 import { assert } from "chai"
-import { Hex } from "viem"
-import { Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
@@ -29,7 +28,7 @@ export const SwapTest = (config: SwapTestConfig) => {
     describe("Swap", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(200_000)
-        let auth: Eoa
+        let auth: Auth
         let wallet: FunWallet
         before(async function () {
             const apiKey = await getTestApiKey()
@@ -38,8 +37,12 @@ export const SwapTest = (config: SwapTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 17928113400 })
+            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
+            })
+
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }

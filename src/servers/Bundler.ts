@@ -14,6 +14,7 @@ export class Bundler {
         this.bundlerUrl = bundlerUrl
         this.entryPointAddress = entryPointAddress
     }
+
     async validateChainId() {
         // validate chainId is in sync with expected chainid
         let response

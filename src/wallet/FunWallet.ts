@@ -1,48 +1,60 @@
-import { Address, Hex } from "viem"
+import { Address, Hex, createPublicClient, http, keccak256, pad, toBytes } from "viem"
+import { User } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionData } from "../common"
-import { AddressZero } from "../common/constants"
+import { AddressZero, FACTORY_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
-import {
-    Chain,
-    InitCodeParams,
-    LoginData,
-    Token,
-    UserOp,
-    UserOperation,
-    WalletIdentifier,
-    addresstoBytes32,
-    getChainFromData,
-    toBytes32Arr
-} from "../data"
-import { Helper, ParameterFormatError } from "../errors"
+import { Chain, InitCodeParams, LoginData, Token, UserOp, UserOperation, getChainFromData, toBytes32Arr } from "../data"
+import { Helper, MissingParameterError, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, getUniqueId } from "../utils"
+import { gasCalculation, getAuthUniqueId, getWalletAddress } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
+
 export interface FunWalletParams {
-    uniqueId: string
-    index?: number
+    users?: User[]
+    uniqueId?: string
+    walletAddr?: Address
 }
 
 export class FunWallet extends FirstClassActions {
-    identifier: WalletIdentifier
+    walletUniqueId?: Hex
+    userInfo?: Map<Hex, User>
     abiManager: WalletAbiManager
     address?: Address
 
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
+     * @param {object} params - The parameters for the WalletIdentifier - users, uniqueId, walletAddr
      */
     constructor(params: FunWalletParams) {
         super()
-        const { uniqueId, index } = params
-        this.identifier = new WalletIdentifier(uniqueId, index)
+        const { users, uniqueId, walletAddr } = params
+
+        if (!uniqueId && !walletAddr) {
+            throw new MissingParameterError(
+                "FunWallet.constructor",
+                new Helper("constructor", uniqueId, "uniqueId or walletAddr is required")
+            )
+        }
+
+        this.userInfo = new Map(
+            users?.map((user) => {
+                return [pad(user.userId, { size: 32 }), user] as [Hex, User]
+            })
+        )
+
+        if (uniqueId) {
+            this.walletUniqueId = keccak256(toBytes(uniqueId))
+        } else {
+            this.address = walletAddr
+        }
+
         this.abiManager = new WalletAbiManager()
     }
 
@@ -62,12 +74,12 @@ export class FunWallet extends FirstClassActions {
         }
         const { data } = await transactionFunc(actionData)
 
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+        const onChainDataManager = new WalletOnChainManager(chain)
 
         const sender = await this.getAddress({ chain })
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
@@ -87,7 +99,7 @@ export class FunWallet extends FirstClassActions {
             maxPriorityFeePerGas: maxFeePerGas!,
             initCode
         }
-        const nonce = await auth.getNonce(partialOp.sender)
+        const nonce = await this.getNonce(partialOp.sender)
         return { ...partialOp, nonce }
     }
 
@@ -212,17 +224,16 @@ export class FunWallet extends FirstClassActions {
         })
     }
 
-    async _getThisInitCode(chain: Chain, auth: Auth) {
-        const owners = await auth.getOwnerAddr()
-        const uniqueId = await this.identifier.getIdentifier()
+    async _getThisInitCode(chain: Chain) {
+        const owners: Hex[] = Array.from(this.userInfo!.keys())
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
         const rbac = await chain.getAddress("rbacAddress")
         const userAuth = await chain.getAddress("userAuthAddress")
         const loginData: LoginData = {
-            salt: uniqueId
+            salt: this.walletUniqueId!
         }
-        const rbacInitData = toBytes32Arr(owners.map((owner: Address) => addresstoBytes32(owner)))
+        const rbacInitData = toBytes32Arr(owners)
         const userAuthInitData = "0x"
         const initCodeParams: InitCodeParams = {
             entryPointAddress,
@@ -244,25 +255,25 @@ export class FunWallet extends FirstClassActions {
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
-            this.address = await new WalletOnChainManager(chain, this.identifier).getWalletAddress()
+            this.address = await getWalletAddress(chain, this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
+    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain.toString())
-        const walletIdentifer = new WalletIdentifier(uniqueId, index)
-        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-        return await walletOnChainManager.getWalletAddress()
+        const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
+        const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
+        return await getWalletAddress(chainObj, walletUniqueId)
     }
 
     static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {
-        //offline query
-        const walletIdentifer = new WalletIdentifier(uniqueId, index)
-        const identifier = await walletIdentifer.getIdentifier()
-        return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
+        const walletUniqueId = keccak256(toBytes(`${uniqueId}-${index}`))
+        const client = await createPublicClient({
+            transport: http(rpcUrl)
+        })
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [walletUniqueId], client)
     }
 
     async sendTx(userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
@@ -279,7 +290,7 @@ export class FunWallet extends FirstClassActions {
         const chain = await getChainFromData(txOptions.chain)
         await chain.sendOpToBundler(userOp)
         const opHash = await new UserOp(userOp).getOpHashData(chain)
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+        const onChainDataManager = new WalletOnChainManager(chain)
 
         let txid
         try {
@@ -501,11 +512,11 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<UserOp> {
         const chain = await getChainFromData(txOptions.chain)
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+        const onChainDataManager = new WalletOnChainManager(chain)
 
         const sender = await this.getAddress({ chain })
         const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
@@ -524,7 +535,7 @@ export class FunWallet extends FirstClassActions {
             maxFeePerGas: maxFeePerGas!,
             maxPriorityFeePerGas: maxFeePerGas!,
             initCode,
-            nonce: await auth.getNonce(sender)
+            nonce: await this.getNonce(sender)
         }
         const signature = await auth.getEstimateGasSignature()
         const estimateOp: UserOperation = {

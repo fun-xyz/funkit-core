@@ -1,4 +1,4 @@
-import { Address, Hex } from "viem"
+import { Hex } from "viem"
 
 export type GroupInfo = {
     memberIds: Hex[]
@@ -6,12 +6,6 @@ export type GroupInfo = {
 }
 
 export type User = {
-    userId: string
+    userId: Hex
     groupInfo?: GroupInfo
-}
-
-export interface FunWalletParams {
-    users?: User[]
-    uniqueId?: string
-    walletAddr?: Address
 }

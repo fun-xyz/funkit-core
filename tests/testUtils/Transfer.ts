@@ -1,5 +1,5 @@
 import { assert } from "chai"
-import { Auth, Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
@@ -35,8 +35,11 @@ export const TransferTest = (config: TransferTestConfig) => {
                 gasSponsor: undefined
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
+            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
+            })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 

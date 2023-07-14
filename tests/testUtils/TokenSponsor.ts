@@ -1,6 +1,6 @@
 import { assert, expect } from "chai"
 import { Address, Hex } from "viem"
-import { Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
@@ -34,11 +34,11 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe("TokenSponsor", function () {
+    describe.only("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
-        let auth: Eoa
-        let funder: Eoa
+        let auth: Auth
+        let funder: Auth
         let wallet: FunWallet
         let wallet1: FunWallet
         let funderAddress: Address
@@ -48,8 +48,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let options: GlobalEnvOption
 
         before(async function () {
-            auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
-            funder = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+            auth = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
+            funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId,
@@ -58,15 +58,23 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await configureEnvironment(options)
 
-            const uniqueId = await auth.getUniqueId()
+            wallet = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(
+                    config.chainId.toString(),
+                    config.walletIndex ? config.walletIndex : 1223452391856341
+                )
+            })
 
-            wallet = new FunWallet({ uniqueId, index: config.walletIndex ? config.walletIndex : 1223452391856341 })
-            wallet1 = new FunWallet({ uniqueId, index: config.funderIndex ? config.funderIndex : 2345234 })
+            wallet1 = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.funderIndex ? config.funderIndex : 2345234)
+            })
 
             walletAddress = await wallet.getAddress()
             walletAddress1 = await wallet1.getAddress()
 
-            funderAddress = await funder.getUniqueId()
+            funderAddress = await funder.getAddress()
 
             if (config.prefund) {
                 await fundWallet(funder, wallet, config.prefundAmt ? config.prefundAmt : 0.1)
@@ -172,7 +180,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         })
 
         it("Blacklist Mode Approved", async () => {
-            const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            const funder = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())
             }

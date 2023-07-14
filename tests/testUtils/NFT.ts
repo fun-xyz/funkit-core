@@ -1,6 +1,6 @@
 import { assert } from "chai"
 import { Address } from "viem"
-import { Auth, Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { getChainFromData } from "../../src/data"
@@ -38,9 +38,16 @@ export const NFTTest = (config: NFTTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet1 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811340 })
-            wallet2 = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 1792811341 })
+
+            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet1 = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), 1792811340)
+            })
+            wallet2 = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), 1792811341)
+            })
             if (prefund) {
                 await fundWallet(auth, wallet1, config.amount ? config.amount : 0.2)
                 await fundWallet(auth, wallet2, config.amount ? config.amount : 0.2)

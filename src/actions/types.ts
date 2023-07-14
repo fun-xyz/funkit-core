@@ -1,6 +1,5 @@
 import { Address } from "viem"
 import { Auth } from "../auth"
-import { NewAuth } from "../auth/NewAuth"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -14,7 +13,7 @@ export interface ApproveAndExecParams {
 }
 
 export interface ActionData {
-    wallet: FunWallet | Auth | NewAuth
+    wallet: FunWallet | Auth
     chain: Chain
     options: EnvOption
 }

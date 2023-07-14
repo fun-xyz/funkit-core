@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import { Hex } from "viem"
-import { Auth, Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -17,9 +17,12 @@ describe("GetAssets", function () {
             apiKey: apiKey
         }
         await configureEnvironment(options)
-        auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+        auth = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
 
-        wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: 14142 })
+        wallet = new FunWallet({
+            users: [{ userId: await auth.getAddress() }],
+            uniqueId: await auth.getWalletUniqueId(chainId.toString(), 14142)
+        })
     })
 
     describe("/get-tokens", () => {
