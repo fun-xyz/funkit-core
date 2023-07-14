@@ -13,6 +13,7 @@ import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
 import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
 import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
 import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
+import TEST_NFT_CONTRACT from "../abis/TestNFT.json"
 import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
 import TOKEN_PRICE_ORACLE_CONTRACT from "../abis/TokenPriceOracle.json"
 import UNISWAPV2FACTORY_CONTRACT from "../abis/UniswapV2Factory.json"
@@ -48,10 +49,13 @@ let API_URL = "https://api.fun.xyz"
 
 switch (process.env.NODE_ENV) {
     case "staging":
-        API_URL = "https://api.fun.xyz/staging"
+        API_URL = "https://api.fun.xyz/staging/v1"
         break
     case "testing":
         API_URL = "https://api.fun.xyz/testing"
+        break
+    case "local":
+        API_URL = LOCAL_API_URL
         break
     default:
         API_URL = "https://api.fun.xyz"
@@ -147,5 +151,6 @@ export const CONTRACT_ADDRESSES = {
     univ3quoter: UNIV3_QUOTER["addresses"],
     univ3router: UNIV3_ROUTER["addresses"],
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
-    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"]
+    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
+    TestNFT: TEST_NFT_CONTRACT["addresses"]
 }

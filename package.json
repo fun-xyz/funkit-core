@@ -9,10 +9,10 @@
     },
     "scripts": {
         "build": "rm -rf dist && tsc",
-        "test": "ts-mocha tests/tenderly/*.ts",
+        "test": "ts-mocha tests/tenderly/*.ts --exit",
         "test-tenderly": "ts-mocha tests/tenderly/*.ts",
         "test-aws": "env PREFUND=false ts-mocha",
-        "test-goerli": "env PREFUND=false ts-mocha tests/goerli/*.ts",
+        "test-goerli": "env PREFUND=false ts-mocha --exit tests/goerli/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",

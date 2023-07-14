@@ -1,4 +1,4 @@
-import { Address, Hex, decodeAbiParameters, pad, toBytes } from "viem"
+import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput, WalletCallData } from "./types"
 import { WALLET_ABI } from "../common"
@@ -106,27 +106,11 @@ export const decodeCalldata = (callData: Hex): WalletCallData => {
 
 const _decodeExecWithFee = (callData: Hex): WalletCallData => {
     const walletcalldata = ("0x" + callData.slice(SELECTOR_LENGTH)) as Hex
-    const [target, value, calldata, [token, recipient, amount]] = decodeAbiParameters(
-        [
-            { type: "address" },
-            { type: "uint256" },
-            { type: "bytes" },
-            {
-                type: "tuple",
-                components: [{ type: "address" }, { type: "address" }, { type: "uint256" }]
-            }
-        ],
-        walletcalldata
-    )
+    const [target, value, calldata] = decodeAbiParameters([{ type: "address" }, { type: "uint256" }, { type: "bytes" }], walletcalldata)
     return {
         target: target as Hex,
         value: value as bigint,
-        calldata: calldata as Hex,
-        feeInfo: {
-            token: token as Address,
-            recipient: recipient as Address,
-            amount: amount as bigint
-        }
+        calldata: calldata as Hex
     }
 }
 const _decodeExec = (callData: Hex): WalletCallData => {

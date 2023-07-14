@@ -8,7 +8,7 @@ import {
     LOCAL_TOKEN_ADDRS
 } from "../common/constants"
 import { Helper, ServerMissingDataError } from "../errors"
-import { sendPostRequest } from "../utils/ApiUtils"
+import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function getTokenInfo(symbol: string, chainId: string): Promise<any> {
     symbol = symbol.toLowerCase()
@@ -32,11 +32,10 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<any
         return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
 
-    const tokenInfo = await sendPostRequest(API_URL, "get-erc-token", body).then((r) => {
-        return r.data
-    })
-    if (tokenInfo.contract_address) {
-        return tokenInfo.contract_address
+    const tokenInfo = await sendGetRequest(API_URL, `asset/erc20/${body.chain}/${body.symbol}`)
+
+    if (tokenInfo.address) {
+        return tokenInfo.address
     }
     const helper = new Helper("token", symbol, "token symbol doesn't exist")
     throw new ServerMissingDataError("Token.getAddress", "DataServer", helper)
@@ -58,24 +57,20 @@ export async function getChainInfo(chainId: string): Promise<any> {
         r.moduleAddresses = { ...r.moduleAddresses, FORK_DEFAULT_ADDRESSES }
         return r
     } else {
-        return await sendPostRequest(API_URL, "get-chain-info", body).then((r) => {
-            if (!r.data) {
+        return await sendGetRequest(API_URL, `chain-info/${chainId}`).then((r) => {
+            if (!r) {
                 throw new Error(JSON.stringify(r))
             }
-            return r.data
+            return r
         })
     }
 }
 
 export async function getChainFromName(name: string): Promise<any> {
     if (name === LOCAL_FORK_CHAIN_KEY) {
-        return await sendPostRequest(LOCAL_API_URL, "get-chain-info", { chain: name }).then((r) => {
-            return r
-        })
+        return await sendGetRequest(LOCAL_API_URL, `chain-id?${name}`)
     } else {
-        return await sendPostRequest(API_URL, "get-chain-from-name", { name }).then((r) => {
-            return r.data
-        })
+        return await sendGetRequest(API_URL, `chain-id?${name}`)
     }
 }
 
@@ -102,5 +97,6 @@ export async function getPaymasterAddress(chainId: string): Promise<any> {
             paymaster: { paymasterAddress }
         }
     } = await getChainInfo(chainId)
+
     return paymasterAddress
 }
