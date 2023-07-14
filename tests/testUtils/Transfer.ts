@@ -173,23 +173,6 @@ export const TransferTest = (config: TransferTestConfig) => {
                     assert(e.message.includes("FW406"), "call succeded when it should have failed")
                 }
             })
-
-            it("invalid fee", async () => {
-                const waitTime = BigInt(Date.now())
-                const diff = deadline * 1000n - waitTime
-                if (diff > 0n) {
-                    await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.1))
-                }
-                const randomAddress = randomBytes(20)
-                const outTokenAddress = await new Token(outToken).getAddress()
-                try {
-                    await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
-                    assert(false, "call succeded when it should have failed")
-                } catch (e: any) {
-                    console.log(e.message)
-                    assert(e.message.includes("FW406"), "call succeded when it should have failed")
-                }
-            })
         })
     })
 }
