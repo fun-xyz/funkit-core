@@ -97,6 +97,28 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
+    isRequestUnstakeParams = (input: any) => {
+        return input.amounts !== undefined
+    }
+    isFinishUnstakeParams = (input: any) => {
+        return input.recipient !== undefined
+    }
+
+    async unstake(
+        auth: Auth,
+        userId: string,
+        params: RequestUnstakeParams | FinishUnstakeParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<UserOp> {
+        let callData
+        if (this.isRequestUnstakeParams(params)) {
+            callData = await requestUnstakeCalldata(params as RequestUnstakeParams)
+        } else if (this.isFinishUnstakeParams(params)) {
+            callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
+        }
+        return await this.createOperation(auth, userId, callData, txOptions)
+    }
+
     async transferERC721(
         auth: Auth,
         params: ERC721TransferParams,
