@@ -1,7 +1,8 @@
 import { expect } from "chai"
-import { Chain, createPublicClient, getAddress, http } from "viem"
+import { Chain, createPublicClient, getAddress, http, isHex, size } from "viem"
 import { mainnet, polygon } from "viem/chains"
-import { isContract } from "../../../src/utils/ChainUtils"
+import { isContract, randomBytes } from "../../../src/utils/ChainUtils"
+
 describe("Test src/utils/ChainUtils.ts", function () {
     describe("isContract", function () {
         it("USDC address should return true", async function () {
@@ -50,6 +51,14 @@ describe("Test src/utils/ChainUtils.ts", function () {
                 transport: http()
             })
             expect(await isContract(USDC, client)).to.be.false
+        })
+    })
+
+    describe("randomBytes", function () {
+        it("Should return a string of length 32", function () {
+            const bytes32 = randomBytes(32)
+            expect(isHex(bytes32)).to.be.true
+            expect(size(bytes32)).to.equal(32)
         })
     })
 })

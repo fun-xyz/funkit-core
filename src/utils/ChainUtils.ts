@@ -1,4 +1,4 @@
-import { Address, PublicClient, parseEther, toHex } from "viem"
+import { Address, Hex, PublicClient, parseEther, toHex } from "viem"
 import { Auth } from "../auth"
 import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
@@ -33,7 +33,7 @@ export const isContract = async (address: Address, client: PublicClient): Promis
     }
 }
 
-export const randomBytes = (length: number) => {
+export const randomBytes = (length: number): Hex => {
     const bytes = new Uint8Array(length)
     for (let i = 0; i < length; i++) {
         bytes[i] = Math.floor(Math.random() * 256)
