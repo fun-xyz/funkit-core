@@ -142,7 +142,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it("Only User Whitelisted", async () => {
+        it.only("Only User Whitelisted", async () => {
             await funder.sendTx(sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode())
@@ -155,6 +155,16 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(sponsor.removeSpenderFromWhiteList(walletAddress1))
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
+            // Check _getHasEnoughDeposit(token, spender, maxTokenCost), should be true or below is true
+            const tokenBalance = await sponsor.getTokenBalance(paymasterToken, walletAddress)
+
+            console.log(tokenBalance)
+            // Check _getCanPayThroughApproval(token, spender, maxTokenCost), should be true
+            const token = new Token(paymasterToken)
+            const allowance = await token.getApproval(walletAddress, await sponsor.getPaymasterAddress())
+            const balance = await token.getBalance(walletAddress)
+            await token.approve(await sponsor.getPaymasterAddress(), 1000e18)
+            console.log(allowance, balance)
 
             expect(await runSwap(wallet)).to.not.throw
             try {
@@ -165,7 +175,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it("Blacklist Mode Approved", async () => {
+        it.only("Blacklist Mode Approved", async () => {
             const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())

@@ -6,9 +6,9 @@ const config: TokenSponsorTestConfig = {
     outToken: "dai",
     paymasterToken: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
     baseTokenStakeAmt: 0.006,
-    paymasterTokenStakeAmt: 100,
-    prefund: false,
+    paymasterTokenStakeAmt: 10000,
+    prefund: true,
     swapAmount: 0.001,
-    stake: false
+    stake: true
 }
 TokenSponsorTest(config)
