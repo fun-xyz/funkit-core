@@ -1,13 +1,14 @@
-import { Address, Hex, getAbiItem, getAddress, getFunctionSelector } from "viem"
+import { Hex, getAddress, padHex } from "viem"
 import { RuleStruct, SessionKeyParams } from "./types"
 import { SessionKeyAuth } from "../auth"
-import { HashOne, RBAC_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
+import { RBAC_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { getChainFromData } from "../data"
 import { Token } from "../data/Token"
 import { Helper, MissingParameterError } from "../errors"
 import { objectify, randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
-import { formatAbiItem } from "../utils/ViemUtils"
+import { getSigHash } from "../utils/ViemUtils"
+export const HashOne = padHex("0x1", { size: 32 })
 
 export const createSessionKeyCalldata = async (params: SessionKeyParams) => {
     if (params.targetWhitelist.length === 0) {
@@ -20,15 +21,14 @@ export const createSessionKeyCalldata = async (params: SessionKeyParams) => {
     feeValueLimit ??= 0n
     const selectors: Hex[] = []
     params.actionWhitelist.forEach((actionWhitelistItem) => {
-        selectors.push(...actionWhitelistItem.functionWhitelist.map((functionName) => getSelector(actionWhitelistItem.abi, functionName)))
+        selectors.push(...actionWhitelistItem.functionWhitelist.map((functionName) => getSigHash(actionWhitelistItem.abi, functionName)))
     })
     const targets = params.targetWhitelist.map((target) => getAddress(target))
-    let recipients: Address[] = []
-    let tokens: Address[] = []
+
     let feeRecipientTokenMerkleRootHash = HashOne
     if (params.feeRecipientWhitelist && params.feeTokenWhitelist) {
-        recipients = params.feeRecipientWhitelist.map((recipient) => getAddress(recipient))
-        tokens = await Promise.all(params.feeTokenWhitelist.map((token) => Token.getAddress(token)))
+        const recipients = params.feeRecipientWhitelist.map((recipient) => getAddress(recipient))
+        const tokens = await Promise.all(params.feeTokenWhitelist.map((token) => Token.getAddress(token)))
         const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
         feeRecipientTokenMerkleRootHash = feeRecipientAndTokenMerkleTree.getRoot()
         params.user.setFeeRecipientMerkleTree(feeRecipientAndTokenMerkleTree)
@@ -56,12 +56,6 @@ export const createSessionKeyCalldata = async (params: SessionKeyParams) => {
     const chain = await getChainFromData(params.chainId)
     const rbacAddress = await chain.getAddress("rbacAddress")
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [rbacAddress, 0, multicallCallData])
-}
-
-export const getSelector = (abi: any, functionName: string) => {
-    const abiItem = getAbiItem({ abi, name: functionName })
-    const definition = formatAbiItem(abiItem)
-    return getFunctionSelector(definition)
 }
 
 export const createSessionUser = () => {

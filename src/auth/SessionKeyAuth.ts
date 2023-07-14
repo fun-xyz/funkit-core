@@ -1,9 +1,15 @@
-import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
+import { Address, Hex, decodeAbiParameters, pad, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput, WalletCallData } from "./types"
+import { WALLET_ABI } from "../common"
 import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
 import { randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
+import { getSigHash } from "../utils/ViemUtils"
+
+const SELECTOR_LENGTH = 10
+const execFromEntryPointSelector = getSigHash(WALLET_ABI, "execFromEntryPoint")
+const execFromEntryPointFeeSelector = getSigHash(WALLET_ABI, "execFromEntryPointWithFee")
 
 export class SessionKeyAuth extends Eoa {
     ruleId: Hex
@@ -86,11 +92,46 @@ export const getTargetFromCall = (callData: Hex) => {
     return decodeCalldata(callData).target
 }
 export const getSelectorFromCall = (callData: Hex) => {
-    return decodeCalldata(callData).calldata.slice(0, 10) as Hex
+    return decodeCalldata(callData).calldata.slice(0, SELECTOR_LENGTH) as Hex
 }
 
 export const decodeCalldata = (callData: Hex): WalletCallData => {
-    const walletcalldata = ("0x" + callData.slice(10)) as Hex
+    if (callData.includes(execFromEntryPointFeeSelector)) {
+        console.log("FEEE")
+        return _decodeExecWithFee(callData)
+    } else if (callData.includes(execFromEntryPointSelector)) {
+        return _decodeExec(callData)
+    }
+    throw new Error("invalid call data. must be execFromEntryPoint or execFromEntryPointWithFee")
+}
+
+const _decodeExecWithFee = (callData: Hex): WalletCallData => {
+    const walletcalldata = ("0x" + callData.slice(SELECTOR_LENGTH)) as Hex
+    const [target, value, calldata, [token, recipient, amount]] = decodeAbiParameters(
+        [
+            { type: "address" },
+            { type: "uint256" },
+            { type: "bytes" },
+            {
+                type: "tuple",
+                components: [{ type: "address" }, { type: "address" }, { type: "uint256" }]
+            }
+        ],
+        walletcalldata
+    )
+    return {
+        target: target as Hex,
+        value: value as bigint,
+        calldata: calldata as Hex,
+        feeInfo: {
+            token: token as Address,
+            recipient: recipient as Address,
+            amount: amount as bigint
+        }
+    }
+}
+const _decodeExec = (callData: Hex): WalletCallData => {
+    const walletcalldata = ("0x" + callData.slice(SELECTOR_LENGTH)) as Hex
     const [target, value, calldata] = decodeAbiParameters([{ type: "address" }, { type: "uint256" }, { type: "bytes" }], walletcalldata)
     return {
         target: target as Hex,

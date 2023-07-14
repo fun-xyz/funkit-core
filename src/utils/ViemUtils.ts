@@ -1,5 +1,5 @@
 import { AbiParameter } from "abitype"
-import { AbiItem } from "viem"
+import { AbiItem, getAbiItem, getFunctionSelector } from "viem"
 
 // Copied from viem
 export function formatAbiItem(abiItem: AbiItem, { includeName = false }: { includeName?: boolean } = {}) {
@@ -24,4 +24,10 @@ function formatAbiParam(param: AbiParameter, { includeName }: { includeName: boo
         )}`
     }
     return param.type + (includeName && param.name ? ` ${param.name}` : "")
+}
+
+export const getSigHash = (abi: any, functionName: string) => {
+    const abiItem = getAbiItem({ abi, name: functionName })
+    const definition = formatAbiItem(abiItem)
+    return getFunctionSelector(definition)
 }

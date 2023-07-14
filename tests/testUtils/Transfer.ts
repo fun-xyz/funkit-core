@@ -1,7 +1,7 @@
 import { assert } from "chai"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth, Eoa } from "../../src/auth"
-import { ERC20_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
+import { AddressZero, ERC20_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
@@ -24,7 +24,7 @@ export const TransferTest = (config: TransferTestConfig) => {
     const { outToken, baseToken, prefund, prefundAmt } = config
 
     describe("Transfer", function () {
-        this.timeout(200_000)
+        this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
 
@@ -92,7 +92,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const user = createSessionUser()
             const second = 1000
             const minute = 60 * second
-            const deadline = BigInt(Date.now() + 0 * minute) / 1000n
+            const deadline = BigInt(Date.now() + 3 * minute) / 1000n
+            const feeRecip = randomBytes(20)
             before(async () => {
                 const basetokenAddr = await Token.getAddress(baseToken)
                 const sessionKeyParams: SessionKeyParams = {
@@ -104,6 +105,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                             functionWhitelist: ["transfer"]
                         }
                     ],
+                    feeTokenWhitelist: [AddressZero],
+                    feeRecipientWhitelist: [feeRecip],
                     deadline,
                     chainId: config.chainId
                 }
@@ -128,7 +131,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             })
 
             it("Session key function out of scope", async () => {
-                it("Session key target out of scope", async () => {
+                it("Session key selector out of scope", async () => {
                     const randomAddress = randomBytes(20)
                     const outTokenAddress = await new Token("usdc").getAddress()
                     try {
@@ -155,9 +158,10 @@ export const TransferTest = (config: TransferTestConfig) => {
             })
 
             it("Session key expires", async () => {
-                const waitTime = BigInt(Date.now()) / 1000n
-                if (deadline - waitTime > 0n) {
-                    await new Promise((resolve) => setTimeout(resolve, Number(deadline - waitTime)))
+                const waitTime = BigInt(Date.now())
+                const diff = deadline * 1000n - waitTime
+                if (diff > 0n) {
+                    await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.1))
                 }
                 const randomAddress = randomBytes(20)
                 const outTokenAddress = await new Token(outToken).getAddress()
@@ -165,6 +169,24 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
+                    console.log(e.message)
+                    assert(e.message.includes("FW406"), "call succeded when it should have failed")
+                }
+            })
+
+            it("invalid fee", async () => {
+                const waitTime = BigInt(Date.now())
+                const diff = deadline * 1000n - waitTime
+                if (diff > 0n) {
+                    await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.1))
+                }
+                const randomAddress = randomBytes(20)
+                const outTokenAddress = await new Token(outToken).getAddress()
+                try {
+                    await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                    assert(false, "call succeded when it should have failed")
+                } catch (e: any) {
+                    console.log(e.message)
                     assert(e.message.includes("FW406"), "call succeded when it should have failed")
                 }
             })

@@ -83,7 +83,6 @@ export const BASE_WRAP_TOKEN_ADDR = {
 
 export const AddressZero = padHex("0x", { size: 20 })
 export const HashZero = padHex("0x", { size: 32 })
-export const HashOne = padHex("0x1", { size: 32 })
 
 export const TEST_API_KEY = "localtest"
 export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
