@@ -102,6 +102,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await configureEnvironment(options)
 
             sponsor = new TokenSponsor()
+
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
                 const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
@@ -142,7 +143,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             await funder.sendTx(sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode())
@@ -155,16 +156,11 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(sponsor.removeSpenderFromWhiteList(walletAddress1))
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
-            // Check _getHasEnoughDeposit(token, spender, maxTokenCost), should be true or below is true
-            const tokenBalance = await sponsor.getTokenBalance(paymasterToken, walletAddress)
 
-            console.log(tokenBalance)
-            // Check _getCanPayThroughApproval(token, spender, maxTokenCost), should be true
-            const token = new Token(paymasterToken)
-            const allowance = await token.getApproval(walletAddress, await sponsor.getPaymasterAddress())
-            const balance = await token.getBalance(walletAddress)
-            await token.approve(await sponsor.getPaymasterAddress(), 1000e18)
-            console.log(allowance, balance)
+            if (!(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!))) {
+                await funder.sendTx(sponsor.batchWhitelistTokens([paymasterToken], [true]))
+            }
+            expect(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!)).to.be.true
 
             expect(await runSwap(wallet)).to.not.throw
             try {
@@ -175,7 +171,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it.only("Blacklist Mode Approved", async () => {
+        it("Blacklist Mode Approved", async () => {
             const funder = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode())
@@ -187,7 +183,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(sponsor.addSpenderToBlackList(walletAddress1))
             expect(await sponsor.getSpenderBlacklisted(walletAddress1, funderAddress)).to.be.true
-            console.log("token list mode", await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))
 
             await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
