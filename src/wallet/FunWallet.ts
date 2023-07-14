@@ -12,10 +12,12 @@ import {
     OneInchCalldata,
     OneInchSwapParams,
     RequestUnstakeParams,
+    SessionKeyParams,
     StakeParams,
     UniswapParams,
     createCalldata,
     createExecRawTxCalldata,
+    createSessionKeyCalldata,
     erc20ApproveCalldata,
     erc20TransferCalldata,
     erc721ApproveCalldata,
@@ -230,7 +232,7 @@ export class FunWallet {
     ): Promise<UserOp> => {
         const chain = await getChainFromData(txOptions.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const signature = await auth.getEstimateGasSignature()
+        const signature = await auth.getEstimateGasSignature(new UserOp(partialOp))
         const estimateOp: UserOperation = {
             ...partialOp,
             signature: signature.toLowerCase()
@@ -499,15 +501,15 @@ export class FunWallet {
             maxFeePerGas: maxFeePerGas!,
             maxPriorityFeePerGas: maxFeePerGas!,
             initCode,
-            nonce: await auth.getNonce(sender)
-        }
-        const signature = await auth.getEstimateGasSignature()
-        const estimateOp: UserOperation = {
-            ...partialOp,
-            signature: signature.toLowerCase(),
+            nonce: await auth.getNonce(sender),
             preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
+        }
+        const signature = await auth.getEstimateGasSignature(new UserOp(partialOp))
+        const estimateOp: UserOperation = {
+            ...partialOp,
+            signature: signature.toLowerCase()
         }
         const res = await chain.estimateOpGas(estimateOp)
         const estimatedOp = new UserOp({
@@ -634,6 +636,15 @@ export class FunWallet {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         const callData = await createExecRawTxCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async createSessionKey(
+        auth: Auth,
+        params: SessionKeyParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await createSessionKeyCalldata(params)
         return await this.generateUserOp(auth, callData, txOptions)
     }
 }

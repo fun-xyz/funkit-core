@@ -3,6 +3,7 @@ import { Hex, keccak256, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput, GroupAuthInput } from "./types"
 import { getGroupById, setGroupById } from "../apis"
+import { UserOp } from "../data"
 import { Helper, ParameterFormatError } from "../errors"
 
 export class GroupAuth extends Eoa {
@@ -48,8 +49,8 @@ export class GroupAuth extends Eoa {
         await this._init()
         return this.uniqueId!
     }
-
-    override async getEstimateGasSignature(): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    override async getEstimateGasSignature(_: UserOp): Promise<string> {
         return await this.getUniqueId()
     }
 

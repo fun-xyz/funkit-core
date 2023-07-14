@@ -23,7 +23,7 @@ export class NFT {
 
     async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
-        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "approve", [spender, tokenId])
+        const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "approve", [spender, tokenId])
         return { ...data, chain }
     }
 
@@ -34,7 +34,7 @@ export class NFT {
 
     async approveForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
         const chain = await getChainFromData(options.chain)
-        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, true])
+        const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, true])
         return { ...data, chain }
     }
 
@@ -81,7 +81,7 @@ export class NFT {
 
     async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
-        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, false])
+        const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "setApprovalForAll", [spender, false])
         return { ...data, chain }
     }
 
@@ -92,11 +92,7 @@ export class NFT {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<any> {
         const chain = await getChainFromData(options.chain)
-        const data = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "transferFrom", [
-            sender,
-            spender,
-            tokenId
-        ])
+        const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(), "transferFrom", [sender, spender, tokenId])
         return { ...data, chain }
     }
 
