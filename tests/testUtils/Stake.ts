@@ -73,7 +73,7 @@ export const StakeTest = (config: StakeTestConfig) => {
                 assert(balAfter > balBefore, "unable to finish unstaking")
             } else {
                 try {
-                    const userOp = await wallet.finishUnstake(auth, {
+                    const userOp = await wallet.unstake(auth, "", {
                         recipient: await wallet.getAddress(),
                         walletAddress: await wallet.getAddress(),
                         chainId: config.actualChainId

@@ -443,50 +443,50 @@ export class FunWallet extends FirstClassActions {
         return { tokens, nfts }
     }
 
-    async generateUserOp(auth: Auth, callData: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+    // async generateUserOp(auth: Auth, callData: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+    //     const chain = await getChainFromData(txOptions.chain)
+    //     const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
-        const sender = await this.getAddress({ chain })
-        const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
-        let paymasterAndData = "0x"
-        if (txOptions.gasSponsor) {
-            if (txOptions.gasSponsor.token) {
-                const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            } else {
-                const sponsor = new GaslessSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            }
-        }
+    //     const sender = await this.getAddress({ chain })
+    //     const maxFeePerGas = await chain.getFeeData()
+    //     const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+    //     let paymasterAndData = "0x"
+    //     if (txOptions.gasSponsor) {
+    //         if (txOptions.gasSponsor.token) {
+    //             const sponsor = new TokenSponsor(txOptions)
+    //             paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+    //         } else {
+    //             const sponsor = new GaslessSponsor(txOptions)
+    //             paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+    //         }
+    //     }
 
-        const partialOp = {
-            callData,
-            paymasterAndData,
-            sender,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
-            initCode,
-            nonce: await auth.getNonce(sender)
-        }
-        const signature = await auth.getEstimateGasSignature()
-        const estimateOp: UserOperation = {
-            ...partialOp,
-            signature: signature.toLowerCase(),
-            preVerificationGas: 100_000n,
-            callGasLimit: BigInt(10e6),
-            verificationGasLimit: BigInt(10e6)
-        }
-        const res = await chain.estimateOpGas(estimateOp)
-        const estimatedOp = new UserOp({
-            ...partialOp,
-            ...res,
-            signature
-        })
-        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
-        return await this.sendTx(estimatedOp, parseOptions(txOptions))
-    }
+    //     const partialOp = {
+    //         callData,
+    //         paymasterAndData,
+    //         sender,
+    //         maxFeePerGas: maxFeePerGas!,
+    //         maxPriorityFeePerGas: maxFeePerGas!,
+    //         initCode,
+    //         nonce: await auth.getNonce(sender)
+    //     }
+    //     const signature = await auth.getEstimateGasSignature()
+    //     const estimateOp: UserOperation = {
+    //         ...partialOp,
+    //         signature: signature.toLowerCase(),
+    //         preVerificationGas: 100_000n,
+    //         callGasLimit: BigInt(10e6),
+    //         verificationGasLimit: BigInt(10e6)
+    //     }
+    //     const res = await chain.estimateOpGas(estimateOp)
+    //     const estimatedOp = new UserOp({
+    //         ...partialOp,
+    //         ...res,
+    //         signature
+    //     })
+    //     estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
+    //     return await this.sendTx(estimatedOp, parseOptions(txOptions))
+    // }
 
     async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(option.chain)
