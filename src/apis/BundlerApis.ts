@@ -18,5 +18,5 @@ export async function validateChainId(chainId: string): Promise<any> {
 // Deprecated
 export async function getChainId(bundlerUrl: string): Promise<any> {
     const response = await sendGetRequest(API_URL, `bundler/get-chain-id?bundlerUrl=${bundlerUrl}`)
-    response.chainId
+    return response.chainId
 }

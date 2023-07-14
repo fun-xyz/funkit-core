@@ -72,10 +72,6 @@ export async function getAllNFTs(holderAddr: string): Promise<any> {
  * }
  */
 export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    // return await sendPostRequest(API_URL, "getAssets/get-all-tokens", {
-    //     address: holderAddr,
-    //     onlyVerifiedTokens: onlyVerifiedTokens
-    // })
     return await sendGetRequest(API_URL, `nfts/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
 }
 
