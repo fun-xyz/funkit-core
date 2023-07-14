@@ -98,16 +98,15 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<UserOp> {
         let callData
-        if (params.token === undefined) {
-            const currentLocation = "action.tokenApprove"
-            const helperMainMessage = "params were missing or incorrect"
-            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
-        }
         if (this.isERC20ApproveParams(params)) {
             callData = await erc20ApproveCalldata(params)
         } else if (this.isERC721ApproveParams(params)) {
             callData = await erc721ApproveCalldata(params)
+        } else {
+            const currentLocation = "action.tokenApprove"
+            const helperMainMessage = "params were missing or incorrect"
+            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
+            throw new MissingParameterError(currentLocation, helper)
         }
         return await this.createOperation(auth, userId, callData, txOptions)
     }

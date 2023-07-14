@@ -96,7 +96,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
 
-            const userOp = await wallet.uniswapV3Swap(auth, {
+            const userOp = await wallet.swap(auth, "", {
                 in: config.inToken,
                 amount: config.amount ? config.amount : 0.0001,
                 out: config.outToken,

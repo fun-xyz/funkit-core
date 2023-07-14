@@ -54,7 +54,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it("transfer", async () => {
+            it.only("transfer", async () => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 try {
@@ -98,7 +98,7 @@ export const NFTTest = (config: NFTTestConfig) => {
 
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
-                const userOp = await wallet1.approveERC721(auth, {
+                const userOp = await wallet1.tokenApprove(auth, "", {
                     spender: await wallet2.getAddress(),
                     token: nftAddress,
                     tokenId: nftId
