@@ -20,7 +20,7 @@
         "add-token": "ts-node tests/addToken.ts",
         "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
         "prepare": "husky install",
-        "test-unit": "nyc --reporter=html --reporter=text mocha tests/unit/**/*.ts"
+        "test-unit": "nyc --reporter=html --reporter=text ts-mocha tests/integration/**/*.test.ts"
     },
     "author": "The Fun Group (https://fun.xyz/)",
     "license": "ISC",
@@ -28,12 +28,14 @@
         "@aws-sdk/client-secrets-manager": "^3.315.0",
         "@ethersproject/contracts": "^5.7.0",
         "@lifeomic/attempt": "^3.0.3",
+        "@types/sinon": "^10.0.15",
         "@uniswap/sdk": "^3.0.3",
         "@uniswap/v3-core": "^1.0.1",
         "@uniswap/v3-sdk": "^3.9.0",
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "node-fetch": "^2.6.11",
+        "sinon": "^15.2.0",
         "uuid": "^9.0.0",
         "viem": "^0.3.50"
     },
