@@ -1,9 +1,39 @@
-import { Address } from "viem"
-import { ActionData, ActionFunction, FirstClassActions } from "../actions"
+import { Address, Hex } from "viem"
+import {
+    ActionData,
+    ActionFunction,
+    ApproveAndExecParams,
+    ApproveERC20Params,
+    ApproveERC721Params,
+    ERC20TransferParams,
+    ERC721TransferParams,
+    FinishUnstakeParams,
+    NativeTransferParams,
+    OneInchCalldata,
+    OneInchSwapParams,
+    RequestUnstakeParams,
+    SessionKeyParams,
+    StakeParams,
+    UniswapParams,
+    createCalldata,
+    createExecRawTxCalldata,
+    createSessionKeyCalldata,
+    erc20ApproveCalldata,
+    erc20TransferCalldata,
+    erc721ApproveCalldata,
+    erc721TransferCalldata,
+    ethTransferCalldata,
+    finishUnstakeCalldata,
+    requestUnstakeCalldata,
+    stakeCalldata,
+    uniswapV2SwapCalldata,
+    uniswapV3SwapCalldata
+} from "../actions"
+import { approveAndExecCalldata } from "../actions/ApproveAndExec"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
-import { ExecutionReceipt, TransactionData } from "../common"
+import { ExecutionReceipt, TransactionData, TransactionParams } from "../common"
 import { AddressZero } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
@@ -23,13 +53,12 @@ import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
-
 export interface FunWalletParams {
     uniqueId: string
     index?: number
 }
 
-export class FunWallet extends FirstClassActions {
+export class FunWallet {
     identifier: WalletIdentifier
     abiManager: WalletAbiManager
     address?: Address
@@ -40,7 +69,6 @@ export class FunWallet extends FirstClassActions {
      * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
      */
     constructor(params: FunWalletParams) {
-        super()
         const { uniqueId, index } = params
         this.identifier = new WalletIdentifier(uniqueId, index)
         this.abiManager = new WalletAbiManager()
@@ -53,7 +81,7 @@ export class FunWallet extends FirstClassActions {
      * @param {Object} txOptions Options for the transaction
      * @returns {UserOp}
      */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
+    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption): Promise<UserOperation> {
         const chain = await getChainFromData(txOptions.chain)
         const actionData: ActionData = {
             wallet: this,
@@ -64,31 +92,40 @@ export class FunWallet extends FirstClassActions {
 
         const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
-        const sender = await this.getAddress({ chain })
+        const sender = await this.getAddress(txOptions)
         const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        const nonce = await auth.getNonce(sender)
+
+        const partialOp: UserOperation = {
+            callData,
+            sender,
+            nonce,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
+            initCode,
+            verificationGasLimit: BigInt(10e6),
+            callGasLimit: BigInt(10e6),
+            preVerificationGas: BigInt(10e5)
+        }
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                if (txOptions.gasSponsor.usePermit) {
+                    const paymasterAndDataRaw = await sponsor.getPaymasterAndDataPermit(partialOp, sender, auth, txOptions)
+                    paymasterAndData = paymasterAndDataRaw.toLowerCase()
+                } else {
+                    paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                }
             } else {
                 const sponsor = new GaslessSponsor(txOptions)
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
 
-        const partialOp = {
-            callData,
-            paymasterAndData,
-            sender,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
-            initCode
-        }
-        const nonce = await auth.getNonce(partialOp.sender)
-        return { ...partialOp, nonce }
+        return { ...partialOp, paymasterAndData }
     }
 
     async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
@@ -195,22 +232,19 @@ export class FunWallet extends FirstClassActions {
     ): Promise<UserOp> => {
         const chain = await getChainFromData(txOptions.chain)
         const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const signature = await auth.getEstimateGasSignature()
+        const signature = await auth.getEstimateGasSignature(new UserOp(partialOp))
         const estimateOp: UserOperation = {
             ...partialOp,
-            signature: signature.toLowerCase(),
-            preVerificationGas: 100_000n,
-            callGasLimit: BigInt(10e6),
-            verificationGasLimit: BigInt(10e6)
+            signature: signature.toLowerCase()
         }
         const res = await chain.estimateOpGas(estimateOp)
-
         return new UserOp({
             ...partialOp,
             ...res,
             signature
         })
     }
+
     async _getThisInitCode(chain: Chain, auth: Auth) {
         const owners = await auth.getOwnerAddr()
         const uniqueId = await this.identifier.getIdentifier()
@@ -440,5 +474,177 @@ export class FunWallet extends FirstClassActions {
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
         return { tokens, nfts }
+    }
+
+    async generateUserOp(auth: Auth, callData: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+        const chain = await getChainFromData(txOptions.chain)
+        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+
+        const sender = await this.getAddress({ chain })
+        const maxFeePerGas = await chain.getFeeData()
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        let paymasterAndData = "0x"
+        if (txOptions.gasSponsor) {
+            if (txOptions.gasSponsor.token) {
+                const sponsor = new TokenSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            } else {
+                const sponsor = new GaslessSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            }
+        }
+
+        const partialOp = {
+            callData,
+            paymasterAndData,
+            sender,
+            maxFeePerGas: maxFeePerGas!,
+            maxPriorityFeePerGas: maxFeePerGas!,
+            initCode,
+            nonce: await auth.getNonce(sender),
+            preVerificationGas: 100_000n,
+            callGasLimit: BigInt(10e6),
+            verificationGasLimit: BigInt(10e6)
+        }
+        const signature = await auth.getEstimateGasSignature(new UserOp(partialOp))
+        const estimateOp: UserOperation = {
+            ...partialOp,
+            signature: signature.toLowerCase()
+        }
+        const res = await chain.estimateOpGas(estimateOp)
+        const estimatedOp = new UserOp({
+            ...partialOp,
+            ...res,
+            signature
+        })
+        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
+        return await this.sendTx(estimatedOp, parseOptions(txOptions))
+    }
+
+    async transferERC721(
+        auth: Auth,
+        params: ERC721TransferParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await erc721TransferCalldata(params, await this.getAddress())
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async transferERC20(
+        auth: Auth,
+        params: ERC20TransferParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await erc20TransferCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async transferEth(
+        auth: Auth,
+        params: NativeTransferParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await ethTransferCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async approveERC20(
+        auth: Auth,
+        params: ApproveERC20Params,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await erc20ApproveCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async approveERC721(
+        auth: Auth,
+        params: ApproveERC721Params,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await erc721ApproveCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+        const callData = await stakeCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async requestUnstake(
+        auth: Auth,
+        params: RequestUnstakeParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await requestUnstakeCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async finishUnstake(
+        auth: Auth,
+        params: FinishUnstakeParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await finishUnstakeCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async approveAndExec(
+        auth: Auth,
+        params: ApproveAndExecParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await approveAndExecCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async uniswapV3Swap(
+        auth: Auth,
+        params: UniswapParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await uniswapV3SwapCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async uniswapV2Swap(
+        auth: Auth,
+        params: UniswapParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await uniswapV2SwapCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async oneinchSwap(
+        auth: Auth,
+        params: OneInchSwapParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await OneInchCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async create(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+        const callData = await createCalldata({ to: await this.getAddress(txOptions) })
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async execRawCalldata(
+        auth: Auth,
+        params: TransactionParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await createExecRawTxCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
+    }
+
+    async createSessionKey(
+        auth: Auth,
+        params: SessionKeyParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<ExecutionReceipt> {
+        const callData = await createSessionKeyCalldata(params)
+        return await this.generateUserOp(auth, callData, txOptions)
     }
 }

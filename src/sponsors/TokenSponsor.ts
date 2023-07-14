@@ -1,12 +1,13 @@
-import { Address, encodeAbiParameters } from "viem"
+import { Address, concat, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
 import { AllTokenData, PaymasterType } from "./types"
 import { ActionData, ActionFunction } from "../actions"
 import { addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
-import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common/constants"
+import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
-import { Token, getChainFromData } from "../data"
+import { Token, UserOperation, getChainFromData } from "../data"
+import { getWalletPermitHash, getWalletPermitNonce } from "../utils"
 export class TokenSponsor extends Sponsor {
     token: string
 
@@ -25,36 +26,43 @@ export class TokenSponsor extends Sponsor {
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
-        return (await this.getPaymasterAddress(options)) + (await this.getSponsorAddress(options))!.slice(2) + tokenAddress.slice(2)
+        const paymasterAddress = await this.getPaymasterAddress(options)
+        const sponsor = await this.getSponsorAddress(options)
+        return concat([paymasterAddress, sponsor, tokenAddress])
     }
 
     async getPaymasterAndDataPermit(
-        amount: bigint,
+        partialOp: UserOperation,
         walletAddr: Address,
         auth: Auth,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<string> {
         const chain = await getChainFromData(options.chain)
-        const nonce = await WALLET_CONTRACT_INTERFACE.readFromChain(walletAddr, "getNonce", [0], chain)
+        const { maxFeePerGas } = partialOp
+        const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas(partialOp)
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const tokenAddress = await Token.getAddress(this.token, options)
-        const hash = await WALLET_CONTRACT_INTERFACE.readFromChain(
-            walletAddr,
-            "getPermitHash",
-            [tokenAddress, paymasterAddress, amount, nonce],
+        const requiredGas = callGasLimit + verificationGasLimit * 3n + preVerificationGas * maxFeePerGas
+        const tokenAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
+            paymasterAddress,
+            "getTokenValueOfEth",
+            [this.token, requiredGas],
             chain
         )
+        const decAmount = await Token.getDecimalAmount(this.token, tokenAmount, options)
+        const nonce = await getWalletPermitNonce(walletAddr, chain)
+        const tokenAddress = await Token.getAddress(this.token, options)
+        const factoryAddress = await chain.getAddress("factoryAddress")
+        const hash = await getWalletPermitHash(factoryAddress, chain, tokenAddress, paymasterAddress, decAmount, nonce)
+
         const sig = await auth.signHash(hash)
-        const encoded = encodeAbiParameters(
+        const encodedSig = encodeAbiParameters(
             [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
-            [tokenAddress, paymasterAddress, amount, nonce, sig]
+            [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
-        return (
-            (await this.getPaymasterAddress(options)) +
-            (await this.getSponsorAddress(options))!.slice(2) +
-            tokenAddress.slice(2) +
-            encoded.slice(2)
-        )
+        const sponsor = await this.getSponsorAddress(options)
+        const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])
+        const encodedData = encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [encodedAddresses, encodedSig])
+        return concat([paymasterAddress, encodedData])
     }
 
     stake(walletAddress: string, amount: number): ActionFunction {

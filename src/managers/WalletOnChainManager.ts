@@ -27,7 +27,7 @@ export class WalletOnChainManager {
         return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [identifier], client)
     }
 
-    async getTxId(userOpHash: string, timeout = 120_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
+    async getTxId(userOpHash: string, timeout = 60_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
         const endtime = Date.now() + timeout
         const client = await this.chain.getClient()
         const entryPointAddress = await this.chain.getAddress("entryPointAddress")

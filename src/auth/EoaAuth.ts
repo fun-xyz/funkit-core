@@ -88,10 +88,14 @@ export class Eoa extends Auth {
             throw new Error("No signer or client")
         }
         const walletSignature: WalletSignature = {
-            userId: await this.getUniqueId(),
+            userId: await this.getUserId(),
             signature: signature
         }
         return encodeWalletSignature(walletSignature)
+    }
+
+    async getUserId(): Promise<Hex> {
+        return pad(await this.getAddress(), { size: 32 })
     }
 
     async signOp(userOp: UserOp, chain: Chain): Promise<string> {
@@ -112,10 +116,11 @@ export class Eoa extends Auth {
         return [await this.getUniqueId()]
     }
 
-    async getEstimateGasSignature(): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async getEstimateGasSignature(_: UserOp): Promise<string> {
         await this.init()
         const walletSignature: WalletSignature = {
-            userId: await this.getUniqueId(),
+            userId: await this.getUserId(),
             signature: pad("0x", { size: 65 })
         }
         return encodeWalletSignature(walletSignature)

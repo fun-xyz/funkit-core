@@ -1,7 +1,8 @@
 import { assert } from "chai"
 import { Hex } from "viem"
+import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Eoa } from "../../src/auth"
-import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
+import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
 import { fundWallet } from "../../src/utils"
@@ -47,35 +48,41 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const chain = await getChainFromData(options.chain)
                 await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
-                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), amount])
+                const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
+                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), decAmount])
                 data.chain = chain
                 await auth.sendTx(data)
                 const wethAddr = await Token.getAddress("weth", options)
-                await wallet.transfer(auth, { to: wethAddr, amount: 0.002 })
+                await wallet.transferEth(auth, { to: wethAddr, amount: 0.002 })
             }
         })
-        let erc20Delta = 0
+
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            await wallet.swap(auth, {
+
+            await wallet.uniswapV3Swap(auth, {
                 in: baseToken,
                 amount: config.amount ? config.amount : 0.001,
-                out: inToken
+                out: inToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
             })
+
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
-            erc20Delta = Number(tokenBalanceAfter) - Number(tokenBalanceBefore)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            await wallet.swap(auth, {
+            await wallet.uniswapV3Swap(auth, {
                 in: inToken,
                 amount: 1, //Number((erc20Delta / 2).toFixed(3)),
                 out: outToken,
-                slippage: config.slippage ? config.slippage : 0.5
+                slippage: config.slippage ? config.slippage : 0.5,
+                returnAddress: walletAddress,
+                chainId: config.chainId
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
             assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
@@ -84,13 +91,71 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ERC20 => ETH", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            await wallet.swap(auth, {
+            await wallet.uniswapV3Swap(auth, {
                 in: inToken,
-                amount: Number((erc20Delta / 2).toFixed(3)),
-                out: baseToken
+                amount: 1,
+                out: baseToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
             })
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
             assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
+        })
+
+        describe("With Session Key", () => {
+            const user = createSessionUser()
+            before(async () => {
+                const second = 1000
+                const minute = 60 * second
+                const chain = await getChainFromData(config.chainId)
+                const deadline = BigInt(Date.now() + 2 * minute) / 1000n
+                const targetAddr = await chain.getAddress("tokenSwapAddress")
+                const sessionKeyParams: SessionKeyParams = {
+                    user,
+                    targetWhitelist: [targetAddr],
+                    actionWhitelist: [
+                        {
+                            abi: APPROVE_AND_SWAP_ABI,
+                            functionWhitelist: ["executeSwapETH", "executeSwapERC20"]
+                        }
+                    ],
+                    deadline,
+                    chainId: config.chainId
+                }
+
+                await wallet.createSessionKey(auth, sessionKeyParams)
+            })
+
+            it("ETH => ERC20", async () => {
+                const walletAddress = await wallet.getAddress()
+                const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
+
+                await wallet.uniswapV3Swap(user, {
+                    in: baseToken,
+                    amount: config.amount ? config.amount : 0.001,
+                    out: inToken,
+                    returnAddress: walletAddress,
+                    chainId: config.chainId
+                })
+
+                const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+                assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+            })
+
+            it("ERC20 => ERC20", async () => {
+                const walletAddress = await wallet.getAddress()
+                const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
+                await wallet.uniswapV3Swap(user, {
+                    in: inToken,
+                    amount: 1, //Number((erc20Delta / 2).toFixed(3)),
+                    out: outToken,
+                    slippage: config.slippage ? config.slippage : 0.5,
+                    returnAddress: walletAddress,
+                    chainId: config.chainId
+                })
+                const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+                assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
+            })
         })
     })
 }

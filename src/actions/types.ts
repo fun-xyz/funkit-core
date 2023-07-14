@@ -1,5 +1,5 @@
-import { Address } from "viem"
-import { Auth } from "../auth"
+import { Address, Hex } from "viem"
+import { Auth, SessionKeyAuth } from "../auth"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -7,8 +7,9 @@ import { ErrorData } from "../errors/"
 import { FunWallet } from "../wallet"
 
 export interface ApproveAndExecParams {
-    approve: TransactionParams
+    approve: ApproveERC20Params
     exec: TransactionParams
+    chainId: number
 }
 
 export interface ActionData {
@@ -22,26 +23,23 @@ export type TransferParam = {
     to: Address
 }
 
-export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
-
 export interface ERC721TransferParams extends TransferParam {
     tokenId: number
-    token: string
+    token: Address
 }
 export interface NativeTransferParams extends TransferParam {
     amount: number
 }
 
 export interface ERC20TransferParams extends NativeTransferParams {
-    token: string
+    token: Address
 }
 
 // Approval Param types
 export type ApproveParam = {
     spender: string
-    token: string
+    token: Address
 }
-export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
 export interface ApproveERC20Params extends ApproveParam {
     amount: number
@@ -53,15 +51,19 @@ export interface ApproveERC721Params extends ApproveParam {
 
 export type StakeParams = {
     amount: number // denominated in ETH
+    chainId: number
 }
 
 export type RequestUnstakeParams = {
     amounts: number[] // denominated in ETH
-    recipient?: string
+    recipient: string
+    chainId: number
 }
 
 export type FinishUnstakeParams = {
     recipient: string
+    chainId: number
+    walletAddress: string
 }
 
 export enum UniSwapPoolFeeOptions {
@@ -70,13 +72,16 @@ export enum UniSwapPoolFeeOptions {
     medium = "medium",
     high = "high"
 }
-
+export type CreateParams = {
+    to: Address
+}
 export type SwapParam = {
     in: string
     out: string
     amount: number
     slippage?: number
-    returnAddress?: Address
+    returnAddress: Address
+    chainId: number
 }
 
 export interface OneInchSwapParams extends SwapParam {
@@ -84,17 +89,10 @@ export interface OneInchSwapParams extends SwapParam {
     allowPartialFill?: boolean
 }
 
-export type OneInchSwapReturn = {
-    approveTx?: TransactionData
-    swapTx: TransactionData
-}
-
 export interface UniswapParams extends SwapParam {
     poolFee?: UniSwapPoolFeeOptions
     percentDecimal?: number
 }
-
-export type SwapParams = OneInchSwapParams | UniswapParams
 
 export type ActionResult = {
     data: TransactionData
@@ -102,3 +100,28 @@ export type ActionResult = {
 }
 
 export type ActionFunction = (obj: ActionData) => Promise<ActionResult>
+
+export type SessionKeyParams = {
+    targetWhitelist: string[]
+    actionWhitelist: ActionWhitelistObject[]
+    feeTokenWhitelist?: string[]
+    feeRecipientWhitelist?: string[]
+    deadline: bigint
+    actionValueLimit?: bigint
+    feeValueLimit?: bigint
+    user: SessionKeyAuth
+    chainId: number
+}
+
+export type ActionWhitelistObject = {
+    abi: any
+    functionWhitelist: string[]
+}
+
+export type RuleStruct = {
+    deadline: bigint
+    actionValueLimit: bigint
+    targetSelectorMerkleRootHash: Hex
+    feeValueLimit: bigint
+    feeRecipientTokenMerkleRootHash: Hex
+}

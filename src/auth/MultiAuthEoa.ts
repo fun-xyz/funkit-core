@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
-import { Address, Hex, pad, toBytes } from "viem"
+import { Address, Hex, toBytes } from "viem"
 import { Eoa } from "./EoaAuth"
 import { EoaAuthInput } from "./types"
 import { WalletSignature, encodeWalletSignature } from "../data"
@@ -54,15 +54,6 @@ export class MultiAuthEoa extends Eoa {
 
     override async getAddress(): Promise<Address> {
         return (await this.getOwnerAddr())[0]
-    }
-
-    override async getEstimateGasSignature(): Promise<Hex> {
-        await this.init()
-        const walletSignature: WalletSignature = {
-            userId: await this.getAddress(),
-            signature: pad("0x", { size: 65 })
-        }
-        return encodeWalletSignature(walletSignature)
     }
 
     override async signHash(hash: Hex): Promise<Hex> {

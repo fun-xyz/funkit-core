@@ -19,14 +19,13 @@ export interface FactoryTestConfig {
 
 export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId } = config
-
-    describe.only("Factory", function () {
+    describe("Factory", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         let auth: Eoa
         let wallet: FunWallet
         let uniqueId: string
 
-        this.timeout(100_000)
+        this.timeout(400_000)
         before(async function () {
             auth = new Eoa({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()

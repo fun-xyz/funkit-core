@@ -55,8 +55,10 @@ export const NFTTest = (config: NFTTestConfig) => {
 
         describe("Write functions - Basic Functionality", () => {
             it("transfer", async () => {
+                const nft = new NFT(nftAddress)
+                const bal = await nft.getBalance(await wallet1.getAddress())
                 try {
-                    await wallet1.transfer(auth, {
+                    await wallet1.transferERC721(auth, {
                         to: await wallet2.getAddress(),
                         token: nftAddress,
                         tokenId: nftId
@@ -69,9 +71,11 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                const bal1 = await nft.getBalance(await wallet1.getAddress())
+                assert(bal > bal1, "First nft transfer did not succeed")
 
                 try {
-                    await wallet2.transfer(auth, {
+                    await wallet2.transferERC721(auth, {
                         to: await wallet1.getAddress(),
                         token: nftAddress,
                         tokenId: nftId
@@ -84,11 +88,13 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                const bal2 = await nft.getBalance(await wallet1.getAddress())
+                assert(bal2 > bal1, "Second nft transfer did not succeed")
             })
 
             it("approve", async () => {
                 const nft = new NFT(nftAddress)
-                await wallet1.approve(auth, {
+                await wallet1.approveERC721(auth, {
                     spender: await wallet2.getAddress(),
                     token: nftAddress,
                     tokenId: nftId
