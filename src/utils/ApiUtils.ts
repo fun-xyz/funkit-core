@@ -3,7 +3,6 @@ import fetch from "node-fetch"
 import { stringifyOp } from "./UseropUtils"
 import { API_URL } from "../common/constants"
 import { Helper, InternalFailureError, InvalidParameterError, NoServerConnectionError, ServerMissingDataError } from "../errors"
-// import { Helper, NoServerConnectionError, ServerMissingDataError, InvalidParameterError, InternalFailureError } from "../errors"
 
 const errorHandler = (err: any, context: any) => {
     if (err instanceof ServerMissingDataError) {

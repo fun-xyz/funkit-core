@@ -35,10 +35,6 @@ export async function getTokens(chainId: string, holderAddr: string, onlyVerifie
  *  ]
  */
 export async function getNFTs(chainId: string, holderAddr: string): Promise<any> {
-    // return await sendPostRequest(API_URL, "getAssets/get-nfts", {
-    //     chain: chainId,
-    //     address: holderAddr
-    // })
     return await sendGetRequest(API_URL, `nfts/${holderAddr}/${chainId}`)
 }
 
@@ -55,9 +51,6 @@ export async function getNFTs(chainId: string, holderAddr: string): Promise<any>
  *  }
  */
 export async function getAllNFTs(holderAddr: string): Promise<any> {
-    // return await sendPostRequest(API_URL, "getAssets/get-all-nfts", {
-    //     address: holderAddr
-    // })
     return await sendGetRequest(API_URL, `nfts/${holderAddr}`)
 }
 
@@ -103,9 +96,5 @@ export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boole
  * ]
  */
 export async function getLidoWithdrawals(chainId: string, holderAddr: string): Promise<any> {
-    // return await sendPostRequest(API_URL, "getAssets/get-lido-withdrawals", {
-    //     chain: chainId,
-    //     address: holderAddr
-    // })
     return await sendGetRequest(API_URL, `assets/lido-withdrawals/${holderAddr}/${chainId}`)
 }

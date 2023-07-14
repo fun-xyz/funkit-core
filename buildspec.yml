@@ -13,7 +13,7 @@ phases:
             - npm install mocha -g
     pre_build:
         commands:
-            # - npx ts-node tests/scripts/contractLoaderS3.ts
+            - npx ts-node tests/scripts/contractLoaderS3.ts
             - aws secretsmanager get-secret-value --secret-id PrivateKeys --region us-west-2 --query SecretString --output text > secrets.json
             - export $(jq -r "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" secrets.json)
     build:

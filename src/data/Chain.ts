@@ -5,7 +5,6 @@ import { CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
 import { deepHexlify } from "../utils/DataUtils"
-// import { flattenObj } from "../utils/DataUtils"
 
 export class Chain {
     chainId?: string
