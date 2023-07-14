@@ -19,7 +19,8 @@
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
         "add-token": "ts-node tests/addToken.ts",
         "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "test-unit": "nyc --reporter=html --reporter=text mocha tests/unit/**/*.ts"
     },
     "author": "The Fun Group (https://fun.xyz/)",
     "license": "ISC",
@@ -51,6 +52,7 @@
         "eslint-plugin-unused-imports": "^2.0.0",
         "husky": "^8.0.3",
         "mocha": "^10.2.0",
+        "nyc": "^15.1.0",
         "prettier": "^2.8.8",
         "ts-mocha": "^10.0.0",
         "ts-node": "^10.9.1",
