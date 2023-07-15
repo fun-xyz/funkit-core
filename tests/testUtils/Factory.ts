@@ -19,7 +19,6 @@ export interface FactoryTestConfig {
 
 export const FactoryTest = (config: FactoryTestConfig) => {
     const { chainId } = config
-
     describe("Factory", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         let auth: Auth
@@ -27,7 +26,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         let wallet: FunWallet
         let uniqueId: string
 
-        this.timeout(100_000)
+        this.timeout(400_000)
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {

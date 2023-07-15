@@ -1,10 +1,10 @@
 import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
-import { getChainInfo, getModuleInfo } from "../apis"
+import { estimateUserOpGas, getChainInfo, getModuleInfo, sendUserOpToBundler } from "../apis"
 import { CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { Bundler } from "../servers/Bundler"
-import { flattenObj } from "../utils/DataUtils"
+import { deepHexlify } from "../utils/DataUtils"
 
 export class Chain {
     chainId?: string
@@ -86,15 +86,15 @@ export class Chain {
         try {
             if (!this.id) {
                 chain = await getChainInfo(chainId)
-                this.id = chain.chain
-                this.name = chain.key
-                this.currency = chain.currency
+                this.id = chain.id
+                this.name = chain.name
+                this.currency = chain.nativeCurrency.symbol
                 const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
                     result[key] = CONTRACT_ADDRESSES[key][this.id]
                     return result
                 }, {})
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
-                Object.assign(this, { ...this, addresses, ...chain.rpcdata })
+                const addresses = { ...abisAddresses }
+                Object.assign(this, { ...this, addresses, rpcUrl: chain.rpcUrls.default })
             }
         } catch (e) {
             console.log(e)
@@ -138,14 +138,15 @@ export class Chain {
         return this.client!
     }
 
-    setAddress(name: string, address: Address) {
-        if (!this.addresses) this.addresses = {}
-        this.addresses[name] = address
+    setAddresses(addresses: Addresses) {
+        if (!this.addresses) this.addresses = addresses
+        else this.addresses = { ...this.addresses, ...addresses }
     }
 
-    async sendOpToBundler(userOp: UserOperation): Promise<string> {
+    async sendOpToBundler(userOp: UserOperation): Promise<void> {
         await this.init()
-        return await this.bundler!.sendUserOpToBundler(userOp)
+        const hexifiedUserOp = deepHexlify(userOp)
+        await sendUserOpToBundler(hexifiedUserOp, this.addresses.entryPointAddress, this.id as string)
     }
 
     async getFeeData(): Promise<bigint> {
@@ -155,14 +156,20 @@ export class Chain {
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
-        const res = await this.bundler!.estimateUserOpGas(partialOp)
+        if (!this.addresses || !this.addresses.entryPointAddress) {
+            const currentLocation = "data.chain"
+            const helper = new Helper(currentLocation, "", "entryPointAddress is required.")
+            throw new MissingParameterError(currentLocation, helper)
+        }
+        const hexifiedUserOp = deepHexlify(partialOp)
+        const res = await estimateUserOpGas(hexifiedUserOp, this.addresses.entryPointAddress, this.chainId!)
         let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))
         }
         callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
-        verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
+        verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
 }

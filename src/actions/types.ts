@@ -1,5 +1,5 @@
-import { Address } from "viem"
-import { Auth } from "../auth"
+import { Address, Hex } from "viem"
+import { Auth, SessionKeyAuth } from "../auth"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -104,3 +104,28 @@ export type ActionResult = {
 }
 
 export type ActionFunction = (obj: ActionData) => Promise<ActionResult>
+
+export type SessionKeyParams = {
+    targetWhitelist: string[]
+    actionWhitelist: ActionWhitelistObject[]
+    feeTokenWhitelist?: string[]
+    feeRecipientWhitelist?: string[]
+    deadline: bigint
+    actionValueLimit?: bigint
+    feeValueLimit?: bigint
+    user: SessionKeyAuth
+    chainId: number
+}
+
+export type ActionWhitelistObject = {
+    abi: any
+    functionWhitelist: string[]
+}
+
+export type RuleStruct = {
+    deadline: bigint
+    actionValueLimit: bigint
+    targetSelectorMerkleRootHash: Hex
+    feeValueLimit: bigint
+    feeRecipientTokenMerkleRootHash: Hex
+}

@@ -58,7 +58,7 @@ export class Operation {
 
     async estimateGas(auth: Auth, option: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         if (!this.userOp.signature || this.userOp.signature === "0x") {
-            this.userOp.signature = await auth.getEstimateGasSignature()
+            this.userOp.signature = await auth.getEstimateGasSignature(this)
         }
         const chain = await getChainFromData(option.chain)
         const res = await chain.estimateOpGas({

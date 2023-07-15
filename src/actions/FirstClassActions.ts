@@ -1,4 +1,5 @@
 import { Address, Hex } from "viem"
+import { createSessionKeyCalldata } from "./AccessControl"
 import { finishUnstakeCalldata, isFinishUnstakeParams, isRequestUnstakeParams, requestUnstakeCalldata, stakeCalldata } from "./Stake"
 import { OneInchCalldata, uniswapV2SwapCalldata, uniswapV3SwapCalldata } from "./Swap"
 import {
@@ -18,6 +19,7 @@ import {
     FinishUnstakeParams,
     OneInchSwapParams,
     RequestUnstakeParams,
+    SessionKeyParams,
     StakeParams,
     SwapParam,
     TransferParams,
@@ -136,6 +138,16 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
+        return await this.createOperation(auth, userId, callData, txOptions)
+    }
+
+    async createSessionKey(
+        auth: Auth,
+        userId: string,
+        params: SessionKeyParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const callData = await createSessionKeyCalldata(params)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 }

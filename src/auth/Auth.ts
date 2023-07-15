@@ -14,7 +14,6 @@ import {
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
 import { ActionFunction } from "../actions"
-import { storeEVMCall } from "../apis"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWallets } from "../apis/UserApis"
 import { TransactionData } from "../common"
@@ -122,7 +121,12 @@ export class Auth {
         throw new Error("No signer or client")
     }
 
-    async getEstimateGasSignature(): Promise<Hex> {
+    async getUserId(): Promise<Hex> {
+        return pad(await this.getAddress(), { size: 32 })
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async getEstimateGasSignature(_: Operation): Promise<Hex> {
         await this.init()
         const walletSignature: WalletSignature = {
             userId: await this.getAddress(),
@@ -185,7 +189,6 @@ export class Auth {
 
         const hash = await txClient.sendTransaction(action)
         const receipt = await client.waitForTransactionReceipt({ hash, timeout: 300_000 })
-        await storeEVMCall(receipt)
         return receipt
     }
 

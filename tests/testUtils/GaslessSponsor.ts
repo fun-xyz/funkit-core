@@ -100,7 +100,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
         const runSwap = async (wallet: FunWallet) => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalance(config.outToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(config.outToken, walletAddress)
 
             const userOp = await wallet.swap(auth, "", {
                 in: config.inToken,
@@ -111,9 +111,9 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             })
             await wallet.executeOperation(auth, userOp)
 
-            await new Promise((f) => setTimeout(f, 2000))
+            await new Promise((f) => setTimeout(f, 5000))
 
-            const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(config.outToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 

@@ -126,19 +126,14 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
         poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
     }
 
-    const { to, data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    let swapData
     if (tokenIn.isNative) {
-        const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+        swapData = approveAndSwapInterface.encodeData("executeSwapETH", [amount, data])
     } else {
-        const swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
-            tokenInAddress,
-            univ3router,
-            amount,
-            data
-        ])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+        swapData = approveAndSwapInterface.encodeData("executeSwapERC20", [tokenInAddress, amount, data])
     }
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData])
 }
 
 export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
@@ -184,12 +179,7 @@ export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex>
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
         return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
     } else {
-        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [
-            tokenInAddress,
-            router,
-            amount,
-            data
-        ])
+        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
         return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
     }
 }

@@ -436,7 +436,7 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const chain = await getChainFromData(txOptions.chain)
-        const estimateGasSignature = await auth.getEstimateGasSignature()
+        const estimateGasSignature = await auth.getEstimateGasSignature(operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
         const res = await chain.estimateOpGas(operation.userOp)
         operation.userOp = {

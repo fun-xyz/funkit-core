@@ -83,10 +83,7 @@ export class Token {
     async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
         const amountDec = await this.getDecimalAmount(amount)
-        const calldata = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(options), "approve", [
-            spender,
-            amountDec
-        ])
+        const calldata = ERC20_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(options), "approve", [spender, amountDec])
         const { to, data, value } = calldata
         return { to: to!, data: data!, value: value!, chain }
     }
@@ -94,10 +91,7 @@ export class Token {
     async transfer(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
         const chain = await getChainFromData(options.chain)
         const amountDec = await this.getDecimalAmount(amount)
-        const calldata = await ERC20_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(options), "transfer", [
-            spender,
-            amountDec
-        ])
+        const calldata = ERC20_CONTRACT_INTERFACE.encodeTransactionData(await this.getAddress(options), "transfer", [spender, amountDec])
         const { to, data, value } = calldata
         return { to: to!, data: data!, value: value!, chain }
     }
