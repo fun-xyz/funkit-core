@@ -1,17 +1,15 @@
 import { Address, Hex } from "viem"
-import { ActionData, ActionFunction } from "../actions"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
-import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionData } from "../common"
+import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt } from "../common"
 import { AddressZero } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
     Chain,
     InitCodeParams,
     LoginData,
-    Token,
     UserOp,
     UserOperation,
     WalletIdentifier,
@@ -19,7 +17,6 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getUniqueId } from "../utils"
@@ -46,171 +43,171 @@ export class FunWallet extends FirstClassActions {
         this.abiManager = new WalletAbiManager()
     }
 
-    /**
-     * Generates UserOp object for a transaction
-     * @param {Auth} auth Auth class instance that signs the transaction
-     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Object} txOptions Options for the transaction
-     * @returns {UserOp}
-     */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        const actionData: ActionData = {
-            wallet: this,
-            chain,
-            options: txOptions
-        }
-        const { data } = await transactionFunc(actionData)
+    // /**
+    //  * Generates UserOp object for a transaction
+    //  * @param {Auth} auth Auth class instance that signs the transaction
+    //  * @param {function} transactionFunc Function that returns the data to be used in the transaction
+    //  * @param {Object} txOptions Options for the transaction
+    //  * @returns {UserOp}
+    //  */
+    // async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption) {
+    //     const chain = await getChainFromData(txOptions.chain)
+    //     const actionData: ActionData = {
+    //         wallet: this,
+    //         chain,
+    //         options: txOptions
+    //     }
+    //     const { data } = await transactionFunc(actionData)
 
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+    //     const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
 
-        const sender = await this.getAddress({ chain })
-        const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
-        const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
-        let paymasterAndData = "0x"
-        if (txOptions.gasSponsor) {
-            if (txOptions.gasSponsor.token) {
-                const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            } else {
-                const sponsor = new GaslessSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            }
-        }
+    //     const sender = await this.getAddress({ chain })
+    //     const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
+    //     const maxFeePerGas = await chain.getFeeData()
+    //     const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+    //     let paymasterAndData = "0x"
+    //     if (txOptions.gasSponsor) {
+    //         if (txOptions.gasSponsor.token) {
+    //             const sponsor = new TokenSponsor(txOptions)
+    //             paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+    //         } else {
+    //             const sponsor = new GaslessSponsor(txOptions)
+    //             paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+    //         }
+    //     }
 
-        const partialOp = {
-            callData,
-            paymasterAndData,
-            sender,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
-            initCode
-        }
-        const nonce = await auth.getNonce(partialOp.sender)
-        return { ...partialOp, nonce }
-    }
+    //     const partialOp = {
+    //         callData,
+    //         paymasterAndData,
+    //         sender,
+    //         maxFeePerGas: maxFeePerGas!,
+    //         maxPriorityFeePerGas: maxFeePerGas!,
+    //         initCode
+    //     }
+    //     const nonce = await auth.getNonce(partialOp.sender)
+    //     return { ...partialOp, nonce }
+    // }
 
-    async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
-        const fee = { ...options.fee }
-        if (options.fee) {
-            if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
-                const helper = new Helper("Fee", fee, "fee.token or gasSponsor.token is required")
-                throw new ParameterFormatError("Wallet.execute", helper)
-            }
-            if (!fee.token && options.gasSponsor && options.gasSponsor.token) {
-                fee.token = options.gasSponsor.token
-            }
+    // async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
+    //     const fee = { ...options.fee }
+    //     if (options.fee) {
+    //         if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
+    //             const helper = new Helper("Fee", fee, "fee.token or gasSponsor.token is required")
+    //             throw new ParameterFormatError("Wallet.execute", helper)
+    //         }
+    //         if (!fee.token && options.gasSponsor && options.gasSponsor.token) {
+    //             fee.token = options.gasSponsor.token
+    //         }
 
-            const token = new Token(fee.token!)
-            if (token.isNative) {
-                fee.token = AddressZero
-            } else {
-                fee.token = await token.getAddress()
-            }
+    //         const token = new Token(fee.token!)
+    //         if (token.isNative) {
+    //             fee.token = AddressZero
+    //         } else {
+    //             fee.token = await token.getAddress()
+    //         }
 
-            if (fee.amount) {
-                fee.amount = Number(await token.getDecimalAmount(fee.amount))
-            } else if (fee.gasPercent) {
-                if (!token.isNative) {
-                    throw new Error("gasPercent is not supported for ERC20 tokens")
-                }
-                const emptyFunc = async () => {
-                    return {
-                        data,
-                        errorData: { location: "Wallet.execute" }
-                    }
-                }
-                const estimateGasOptions = options
-                estimateGasOptions.fee = undefined
-                const actualGas = await this.estimateGas(auth, emptyFunc, estimateGasOptions)
-                let eth = actualGas.getMaxTxCost()
+    //         if (fee.amount) {
+    //             fee.amount = Number(await token.getDecimalAmount(fee.amount))
+    //         } else if (fee.gasPercent) {
+    //             if (!token.isNative) {
+    //                 throw new Error("gasPercent is not supported for ERC20 tokens")
+    //             }
+    //             const emptyFunc = async () => {
+    //                 return {
+    //                     data,
+    //                     errorData: { location: "Wallet.execute" }
+    //                 }
+    //             }
+    //             const estimateGasOptions = options
+    //             estimateGasOptions.fee = undefined
+    //             const actualGas = await this.estimateGas(auth, emptyFunc, estimateGasOptions)
+    //             let eth = actualGas.getMaxTxCost()
 
-                let percentNum = BigInt(fee.gasPercent)
-                let percentBase = 100n
-                while (percentNum % 1n !== 0n) {
-                    percentNum *= 10n
-                    percentBase *= 10n
-                }
+    //             let percentNum = BigInt(fee.gasPercent)
+    //             let percentBase = 100n
+    //             while (percentNum % 1n !== 0n) {
+    //                 percentNum *= 10n
+    //                 percentBase *= 10n
+    //             }
 
-                if (!token.isNative) {
-                    const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token!)
-                    const decimals = await token.getDecimals()
-                    const numerator = BigInt(10) ** decimals
-                    const denominator = BigInt(10) ** 18n // eth decimals
-                    const price = (ethTokenPairing * numerator) / denominator
-                    eth = (price * numerator) / ((eth * percentNum) / percentBase)
-                } else {
-                    eth = (eth * percentNum) / percentBase
-                }
+    //             if (!token.isNative) {
+    //                 const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token!)
+    //                 const decimals = await token.getDecimals()
+    //                 const numerator = BigInt(10) ** decimals
+    //                 const denominator = BigInt(10) ** 18n // eth decimals
+    //                 const price = (ethTokenPairing * numerator) / denominator
+    //                 eth = (price * numerator) / ((eth * percentNum) / percentBase)
+    //             } else {
+    //                 eth = (eth * percentNum) / percentBase
+    //             }
 
-                fee.amount = Number(eth)
-            } else {
-                const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
-                throw new ParameterFormatError("Wallet.execute", helper)
-            }
-        }
+    //             fee.amount = Number(eth)
+    //         } else {
+    //             const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
+    //             throw new ParameterFormatError("Wallet.execute", helper)
+    //         }
+    //     }
 
-        return this.abiManager.encodeCall({ ...data, ...fee })
-    }
+    //     return this.abiManager.encodeCall({ ...data, ...fee })
+    // }
 
-    /**
-     * Executes UserOp
-     * @param {Auth} auth Auth class instance that signs the transaction
-     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Object} txOptions Options for the transaction
-     * @param {bool} estimate Whether to estimate gas or not
-     * @returns {UserOp || receipt}
-     */
-    async execute(
-        auth: Auth,
-        transactionFunc: ActionFunction,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption,
-        estimate = false
-    ): Promise<ExecutionReceipt | UserOp | bigint> {
-        const options = parseOptions(txOptions)
-        const chain = await getChainFromData(options.chain)
-        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
-        if (estimate) {
-            return estimatedOp.getMaxTxCost()
-        }
-        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
-        if (txOptions.sendTxLater) {
-            return estimatedOp
-        }
-        return await this.sendTx(estimatedOp, options)
-    }
+    // /**
+    //  * Executes UserOp
+    //  * @param {Auth} auth Auth class instance that signs the transaction
+    //  * @param {function} transactionFunc Function that returns the data to be used in the transaction
+    //  * @param {Object} txOptions Options for the transaction
+    //  * @param {bool} estimate Whether to estimate gas or not
+    //  * @returns {UserOp || receipt}
+    //  */
+    // async execute(
+    //     auth: Auth,
+    //     transactionFunc: ActionFunction,
+    //     txOptions: EnvOption = (globalThis as any).globalEnvOption,
+    //     estimate = false
+    // ): Promise<ExecutionReceipt | UserOp | bigint> {
+    //     const options = parseOptions(txOptions)
+    //     const chain = await getChainFromData(options.chain)
+    //     const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
+    //     if (estimate) {
+    //         return estimatedOp.getMaxTxCost()
+    //     }
+    //     estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
+    //     if (txOptions.sendTxLater) {
+    //         return estimatedOp
+    //     }
+    //     return await this.sendTx(estimatedOp, options)
+    // }
 
-    /**
-     * Estimates gas for a transaction
-     * @param {Auth} auth Auth class instance that signs the transaction
-     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Options} txOptions Options for the transaction
-     * @returns
-     */
-    estimateGas = async (
-        auth: Auth,
-        transactionFunc: ActionFunction,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<UserOp> => {
-        const chain = await getChainFromData(txOptions.chain)
-        const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const signature = await auth.getEstimateGasSignature()
-        const estimateOp: UserOperation = {
-            ...partialOp,
-            signature: signature.toLowerCase(),
-            preVerificationGas: 100_000n,
-            callGasLimit: BigInt(10e6),
-            verificationGasLimit: BigInt(10e6)
-        }
-        const res = await chain.estimateOpGas(estimateOp)
+    // /**
+    //  * Estimates gas for a transaction
+    //  * @param {Auth} auth Auth class instance that signs the transaction
+    //  * @param {function} transactionFunc Function that returns the data to be used in the transaction
+    //  * @param {Options} txOptions Options for the transaction
+    //  * @returns
+    //  */
+    // estimateGas = async (
+    //     auth: Auth,
+    //     transactionFunc: ActionFunction,
+    //     txOptions: EnvOption = (globalThis as any).globalEnvOption
+    // ): Promise<UserOp> => {
+    //     const chain = await getChainFromData(txOptions.chain)
+    //     const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
+    //     const signature = await auth.getEstimateGasSignature()
+    //     const estimateOp: UserOperation = {
+    //         ...partialOp,
+    //         signature: signature.toLowerCase(),
+    //         preVerificationGas: 100_000n,
+    //         callGasLimit: BigInt(10e6),
+    //         verificationGasLimit: BigInt(10e6)
+    //     }
+    //     const res = await chain.estimateOpGas(estimateOp)
 
-        return new UserOp({
-            ...partialOp,
-            ...res,
-            signature
-        })
-    }
+    //     return new UserOp({
+    //         ...partialOp,
+    //         ...res,
+    //         signature
+    //     })
+    // }
 
     async _getThisInitCode(chain: Chain, auth: Auth) {
         const owners = await auth.getOwnerAddr()
