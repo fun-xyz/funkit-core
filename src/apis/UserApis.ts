@@ -1,6 +1,7 @@
 import { Address, Hex } from "viem"
 import { Wallet } from "./types"
 import { API_URL } from "../common/constants"
+import { ServerMissingDataError } from "../errors"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createUser(authId: string, chainId: string, addr: string, method: string, userUniqueId: string): Promise<void> {
@@ -14,7 +15,14 @@ export async function createUser(authId: string, chainId: string, addr: string, 
 }
 
 export async function getUserUniqueId(authId: string): Promise<string> {
-    return (await sendGetRequest(API_URL, `user/${authId}/unique-id`)).userUniqueId
+    try {
+        return (await sendGetRequest(API_URL, `user/${authId}/unique-id`)).userUniqueId
+    } catch (err) {
+        if (err instanceof ServerMissingDataError) {
+            return ""
+        }
+        throw err
+    }
 }
 
 export async function getUserWallets(authId: string, chainId: string): Promise<Wallet[]> {
@@ -28,7 +36,7 @@ export async function addUserToWallet(
     userIds: Hex[],
     walletUniqueId?: string
 ): Promise<void> {
-    await sendPostRequest(API_URL, `user/${authId}/chain/${chainId}/wallets`, {
+    await sendPostRequest(API_URL, `user/${authId}/chain/${chainId}/wallet`, {
         walletAddr,
         userIds,
         walletUniqueId

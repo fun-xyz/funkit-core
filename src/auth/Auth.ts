@@ -103,7 +103,7 @@ export class Auth {
             throw new Error("No signer or client")
         }
         const walletSignature: WalletSignature = {
-            userId: await this.getAddress(),
+            userId: await this.getUserId(),
             signature: signature
         }
         return encodeWalletSignature(walletSignature)
@@ -129,7 +129,7 @@ export class Auth {
     async getEstimateGasSignature(_: Operation): Promise<Hex> {
         await this.init()
         const walletSignature: WalletSignature = {
-            userId: await this.getAddress(),
+            userId: await this.getUserId(),
             signature: pad("0x", { size: 65 })
         }
         return encodeWalletSignature(walletSignature)

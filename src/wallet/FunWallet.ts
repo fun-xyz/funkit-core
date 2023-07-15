@@ -268,17 +268,17 @@ export class FunWallet extends FirstClassActions {
             verificationGasLimit: BigInt(10e6)
         }
 
-        const groupOperation = isGroupOperation(await auth.getAddress(), userId)
+        const isGroupOp: boolean = (await auth.getAddress()) !== (userId as Hex)
 
         const operation: Operation = new Operation(partialOp, {
             chainId: chain.chainId!,
-            opType: groupOperation ? OperationType.GROUP_OPERATION : OperationType.SINGLE_OPERATION,
-            authType: groupOperation ? AuthType.MULTI_SIG : AuthType.ECDSA,
+            opType: isGroupOp ? OperationType.GROUP_OPERATION : OperationType.SINGLE_OPERATION,
+            authType: isGroupOp ? AuthType.MULTI_SIG : AuthType.ECDSA,
             walletAddr: await this.getAddress(),
             proposer: await auth.getAddress()
         })
 
-        if (groupOperation) {
+        if (isGroupOp) {
             operation.groupId = pad(userId as Hex, { size: 32 })
         }
 
@@ -290,15 +290,13 @@ export class FunWallet extends FirstClassActions {
             operation.opId = opId as Hex
         }
 
-        console.log("create operation", operation)
-
         return operation
     }
 
     async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const chain = await getChainFromData(txOptions.chain)
         operation.userOp.signature = await auth.signOp(operation, chain)
-        if (txOptions.skipDBAction !== true) {
+        if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
             await signOp(operation.opId!, chain.chainId!, operation.userOp.signature as Hex, await auth.getAddress())
         }
 
@@ -311,10 +309,13 @@ export class FunWallet extends FirstClassActions {
         operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
-        console.log("execute operation", operation)
-
         txOptions = parseOptions(txOptions)
-        const userOp = (await this.signOperation(auth, operation, txOptions)).userOp
+
+        let userOp = operation.userOp
+        if (operation.userOp.signature === undefined || operation.userOp.signature === null) {
+            userOp = (await this.signOperation(auth, operation, txOptions)).userOp
+        }
+
         const chain = await getChainFromData(txOptions.chain)
 
         if (isWalletInitOp(userOp) && txOptions.skipDBAction !== true) {
@@ -326,8 +327,8 @@ export class FunWallet extends FirstClassActions {
                 this.walletUniqueId
             )
 
-            if (operation.groupId) {
-                const group = this.userInfo!.get(operation.groupId)
+            if (isGroupOperation(operation)) {
+                const group = this.userInfo!.get(operation.groupId!)
                 if (group && group.groupInfo) {
                     await createGroup(
                         operation.groupId!,
@@ -359,13 +360,17 @@ export class FunWallet extends FirstClassActions {
             }
         }
 
-        await executeOp(
-            operation.opId!,
-            chain.chainId!,
-            await auth.getAddress(),
-            await chain.getAddress("entryPointAddress"),
-            userOp.signature
-        )
+        if (isGroupOperation(operation)) {
+            await executeOp(operation.opId!, chain.chainId!, await auth.getAddress(), await chain.getAddress("entryPointAddress"))
+        } else {
+            await executeOp(
+                operation.opId!,
+                chain.chainId!,
+                await auth.getAddress(),
+                await chain.getAddress("entryPointAddress"),
+                operation.userOp
+            )
+        }
 
         const opHash = await operation.getOpHash(chain)
         const onChainDataManager = new WalletOnChainManager(chain)

@@ -1,6 +1,6 @@
 import { Address, Hex } from "viem"
 import { API_URL } from "../common/constants"
-import { Operation, OperationStatus } from "../data"
+import { Operation, OperationStatus, UserOperation } from "../data"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createOp(op: Operation): Promise<string> {
@@ -39,7 +39,7 @@ export async function executeOp(
     chainId: string,
     executedBy: string,
     entryPointAddress: Address,
-    signature?: string
+    userOp?: UserOperation
 ): Promise<void> {
-    await sendPostRequest(API_URL, "operation/execute", { opId, chainId, executedBy, entryPointAddress, signature })
+    await sendPostRequest(API_URL, "operation/execute", { opId, chainId, executedBy, entryPointAddress, userOp })
 }
