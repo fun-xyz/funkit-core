@@ -43,7 +43,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalance(baseToken, walletAddress)
-            const userOp = await wallet.stake(auth, "", { amount: 0.01, chainId: config.actualChainId })
+            const userOp = await wallet.stake(auth, await auth.getAddress(), { amount: 0.01, chainId: config.actualChainId })
             await wallet.executeOperation(auth, userOp)
             const balAfter = await Token.getBalance(baseToken, walletAddress)
             assert(balAfter < balBefore, "unable to stake")
@@ -51,7 +51,7 @@ export const StakeTest = (config: StakeTestConfig) => {
 
         it("Should be able to start unstaking", async () => {
             const withdrawalsBefore = await wallet.getAssets(false, true)
-            const userOp = await wallet.unstake(auth, "", {
+            const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                 amounts: [0.001],
                 recipient: await wallet.getAddress(),
                 chainId: config.actualChainId
@@ -75,7 +75,7 @@ export const StakeTest = (config: StakeTestConfig) => {
                 assert(balAfter > balBefore, "unable to finish unstaking")
             } else {
                 try {
-                    const userOp = await wallet.unstake(auth, "", {
+                    const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                         recipient: await wallet.getAddress(),
                         walletAddress: await wallet.getAddress(),
                         chainId: config.actualChainId

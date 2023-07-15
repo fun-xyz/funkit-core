@@ -34,7 +34,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe("TokenSponsor", function () {
+    describe.only("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
         let auth: Auth
@@ -100,7 +100,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await auth.sendTx(paymasterTokenMint)
 
                 const wethAddr = await Token.getAddress("weth", options)
-                const userOp = await wallet.transfer(auth, "", { to: wethAddr, amount: 0.1 })
+                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.1 })
                 await wallet.executeOperation(auth, userOp)
             }
 

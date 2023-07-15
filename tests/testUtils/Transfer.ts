@@ -51,7 +51,10 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             const b1 = Token.getBalance(baseToken, randomAddress)
             const b2 = Token.getBalance(baseToken, walletAddress)
-            const userOp = await wallet.transfer(auth, "", { to: randomAddress, amount: config.amount ? config.amount : 0.001 })
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), {
+                to: randomAddress,
+                amount: config.amount ? config.amount : 0.001
+            })
             await wallet.executeOperation(auth, userOp)
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
@@ -82,7 +85,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b1 = Token.getBalanceBN(outToken, randomAddress)
             const b2 = Token.getBalanceBN(outToken, walletAddress)
             const outTokenAddress = await new Token(outToken).getAddress()
-            const userOp = await wallet.transfer(auth, "", { to: randomAddress, amount: 1, token: outTokenAddress })
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: randomAddress, amount: 1, token: outTokenAddress })
             await wallet.executeOperation(auth, userOp)
             const b3 = Token.getBalanceBN(outToken, randomAddress)
             const b4 = Token.getBalanceBN(outToken, walletAddress)
@@ -116,7 +119,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                     deadline,
                     chainId: config.chainId
                 }
-                await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
+                const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
+                await wallet.executeOperation(auth, operation)
             })
 
             it("wallet should have lower balance of specified token", async () => {
