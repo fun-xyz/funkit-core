@@ -3,14 +3,7 @@ import { User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens } from "../apis"
 import { createGroup, getGroups } from "../apis/GroupApis"
-import {
-    createOperation,
-    deleteOperation,
-    executeOperation,
-    getOperations,
-    getOperationsOfWallet,
-    signOperation
-} from "../apis/OperationApis"
+import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { Group } from "../apis/types"
 import { addUserToWallet } from "../apis/UserApis"
@@ -225,7 +218,7 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation[]> {
         const chain = await getChainFromData(txOptions.chain)
-        return await getOperationsOfWallet(await this.getAddress(), chain.chainId!, status)
+        return await getOpsOfWallet(await this.getAddress(), chain.chainId!, status)
     }
 
     // TODO: change userId parsing and call data building to support multi-sig
@@ -242,6 +235,9 @@ export class FunWallet extends FirstClassActions {
         callData: Hex,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        if (!userId || userId === "") {
+            throw new MissingParameterError("FunWallet.createOperation", new Helper("createOperation", userId, "userId is required"))
+        }
         const chain = await getChainFromData(txOptions.chain)
         const onChainDataManager = new WalletOnChainManager(chain)
 
@@ -290,9 +286,11 @@ export class FunWallet extends FirstClassActions {
         estimatedOperation.userOp.signature = await auth.signOp(estimatedOperation, chain)
 
         if (txOptions.skipDBAction !== true) {
-            const opId = await createOperation(operation)
+            const opId = await createOp(operation)
             operation.opId = opId as Hex
         }
+
+        console.log("create operation", operation)
 
         return operation
     }
@@ -301,9 +299,10 @@ export class FunWallet extends FirstClassActions {
         const chain = await getChainFromData(txOptions.chain)
         operation.userOp.signature = await auth.signOp(operation, chain)
         if (txOptions.skipDBAction !== true) {
-            await signOperation(operation.opId!, chain.chainId!, operation.userOp.signature as Hex, await auth.getAddress())
+            await signOp(operation.opId!, chain.chainId!, operation.userOp.signature as Hex, await auth.getAddress())
         }
 
+        console.log("sign operation", operation)
         return operation
     }
 
@@ -312,6 +311,8 @@ export class FunWallet extends FirstClassActions {
         operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
+        console.log("execute operation", operation)
+
         txOptions = parseOptions(txOptions)
         const userOp = (await this.signOperation(auth, operation, txOptions)).userOp
         const chain = await getChainFromData(txOptions.chain)
@@ -351,14 +352,14 @@ export class FunWallet extends FirstClassActions {
             })
 
             // check remote collected signature
-            const storedOperation = (await getOperations([operation.opId!], chain.chainId!))[0]
+            const storedOperation = (await getOps([operation.opId!], chain.chainId!))[0]
             if (storedOperation.signatures!.length + 1 < group.threshold) {
                 const helper = new Helper("executeOperation", chain.chainId, "Not enough signatures")
                 throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
             }
         }
 
-        await executeOperation(
+        await executeOp(
             operation.opId!,
             chain.chainId!,
             await auth.getAddress(),
@@ -411,7 +412,7 @@ export class FunWallet extends FirstClassActions {
     // TODO, use auth to do authentication
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
         const chain = await getChainFromData(txOptions.chain)
-        await deleteOperation(operationId, chain.chainId!)
+        await deleteOp(operationId, chain.chainId!)
     }
 
     async createRejectOperation(
