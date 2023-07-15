@@ -35,7 +35,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             }).then((r) => r.json())
         }, DEFAULT_RETRY_OPTIONS)
     } catch (e) {
-        console.log(e)
+        return
     }
 }
 

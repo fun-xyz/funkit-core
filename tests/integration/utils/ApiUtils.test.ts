@@ -31,7 +31,9 @@ describe("Test src/utils/ApiUtils.ts", function () {
         })
 
         it("Should fail - Ping Google.com that doesn't have an endpoint", async function () {
-            await expect(ApiUtils.sendRequest("https://google.com", "", "")).to.throw
+            sinon.stub(Retry, "retry").throws(new Error())
+            await expect(ApiUtils.sendRequest("https://google.com", "test", "")).to.throw
+            sinon.restore()
         })
     })
 })
