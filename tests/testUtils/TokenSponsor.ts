@@ -34,7 +34,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe.only("TokenSponsor", function () {
+    describe("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
         let auth: Auth

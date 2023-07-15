@@ -1,6 +1,7 @@
 import { Address, Hex, encodeAbiParameters } from "viem"
 import { LoginData, WalletSignature } from "./types"
 import { AddressZero, HashZero } from "../common"
+import { User } from "../wallet/types"
 
 export function encodeLoginData(data: LoginData): Hex {
     let { loginType, newFunWalletOwner, index, socialHandle, salt } = data
@@ -31,9 +32,21 @@ export function encodeWalletSignature(data: WalletSignature): Hex {
         [authType, userId, signature, extraData]
     )
 }
+
+export function encodeUserAuthInitData(groupUsers: User[]): Hex {
+    const groupIds: Hex[] = []
+    const groupInfos: [Hex[], number][] = []
+    groupUsers.forEach((user) => {
+        groupIds.push(user.userId)
+        groupInfos.push([user.groupInfo!.memberIds, user.groupInfo!.threshold])
+    })
+    return encodeAbiParameters([{ type: "bytes32[]" }, { type: "tuple(bytes32[],uint256)[]" }], [groupIds, groupInfos])
+}
+
 export function addresstoBytes32(data: Address): Hex {
     return encodeAbiParameters([{ type: "address" }], [data])
 }
+
 export function toBytes32Arr(data: Hex[]): Hex {
     return encodeAbiParameters([{ type: "bytes32[]" }], [data])
 }

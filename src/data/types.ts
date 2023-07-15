@@ -72,3 +72,43 @@ export enum AuthType {
     ECDSA = 0,
     MULTI_SIG = 1
 }
+
+export type Signature = {
+    userId: Hex
+    signature: Hex
+    signedTime: number
+}
+
+export enum OperationType {
+    SINGLE_OPERATION = "SINGLE_OPERATION",
+    GROUP_OPERATION = "GROUP_OPERATION",
+    REJECTION = "REJECTION"
+}
+
+export enum OperationStatus {
+    ALL = "",
+    PENDING_APPROVED = "PENDING_APPROVED",
+    APPROVED = "APPROVED",
+    CANCELLED = "CANCELLED",
+    PENDING = "PENDING",
+    OP_SUCCEED = "OP_SUCCEED",
+    OP_REVERTED = "OP_REVERTED"
+}
+
+export type OperationMetadata = {
+    opId?: Hex
+    chainId: string
+    opType: OperationType
+    authType: AuthType
+    groupId?: Hex
+    message?: string
+    walletAddr: Address
+    status?: OperationStatus
+    proposer: string // do not use address in case we later use non-address data as the proposer
+    proposedTime?: number
+    executedBy?: string
+    executedTime?: number
+    relatedOpId?: Hex[]
+    signatures?: Signature[]
+    txid?: string
+}

@@ -19,7 +19,7 @@ import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWallets } from "../apis/UserApis"
 import { TransactionData } from "../common"
 import { EnvOption } from "../config"
-import { Chain, UserOp, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
+import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
 import { Helper, MissingParameterError } from "../errors"
 import { getAuthUniqueId, objectify } from "../utils"
 
@@ -110,9 +110,9 @@ export class Auth {
         return encodeWalletSignature(walletSignature)
     }
 
-    async signOp(userOp: UserOp, chain: Chain): Promise<Hex> {
+    async signOp(operation: Operation, chain: Chain): Promise<Hex> {
         await this.init()
-        const opHash = await userOp.getOpHashData(chain)
+        const opHash = await operation.getOpHash(chain)
         return await this.signHash(opHash)
     }
 

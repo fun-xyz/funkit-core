@@ -30,4 +30,6 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
     globalEnvOption.sendTxLater =
         option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
+    globalEnvOption.skipDBAction =
+        option.skipDBAction === null || option.skipDBAction === undefined ? globalEnvOption.skipDBAction : option.skipDBAction
 }

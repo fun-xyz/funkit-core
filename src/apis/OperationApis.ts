@@ -1,14 +1,17 @@
 import { Address, Hex } from "viem"
-import { Operation, OperationStatus } from "./types"
 import { API_URL } from "../common/constants"
+import { Operation, OperationStatus } from "../data"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createOperation(op: Operation): Promise<string> {
     return (await sendPostRequest(API_URL, "operation", { ...op })).opId
 }
 
-export async function getOperationsOfGroup(groupId: Hex, chainId: string, status?: OperationStatus): Promise<Operation[]> {
-    const endpoint = status ? `operation/group/${groupId}/chain/${chainId}?status=${status}` : `operation/group/${groupId}/${chainId}`
+export async function getOperationsOfGroup(groupId: Hex, chainId: string, status: OperationStatus): Promise<Operation[]> {
+    const endpoint =
+        status === OperationStatus.ALL
+            ? `operation/group/${groupId}/${chainId}`
+            : `operation/group/${groupId}/chain/${chainId}?status=${status}`
     return (await sendGetRequest(API_URL, endpoint)).operations
 }
 
@@ -36,7 +39,7 @@ export async function executeOperation(
     chainId: string,
     executedBy: string,
     entryPointAddress: Address,
-    signature?: Hex
+    signature?: string
 ): Promise<void> {
     await sendPostRequest(API_URL, "operation/execute", { opId, chainId, executedBy, entryPointAddress, signature })
 }

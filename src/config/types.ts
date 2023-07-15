@@ -15,6 +15,7 @@ export interface EnvOption {
         oracle?: Address
     }
     sendTxLater?: boolean
+    skipDBAction?: boolean
 }
 
 export interface GlobalEnvOption extends EnvOption {

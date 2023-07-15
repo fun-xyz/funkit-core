@@ -1,8 +1,8 @@
 import { Hex } from "viem"
 
 export type GroupInfo = {
-    memberIds: Hex[]
     threshold: number
+    memberIds: Hex[]
 }
 
 export type User = {
