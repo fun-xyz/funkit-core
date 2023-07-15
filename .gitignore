@@ -9,4 +9,5 @@ utils.sh
 **/dist
 
 # Test coverage
+coverage
 .nyc_output
