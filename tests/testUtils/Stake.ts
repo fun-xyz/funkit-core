@@ -65,7 +65,7 @@ export const StakeTest = (config: StakeTestConfig) => {
             const withdrawals = await wallet.getAssets(false, true)
             if (withdrawals[0].length > 0) {
                 const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
-                const userOp = await wallet.unstake(auth, "", {
+                const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                     recipient: await wallet.getAddress(),
                     walletAddress: await wallet.getAddress(),
                     chainId: config.actualChainId

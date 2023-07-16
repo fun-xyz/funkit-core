@@ -1,11 +1,12 @@
-import { assert } from "chai"
+import { assert, expect } from "chai"
 import { Hex } from "viem"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
-import { fundWallet, generateRandomGroupId } from "../../src/utils"
+import { InternalFailureError, InvalidParameterError } from "../../src/errors"
+import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -178,7 +179,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = generateRandomGroupId()
+        const groupId: Hex = "0xb00c7b880a57369e49a454dad27494253cf6efa5c63381c6f0e567d86d5d5cbc" // generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -200,7 +201,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 8888)
+                uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 6666)
             })
 
             if (prefund) {
@@ -220,7 +221,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
         })
 
-        it.only("Group Wallet Create, Collect Sig, and Execute -- ETH => ERC20", async () => {
+        it("Group Wallet Create, Collect Sig, and Execute -- ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
 
@@ -242,16 +243,107 @@ export const SwapTest = (config: SwapTestConfig) => {
             const operation = await wallet.getOperation(swapOp.opId!)
 
             // auth2 sign and execute the operation
-            await wallet.executeOperation(auth2, operation)
+            expect(await wallet.executeOperation(auth2, operation)).to.not.throw
 
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
-        // it("Group Wallet Create, Execute Without Required Sigs -- ERC20 => ERC20", async () => {})
+        it("Group Wallet Create, Execute Without Required Sigs -- ETH => ERC20", async () => {
+            const walletAddress = await wallet.getAddress()
+            const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
 
-        // it("Group Wallet Reject Op -- ERC20 => ERC20", async () => {})
+            // auth1 creates and signs the swap operation, the operation should be stored into DDB
+            const swapOp = await wallet.swap(auth1, groupId, {
+                in: baseToken,
+                amount: config.amount ? config.amount : 0.001,
+                out: inToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
+            })
 
-        // it("Group Wallet Create, Remove Op -- ERC20 => ETH", async () => {})
+            // auth1 executes it without auth2 signature
+            try {
+                await wallet.executeOperation(auth1, swapOp)
+            } catch (err) {
+                if (!(err instanceof InvalidParameterError)) {
+                    throw err
+                }
+            }
+
+            const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+            assert(tokenBalanceAfter === tokenBalanceBefore, "Swap executed without required sigs")
+        })
+
+        it("Group Wallet Reject Op -- ETH => ERC20", async () => {
+            const walletAddress = await wallet.getAddress()
+            const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
+
+            // auth1 creates and signs the swap operation, the operation should be stored into DDB
+            const swapOp = await wallet.swap(auth1, groupId, {
+                in: baseToken,
+                amount: config.amount ? config.amount : 0.001,
+                out: inToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
+            })
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth2 logs in and finds out the pending operation.
+            // We use getOperation here to specifically get the operation, but in production custoemr would choose one
+            // const operations = await wallet.getOperations(OperationStatus.PENDING)
+            const operation = await wallet.getOperation(swapOp.opId!)
+
+            // auth2 rejects the operation
+            const rejectionOp = await wallet.createRejectOperation(auth2, groupId, operation, "Op should be rejected")
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth1 logs in and finds out the rejection operation
+            const rejection = await wallet.getOperation(rejectionOp.opId!)
+
+            expect(await wallet.executeOperation(auth1, rejection)).to.not.throw
+
+            // now we try to use auth2 to sign the original op and execute it
+            try {
+                await wallet.executeOperation(auth2, operation)
+            } catch (err: any) {
+                if (!(err instanceof InternalFailureError) && err.errorCode === "UserOpFailureError") {
+                    throw err
+                }
+            }
+
+            const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+            assert(tokenBalanceAfter === tokenBalanceBefore, "Swap executed with bad nonce")
+        })
+
+        it("Group Wallet Create, Remove Op -- ETH => ERC20", async () => {
+            const walletAddress = await wallet.getAddress()
+            const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
+
+            // auth1 creates and signs the swap operation, the operation should be stored into DDB
+            const swapOp = await wallet.swap(auth1, groupId, {
+                in: baseToken,
+                amount: config.amount ? config.amount : 0.001,
+                out: inToken,
+                returnAddress: walletAddress,
+                chainId: config.chainId
+            })
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth1 decides to remove the Op so other people can't see it
+            expect(await wallet.removeOperation(auth1, swapOp.opId!)).to.not.throw
+
+            // auth2 logs in and should not be able to find the operation.
+            expect(await wallet.getOperation(swapOp.opId!)).to.throw
+
+            const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
+            assert(tokenBalanceAfter === tokenBalanceBefore, "Swap executed without enough signature")
+        })
     })
 }

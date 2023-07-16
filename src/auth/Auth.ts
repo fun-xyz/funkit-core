@@ -133,7 +133,7 @@ export class Auth {
     async getEstimateGasSignature(userId: string, _: Operation): Promise<Hex> {
         await this.init()
         const walletSignature: WalletSignature = {
-            userId: userId as Hex,
+            userId: pad(userId as Hex, { size: 32 }),
             signature: pad("0x", { size: 65 })
         }
         return encodeWalletSignature(walletSignature)

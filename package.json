@@ -13,6 +13,7 @@
         "test-tenderly": "ts-mocha tests/tenderly/*.ts",
         "test-aws": "env PREFUND=false ts-mocha",
         "test-goerli": "env PREFUND=false ts-mocha --exit tests/goerli/*.ts",
+        "local-test-tenderly": "env NODE_ENV=local ts-mocha tests/tenderly/*.ts",
         "local-test-goerli": "env NODE_ENV=local PREFUND=false ts-mocha --exit tests/goerli/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",

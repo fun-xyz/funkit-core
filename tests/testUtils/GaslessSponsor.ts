@@ -102,14 +102,14 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalanceBN(config.outToken, walletAddress)
 
-            const userOp = await wallet.swap(auth, await auth.getAddress(), {
+            const operation = await wallet.swap(auth, await auth.getAddress(), {
                 in: config.inToken,
                 amount: config.amount ? config.amount : 0.0001,
                 out: config.outToken,
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, userOp)
+            await wallet.executeOperation(auth, operation)
 
             await new Promise((f) => setTimeout(f, 5000))
 

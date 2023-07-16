@@ -64,7 +64,7 @@ export class SessionKeyAuth extends Auth {
 
         try {
             const walletSignature: WalletSignature = {
-                userId: userId as Hex,
+                userId: pad(userId as Hex, { size: 32 }),
                 signature: pad("0x", { size: 65 }),
                 roleId: this.roleId,
                 ruleId: this.ruleId,
