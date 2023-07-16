@@ -221,10 +221,15 @@ export class FunWallet extends FirstClassActions {
         return await getOpsOfWallet(await this.getAddress(), chain.chainId!, status)
     }
 
+    async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+        const chain = await getChainFromData(txOptions.chain)
+        return (await getOps([opId], chain.chainId!))[0]
+    }
+
     // TODO: change userId parsing and call data building to support multi-sig
-    async create(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [await this.getAddress(txOptions), 0, "0x"])
-        const operation: Operation = await this.createOperation(auth, await auth.getAddress(), callData, txOptions)
+        const operation: Operation = await this.createOperation(auth, userId, callData, txOptions)
         const receipt = await this.executeOperation(auth, operation, txOptions)
         return receipt
     }
@@ -282,25 +287,27 @@ export class FunWallet extends FirstClassActions {
             operation.groupId = pad(userId as Hex, { size: 32 })
         }
 
-        const estimatedOperation = await this.estimateOperation(auth, operation, txOptions)
-        estimatedOperation.userOp.signature = await auth.signOp(estimatedOperation, chain)
+        const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
+
+        // sign the userOp directly here as we do not have the opId yet
+        estimatedOperation.userOp.signature = await auth.signOp(estimatedOperation, chain, isGroupOperation(operation))
 
         if (txOptions.skipDBAction !== true) {
-            const opId = await createOp(operation)
-            operation.opId = opId as Hex
+            const opId = await createOp(estimatedOperation)
+            estimatedOperation.opId = opId as Hex
         }
 
-        return operation
+        return estimatedOperation
     }
 
     async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const chain = await getChainFromData(txOptions.chain)
-        operation.userOp.signature = await auth.signOp(operation, chain)
+        operation = Operation.convertTypeToObject(operation)
+        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
             await signOp(operation.opId!, chain.chainId!, operation.userOp.signature as Hex, await auth.getAddress())
         }
 
-        console.log("sign operation", operation)
         return operation
     }
 
@@ -310,15 +317,13 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
         txOptions = parseOptions(txOptions)
-
-        let userOp = operation.userOp
-        if (operation.userOp.signature === undefined || operation.userOp.signature === null) {
-            userOp = (await this.signOperation(auth, operation, txOptions)).userOp
-        }
-
+        operation = Operation.convertTypeToObject(operation)
         const chain = await getChainFromData(txOptions.chain)
 
-        if (isWalletInitOp(userOp) && txOptions.skipDBAction !== true) {
+        // sign the userOp directly here as we may not have the opId yet
+        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+
+        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
             await addUserToWallet(
                 auth.authId!,
                 chain.chainId!,
@@ -329,6 +334,7 @@ export class FunWallet extends FirstClassActions {
 
             if (isGroupOperation(operation)) {
                 const group = this.userInfo!.get(operation.groupId!)
+
                 if (group && group.groupInfo) {
                     await createGroup(
                         operation.groupId!,
@@ -361,13 +367,20 @@ export class FunWallet extends FirstClassActions {
         }
 
         if (isGroupOperation(operation)) {
-            await executeOp(operation.opId!, chain.chainId!, await auth.getAddress(), await chain.getAddress("entryPointAddress"))
+            await executeOp(
+                operation.opId!,
+                chain.chainId!,
+                await auth.getAddress(),
+                await chain.getAddress("entryPointAddress"),
+                operation.userOp.signature as Hex
+            )
         } else {
             await executeOp(
                 operation.opId!,
                 chain.chainId!,
                 await auth.getAddress(),
                 await chain.getAddress("entryPointAddress"),
+                operation.userOp.signature as Hex,
                 operation.userOp
             )
         }
@@ -437,11 +450,12 @@ export class FunWallet extends FirstClassActions {
 
     async estimateOperation(
         auth: Auth,
+        userId: string,
         operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const chain = await getChainFromData(txOptions.chain)
-        const estimateGasSignature = await auth.getEstimateGasSignature(operation)
+        const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
         const res = await chain.estimateOpGas(operation.userOp)
         operation.userOp = {
@@ -451,7 +465,7 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
-    async _getThisInitCode(chain: Chain) {
+    private async _getThisInitCode(chain: Chain) {
         const owners: Hex[] = Array.from(this.userInfo!.keys())
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")

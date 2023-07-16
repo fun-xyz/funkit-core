@@ -1,5 +1,6 @@
 import { Hex, encodeAbiParameters, keccak256, toBytes, toHex } from "viem"
 import { sendRequest } from "./ApiUtils"
+import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common"
 import { Chain, UserOperation } from "../data"
 
 export const calcPreVerificationGas = (userOp: UserOperation) => {
@@ -171,4 +172,9 @@ const userOpTypeSig = {
     ],
     name: "userOp",
     type: "tuple"
+}
+
+export async function getOpHash(chain: Chain, userOp: UserOperation): Promise<Hex> {
+    const entryPointAddress = await chain.getAddress("entryPointAddress")
+    return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [userOp], chain)
 }

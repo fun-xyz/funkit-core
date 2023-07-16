@@ -5,7 +5,7 @@ import { API_URL } from "../common/constants"
 import { Helper, InternalFailureError, InvalidParameterError, NoServerConnectionError, ServerMissingDataError } from "../errors"
 
 const errorHandler = (err: any, context: any) => {
-    if (err instanceof ServerMissingDataError) {
+    if (err instanceof ServerMissingDataError || err instanceof InvalidParameterError) {
         context.abort()
     }
 }

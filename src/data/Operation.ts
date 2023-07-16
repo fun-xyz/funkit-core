@@ -44,7 +44,27 @@ export class Operation {
         this.txid = metadata.txid
     }
 
-    async getOpHash(chain: Chain) {
+    static convertTypeToObject(op: Operation): Operation {
+        return new Operation(op.userOp, {
+            opId: op.opId,
+            chainId: op.chainId,
+            opType: op.opType,
+            authType: op.authType,
+            groupId: op.groupId,
+            message: op.message,
+            walletAddr: op.walletAddr,
+            status: op.status,
+            proposer: op.proposer,
+            proposedTime: op.proposedTime,
+            executedBy: op.executedBy,
+            executedTime: op.executedTime,
+            relatedOpId: op.relatedOpId,
+            signatures: op.signatures,
+            txid: op.txid
+        })
+    }
+
+    async getOpHash(chain: Chain): Promise<Hex> {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [this.userOp], chain)
     }
@@ -56,9 +76,9 @@ export class Operation {
         return maxFeePerGas * requiredGas!
     }
 
-    async estimateGas(auth: Auth, option: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+    async estimateGas(auth: Auth, userId: string, option: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         if (!this.userOp.signature || this.userOp.signature === "0x") {
-            this.userOp.signature = await auth.getEstimateGasSignature(this)
+            this.userOp.signature = await auth.getEstimateGasSignature(userId, this)
         }
         const chain = await getChainFromData(option.chain)
         const res = await chain.estimateOpGas({

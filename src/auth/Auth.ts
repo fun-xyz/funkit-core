@@ -92,7 +92,7 @@ export class Auth {
         this.inited = true
     }
 
-    async signHash(hash: Hex): Promise<Hex> {
+    async signHash(hash: Hex, isGroupOp = false): Promise<Hex> {
         await this.init()
         let signature
         if (this.signer?.type === "local") {
@@ -102,17 +102,21 @@ export class Auth {
         } else {
             throw new Error("No signer or client")
         }
-        const walletSignature: WalletSignature = {
-            userId: await this.getUserId(),
-            signature: signature
+        if (isGroupOp) {
+            return signature
+        } else {
+            const walletSignature: WalletSignature = {
+                userId: await this.getUserId(),
+                signature: signature
+            }
+            return encodeWalletSignature(walletSignature)
         }
-        return encodeWalletSignature(walletSignature)
     }
 
-    async signOp(operation: Operation, chain: Chain): Promise<Hex> {
+    async signOp(operation: Operation, chain: Chain, isGroupOp = false): Promise<Hex> {
         await this.init()
         const opHash = await operation.getOpHash(chain)
-        return await this.signHash(opHash)
+        return await this.signHash(opHash, isGroupOp)
     }
 
     async getAddress(): Promise<Address> {
@@ -126,10 +130,10 @@ export class Auth {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async getEstimateGasSignature(_: Operation): Promise<Hex> {
+    async getEstimateGasSignature(userId: string, _: Operation): Promise<Hex> {
         await this.init()
         const walletSignature: WalletSignature = {
-            userId: await this.getUserId(),
+            userId: userId as Hex,
             signature: pad("0x", { size: 65 })
         }
         return encodeWalletSignature(walletSignature)

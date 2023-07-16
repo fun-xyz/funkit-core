@@ -1,4 +1,4 @@
-import { Address, Hex } from "viem"
+import { Address, Hex, InvalidParameterError } from "viem"
 import { Wallet } from "./types"
 import { API_URL } from "../common/constants"
 import { ServerMissingDataError } from "../errors"
@@ -36,11 +36,18 @@ export async function addUserToWallet(
     userIds: Hex[],
     walletUniqueId?: string
 ): Promise<void> {
-    await sendPostRequest(API_URL, `user/${authId}/chain/${chainId}/wallet`, {
-        walletAddr,
-        userIds,
-        walletUniqueId
-    })
+    try {
+        await sendPostRequest(API_URL, `user/${authId}/chain/${chainId}/wallet`, {
+            walletAddr,
+            userIds,
+            walletUniqueId
+        })
+    } catch (err) {
+        if (err instanceof InvalidParameterError) {
+            // swallow the error if the wallet already exists.
+            return
+        }
+    }
 }
 
 export async function removeUserWallet(authId: string, chainId: string, walletAddr: Address): Promise<void> {

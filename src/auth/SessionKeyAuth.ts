@@ -54,7 +54,7 @@ export class SessionKeyAuth extends Auth {
         return encodeWalletSignature(walletSignature)
     }
 
-    override async getEstimateGasSignature(operation: Operation): Promise<Hex> {
+    override async getEstimateGasSignature(userId: string, operation: Operation): Promise<Hex> {
         if (!this.targetSelectorMerkleTree) {
             throw new Error("SessionKeyAuth not connected to wallet")
         }
@@ -64,7 +64,7 @@ export class SessionKeyAuth extends Auth {
 
         try {
             const walletSignature: WalletSignature = {
-                userId: await this.getUserId(),
+                userId: userId as Hex,
                 signature: pad("0x", { size: 65 }),
                 roleId: this.roleId,
                 ruleId: this.ruleId,

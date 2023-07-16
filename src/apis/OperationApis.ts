@@ -39,7 +39,8 @@ export async function executeOp(
     chainId: string,
     executedBy: string,
     entryPointAddress: Address,
+    signature: Hex,
     userOp?: UserOperation
 ): Promise<void> {
-    await sendPostRequest(API_URL, "operation/execute", { opId, chainId, executedBy, entryPointAddress, userOp })
+    await sendPostRequest(API_URL, "operation/execute", { opId, chainId, executedBy, entryPointAddress, signature, userOp })
 }
