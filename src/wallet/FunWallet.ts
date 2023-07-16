@@ -405,7 +405,7 @@ export class FunWallet extends FirstClassActions {
             gasUSD
         }
 
-        if (txOptions?.gasSponsor?.sponsorAddress) {
+        if (txOptions?.gasSponsor?.sponsorAddress && txOptions.skipDBAction !== true) {
             const paymasterType = getPaymasterType(txOptions)
             addTransaction(
                 await chain.getChainId(),
