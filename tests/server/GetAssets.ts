@@ -25,7 +25,6 @@ describe("GetAssets", function () {
             users: [{ userId: await auth.getAddress() }],
             uniqueId: await auth.getWalletUniqueId(chainId.toString(), 14142)
         })
-
     })
 
     describe("/get-tokens", () => {

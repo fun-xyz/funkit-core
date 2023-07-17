@@ -79,6 +79,23 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             if (config.prefund) {
                 await fundWallet(funder, wallet, config.prefundAmt ? config.prefundAmt : 0.1)
                 await fundWallet(funder, wallet1, config.prefundAmt ? config.prefundAmt : 0.1)
+                const userOp = await wallet.swap(auth, await auth.getAddress(), {
+                    in: "eth",
+                    amount: config.amount ? config.amount : 0.05,
+                    out: config.inToken,
+                    returnAddress: walletAddress,
+                    chainId: config.chainId
+                })
+                await wallet.executeOperation(auth, userOp)
+
+                const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
+                    in: "eth",
+                    amount: config.amount ? config.amount : 0.05,
+                    out: config.inToken,
+                    returnAddress: walletAddress1,
+                    chainId: config.chainId
+                })
+                await wallet1.executeOperation(auth, userOp1)
             }
             if (mint) {
                 const chain = await getChainFromData(options.chain)
