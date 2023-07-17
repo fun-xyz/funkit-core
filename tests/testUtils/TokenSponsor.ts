@@ -87,6 +87,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     chainId: config.chainId
                 })
                 await wallet.executeOperation(auth, userOp)
+                const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
+                assert(Number(walletInTokenBalance) > 0, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
                     in: "eth",
@@ -96,6 +98,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     chainId: config.chainId
                 })
                 await wallet1.executeOperation(auth, userOp1)
+                const wallet1InTokenBalance = await Token.getBalance(config.inToken, walletAddress1)
+                assert(Number(wallet1InTokenBalance) > 0, "wallet1 does have enough inToken balance")
             }
             if (mint) {
                 const chain = await getChainFromData(options.chain)
