@@ -1,272 +1,75 @@
-import { Address, Hex } from "viem"
-import {
-    ActionData,
-    ActionFunction,
-    ApproveAndExecParams,
-    ApproveERC20Params,
-    ApproveERC721Params,
-    ERC20TransferParams,
-    ERC721TransferParams,
-    FinishUnstakeParams,
-    NativeTransferParams,
-    OneInchCalldata,
-    OneInchSwapParams,
-    RequestUnstakeParams,
-    SessionKeyParams,
-    StakeParams,
-    UniswapParams,
-    createCalldata,
-    createExecRawTxCalldata,
-    createSessionKeyCalldata,
-    erc20ApproveCalldata,
-    erc20TransferCalldata,
-    erc721ApproveCalldata,
-    erc721TransferCalldata,
-    ethTransferCalldata,
-    finishUnstakeCalldata,
-    requestUnstakeCalldata,
-    stakeCalldata,
-    uniswapV2SwapCalldata,
-    uniswapV3SwapCalldata
-} from "../actions"
-import { approveAndExecCalldata } from "../actions/ApproveAndExec"
-import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens, storeUserOp } from "../apis"
+import { Address, Hex, createPublicClient, http, keccak256, pad, toBytes } from "viem"
+import { User } from "./types"
+import { FirstClassActions } from "../actions/FirstClassActions"
+import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens } from "../apis"
+import { createGroup, getGroups } from "../apis/GroupApis"
+import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
+import { Group } from "../apis/types"
+import { addUserToWallet } from "../apis/UserApis"
 import { Auth } from "../auth"
-import { ExecutionReceipt, TransactionData, TransactionParams } from "../common"
-import { AddressZero } from "../common/constants"
+import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, WALLET_CONTRACT_INTERFACE } from "../common"
+import { AddressZero, FACTORY_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
+    AuthType,
     Chain,
     InitCodeParams,
     LoginData,
-    Token,
-    UserOp,
-    UserOperation,
-    WalletIdentifier,
-    addresstoBytes32,
+    Operation,
+    OperationStatus,
+    OperationType,
+    encodeUserAuthInitData,
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, ParameterFormatError } from "../errors"
+import { Helper, MissingParameterError, ParameterError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, getUniqueId } from "../utils"
+import { gasCalculation, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
+
 export interface FunWalletParams {
-    uniqueId: string
-    index?: number
+    users?: User[]
+    uniqueId?: string
+    walletAddr?: Address
 }
 
-export class FunWallet {
-    identifier: WalletIdentifier
+export class FunWallet extends FirstClassActions {
+    walletUniqueId?: Hex
+    userInfo?: Map<Hex, User>
     abiManager: WalletAbiManager
     address?: Address
 
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the WalletIdentifier - uniqueId, index
+     * @param {object} params - The parameters for the WalletIdentifier - users, uniqueId, walletAddr
      */
     constructor(params: FunWalletParams) {
-        const { uniqueId, index } = params
-        this.identifier = new WalletIdentifier(uniqueId, index)
+        super()
+        const { users, uniqueId, walletAddr } = params
+
+        if (!uniqueId && !walletAddr) {
+            throw new MissingParameterError(
+                "FunWallet.constructor",
+                new Helper("constructor", uniqueId, "uniqueId or walletAddr is required")
+            )
+        }
+
+        this.userInfo = new Map(
+            users?.map((user) => {
+                return [pad(user.userId, { size: 32 }), user] as [Hex, User]
+            })
+        )
+
+        if (uniqueId) {
+            this.walletUniqueId = keccak256(toBytes(uniqueId))
+        } else {
+            this.address = walletAddr
+        }
+
         this.abiManager = new WalletAbiManager()
-    }
-
-    /**
-     * Generates UserOp object for a transaction
-     * @param {Auth} auth Auth class instance that signs the transaction
-     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Object} txOptions Options for the transaction
-     * @returns {UserOp}
-     */
-    async _generatePartialUserOp(auth: Auth, transactionFunc: ActionFunction, txOptions: EnvOption): Promise<UserOperation> {
-        const chain = await getChainFromData(txOptions.chain)
-        const actionData: ActionData = {
-            wallet: this,
-            chain,
-            options: txOptions
-        }
-        const { data } = await transactionFunc(actionData)
-
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-
-        const sender = await this.getAddress(txOptions)
-        const callData = await this._getCallData(onChainDataManager, data, auth, txOptions)
-        const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
-        const nonce = await auth.getNonce(sender)
-
-        const partialOp: UserOperation = {
-            callData,
-            sender,
-            nonce,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
-            initCode,
-            verificationGasLimit: BigInt(10e6),
-            callGasLimit: BigInt(10e6),
-            preVerificationGas: BigInt(10e5)
-        }
-        let paymasterAndData = "0x"
-        if (txOptions.gasSponsor) {
-            if (txOptions.gasSponsor.token) {
-                const sponsor = new TokenSponsor(txOptions)
-                if (txOptions.gasSponsor.usePermit) {
-                    const paymasterAndDataRaw = await sponsor.getPaymasterAndDataPermit(partialOp, sender, auth, txOptions)
-                    paymasterAndData = paymasterAndDataRaw.toLowerCase()
-                } else {
-                    paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-                }
-            } else {
-                const sponsor = new GaslessSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            }
-        }
-
-        return { ...partialOp, paymasterAndData }
-    }
-
-    async _getCallData(onChainDataManager: WalletOnChainManager, data: TransactionData, auth: Auth, options: EnvOption) {
-        const fee = { ...options.fee }
-        if (options.fee) {
-            if (!(fee.token || (options.gasSponsor && options.gasSponsor.token))) {
-                const helper = new Helper("Fee", fee, "fee.token or gasSponsor.token is required")
-                throw new ParameterFormatError("Wallet.execute", helper)
-            }
-            if (!fee.token && options.gasSponsor && options.gasSponsor.token) {
-                fee.token = options.gasSponsor.token
-            }
-
-            const token = new Token(fee.token!)
-            if (token.isNative) {
-                fee.token = AddressZero
-            } else {
-                fee.token = await token.getAddress()
-            }
-
-            if (fee.amount) {
-                fee.amount = Number(await token.getDecimalAmount(fee.amount))
-            } else if (fee.gasPercent) {
-                if (!token.isNative) {
-                    throw new Error("gasPercent is not supported for ERC20 tokens")
-                }
-                const emptyFunc = async () => {
-                    return {
-                        data,
-                        errorData: { location: "Wallet.execute" }
-                    }
-                }
-                const estimateGasOptions = options
-                estimateGasOptions.fee = undefined
-                const actualGas = await this.estimateGas(auth, emptyFunc, estimateGasOptions)
-                let eth = actualGas.getMaxTxCost()
-
-                let percentNum = BigInt(fee.gasPercent)
-                let percentBase = 100n
-                while (percentNum % 1n !== 0n) {
-                    percentNum *= 10n
-                    percentBase *= 10n
-                }
-
-                if (!token.isNative) {
-                    const ethTokenPairing = await onChainDataManager.getEthTokenPairing(fee.token!)
-                    const decimals = await token.getDecimals()
-                    const numerator = BigInt(10) ** decimals
-                    const denominator = BigInt(10) ** 18n // eth decimals
-                    const price = (ethTokenPairing * numerator) / denominator
-                    eth = (price * numerator) / ((eth * percentNum) / percentBase)
-                } else {
-                    eth = (eth * percentNum) / percentBase
-                }
-
-                fee.amount = Number(eth)
-            } else {
-                const helper = new Helper("Fee", fee, "fee.amount or fee.gasPercent is required")
-                throw new ParameterFormatError("Wallet.execute", helper)
-            }
-        }
-
-        return this.abiManager.encodeCall({ ...data, ...fee })
-    }
-
-    /**
-     * Executes UserOp
-     * @param {Auth} auth Auth class instance that signs the transaction
-     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Object} txOptions Options for the transaction
-     * @param {bool} estimate Whether to estimate gas or not
-     * @returns {UserOp || receipt}
-     */
-    async execute(
-        auth: Auth,
-        transactionFunc: ActionFunction,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption,
-        estimate = false
-    ): Promise<ExecutionReceipt | UserOp | bigint> {
-        const options = parseOptions(txOptions)
-        const chain = await getChainFromData(options.chain)
-        const estimatedOp = await this.estimateGas(auth, transactionFunc, options)
-        if (estimate) {
-            return estimatedOp.getMaxTxCost()
-        }
-        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
-        if (txOptions.sendTxLater) {
-            return estimatedOp
-        }
-        return await this.sendTx(estimatedOp, options)
-    }
-
-    /**
-     * Estimates gas for a transaction
-     * @param {Auth} auth Auth class instance that signs the transaction
-     * @param {function} transactionFunc Function that returns the data to be used in the transaction
-     * @param {Options} txOptions Options for the transaction
-     * @returns
-     */
-    estimateGas = async (
-        auth: Auth,
-        transactionFunc: ActionFunction,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<UserOp> => {
-        const chain = await getChainFromData(txOptions.chain)
-        const partialOp = await this._generatePartialUserOp(auth, transactionFunc, txOptions)
-        const signature = await auth.getEstimateGasSignature(new UserOp(partialOp))
-        const estimateOp: UserOperation = {
-            ...partialOp,
-            signature: signature.toLowerCase()
-        }
-        const res = await chain.estimateOpGas(estimateOp)
-        return new UserOp({
-            ...partialOp,
-            ...res,
-            signature
-        })
-    }
-
-    async _getThisInitCode(chain: Chain, auth: Auth) {
-        const owners = await auth.getOwnerAddr()
-        const uniqueId = await this.identifier.getIdentifier()
-        const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const factoryAddress = await chain.getAddress("factoryAddress")
-        const rbac = await chain.getAddress("rbacAddress")
-        const userAuth = await chain.getAddress("userAuthAddress")
-        const loginData: LoginData = {
-            salt: uniqueId
-        }
-        const rbacInitData = toBytes32Arr(owners.map((owner: Address) => addresstoBytes32(owner)))
-        const userAuthInitData = "0x"
-        const initCodeParams: InitCodeParams = {
-            entryPointAddress,
-            factoryAddress,
-            implementationAddress: AddressZero,
-            loginData: loginData,
-            verificationAddresses: [rbac, userAuth],
-            verificationData: [rbacInitData, userAuthInitData]
-        }
-
-        return this.abiManager.getInitCode(initCodeParams)
     }
 
     /**
@@ -277,97 +80,25 @@ export class FunWallet {
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
-            this.address = await new WalletOnChainManager(chain, this.identifier).getWalletAddress()
+            this.address = await getWalletAddress(chain, this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<string> {
+    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        const uniqueId = await getUniqueId(authId)
         const chainObj = await getChainFromData(chain.toString())
-        const walletIdentifer = new WalletIdentifier(uniqueId, index)
-        const walletOnChainManager = new WalletOnChainManager(chainObj, walletIdentifer)
-        return await walletOnChainManager.getWalletAddress()
+        const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
+        const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
+        return await getWalletAddress(chainObj, walletUniqueId)
     }
 
     static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {
-        //offline query
-        const walletIdentifer = new WalletIdentifier(uniqueId, index)
-        const identifier = await walletIdentifer.getIdentifier()
-        return await WalletOnChainManager.getWalletAddress(identifier, rpcUrl, factoryAddress)
-    }
-
-    async sendTx(userOp: UserOp, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        return await this.sendUserOp(userOp.op, txOptions)
-    }
-
-    /**
-     * Sends a UserOp to the bundler
-     * @param {UserOp} userOp
-     * @param {Options} txOptions Options for the transaction
-     * @returns
-     */
-    async sendUserOp(userOp: UserOperation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const chain = await getChainFromData(txOptions.chain)
-        await chain.sendOpToBundler(userOp)
-        const opHash = await new UserOp(userOp).getOpHashData(chain)
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
-
-        let txid
-        try {
-            txid = await onChainDataManager.getTxId(opHash)
-        } catch (e) {
-            txid = "Cannot find transaction hash."
-        }
-
-        if (!txid) throw new Error("Txid not found")
-        const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
-        if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
-
-        const receipt: ExecutionReceipt = {
-            opHash,
-            txid,
-            gasUsed,
-            gasUSD
-        }
-        await storeUserOp(userOp, 0, receipt)
-
-        if (txOptions?.gasSponsor?.sponsorAddress) {
-            const paymasterType = getPaymasterType(txOptions)
-            addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                txid,
-                {
-                    action: "sponsor",
-                    amount: -1, //Get amount from lazy processing
-                    from: txOptions.gasSponsor.sponsorAddress,
-                    to: await this.getAddress(),
-                    token: "eth",
-                    txid: txid
-                },
-                paymasterType,
-                txOptions.gasSponsor.sponsorAddress
-            )
-        }
-        return receipt
-    }
-
-    /**
-     *
-     * @param {Auth?} auth Optional Auth class instance that signs the transaction if not already signed
-     * @param {UserOp[]} ops list of UserOps to be sent
-     * @param {*} txOptions
-     * @returns
-     */
-    async sendTxs(ops: UserOp[], txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt[]> {
-        const receipts: ExecutionReceipt[] = []
-        for (const op of ops) {
-            const receipt = await this.sendTx(op, txOptions)
-            receipts.push(receipt)
-        }
-        return receipts
+        const walletUniqueId = keccak256(toBytes(`${uniqueId}-${index}`))
+        const client = await createPublicClient({
+            transport: http(rpcUrl)
+        })
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [walletUniqueId], client)
     }
 
     /**
@@ -476,13 +207,48 @@ export class FunWallet {
         return { tokens, nfts }
     }
 
-    async generateUserOp(auth: Auth, callData: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
+    async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        const chain = await getChainFromData(option.chain)
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        return BigInt(await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain))
+    }
+
+    async getOperations(
+        status: OperationStatus = OperationStatus.ALL,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation[]> {
         const chain = await getChainFromData(txOptions.chain)
-        const onChainDataManager = new WalletOnChainManager(chain, this.identifier)
+        return await getOpsOfWallet(await this.getAddress(), chain.chainId!, status)
+    }
+
+    async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+        const chain = await getChainFromData(txOptions.chain)
+        return (await getOps([opId], chain.chainId!))[0]
+    }
+
+    // TODO: change userId parsing and call data building to support multi-sig
+    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+        const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [await this.getAddress(txOptions), 0, "0x"])
+        const operation: Operation = await this.createOperation(auth, userId, callData, txOptions)
+        const receipt = await this.executeOperation(auth, operation, txOptions)
+        return receipt
+    }
+
+    async createOperation(
+        auth: Auth,
+        userId: string,
+        callData: Hex,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        if (!userId || userId === "") {
+            throw new MissingParameterError("FunWallet.createOperation", new Helper("createOperation", userId, "userId is required"))
+        }
+        const chain = await getChainFromData(txOptions.chain)
+        const onChainDataManager = new WalletOnChainManager(chain)
 
         const sender = await this.getAddress({ chain })
         const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain, auth)
+        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
@@ -501,150 +267,231 @@ export class FunWallet {
             maxFeePerGas: maxFeePerGas!,
             maxPriorityFeePerGas: maxFeePerGas!,
             initCode,
-            nonce: await auth.getNonce(sender),
+            nonce: await this.getNonce(sender),
             preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
         }
-        const signature = await auth.getEstimateGasSignature(new UserOp(partialOp))
-        const estimateOp: UserOperation = {
-            ...partialOp,
-            signature: signature.toLowerCase()
-        }
-        const res = await chain.estimateOpGas(estimateOp)
-        const estimatedOp = new UserOp({
-            ...partialOp,
-            ...res,
-            signature
+
+        const isGroupOp: boolean = (await auth.getAddress()) !== (userId as Hex)
+
+        const operation: Operation = new Operation(partialOp, {
+            chainId: chain.chainId!,
+            opType: isGroupOp ? OperationType.GROUP_OPERATION : OperationType.SINGLE_OPERATION,
+            authType: isGroupOp ? AuthType.MULTI_SIG : AuthType.ECDSA,
+            walletAddr: await this.getAddress(),
+            proposer: await auth.getAddress()
         })
-        estimatedOp.op.signature = await auth.signOp(estimatedOp, chain)
-        return await this.sendTx(estimatedOp, parseOptions(txOptions))
+
+        if (isGroupOp) {
+            operation.groupId = pad(userId as Hex, { size: 32 })
+        }
+
+        const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
+
+        // sign the userOp directly here as we do not have the opId yet
+        estimatedOperation.userOp.signature = await auth.signOp(estimatedOperation, chain, isGroupOperation(operation))
+
+        if (txOptions.skipDBAction !== true) {
+            const opId = await createOp(estimatedOperation)
+            estimatedOperation.opId = opId as Hex
+        }
+
+        return estimatedOperation
     }
 
-    async transferERC721(
+    async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+        const chain = await getChainFromData(txOptions.chain)
+        operation = Operation.convertTypeToObject(operation)
+        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+        if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
+            await signOp(operation.opId!, chain.chainId!, operation.userOp.signature as Hex, await auth.getAddress())
+        }
+
+        return operation
+    }
+
+    async executeOperation(
         auth: Auth,
-        params: ERC721TransferParams,
+        operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<ExecutionReceipt> {
-        const callData = await erc721TransferCalldata(params, await this.getAddress())
-        return await this.generateUserOp(auth, callData, txOptions)
+        txOptions = parseOptions(txOptions)
+        operation = Operation.convertTypeToObject(operation)
+        const chain = await getChainFromData(txOptions.chain)
+
+        // sign the userOp directly here as we may not have the opId yet
+        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+
+        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
+            await addUserToWallet(
+                auth.authId!,
+                chain.chainId!,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
+            )
+
+            if (isGroupOperation(operation)) {
+                const group = this.userInfo!.get(operation.groupId!)
+
+                if (group && group.groupInfo) {
+                    await createGroup(
+                        operation.groupId!,
+                        chain.chainId!,
+                        group.groupInfo.threshold,
+                        await this.getAddress(),
+                        group.groupInfo.memberIds
+                    )
+                }
+            }
+        }
+
+        if (operation.groupId && txOptions.skipDBAction !== true) {
+            // cache group info
+            const group: Group = (await getGroups([operation.groupId], chain.chainId!))[0]
+            this.userInfo?.set(operation.groupId, {
+                userId: operation.groupId,
+                groupInfo: {
+                    threshold: group.threshold,
+                    memberIds: group.memberIds
+                }
+            })
+
+            // check remote collected signature
+            const storedOperation = (await getOps([operation.opId!], chain.chainId!))[0]
+            if (storedOperation.signatures!.length + 1 < group.threshold) {
+                const helper = new Helper("executeOperation", chain.chainId, "Not enough signatures")
+                throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
+            }
+        }
+
+        if (isGroupOperation(operation)) {
+            await executeOp(
+                operation.opId!,
+                chain.chainId!,
+                await auth.getAddress(),
+                await chain.getAddress("entryPointAddress"),
+                operation.userOp.signature as Hex
+            )
+        } else {
+            await executeOp(
+                operation.opId!,
+                chain.chainId!,
+                await auth.getAddress(),
+                await chain.getAddress("entryPointAddress"),
+                operation.userOp.signature as Hex,
+                operation.userOp
+            )
+        }
+
+        const opHash = await operation.getOpHash(chain)
+        const onChainDataManager = new WalletOnChainManager(chain)
+
+        let txid
+        try {
+            txid = await onChainDataManager.getTxId(opHash)
+        } catch (e) {
+            txid = "Cannot find transaction id."
+        }
+
+        const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
+        if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
+
+        const receipt: ExecutionReceipt = {
+            opHash,
+            txid,
+            gasUsed,
+            gasUSD
+        }
+
+        if (txOptions?.gasSponsor?.sponsorAddress && txOptions.skipDBAction !== true) {
+            const paymasterType = getPaymasterType(txOptions)
+            addTransaction(
+                await chain.getChainId(),
+                Date.now(),
+                txid,
+                {
+                    action: "sponsor",
+                    amount: -1, //Get amount from lazy processing
+                    from: txOptions.gasSponsor.sponsorAddress,
+                    to: await this.getAddress(),
+                    token: "eth",
+                    txid: txid
+                },
+                paymasterType,
+                txOptions.gasSponsor.sponsorAddress
+            )
+        }
+        return receipt
     }
 
-    async transferERC20(
+    // TODO, use auth to do authentication
+    async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
+        const chain = await getChainFromData(txOptions.chain)
+        await deleteOp(operationId, chain.chainId!)
+    }
+
+    async createRejectOperation(
         auth: Auth,
-        params: ERC20TransferParams,
+        groupId: string,
+        operation: Operation,
+        rejectionMessage?: string,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await erc20TransferCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+    ) {
+        const rejectOperation = await this.transfer(auth, groupId, { to: await this.getAddress(), amount: 0 }, txOptions)
+        if (rejectionMessage) rejectOperation.message = rejectionMessage
+        rejectOperation.userOp.nonce = operation.userOp.nonce
+        rejectOperation.relatedOpId = [operation.opId!]
+        rejectOperation.opType = OperationType.REJECTION
+        return rejectOperation
     }
 
-    async transferEth(
+    async estimateOperation(
         auth: Auth,
-        params: NativeTransferParams,
+        userId: string,
+        operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await ethTransferCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+    ): Promise<Operation> {
+        const chain = await getChainFromData(txOptions.chain)
+        const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
+        operation.userOp.signature = estimateGasSignature.toLowerCase()
+        const res = await chain.estimateOpGas(operation.userOp)
+        operation.userOp = {
+            ...operation.userOp,
+            ...res
+        }
+        return operation
     }
 
-    async approveERC20(
-        auth: Auth,
-        params: ApproveERC20Params,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await erc20ApproveCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
+    private async _getThisInitCode(chain: Chain) {
+        const owners: Hex[] = Array.from(this.userInfo!.keys())
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        const factoryAddress = await chain.getAddress("factoryAddress")
+        const rbac = await chain.getAddress("rbacAddress")
+        const userAuth = await chain.getAddress("userAuthAddress")
+        const loginData: LoginData = {
+            salt: this.walletUniqueId!
+        }
+        const rbacInitData = toBytes32Arr(owners)
 
-    async approveERC721(
-        auth: Auth,
-        params: ApproveERC721Params,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await erc721ApproveCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
+        let userAuthInitData = "0x" as Hex
+        const groupUsers: User[] = Array.from(this.userInfo!.values()).filter(
+            (user) => user.groupInfo !== null && user.groupInfo !== undefined
+        )
+        if (groupUsers.length > 0) {
+            userAuthInitData = encodeUserAuthInitData(groupUsers)
+        }
 
-    async stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const callData = await stakeCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
+        const initCodeParams: InitCodeParams = {
+            entryPointAddress,
+            factoryAddress,
+            implementationAddress: AddressZero,
+            loginData: loginData,
+            verificationAddresses: [rbac, userAuth],
+            verificationData: [rbacInitData, userAuthInitData]
+        }
 
-    async requestUnstake(
-        auth: Auth,
-        params: RequestUnstakeParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await requestUnstakeCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async finishUnstake(
-        auth: Auth,
-        params: FinishUnstakeParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await finishUnstakeCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async approveAndExec(
-        auth: Auth,
-        params: ApproveAndExecParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await approveAndExecCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async uniswapV3Swap(
-        auth: Auth,
-        params: UniswapParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await uniswapV3SwapCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async uniswapV2Swap(
-        auth: Auth,
-        params: UniswapParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await uniswapV2SwapCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async oneinchSwap(
-        auth: Auth,
-        params: OneInchSwapParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await OneInchCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async create(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const callData = await createCalldata({ to: await this.getAddress(txOptions) })
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async execRawCalldata(
-        auth: Auth,
-        params: TransactionParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await createExecRawTxCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
-    }
-
-    async createSessionKey(
-        auth: Auth,
-        params: SessionKeyParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<ExecutionReceipt> {
-        const callData = await createSessionKeyCalldata(params)
-        return await this.generateUserOp(auth, callData, txOptions)
+        return this.abiManager.getInitCode(initCodeParams)
     }
 }

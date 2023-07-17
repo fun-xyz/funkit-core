@@ -7,6 +7,13 @@ import { ContractInterface } from "../viem/ContractInterface"
 
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
 
+export const isRequestUnstakeParams = (input: any) => {
+    return input.amounts !== undefined
+}
+export const isFinishUnstakeParams = (input: any) => {
+    return input.recipient !== undefined
+}
+
 export const stakeCalldata = async (params: StakeParams): Promise<Hex> => {
     const lidoAddress = getSteth(params.chainId.toString())
     return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [lidoAddress, parseEther(`${params.amount}`), "0x"])
@@ -37,7 +44,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         steth,
         approveData.data
     ])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, requestUnstakeData.data])
+    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0n, requestUnstakeData.data])
 }
 
 export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<Hex> => {

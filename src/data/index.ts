@@ -1,6 +1,6 @@
 export * from "./Chain"
 export * from "./Token"
-export * from "./UserOp"
+export * from "./Operation"
 export * from "./WalletIdentifier"
 export * from "./SolidityData"
 export * from "./NFT"

@@ -3,4 +3,4 @@
 
 git add .
 yarn build
-yarn lint
+yarn lint:fix

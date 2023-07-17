@@ -5,7 +5,7 @@ import { API_URL } from "../common/constants"
 import { Helper, InternalFailureError, InvalidParameterError, NoServerConnectionError, ServerMissingDataError } from "../errors"
 
 const errorHandler = (err: any, context: any) => {
-    if (err instanceof ServerMissingDataError) {
+    if (err instanceof ServerMissingDataError || err instanceof InvalidParameterError) {
         context.abort()
     }
 }
@@ -41,7 +41,6 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 body: method !== "GET" ? stringifyOp(body) : undefined
             })
             const text = await response.text()
-
             if (response.status === 404) {
                 const helper = new Helper(`Calling ${uri}`, method, "Data not found on server.")
                 throw new ServerMissingDataError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
@@ -83,4 +82,21 @@ export async function sendPostRequest(
     apiKey: string = (globalThis as any).globalEnvOption.apiKey!
 ): Promise<any> {
     return await sendRequest(`${uri}/${endpoint}`, "POST", apiKey, body)
+}
+
+export async function sendDeleteRequest(
+    uri: string = API_URL,
+    endpoint: string,
+    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+): Promise<void> {
+    await sendRequest(`${uri}/${endpoint}`, "DELETE", apiKey)
+}
+
+export async function sendPutRequest(
+    uri: string = API_URL,
+    endpoint: string,
+    body: object,
+    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+): Promise<void> {
+    await sendRequest(`${uri}/${endpoint}`, "PUT", apiKey, body)
 }

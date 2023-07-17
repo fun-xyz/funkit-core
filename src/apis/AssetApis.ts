@@ -18,7 +18,7 @@ import { sendGetRequest } from "../utils/ApiUtils"
  * }
  */
 export async function getTokens(chainId: string, holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    return await sendGetRequest(API_URL, `erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
+    return await sendGetRequest(API_URL, `assets/erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
 }
 
 /**
@@ -35,7 +35,7 @@ export async function getTokens(chainId: string, holderAddr: string, onlyVerifie
  *  ]
  */
 export async function getNFTs(chainId: string, holderAddr: string): Promise<any> {
-    return await sendGetRequest(API_URL, `nfts/${holderAddr}/${chainId}`)
+    return await sendGetRequest(API_URL, `assets/nfts/${holderAddr}/${chainId}`)
 }
 
 /**
@@ -51,7 +51,7 @@ export async function getNFTs(chainId: string, holderAddr: string): Promise<any>
  *  }
  */
 export async function getAllNFTs(holderAddr: string): Promise<any> {
-    return await sendGetRequest(API_URL, `nfts/${holderAddr}`)
+    return await sendGetRequest(API_URL, `assets/nfts/${holderAddr}`)
 }
 
 /**
@@ -72,7 +72,7 @@ export async function getAllNFTs(holderAddr: string): Promise<any> {
  * }
  */
 export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    return await sendGetRequest(API_URL, `nfts/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
+    return await sendGetRequest(API_URL, `assets/erc20s/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
 }
 
 /**

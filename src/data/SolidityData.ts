@@ -1,6 +1,8 @@
-import { Address, Hex, encodeAbiParameters } from "viem"
+import { defaultAbiCoder } from "@ethersproject/abi"
+import { Address, Hex, encodeAbiParameters, pad } from "viem"
 import { ExtraDataType, LoginData, WalletSignature } from "./types"
 import { AddressZero, HashZero } from "../common"
+import { User } from "../wallet/types"
 
 const extraDataStructType = {
     type: "tuple",
@@ -51,9 +53,23 @@ export function encodeWalletSignature(data: WalletSignature): Hex {
     const extraDataEncoded: Hex[][] = extraData ? parseExtraData(extraData) : [[], [], [], []]
     return encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded])
 }
+
+export function encodeUserAuthInitData(groupUsers: User[]): Hex {
+    const groupIds: Hex[] = []
+    const groupInfos: [Hex[], number][] = []
+    groupUsers.forEach((user) => {
+        groupIds.push(user.userId)
+        const paddedMemberIds = user.groupInfo!.memberIds.map((memberId) => pad(memberId, { size: 32 }))
+        const sortedMemberIds = paddedMemberIds.sort((a, b) => (a > b ? -1 : 1))
+        groupInfos.push([sortedMemberIds, user.groupInfo!.threshold])
+    })
+    return defaultAbiCoder.encode(["bytes32[]", "tuple(bytes32[],uint256)[]"], [groupIds, groupInfos]) as Hex
+}
+
 export function addresstoBytes32(data: Address): Hex {
     return encodeAbiParameters([{ type: "address" }], [data])
 }
+
 export function toBytes32Arr(data: Hex[]): Hex {
     return encodeAbiParameters([{ type: "bytes32[]" }], [data])
 }

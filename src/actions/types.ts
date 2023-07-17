@@ -26,6 +26,7 @@ export type TransferParam = {
 export interface ERC721TransferParams extends TransferParam {
     tokenId: number
     token: Address
+    from: Address
 }
 export interface NativeTransferParams extends TransferParam {
     amount: number
@@ -35,11 +36,14 @@ export interface ERC20TransferParams extends NativeTransferParams {
     token: Address
 }
 
+export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
+
 // Approval Param types
 export type ApproveParam = {
     spender: string
     token: Address
 }
+export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
 export interface ApproveERC20Params extends ApproveParam {
     amount: number

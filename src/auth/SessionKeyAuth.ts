@@ -1,8 +1,8 @@
 import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
-import { Eoa } from "./EoaAuth"
+import { Auth } from "./Auth"
 import { EoaAuthInput, WalletCallData } from "./types"
 import { WALLET_ABI } from "../common"
-import { Chain, UserOp, WalletSignature, encodeWalletSignature } from "../data"
+import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
@@ -11,7 +11,7 @@ const SELECTOR_LENGTH = 10
 const execFromEntryPointSelector = getSigHash(WALLET_ABI, "execFromEntryPoint")
 const execFromEntryPointFeeSelector = getSigHash(WALLET_ABI, "execFromEntryPointWithFee")
 
-export class SessionKeyAuth extends Eoa {
+export class SessionKeyAuth extends Auth {
     ruleId: Hex
     roleId: Hex
 
@@ -24,12 +24,12 @@ export class SessionKeyAuth extends Eoa {
         this.roleId = randomBytes(32)
     }
 
-    override async signOp(userOp: UserOp, chain: Chain): Promise<string> {
+    override async signOp(operation: Operation, chain: Chain): Promise<Hex> {
         if (!this.targetSelectorMerkleTree) {
             throw new Error("SessionKeyAuth not connected to wallet")
         }
         await this.init()
-        const opHash = await userOp.getOpHashData(chain)
+        const opHash = await operation.getOpHash(chain)
 
         let signature
         if (this.signer?.type === "local") {
@@ -39,8 +39,8 @@ export class SessionKeyAuth extends Eoa {
         } else {
             throw new Error("No signer or client")
         }
-        const target = getTargetFromCall(userOp.op.callData as Hex)
-        const selector = getSelectorFromCall(userOp.op.callData as Hex)
+        const target = getTargetFromCall(operation.userOp.callData as Hex)
+        const selector = getSelectorFromCall(operation.userOp.callData as Hex)
         const walletSignature: WalletSignature = {
             userId: await this.getUserId(),
             signature: signature,
@@ -54,17 +54,17 @@ export class SessionKeyAuth extends Eoa {
         return encodeWalletSignature(walletSignature)
     }
 
-    override async getEstimateGasSignature(userOp: UserOp): Promise<string> {
+    override async getEstimateGasSignature(userId: string, operation: Operation): Promise<Hex> {
         if (!this.targetSelectorMerkleTree) {
             throw new Error("SessionKeyAuth not connected to wallet")
         }
         await this.init()
-        const target = getTargetFromCall(userOp.op.callData as Hex)
-        const selector = getSelectorFromCall(userOp.op.callData as Hex)
+        const target = getTargetFromCall(operation.userOp.callData as Hex)
+        const selector = getSelectorFromCall(operation.userOp.callData as Hex)
 
         try {
             const walletSignature: WalletSignature = {
-                userId: await this.getUserId(),
+                userId: pad(userId as Hex, { size: 32 }),
                 signature: pad("0x", { size: 65 }),
                 roleId: this.roleId,
                 ruleId: this.ruleId,

@@ -1,9 +1,11 @@
-import { assert } from "chai"
+import { assert, expect } from "chai"
+import { Hex } from "viem"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
-import { Auth, Eoa } from "../../src/auth"
+import { Auth } from "../../src/auth"
 import { AddressZero, ERC20_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
+import { InternalFailureError, InvalidParameterError } from "../../src/errors"
 import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -23,7 +25,7 @@ export interface TransferTestConfig {
 export const TransferTest = (config: TransferTestConfig) => {
     const { outToken, baseToken, prefund, prefundAmt } = config
 
-    describe("Transfer", function () {
+    describe("Single Auth Transfer", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
@@ -37,19 +39,27 @@ export const TransferTest = (config: TransferTestConfig) => {
                 gasSponsor: undefined
             }
             await configureEnvironment(options)
-            auth = new Eoa({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({ uniqueId: await auth.getUniqueId(), index: config.index ? config.index : 1792811340 })
+            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
+            })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
         it("transfer baseToken directly", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
-            const b1 = Token.getBalanceBN(baseToken, randomAddress)
-            const b2 = Token.getBalanceBN(baseToken, walletAddress)
-            await wallet.transferEth(auth, { to: randomAddress, amount: config.amount ? config.amount : 0.001 })
-            const b3 = Token.getBalanceBN(baseToken, randomAddress)
-            const b4 = Token.getBalanceBN(baseToken, walletAddress)
+
+            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, walletAddress)
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), {
+                to: randomAddress,
+                amount: config.amount ? config.amount : 0.001
+            })
+            await wallet.executeOperation(auth, userOp)
+            const b3 = Token.getBalance(baseToken, randomAddress)
+            const b4 = Token.getBalance(baseToken, walletAddress)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -77,7 +87,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b1 = Token.getBalanceBN(outToken, randomAddress)
             const b2 = Token.getBalanceBN(outToken, walletAddress)
             const outTokenAddress = await new Token(outToken).getAddress()
-            await wallet.transferERC20(auth, { to: randomAddress, amount: 1, token: outTokenAddress })
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: randomAddress, amount: 1, token: outTokenAddress })
+            await wallet.executeOperation(auth, userOp)
             const b3 = Token.getBalanceBN(outToken, randomAddress)
             const b4 = Token.getBalanceBN(outToken, walletAddress)
 
@@ -110,7 +121,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                     deadline,
                     chainId: config.chainId
                 }
-                await wallet.createSessionKey(auth, sessionKeyParams)
+                const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
+                await wallet.executeOperation(auth, operation)
             })
 
             it("wallet should have lower balance of specified token", async () => {
@@ -119,7 +131,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const b1 = Token.getBalanceBN(outToken, randomAddress)
                 const b2 = Token.getBalanceBN(outToken, walletAddress)
                 const outTokenAddress = await new Token(outToken).getAddress()
-                await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                const operation = await wallet.transfer(user, await user.getAddress(), {
+                    to: randomAddress,
+                    amount: 1,
+                    token: outTokenAddress
+                })
+                await wallet.executeOperation(user, operation)
                 const b3 = Token.getBalanceBN(outToken, randomAddress)
                 const b4 = Token.getBalanceBN(outToken, walletAddress)
 
@@ -135,7 +152,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                     const randomAddress = randomBytes(20)
                     const outTokenAddress = await new Token("usdc").getAddress()
                     try {
-                        await wallet.approveERC20(user, { spender: randomAddress, amount: 1, token: outTokenAddress })
+                        const operation = await wallet.tokenApprove(user, await user.getAddress(), {
+                            spender: randomAddress,
+                            amount: 1,
+                            token: outTokenAddress
+                        })
+                        await wallet.executeOperation(user, operation)
                         assert(false, "call succeded when it should have failed")
                     } catch {
                         assert(true)
@@ -147,7 +169,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const randomAddress = randomBytes(20)
                 const outTokenAddress = await new Token("usdc").getAddress()
                 try {
-                    await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                    const operation = await wallet.transfer(user, await user.getAddress(), {
+                        to: randomAddress,
+                        amount: 1,
+                        token: outTokenAddress
+                    })
+                    await wallet.executeOperation(user, operation)
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
                     assert(
@@ -166,12 +193,195 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const randomAddress = randomBytes(20)
                 const outTokenAddress = await new Token(outToken).getAddress()
                 try {
-                    await wallet.transferERC20(user, { to: randomAddress, amount: 1, token: outTokenAddress })
+                    const operation = await wallet.transfer(user, await user.getAddress(), {
+                        to: randomAddress,
+                        amount: 1,
+                        token: outTokenAddress
+                    })
+                    await wallet.executeOperation(user, operation)
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
                     assert(e.message.includes("FW406"), "call succeded when it should have failed")
                 }
             })
+        })
+    })
+
+    describe("Multi Sig Transfer", function () {
+        this.timeout(300_000)
+        let auth1: Auth
+        let auth2: Auth
+        let wallet: FunWallet
+        const groupId: Hex = "0xb00c7b880a57369e49a454dad27494253cf6efa5c63381c6f0e567d86d5d5cbc" // generateRandomGroupId()
+        before(async function () {
+            this.retries(config.numRetry ? config.numRetry : 0)
+            const apiKey = await getTestApiKey()
+            const options: GlobalEnvOption = {
+                chain: config.chainId,
+                apiKey: apiKey,
+                gasSponsor: undefined
+            }
+            await configureEnvironment(options)
+            auth1 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            auth2 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
+            wallet = new FunWallet({
+                users: [
+                    {
+                        userId: groupId,
+                        groupInfo: {
+                            memberIds: [await auth1.getAddress(), await auth2.getAddress(), "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"],
+                            threshold: 2
+                        }
+                    }
+                ],
+                uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 6666)
+            })
+
+            if (prefund) await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 1)
+        })
+
+        it("Group Wallet Create, Collect Sig, and Execute -- transfer base token", async () => {
+            const randomAddress = randomBytes(20)
+            const walletAddress = await wallet.getAddress()
+
+            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, walletAddress)
+
+            // auth1 creates and signs the transfer operation, the operation should be stored into DDB
+            const transferOp = await wallet.transfer(auth1, groupId, {
+                to: randomAddress,
+                amount: config.amount ? config.amount : 0.001
+            })
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth2 logs in and finds out the pending operation.
+            // We use getOperation here to specifically get the operation, but in production custoemr would choose one
+            // const operations = await wallet.getOperations(OperationStatus.PENDING)
+            const operation = await wallet.getOperation(transferOp.opId!)
+
+            // auth2 sign and execute the operation
+            expect(await wallet.executeOperation(auth2, operation)).to.not.throw
+
+            const b3 = Token.getBalance(baseToken, randomAddress)
+            const b4 = Token.getBalance(baseToken, walletAddress)
+
+            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                await Promise.all([b1, b2, b3, b4])
+
+            assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+            assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+        })
+
+        it("Group Wallet Create, Execute Without Required Sigs -- transfer base token", async () => {
+            const randomAddress = randomBytes(20)
+            const walletAddress = await wallet.getAddress()
+
+            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, walletAddress)
+
+            // auth1 creates and signs the transfer operation, the operation should be stored into DDB
+            const transferOp = await wallet.transfer(auth1, groupId, {
+                to: randomAddress,
+                amount: config.amount ? config.amount : 0.001
+            })
+
+            // auth1 executes it without auth2 signature
+            try {
+                await wallet.executeOperation(auth1, transferOp)
+            } catch (err) {
+                if (!(err instanceof InvalidParameterError)) {
+                    throw err
+                }
+            }
+
+            const b3 = Token.getBalance(baseToken, randomAddress)
+            const b4 = Token.getBalance(baseToken, walletAddress)
+
+            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                await Promise.all([b1, b2, b3, b4])
+
+            assert(randomTokenBalanceAfter === randomTokenBalanceBefore, "Transfer executed without required sigs")
+            assert(walletTokenBalanceBefore === walletTokenBalanceAfter, "Transfer executed without required sigs")
+        })
+
+        it("Group Wallet Reject Op -- transfer base token", async () => {
+            const randomAddress = randomBytes(20)
+            const b1 = Token.getBalance(baseToken, randomAddress)
+
+            // auth1 creates and signs the transfer operation, the operation should be stored into DDB
+            const transferOp = await wallet.transfer(auth1, groupId, {
+                to: randomAddress,
+                amount: config.amount ? config.amount : 0.001
+            })
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth2 logs in and finds out the pending operation.
+            // We use getOperation here to specifically get the operation, but in production custoemr would choose one
+            // const operations = await wallet.getOperations(OperationStatus.PENDING)
+            const operation = await wallet.getOperation(transferOp.opId!)
+
+            // auth2 rejects the operation
+            const rejectionOp = await wallet.createRejectOperation(auth2, groupId, operation, "Op should be rejected")
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth1 logs in and finds out the rejection operation
+            const rejection = await wallet.getOperation(rejectionOp.opId!)
+
+            expect(await wallet.executeOperation(auth1, rejection)).to.not.throw
+
+            // now we try to use auth2 to sign the original op and execute it
+            try {
+                await wallet.executeOperation(auth2, operation)
+            } catch (err: any) {
+                if (!(err instanceof InternalFailureError) && err.errorCode === "UserOpFailureError") {
+                    throw err
+                }
+            }
+
+            const b2 = Token.getBalance(baseToken, randomAddress)
+
+            const [randomTokenBalanceBefore, randomTokenBalanceAfter] = await Promise.all([b1, b2])
+
+            // wallet eth balance would change as rejection Op execution consumes gas
+            assert(randomTokenBalanceAfter === randomTokenBalanceBefore, "Transfer executed bad nonce")
+        })
+
+        it("Group Wallet Create, Remove Op -- transfer base token", async () => {
+            const randomAddress = randomBytes(20)
+            const walletAddress = await wallet.getAddress()
+
+            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, walletAddress)
+
+            // auth1 creates and signs the transfer operation, the operation should be stored into DDB
+            const transferOp = await wallet.transfer(auth1, groupId, {
+                to: randomAddress,
+                amount: config.amount ? config.amount : 0.001
+            })
+
+            // wait for DDB to replicate the operation data
+            await new Promise((r) => setTimeout(r, 2000))
+
+            // auth1 decides to remove the Op so other people can't see it
+            expect(await wallet.removeOperation(auth1, transferOp.opId!)).to.not.throw
+
+            // auth2 logs in and should not be able to find the operation.
+            expect(await wallet.getOperation(transferOp.opId!)).to.throw
+
+            const b3 = Token.getBalance(baseToken, randomAddress)
+            const b4 = Token.getBalance(baseToken, walletAddress)
+
+            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                await Promise.all([b1, b2, b3, b4])
+
+            assert(randomTokenBalanceAfter === randomTokenBalanceBefore, "Transfer without enough signature")
+            assert(walletTokenBalanceBefore === walletTokenBalanceAfter, "Transfer without enough signature")
         })
     })
 }
