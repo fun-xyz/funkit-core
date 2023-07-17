@@ -18,7 +18,7 @@ export async function getOpsOfGroup(groupId: Hex, chainId: string, status: Opera
 export async function getOpsOfWallet(walletAddr: Address, chainId: string, status?: OperationStatus): Promise<Operation[]> {
     const endpoint = status
         ? `operation/wallet/${walletAddr}/chain/${chainId}?status=${status}`
-        : `operation/wallet/${walletAddr}/${chainId}`
+        : `operation/wallet/${walletAddr}/chain/${chainId}`
     return (await sendGetRequest(API_URL, endpoint)).operations
 }
 

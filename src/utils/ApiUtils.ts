@@ -41,7 +41,6 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 body: method !== "GET" ? stringifyOp(body) : undefined
             })
             const text = await response.text()
-
             if (response.status === 404) {
                 const helper = new Helper(`Calling ${uri}`, method, "Data not found on server.")
                 throw new ServerMissingDataError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
