@@ -101,11 +101,6 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
-    async _stake(auth: Auth, params: StakeParams, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const callData = await stakeCalldata(params)
-        return await this.createOperation(auth, "", callData, txOptions)
-    }
-
     async stake(
         auth: Auth,
         userId: string,
