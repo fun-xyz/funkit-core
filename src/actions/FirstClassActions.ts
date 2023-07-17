@@ -31,12 +31,7 @@ import { EnvOption } from "../config"
 import { Operation } from "../data"
 import { Helper, MissingParameterError } from "../errors"
 export abstract class FirstClassActions {
-    abstract createOperation(
-        auth: Auth,
-        userId: string,
-        callData: Hex,
-        txOptions: EnvOption
-    ): Promise<Operation>
+    abstract createOperation(auth: Auth, userId: string, callData: Hex, txOptions: EnvOption): Promise<Operation>
 
     abstract getAddress(options: EnvOption): Promise<Address>
 

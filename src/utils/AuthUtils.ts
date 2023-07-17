@@ -30,7 +30,7 @@ export const getUniqueId = async (authId: string, addr = "NO_ADDRESS") => {
     return uniqueId
 }
 
-export const getAuthUniqueId = async (authId: string, chainId: string, addr = "NO_ADDRESS", skipDBActions: boolean = false) => {
+export const getAuthUniqueId = async (authId: string, chainId: string, addr = "NO_ADDRESS", skipDBActions = false) => {
     let authUniqueId
     if (skipDBActions) {
         authUniqueId = addr
