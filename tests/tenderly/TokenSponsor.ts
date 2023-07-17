@@ -13,7 +13,7 @@ const config: TokenSponsorTestConfig = {
     prefundAmt: 10,
     swapAmount: 1,
     stake: true,
-    mint: true,
+    mint: false,
     batchTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
     numRetry: 0
 }

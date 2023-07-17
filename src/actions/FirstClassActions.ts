@@ -33,7 +33,7 @@ import { Helper, MissingParameterError } from "../errors"
 export abstract class FirstClassActions {
     abstract createOperation(
         auth: Auth,
-        _: string, //userId - left unused for @Chazzzzzzz to implement
+        userId: string,
         callData: Hex,
         txOptions: EnvOption
     ): Promise<Operation>

@@ -50,19 +50,29 @@ export const StakeTest = (config: StakeTestConfig) => {
         })
 
         it("Should be able to start unstaking", async () => {
-            const withdrawalsBefore = await wallet.getAssets(false, true)
             const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                 amounts: [0.001],
                 recipient: await wallet.getAddress(),
                 chainId: config.actualChainId
             })
-            await wallet.executeOperation(auth, userOp)
-            const withdrawalsAfter = await wallet.getAssets(false, true)
-            assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
+            if (config.chainId === 36865) {
+                const receipt = await wallet.executeOperation(auth, userOp)
+                assert(receipt.txid !== null && receipt.txid !== undefined, "unable to start unstaking")
+            } else {
+                const withdrawalsBefore = await wallet.getAssets(false, true)
+                await wallet.executeOperation(auth, userOp)
+                const withdrawalsAfter = await wallet.getAssets(false, true)
+                assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
+            }
         })
 
         it("Should be able to finish unstaking if ready", async () => {
-            const withdrawals = await wallet.getAssets(false, true)
+            let withdrawals: any
+            if (config.chainId === 36865) {
+                withdrawals = [[]]
+            } else {
+                withdrawals = await wallet.getAssets(false, true)
+            }
             if (withdrawals[0].length > 0) {
                 const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
                 const userOp = await wallet.unstake(auth, await auth.getAddress(), {

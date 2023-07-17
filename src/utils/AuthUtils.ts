@@ -30,8 +30,13 @@ export const getUniqueId = async (authId: string, addr = "NO_ADDRESS") => {
     return uniqueId
 }
 
-export const getAuthUniqueId = async (authId: string, chainId: string, addr = "NO_ADDRESS") => {
-    let authUniqueId = await getUserUniqueId(authId)
+export const getAuthUniqueId = async (authId: string, chainId: string, addr = "NO_ADDRESS", skipDBActions: boolean = false) => {
+    let authUniqueId
+    if (skipDBActions) {
+        authUniqueId = addr
+    } else {
+        authUniqueId = await getUserUniqueId(authId)
+    }
     if (!authUniqueId) {
         authUniqueId = uuidv4()
 
