@@ -2,7 +2,7 @@ import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSpon
 
 const config: TokenSponsorTestConfig = {
     chainId: 5,
-    inToken: "eth",
+    inToken: "usdc",
     outToken: "dai",
     paymasterToken: "0x712110295e4eCc0F46dC06684AA21263613b08dd",
     baseTokenStakeAmt: 0.6,
@@ -10,6 +10,6 @@ const config: TokenSponsorTestConfig = {
     prefund: true,
     swapAmount: 0.001,
     stake: true,
-    mint: true
+    mint: false
 }
 TokenSponsorTest(config)
