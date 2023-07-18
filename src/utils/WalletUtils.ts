@@ -64,6 +64,8 @@ export const execFromEntryPoint = async (params: TransactionParams, options: Env
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
             // const estimateGasOptions = { ...options, fee: undefined }
+
+            options.fee.amount = options.fee.gasPercent / 100
         } else {
             const helper = new Helper("Fee", options.fee, "fee.amount or fee.gasPercent is required")
             throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
