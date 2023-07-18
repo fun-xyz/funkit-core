@@ -68,21 +68,23 @@ export const TransferTest = (config: TransferTestConfig) => {
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
 
-        it.only("transfer baseToken directly with fee", async () => {
+        it("transfer baseToken directly with fee", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(baseToken, randomAddress)
             const b2 = Token.getBalance(baseToken, walletAddress)
+            const b5 = Token.getBalance(baseToken, await auth.getAddress())
+            const fee = 0.001
             const options: EnvOption = {
                 chain: config.chainId,
                 fee: {
                     token: baseToken,
-                    amount: 0.001,
+                    amount: fee,
                     recipient: await auth.getAddress()
                 }
             }
-            console.log("Before", await Token.getBalance(baseToken, await auth.getAddress()))
+
             const userOp = await wallet.transfer(
                 auth,
                 await auth.getAddress(),
@@ -92,17 +94,24 @@ export const TransferTest = (config: TransferTestConfig) => {
                 },
                 options
             )
-            console.log(await wallet.executeOperation(auth, userOp))
-            console.log("After", await Token.getBalance(baseToken, await auth.getAddress()))
+            await wallet.executeOperation(auth, userOp)
 
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
+            const b6 = Token.getBalance(baseToken, await auth.getAddress())
 
-            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
-                await Promise.all([b1, b2, b3, b4])
+            const [
+                randomTokenBalanceBefore,
+                walletTokenBalanceBefore,
+                randomTokenBalanceAfter,
+                walletTokenBalanceAfter,
+                feeRecipientBalanceBefore,
+                feeRecipientBalanceAfter
+            ] = await Promise.all([b1, b2, b3, b4, b5, b6])
 
             assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+            assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
         })
 
         it("wallet should have lower balance of specified token", async () => {
