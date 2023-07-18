@@ -26,10 +26,11 @@ import {
     UniswapParams
 } from "./types"
 import { Auth } from "../auth"
-import { TransactionParams, WALLET_CONTRACT_INTERFACE } from "../common"
+import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
 import { Helper, MissingParameterError } from "../errors"
+import { FunWallet } from "../wallet"
 export abstract class FirstClassActions {
     abstract createOperation(auth: Auth, userId: string, callData: Hex, txOptions: EnvOption): Promise<Operation>
 
@@ -45,11 +46,11 @@ export abstract class FirstClassActions {
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let callData
         if (oneInchSupported.includes(params.chainId)) {
-            callData = await OneInchCalldata(params as OneInchSwapParams)
+            callData = await OneInchCalldata(auth, userId, params as OneInchSwapParams, txOption)
         } else if (uniswapV3Supported.includes(params.chainId)) {
-            callData = await uniswapV3SwapCalldata(params as UniswapParams)
+            callData = await uniswapV3SwapCalldata(auth, userId, params as UniswapParams, txOption)
         } else {
-            callData = await uniswapV2SwapCalldata(params as UniswapParams)
+            callData = await uniswapV2SwapCalldata(auth, userId, params as UniswapParams, txOption)
         }
         return await this.createOperation(auth, userId, callData, txOption)
     }
@@ -102,7 +103,7 @@ export abstract class FirstClassActions {
         params: StakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await stakeCalldata(params)
+        const callData = await stakeCalldata(auth, userId, params, txOptions)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
@@ -114,9 +115,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData
         if (isRequestUnstakeParams(params)) {
-            callData = await requestUnstakeCalldata(params as RequestUnstakeParams)
+            callData = await requestUnstakeCalldata(auth, userId, params as RequestUnstakeParams, txOptions)
         } else if (isFinishUnstakeParams(params)) {
-            callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
+            callData = await finishUnstakeCalldata(auth, userId, params as FinishUnstakeParams, txOptions)
         }
         return await this.createOperation(auth, userId, callData, txOptions)
     }
@@ -127,7 +128,7 @@ export abstract class FirstClassActions {
         params: TransactionParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
+        const callData = await FunWallet.execFromEntryPoint(auth, userId, params, txOptions)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
@@ -137,7 +138,7 @@ export abstract class FirstClassActions {
         params: SessionKeyParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await createSessionKeyCalldata(params)
+        const callData = await createSessionKeyCalldata(auth, userId, params, txOptions)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 }

@@ -1,6 +1,7 @@
 import { Hex } from "viem"
 import { OneInchSwapParams, UniSwapPoolFeeOptions, UniswapParams } from "./types"
-import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
+import { Auth } from "../auth"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
@@ -8,6 +9,7 @@ import { Helper, ParameterError } from "../errors"
 import { sendRequest } from "../utils"
 import { UniswapV2Addrs, UniswapV3Addrs, fromReadableAmount, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
+import { FunWallet } from "../wallet"
 
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 
@@ -55,14 +57,14 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     return 18
 }
 
-export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<Hex> => {
+export const OneInchCalldata = async (auth: Auth, userId: string, swapParams: OneInchSwapParams, txOptions: EnvOption): Promise<Hex> => {
     const supportedChains = [1, 137, 31337, 36865]
     if (!supportedChains.includes(swapParams.chainId)) {
         const helper = new Helper("oneInchCaldlata", swapParams.chainId, "Staking available only on Ethereum mainnet and Goerli")
         throw new ParameterError("Invalid Chain Id", "getLidoAddress", helper, false)
     }
     const chain = new Chain({ chainId: swapParams.chainId.toString() })
-    const options: EnvOption = { chain }
+    txOptions.chain = chain
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     let approveTx: TransactionData | undefined
 
@@ -73,11 +75,12 @@ export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<He
     }
     if (inToken.isNative) {
         swapParams.in = eth1InchAddress
-        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, swapTx.data])
+        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, txOptions)
+        const transactionParams: TransactionParams = { to: approveAndExecAddress, value: swapParams.amount, data: swapTx.data }
+        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
     } else {
-        approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, options)
-        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
+        approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, txOptions)
+        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, txOptions)
         const data = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,
@@ -85,11 +88,12 @@ export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<He
             inToken,
             approveTx.data
         ])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, data.data])
+        const transactionParams: TransactionParams = { to: approveAndExecAddress, value: 0, data: data.data }
+        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
     }
 }
 
-export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
+export const uniswapV3SwapCalldata = async (auth: Auth, userId: string, params: UniswapParams, txOptions: EnvOption): Promise<Hex> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -127,16 +131,19 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
     }
 
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    let transactionParams: TransactionParams
     let swapData
     if (tokenIn.isNative) {
         swapData = approveAndSwapInterface.encodeData("executeSwapETH", [amount, data])
+        transactionParams = { to: tokenSwapAddress, value: 0, data: swapData }
     } else {
         swapData = approveAndSwapInterface.encodeData("executeSwapERC20", [tokenInAddress, amount, data])
+        transactionParams = { to: tokenSwapAddress, value: 0, data: swapData }
     }
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData])
+    return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
 
-export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
+export const uniswapV2SwapCalldata = async (auth: Auth, userId: string, params: UniswapParams, txOptions: EnvOption): Promise<Hex> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -177,9 +184,11 @@ export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex>
     let swapData
     if (tokenIn.isNative) {
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+        const transactionParams: TransactionParams = { to: tokenSwapAddress, value: 0, data: swapData.data }
+        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
     } else {
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+        const transactionParams: TransactionParams = { to: tokenSwapAddress, value: 0, data: swapData.data }
+        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
     }
 }

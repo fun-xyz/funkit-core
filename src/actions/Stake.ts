@@ -1,9 +1,12 @@
 import { Address, Hex, parseEther } from "viem"
 import { FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
-import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE, WITHDRAW_QUEUE_ABI } from "../common"
+import { Auth } from "../auth"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, TransactionParams, WITHDRAW_QUEUE_ABI } from "../common"
+import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Helper, ParameterError, StatusError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
+import { FunWallet } from "../wallet"
 
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
 
@@ -13,13 +16,18 @@ export const isRequestUnstakeParams = (input: any) => {
 export const isFinishUnstakeParams = (input: any) => {
     return input.recipient !== undefined
 }
-
-export const stakeCalldata = async (params: StakeParams): Promise<Hex> => {
+export const stakeCalldata = async (auth: Auth, userId: string, params: StakeParams, txOption: EnvOption): Promise<Hex> => {
     const lidoAddress = getSteth(params.chainId.toString())
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [lidoAddress, parseEther(`${params.amount}`), "0x"])
+    const transactionParams: TransactionParams = { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
+    return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOption)
 }
 
-export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Promise<Hex> => {
+export const requestUnstakeCalldata = async (
+    auth: Auth,
+    userId: string,
+    params: RequestUnstakeParams,
+    txOptions: EnvOption
+): Promise<Hex> => {
     // Approve steth
     const steth = getSteth(params.chainId.toString())
     const withdrawalQueue: Address = getWithdrawalQueue(params.chainId.toString())
@@ -41,13 +49,18 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         withdrawalQueue,
         0,
         requestWithdrawalData.data,
-        steth,
         approveData.data
     ])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0n, requestUnstakeData.data])
+    const transactionParams: TransactionParams = { to: approveAndExecAddress, value: 0n, data: requestUnstakeData.data }
+    return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
 
-export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<Hex> => {
+export const finishUnstakeCalldata = async (
+    auth: Auth,
+    userId: string,
+    params: FinishUnstakeParams,
+    txOptions: EnvOption
+): Promise<Hex> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const withdrawQueueAddress = getWithdrawalQueue(params.chainId.toString())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
@@ -74,7 +87,8 @@ export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promis
             to: claimBatchWithdrawalTx.to.toString() as Address,
             data: claimBatchWithdrawalTx.data
         }
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [data.to, 0, data.data])
+        const transactionParams: TransactionParams = { to: data.to, value: 0n, data: data.data }
+        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
     }
     const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
     throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)

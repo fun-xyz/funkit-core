@@ -9,7 +9,7 @@ import {
     TransferParams
 } from "./types"
 import { Auth } from "../auth"
-import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE } from "../common"
+import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Token } from "../data"
 import { FunWallet } from "../wallet"
@@ -33,7 +33,7 @@ export const erc721TransferCalldata = async (
 ): Promise<Hex> => {
     const { to, tokenId, token, from } = params
     const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "transferFrom", [from, to, tokenId])
-    const transactionParams = { to: token, data: transferData.data, value: 0 }
+    const transactionParams: TransactionParams = { to: token, data: transferData.data, value: 0 }
     return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
 
@@ -45,7 +45,7 @@ export const erc20TransferCalldata = async (
 ): Promise<Hex> => {
     const { to, amount, token } = params
     const transferData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "transfer", [to, amount])
-    const transactionParams = { to: token, data: transferData.data, value: 0 }
+    const transactionParams: TransactionParams = { to: token, data: transferData.data, value: 0 }
     return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
 
@@ -58,14 +58,14 @@ export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721P
 }
 
 export const ethTransferCalldata = async (auth: Auth, userId: string, params: NativeTransferParams, txOptions: EnvOption): Promise<Hex> => {
-    const transactionParams = { to: params.to, data: "0x" as Hex, value: parseEther(`${params.amount}`) }
+    const transactionParams: TransactionParams = { to: params.to, data: "0x" as Hex, value: parseEther(`${params.amount}`) }
     return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
 
 export const erc20ApproveCalldata = async (auth: Auth, userId: string, params: ApproveERC20Params, txOptions: EnvOption): Promise<Hex> => {
     const { spender, amount, token } = params
     const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, amount])
-    const transactionParams = { to: token, data: approveData.data, value: 0 }
+    const transactionParams: TransactionParams = { to: token, data: approveData.data, value: 0 }
     return FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
 
@@ -77,6 +77,6 @@ export const erc721ApproveCalldata = async (
 ): Promise<Hex> => {
     const { spender, tokenId, token } = params
     const approveData = ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, tokenId])
-    const transactionParams = { to: token, data: approveData.data, value: 0 }
+    const transactionParams: TransactionParams = { to: token, data: approveData.data, value: 0 }
     return FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
 }
