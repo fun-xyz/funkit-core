@@ -3,7 +3,7 @@ import { getChainFromData } from "./Chain"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
-import { Helper, TransactionError } from "../errors"
+import { Helper, ServerMissingDataError, TransactionError } from "../errors"
 
 const nativeTokens = ["eth", "matic"]
 const wrappedNativeTokens = { eth: "weth", matic: "wmatic" }
@@ -30,14 +30,15 @@ export class Token {
         if (this.address) {
             return this.address
         }
-        let tokenInfo
         if (this.isNative) {
             const nativeName = (wrappedNativeTokens as any)[this.symbol]
-            tokenInfo = await getTokenInfo(nativeName, chainId)
+            return await getTokenInfo(nativeName, chainId)
         } else if (this.symbol) {
-            tokenInfo = await getTokenInfo(this.symbol, chainId)
+            return await getTokenInfo(this.symbol, chainId)
+        } else {
+            const helper = new Helper("Token", this, "Token address or symbol is required")
+            throw new ServerMissingDataError("Token.getAddress", "Token", helper)
         }
-        return tokenInfo
     }
 
     async getDecimals(options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
