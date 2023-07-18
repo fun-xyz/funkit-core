@@ -92,7 +92,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getNFTs()
-                expect(res.length).to.equal(0)
+                expect(res.nfts.length).to.equal(0)
             })
 
             it("Mainnet, Franklinisbored.eth", async () => {
@@ -103,7 +103,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getNFTs()
-                expect(res.length).to.equal(0)
+                expect(res.nfts.length).to.equal(0)
             })
 
             it("Optimism, Uniswap Positions", async () => {
@@ -114,7 +114,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getNFTs()
-                expect(res.length).to.equal(0)
+                expect(res.nfts.length).to.equal(0)
             })
 
             it("Polygon, Uniswap Positions", async () => {
@@ -125,7 +125,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getNFTs()
-                expect(res.length).to.equal(0)
+                expect(res.nfts.length).to.equal(0)
             })
 
             it("Arbitrum, Arbitrum Odyssey", async () => {
@@ -136,7 +136,7 @@ describe("GetAssets", function () {
                 }
                 await configureEnvironment(options)
                 const res = await wallet.getNFTs()
-                expect(res.length).to.equal(0)
+                expect(res.nfts.length).to.equal(0)
             })
         })
     })
