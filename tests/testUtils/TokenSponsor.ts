@@ -80,7 +80,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await fundWallet(funder, wallet, config.prefundAmt ? config.prefundAmt : 0.1)
                 await fundWallet(funder, wallet1, config.prefundAmt ? config.prefundAmt : 0.1)
                 if (config.chainId.toString() === "36865") {
-                    const requiredAmount = (config.amount ? config.amount : 0.0001) * 10**6
+                    const requiredAmount = (config.amount ? config.amount : 0.0001) * 10 ** 6
                     const userOp = await wallet.swap(auth, await auth.getAddress(), {
                         in: "eth",
                         amount: config.amount ? config.amount : 0.05,
@@ -91,7 +91,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     await wallet.executeOperation(auth, userOp)
                     const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
                     assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
-    
+
                     const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
                         in: "eth",
                         amount: config.amount ? config.amount : 0.05,
@@ -188,7 +188,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             await funder.sendTx(sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode())
