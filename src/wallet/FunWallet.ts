@@ -204,7 +204,7 @@ export class FunWallet extends FirstClassActions {
         }
         const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
         const nfts = await getAllNFTs(await this.getAddress())
-        return { ...tokens, nfts: nfts.data }
+        return { ...tokens, ...nfts }
     }
 
     async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
