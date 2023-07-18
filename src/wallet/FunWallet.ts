@@ -501,7 +501,7 @@ export class FunWallet extends FirstClassActions {
      * @param options EnvOptions to read fee data from
      * @returns calldata to be passed into createUserOperation
      */
-    async execFromEntryPoint(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+    static async execFromEntryPoint(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
         if (options.fee) {
             if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
                 options.fee.token = options.gasSponsor.token
@@ -531,7 +531,8 @@ export class FunWallet extends FirstClassActions {
                     params.data,
                     feedata
                 ])
-                const userOp = await this.createOperation(auth, userId, estimateGasCalldata, options)
+                const funwallet = new FunWallet({ uniqueId: "temporaryUniqueId" })
+                const userOp = await funwallet.createOperation(auth, userId, estimateGasCalldata, options)
                 const gasUsed = await userOp.getMaxTxCost()
                 options.fee.amount = (Number(gasUsed) * options.fee.gasPercent) / 100
             } else {

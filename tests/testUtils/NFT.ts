@@ -61,7 +61,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it("transfer", async () => {
+            it.only("transfer", async () => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 try {

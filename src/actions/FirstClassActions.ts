@@ -62,11 +62,11 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData
         if (isERC721TransferParams(params)) {
-            callData = await erc721TransferCalldata(params)
+            callData = await erc721TransferCalldata(auth, userId, params, txOptions)
         } else if (isERC20TransferParams(params)) {
-            callData = await erc20TransferCalldata(params)
+            callData = await erc20TransferCalldata(auth, userId, params, txOptions)
         } else if (isNativeTransferParams(params)) {
-            callData = await ethTransferCalldata(params)
+            callData = await ethTransferCalldata(auth, userId, params, txOptions)
         } else {
             const currentLocation = "action.transfer"
             const helperMainMessage = "params were missing or incorrect"
@@ -84,9 +84,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData
         if (isERC20ApproveParams(params)) {
-            callData = await erc20ApproveCalldata(params)
+            callData = await erc20ApproveCalldata(auth, userId, params, txOptions)
         } else if (isERC721ApproveParams(params)) {
-            callData = await erc721ApproveCalldata(params)
+            callData = await erc721ApproveCalldata(auth, userId, params, txOptions)
         } else {
             const currentLocation = "action.tokenApprove"
             const helperMainMessage = "params were missing or incorrect"
