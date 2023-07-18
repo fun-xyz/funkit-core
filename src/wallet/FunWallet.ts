@@ -510,12 +510,18 @@ export class FunWallet extends FirstClassActions {
                 const helper = new Helper("Fee", options.fee, "EnvOption.fee.token or EnvOption.gasSponsor.token is required")
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
+            if (!options.fee.recipient) {
+                const helper = new Helper("Fee", options.fee, "EnvOption.fee.recipient is required")
+                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+            }
             const token = new Token(options.fee.token)
+            console.log(options.fee.token)
             if (token.isNative) {
                 options.fee.token = AddressZero
             } else {
                 options.fee.token = await token.getAddress()
             }
+            console.log(options.fee.token)
 
             if (options.fee.amount) {
                 options.fee.amount = Number(await token.getDecimalAmount(options.fee.amount))
@@ -524,7 +530,7 @@ export class FunWallet extends FirstClassActions {
                     const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
                     throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
                 }
-                const feedata = [token, options.fee.recipient, options.fee.amount]
+                const feedata = [options.fee.token, options.fee.recipient, options.fee.amount]
                 const estimateGasCalldata = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [
                     params.to,
                     params.value,
@@ -539,7 +545,8 @@ export class FunWallet extends FirstClassActions {
                 const helper = new Helper("Fee", options.fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
-            const feedata = [token, options.fee.recipient, options.fee.amount]
+            const feedata = [options.fee.token, options.fee.recipient, options.fee.amount]
+            console.log([params.to, params.value, params.data, feedata])
             return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [params.to, params.value, params.data, feedata])
         } else {
             return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])

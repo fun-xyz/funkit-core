@@ -3,7 +3,7 @@ import { Hex } from "viem"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { AddressZero, ERC20_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { EnvOption, GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
 import { fundWallet, randomBytes } from "../../src/utils"
@@ -58,6 +58,43 @@ export const TransferTest = (config: TransferTestConfig) => {
                 amount: config.amount ? config.amount : 0.001
             })
             await wallet.executeOperation(auth, userOp)
+            const b3 = Token.getBalance(baseToken, randomAddress)
+            const b4 = Token.getBalance(baseToken, walletAddress)
+
+            const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
+                await Promise.all([b1, b2, b3, b4])
+
+            assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+            assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+        })
+
+        it.only("transfer baseToken directly with fee", async () => {
+            const randomAddress = randomBytes(20)
+            const walletAddress = await wallet.getAddress()
+
+            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, walletAddress)
+            const options: EnvOption = {
+                chain: config.chainId,
+                fee: {
+                    token: baseToken,
+                    amount: 0.001,
+                    recipient: await auth.getAddress()
+                }
+            }
+            console.log("Before", await Token.getBalance(baseToken, await auth.getAddress()))
+            const userOp = await wallet.transfer(
+                auth,
+                await auth.getAddress(),
+                {
+                    to: randomAddress,
+                    amount: config.amount ? config.amount : 0.001
+                },
+                options
+            )
+            console.log(await wallet.executeOperation(auth, userOp))
+            console.log("After", await Token.getBalance(baseToken, await auth.getAddress()))
+
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
 
