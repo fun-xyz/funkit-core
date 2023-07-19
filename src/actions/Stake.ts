@@ -39,14 +39,13 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
     ])
     const chain = new Chain({ chainId: params.chainId.toString() })
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
-    const requestUnstakeData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
+    return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
         0,
         requestWithdrawalData.data,
         steth,
         approveData.data
     ])
-    return { to: approveAndExecAddress, value: 0n, data: requestUnstakeData.data }
 }
 
 export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<TransactionParams> => {
