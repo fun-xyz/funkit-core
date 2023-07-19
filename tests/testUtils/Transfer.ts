@@ -80,7 +80,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     1000000000000000000000n
                 ])
                 await chain.init()
-                await auth.sendTx({ ...outTokenMint, chain })
+                await auth.sendTx({ ...outTokenMint })
             }
 
             const b1 = Token.getBalanceBN(outToken, randomAddress)

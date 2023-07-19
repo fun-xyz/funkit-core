@@ -80,7 +80,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                     1000000000000000000000n
                 ])
 
-                await auth.sendTx({ ...paymasterTokenMint, chain })
+                await auth.sendTx({ ...paymasterTokenMint })
             }
             await configureEnvironment({
                 ...options,

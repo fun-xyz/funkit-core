@@ -113,13 +113,13 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     1000000000000000000000n
                 ])
                 await chain.init()
-                await auth.sendTx({ ...inTokenMint, chain })
+                await auth.sendTx({ ...inTokenMint })
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     funderAddress,
                     1000000000000000000000n
                 ])
-                await auth.sendTx({ ...paymasterTokenMint, chain })
+                await auth.sendTx({ ...paymasterTokenMint })
 
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.1 })

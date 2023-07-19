@@ -16,7 +16,7 @@ import * as chains from "viem/chains"
 import { ActionFunction } from "../actions"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWallets } from "../apis/UserApis"
-import { TransactionData } from "../common"
+import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
 import { Helper, MissingParameterError } from "../errors"
@@ -146,7 +146,7 @@ export class Auth {
     }
 
     async sendTx(
-        txData: TransactionData | ActionFunction,
+        txData: TransactionParams | ActionFunction,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionReceipt> {
         await this.init()
@@ -154,8 +154,9 @@ export class Auth {
             const chain = await getChainFromData(options.chain)
             txData = (await txData({ wallet: this, chain, options })).data
         }
-        const { to, data, chain } = txData as TransactionData
-        let { value } = txData as TransactionData
+        const chain = await getChainFromData(options.chain)
+        const { to, data } = txData
+        let { value } = txData
         if (!chain || !chain.id) {
             const currentLocation = "Eoa.sendTx"
             const helperMainMessage = "Chain object is missing or incorrect"

@@ -58,7 +58,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                     await wallet.getAddress(),
                     decAmount
                 ])
-                await auth.sendTx({ ...data, chain })
+                await auth.sendTx({ ...data })
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.002 })
                 await wallet.executeOperation(auth, userOp)
@@ -219,7 +219,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                     decAmount
                 ])
 
-                await auth1.sendTx({ ...data, chain })
+                await auth1.sendTx({ ...data })
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth1, groupId, { to: wethAddr, amount: 0.002 })
                 await wallet.executeOperation(auth1, userOp)
