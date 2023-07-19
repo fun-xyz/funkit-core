@@ -261,7 +261,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         const partialOp = {
-            callData: await this.execFromEntryPoint(auth, userId, transactionParams, txOptions),
+            callData: await this._buildCalldata(auth, userId, transactionParams, txOptions),
             paymasterAndData,
             sender,
             maxFeePerGas: maxFeePerGas!,
@@ -501,7 +501,7 @@ export class FunWallet extends FirstClassActions {
      * @param options EnvOptions to read fee data from
      * @returns calldata to be passed into createUserOperation
      */
-    async execFromEntryPoint(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+    private async _buildCalldata(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
         if (options.fee) {
             if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
                 options.fee.token = options.gasSponsor.token
@@ -515,6 +515,11 @@ export class FunWallet extends FirstClassActions {
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
             const token = new Token(options.fee.token)
+            if (token.isNative && options.fee.gasPercent) {
+                const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
+                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+            }
+
             if (token.isNative) {
                 options.fee.token = AddressZero
             } else {
@@ -524,10 +529,6 @@ export class FunWallet extends FirstClassActions {
             if (options.fee.amount) {
                 options.fee.amount = Number(await token.getDecimalAmount(options.fee.amount))
             } else if (options.fee.gasPercent) {
-                if (options.fee.token !== AddressZero) {
-                    const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
-                    throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
-                }
                 const feedata = [options.fee.token, options.fee.recipient, 1]
                 const estimateGasCalldata = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [
                     params.to,
@@ -535,13 +536,13 @@ export class FunWallet extends FirstClassActions {
                     params.data,
                     feedata
                 ])
-                const userOp = await this.createOperation(
+                const operation = await this.createOperation(
                     auth,
                     userId,
                     { to: params.to, value: params.value, data: estimateGasCalldata },
                     { ...options, fee: undefined }
                 )
-                const gasUsed = await userOp.getMaxTxCost()
+                const gasUsed = await operation.getMaxTxCost()
                 options.fee.amount = Math.ceil((Number(gasUsed) * options.fee.gasPercent) / 100)
             } else {
                 const helper = new Helper("Fee", options.fee, "fee.amount or fee.gasPercent is required")

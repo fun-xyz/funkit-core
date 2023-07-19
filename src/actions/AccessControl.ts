@@ -55,8 +55,7 @@ export const createSessionKeyCalldata = async (params: SessionKeyParams): Promis
     ])
     const chain = await getChainFromData(params.chainId)
     const rbacAddress = await chain.getAddress("rbacAddress")
-    const transactionParams: TransactionParams = { to: rbacAddress, value: 0, data: multicallCallData }
-    return transactionParams
+    return { to: rbacAddress, value: 0, data: multicallCallData }
 }
 
 export const createSessionUser = () => {

@@ -45,7 +45,7 @@ export abstract class FirstClassActions {
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let callData: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
-            callData = await OneInchCalldata(params as OneInchSwapParams, txOption)
+            callData = await OneInchCalldata(params as OneInchSwapParams)
         } else if (uniswapV3Supported.includes(params.chainId)) {
             callData = await uniswapV3SwapCalldata(params as UniswapParams)
         } else {
@@ -115,16 +115,15 @@ export abstract class FirstClassActions {
         let callData: TransactionParams
         if (isRequestUnstakeParams(params)) {
             callData = await requestUnstakeCalldata(params as RequestUnstakeParams)
-            return await this.createOperation(auth, userId, callData, txOptions)
         } else if (isFinishUnstakeParams(params)) {
             callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
-            return await this.createOperation(auth, userId, callData, txOptions)
         } else {
             const currentLocation = "action.unstake"
             const helperMainMessage = "params were missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
+        return await this.createOperation(auth, userId, callData, txOptions)
     }
 
     async execRawTx(

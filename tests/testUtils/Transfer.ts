@@ -75,13 +75,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const chain = await getChainFromData(config.chainId)
                 const outTokenAddress = await Token.getAddress(outToken)
 
-                const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(outTokenAddress, "mint", [
+                const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
                 ])
                 await chain.init()
-                outTokenMint.chain = chain
-                await auth.sendTx(outTokenMint)
+                await auth.sendTx({ ...outTokenMint, chain })
             }
 
             const b1 = Token.getBalanceBN(outToken, randomAddress)
@@ -102,18 +101,19 @@ export const TransferTest = (config: TransferTestConfig) => {
         describe("Transaction Fees enabled", function () {
             it("pay a fixed amount of fees in eth", async function () {
                 const randomAddress = randomBytes(20)
+                const feeRecipientAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
                 const b1 = Token.getBalance(baseToken, randomAddress)
                 const b2 = Token.getBalance(baseToken, walletAddress)
-                const b5 = Token.getBalance(baseToken, await auth.getAddress())
+                const b5 = Token.getBalance(baseToken, feeRecipientAddress)
                 const fee = 0.001
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
                         token: baseToken,
                         amount: fee,
-                        recipient: await auth.getAddress()
+                        recipient: feeRecipientAddress
                     }
                 }
 
@@ -130,7 +130,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
-                const b6 = Token.getBalance(baseToken, await auth.getAddress())
+                const b6 = Token.getBalance(baseToken, feeRecipientAddress)
 
                 const [
                     randomTokenBalanceBefore,
@@ -147,18 +147,19 @@ export const TransferTest = (config: TransferTestConfig) => {
             })
             it("pay a fixed amount of fees in tokens", async function () {
                 const randomAddress = randomBytes(20)
+                const feeRecipientAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
                 const b1 = Token.getBalance(baseToken, randomAddress)
                 const b2 = Token.getBalance(baseToken, walletAddress)
-                const b5 = Token.getBalance(outToken, await auth.getAddress())
+                const b5 = Token.getBalance(outToken, feeRecipientAddress)
                 const fee = 0.001
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
                         token: outToken,
                         amount: fee,
-                        recipient: await auth.getAddress()
+                        recipient: feeRecipientAddress
                     }
                 }
 
@@ -175,7 +176,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
-                const b6 = Token.getBalance(outToken, await auth.getAddress())
+                const b6 = Token.getBalance(outToken, feeRecipientAddress)
 
                 const [
                     randomTokenBalanceBefore,

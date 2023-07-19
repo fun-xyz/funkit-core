@@ -15,8 +15,7 @@ export const isFinishUnstakeParams = (input: any) => {
 }
 export const stakeCalldata = async (params: StakeParams): Promise<TransactionParams> => {
     const lidoAddress = getSteth(params.chainId.toString())
-    const transactionParams: TransactionParams = { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
-    return transactionParams
+    return { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
 }
 
 export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Promise<TransactionParams> => {
@@ -28,24 +27,26 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
         throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
     }
     const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
-    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(steth, "approve", [withdrawalQueue, parseEther(`${approveAmount}`)])
+    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(steth, "approve", [
+        withdrawalQueue,
+        parseEther(`${approveAmount}`)
+    ])
 
     // Request Withdrawal
-    const requestWithdrawalData = withdrawQueueInterface.encodeTransactionData(withdrawalQueue, "requestWithdrawals", [
+    const requestWithdrawalData = withdrawQueueInterface.encodeTransactionParams(withdrawalQueue, "requestWithdrawals", [
         params.amounts.map((amount) => parseEther(`${amount}`)),
         params.recipient
     ])
     const chain = new Chain({ chainId: params.chainId.toString() })
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
-    const requestUnstakeData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
+    const requestUnstakeData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
         0,
         requestWithdrawalData.data,
         steth,
         approveData.data
     ])
-    const transactionParams: TransactionParams = { to: approveAndExecAddress, value: 0n, data: requestUnstakeData.data }
-    return transactionParams
+    return { to: approveAndExecAddress, value: 0n, data: requestUnstakeData.data }
 }
 
 export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<TransactionParams> => {
@@ -65,7 +66,7 @@ export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promis
         [readyToWithdrawRequestIds, 1, lastCheckpoint],
         chain
     )
-    const claimBatchWithdrawalTx = withdrawQueueInterface.encodeTransactionData(withdrawQueueAddress, "claimWithdrawalsTo", [
+    const claimBatchWithdrawalTx = withdrawQueueInterface.encodeTransactionParams(withdrawQueueAddress, "claimWithdrawalsTo", [
         readyToWithdrawRequestIds,
         hints,
         params.recipient
@@ -75,8 +76,7 @@ export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promis
             to: claimBatchWithdrawalTx.to.toString() as Address,
             data: claimBatchWithdrawalTx.data
         }
-        const transactionParams: TransactionParams = { to: data.to, value: 0n, data: data.data }
-        return transactionParams
+        return { to: data.to, value: 0n, data: data.data }
     }
     const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
     throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
