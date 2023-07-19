@@ -528,7 +528,7 @@ export class FunWallet extends FirstClassActions {
                     const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
                     throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
                 }
-                const feedata = [options.fee.token, options.fee.recipient, options.fee.amount]
+                const feedata = [options.fee.token, options.fee.recipient, 1]
                 const estimateGasCalldata = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [
                     params.to,
                     params.value,
