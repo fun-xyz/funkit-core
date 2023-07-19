@@ -8,7 +8,7 @@ import { addTransaction } from "../apis/PaymasterApis"
 import { Group } from "../apis/types"
 import { addUserToWallet } from "../apis/UserApis"
 import { Auth } from "../auth"
-import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, WALLET_CONTRACT_INTERFACE } from "../common"
+import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionParams, WALLET_CONTRACT_INTERFACE } from "../common"
 import { AddressZero, FACTORY_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption, parseOptions } from "../config"
 import {
@@ -19,16 +19,16 @@ import {
     Operation,
     OperationStatus,
     OperationType,
+    Token,
     encodeUserAuthInitData,
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, MissingParameterError, ParameterError } from "../errors"
+import { Helper, MissingParameterError, ParameterError, ParameterFormatError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
-
 export interface FunWalletParams {
     users?: User[]
     uniqueId?: string
@@ -228,8 +228,8 @@ export class FunWallet extends FirstClassActions {
 
     // TODO: change userId parsing and call data building to support multi-sig
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [await this.getAddress(txOptions), 0, "0x"])
-        const operation: Operation = await this.createOperation(auth, userId, callData, txOptions)
+        const transactionParams: TransactionParams = { to: await this.getAddress(txOptions), data: "0x" }
+        const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
         const receipt = await this.executeOperation(auth, operation, txOptions)
         return receipt
     }
@@ -237,7 +237,7 @@ export class FunWallet extends FirstClassActions {
     async createOperation(
         auth: Auth,
         userId: string,
-        callData: Hex,
+        transactionParams: TransactionParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (!userId || userId === "") {
@@ -261,7 +261,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         const partialOp = {
-            callData,
+            callData: await this._buildCalldata(auth, userId, transactionParams, txOptions),
             paymasterAndData,
             sender,
             maxFeePerGas: maxFeePerGas!,
@@ -493,5 +493,65 @@ export class FunWallet extends FirstClassActions {
         }
 
         return this.abiManager.getInitCode(initCodeParams)
+    }
+
+    /**
+     * Encodes arbitrary transactions calls to include fees
+     * @param params Transaction Params, generated from various calldata generating functions
+     * @param options EnvOptions to read fee data from
+     * @returns calldata to be passed into createUserOperation
+     */
+    private async _buildCalldata(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+        if (options.fee) {
+            if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
+                options.fee.token = options.gasSponsor.token
+            }
+            if (!options.fee.token) {
+                const helper = new Helper("Fee", options.fee, "EnvOption.fee.token or EnvOption.gasSponsor.token is required")
+                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+            }
+            if (!options.fee.recipient) {
+                const helper = new Helper("Fee", options.fee, "EnvOption.fee.recipient is required")
+                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+            }
+            const token = new Token(options.fee.token)
+            if (options.fee.gasPercent && !token.isNative) {
+                const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
+                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+            }
+
+            if (token.isNative) {
+                options.fee.token = AddressZero
+            } else {
+                options.fee.token = await token.getAddress()
+            }
+
+            if (options.fee.amount) {
+                options.fee.amount = Number(await token.getDecimalAmount(options.fee.amount))
+            } else if (options.fee.gasPercent) {
+                const feedata = [options.fee.token, options.fee.recipient, 1]
+                const estimateGasCalldata = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [
+                    params.to,
+                    params.value,
+                    params.data,
+                    feedata
+                ])
+                const operation = await this.createOperation(
+                    auth,
+                    userId,
+                    { to: params.to, value: params.value, data: estimateGasCalldata },
+                    { ...options, fee: undefined }
+                )
+                const gasUsed = await operation.getMaxTxCost()
+                options.fee.amount = Math.ceil((Number(gasUsed) * options.fee.gasPercent) / 100)
+            } else {
+                const helper = new Helper("Fee", options.fee, "fee.amount or fee.gasPercent is required")
+                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+            }
+            const feedata = [options.fee.token, options.fee.recipient, options.fee.amount]
+            return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [params.to, params.value, params.data, feedata])
+        } else {
+            return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
+        }
     }
 }

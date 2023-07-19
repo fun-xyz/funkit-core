@@ -108,20 +108,18 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const chain = await getChainFromData(options.chain)
                 const inTokenAddress = await Token.getAddress(config.inToken, options)
 
-                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
+                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
                 ])
                 await chain.init()
-                inTokenMint.chain = chain
-                await auth.sendTx(inTokenMint)
+                await auth.sendTx({ ...inTokenMint, chain })
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
-                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     funderAddress,
                     1000000000000000000000n
                 ])
-                paymasterTokenMint.chain = chain
-                await auth.sendTx(paymasterTokenMint)
+                await auth.sendTx({ ...paymasterTokenMint, chain })
 
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.1 })

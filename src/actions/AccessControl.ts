@@ -1,7 +1,7 @@
 import { Hex, getAddress, padHex } from "viem"
 import { RuleStruct, SessionKeyParams } from "./types"
 import { SessionKeyAuth } from "../auth"
-import { RBAC_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
+import { RBAC_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { getChainFromData } from "../data"
 import { Token } from "../data/Token"
 import { Helper, MissingParameterError } from "../errors"
@@ -10,7 +10,7 @@ import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
 export const HashOne = padHex("0x1", { size: 32 })
 
-export const createSessionKeyCalldata = async (params: SessionKeyParams) => {
+export const createSessionKeyTransactionParams = async (params: SessionKeyParams): Promise<TransactionParams> => {
     if (params.targetWhitelist.length === 0) {
         const currentLocation = "createSessionKeyCalldata"
         const helper = new Helper(`${currentLocation} was given these parameters`, objectify(params), "targetWhitelist is empty")
@@ -50,12 +50,11 @@ export const createSessionKeyCalldata = async (params: SessionKeyParams) => {
     const setRuleCallData = RBAC_CONTRACT_INTERFACE.encodeData("setRule", [ruleId, ruleStruct])
     const connectRuleAndRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addRuleToRole", [roleId, ruleId])
     const connectUserToRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addUserToRole", [roleId, userid])
-    const multicallCallData = RBAC_CONTRACT_INTERFACE.encodeData("multiCall", [
-        [setRuleCallData, connectRuleAndRoleCallData, connectUserToRoleCallData]
-    ])
     const chain = await getChainFromData(params.chainId)
     const rbacAddress = await chain.getAddress("rbacAddress")
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [rbacAddress, 0, multicallCallData])
+    return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "multiCall", [
+        [setRuleCallData, connectRuleAndRoleCallData, connectUserToRoleCallData]
+    ])
 }
 
 export const createSessionUser = () => {
