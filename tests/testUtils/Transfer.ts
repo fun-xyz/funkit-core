@@ -197,7 +197,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
                 const b1 = Token.getBalance(baseToken, randomAddress)
                 const b2 = Token.getBalance(baseToken, walletAddress)
-                const b5 = Token.getBalance(outToken, await auth.getAddress())
+                const b5 = Token.getBalance(baseToken, await auth.getAddress())
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
@@ -216,11 +216,11 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log(await wallet.executeOperation(auth, userOp))
+                await wallet.executeOperation(auth, userOp)
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
-                const b6 = Token.getBalance(outToken, await auth.getAddress())
+                const b6 = Token.getBalance(baseToken, await auth.getAddress())
 
                 const [
                     randomTokenBalanceBefore,
@@ -233,11 +233,8 @@ export const TransferTest = (config: TransferTestConfig) => {
 
                 assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
-                console.log(feeRecipientBalanceBefore, feeRecipientBalanceAfter)
                 assert(feeRecipientBalanceAfter > feeRecipientBalanceBefore, "Transfer failed")
             })
-
-            // it("pay a percentage of gas for fees in tokens using the gas sponsor's token", async () => {})
 
             it("negative test - fee token and gas token not set", async () => {
                 const fee = 0.001

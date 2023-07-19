@@ -524,7 +524,7 @@ export class FunWallet extends FirstClassActions {
             if (options.fee.amount) {
                 options.fee.amount = Number(await token.getDecimalAmount(options.fee.amount))
             } else if (options.fee.gasPercent) {
-                if (!token.isNative) {
+                if (options.fee.token !== AddressZero) {
                     const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
                     throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
                 }
@@ -535,21 +535,19 @@ export class FunWallet extends FirstClassActions {
                     params.data,
                     feedata
                 ])
-                const funwallet = new FunWallet({ uniqueId: "temporaryUniqueId" })
-                const userOp = await funwallet.createOperation(
+                const userOp = await this.createOperation(
                     auth,
                     userId,
                     { to: params.to, value: params.value, data: estimateGasCalldata },
-                    options
+                    { ...options, fee: undefined }
                 )
                 const gasUsed = await userOp.getMaxTxCost()
-                options.fee.amount = (Number(gasUsed) * options.fee.gasPercent) / 100
+                options.fee.amount = Math.ceil((Number(gasUsed) * options.fee.gasPercent) / 100)
             } else {
                 const helper = new Helper("Fee", options.fee, "fee.amount or fee.gasPercent is required")
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
             const feedata = [options.fee.token, options.fee.recipient, options.fee.amount]
-            console.log([params.to, params.value, params.data, feedata])
             return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [params.to, params.value, params.data, feedata])
         } else {
             return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
