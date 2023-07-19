@@ -122,9 +122,9 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const walletAddress1 = await wallet1.getAddress()
 
             await funder.sendTx(await sponsor.lockDeposit())
-            await funder.sendTx(await sponsor.setToWhitelistMode())
-            await funder.sendTx(await sponsor.addSpenderToWhiteList(walletAddress))
-            await funder.sendTx(await sponsor.removeSpenderFromWhiteList(walletAddress1))
+            await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress))
+            await funder.sendTx(await sponsor.addSpenderToWhiteList(config.chainId, funderAddress, walletAddress))
+            await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
             await runSwap(wallet)
 
             try {
@@ -136,13 +136,13 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Blacklist Mode Approved", async () => {
-            await funder.sendTx(await sponsor.setToBlacklistMode())
+            await funder.sendTx(await sponsor.setToBlacklistMode(config.chainId, funderAddress))
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
-            await funder.sendTx(sponsor.addSpenderToBlackList(walletAddress1))
+            await funder.sendTx(await sponsor.addSpenderToBlackList(config.chainId, funderAddress, walletAddress1))
             expect(await sponsor.getSpenderBlacklistMode(walletAddress1, funderAddress)).to.be.true
 
-            await funder.sendTx(sponsor.removeSpenderFromBlackList(walletAddress))
+            await funder.sendTx(await sponsor.removeSpenderFromBlackList(config.chainId, funderAddress, walletAddress))
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.false
 
             await runSwap(wallet)
@@ -162,19 +162,27 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Batch Blacklist/Whitelist Users", async () => {
-            await funder.sendTx(sponsor.setToBlacklistMode())
-            await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [false, false]))
+            await funder.sendTx(await sponsor.setToBlacklistMode(config.chainId, funderAddress))
+            await funder.sendTx(
+                await sponsor.batchBlacklistUsers(config.chainId, funderAddress, [walletAddress, walletAddress1], [false, false])
+            )
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.false
             expect(await sponsor.getSpenderBlacklistMode(walletAddress1, funderAddress)).to.be.false
-            await funder.sendTx(sponsor.batchBlacklistUsers([walletAddress, walletAddress1], [true, true]))
+            await funder.sendTx(
+                await sponsor.batchBlacklistUsers(config.chainId, funderAddress, [walletAddress, walletAddress1], [true, true])
+            )
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.true
             expect(await sponsor.getSpenderBlacklistMode(walletAddress1, funderAddress)).to.be.true
 
-            await funder.sendTx(sponsor.setToWhitelistMode())
-            await funder.sendTx(sponsor.batchWhitelistUsers([walletAddress, walletAddress1], [false, false]))
+            await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress))
+            await funder.sendTx(
+                await sponsor.batchWhitelistUsers(config.chainId, funderAddress, [walletAddress, walletAddress1], [false, false])
+            )
             expect(await sponsor.getSpenderWhitelistMode(walletAddress, funderAddress)).to.be.false
             expect(await sponsor.getSpenderWhitelistMode(walletAddress1, funderAddress)).to.be.false
-            await funder.sendTx(sponsor.batchWhitelistUsers([walletAddress, walletAddress1], [true, true]))
+            await funder.sendTx(
+                await sponsor.batchWhitelistUsers(config.chainId, funderAddress, [walletAddress, walletAddress1], [true, true])
+            )
             expect(await sponsor.getSpenderWhitelistMode(walletAddress, funderAddress)).to.be.true
             expect(await sponsor.getSpenderWhitelistMode(walletAddress1, funderAddress)).to.be.true
         })
