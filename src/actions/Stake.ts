@@ -71,11 +71,7 @@ export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promis
         params.recipient
     ])
     if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to) {
-        const data = {
-            to: claimBatchWithdrawalTx.to.toString() as Address,
-            data: claimBatchWithdrawalTx.data
-        }
-        return { to: data.to, value: 0n, data: data.data }
+        return claimBatchWithdrawalTx
     }
     const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
     throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
