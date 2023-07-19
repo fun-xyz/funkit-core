@@ -1,18 +1,16 @@
 import { Hex, getAddress, padHex } from "viem"
 import { RuleStruct, SessionKeyParams } from "./types"
-import { Auth, SessionKeyAuth } from "../auth"
+import { SessionKeyAuth } from "../auth"
 import { RBAC_CONTRACT_INTERFACE, TransactionParams } from "../common"
-import { EnvOption } from "../config"
 import { getChainFromData } from "../data"
 import { Token } from "../data/Token"
 import { Helper, MissingParameterError } from "../errors"
 import { objectify, randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
-import { FunWallet } from "../wallet"
 export const HashOne = padHex("0x1", { size: 32 })
 
-export const createSessionKeyCalldata = async (auth: Auth, userId: string, params: SessionKeyParams, txOptions: EnvOption) => {
+export const createSessionKeyCalldata = async (params: SessionKeyParams): Promise<TransactionParams> => {
     if (params.targetWhitelist.length === 0) {
         const currentLocation = "createSessionKeyCalldata"
         const helper = new Helper(`${currentLocation} was given these parameters`, objectify(params), "targetWhitelist is empty")
@@ -58,7 +56,7 @@ export const createSessionKeyCalldata = async (auth: Auth, userId: string, param
     const chain = await getChainFromData(params.chainId)
     const rbacAddress = await chain.getAddress("rbacAddress")
     const transactionParams: TransactionParams = { to: rbacAddress, value: 0, data: multicallCallData }
-    return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
+    return transactionParams
 }
 
 export const createSessionUser = () => {

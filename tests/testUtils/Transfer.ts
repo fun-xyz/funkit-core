@@ -99,8 +99,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
 
-        describe.only("Transaction Fees enabled", function () {
-            it.skip("pay a fixed amount of fees in eth", async function () {
+        describe("Transaction Fees enabled", function () {
+            it("pay a fixed amount of fees in eth", async function () {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
@@ -145,7 +145,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
                 assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
             })
-            it.skip("pay a fixed amount of fees in tokens", async function () {
+            it("pay a fixed amount of fees in tokens", async function () {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
@@ -191,7 +191,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
             })
 
-            it.only("pay a percentage of gas for fees", async () => {
+            it("pay a percentage of gas for fees", async () => {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 

@@ -1,4 +1,4 @@
-import { Address, Hex } from "viem"
+import { Address } from "viem"
 import { createSessionKeyCalldata } from "./AccessControl"
 import { finishUnstakeCalldata, isFinishUnstakeParams, isRequestUnstakeParams, requestUnstakeCalldata, stakeCalldata } from "./Stake"
 import { OneInchCalldata, uniswapV2SwapCalldata, uniswapV3SwapCalldata } from "./Swap"
@@ -30,9 +30,8 @@ import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
 import { Helper, MissingParameterError } from "../errors"
-import { FunWallet } from "../wallet"
 export abstract class FirstClassActions {
-    abstract createOperation(auth: Auth, userId: string, callData: Hex, txOptions: EnvOption): Promise<Operation>
+    abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
 
     abstract getAddress(options: EnvOption): Promise<Address>
 
@@ -44,13 +43,13 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
-        let callData
+        let callData: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
-            callData = await OneInchCalldata(auth, userId, params as OneInchSwapParams, txOption)
+            callData = await OneInchCalldata(params as OneInchSwapParams, txOption)
         } else if (uniswapV3Supported.includes(params.chainId)) {
-            callData = await uniswapV3SwapCalldata(auth, userId, params as UniswapParams, txOption)
+            callData = await uniswapV3SwapCalldata(params as UniswapParams)
         } else {
-            callData = await uniswapV2SwapCalldata(auth, userId, params as UniswapParams, txOption)
+            callData = await uniswapV2SwapCalldata(params as UniswapParams)
         }
         return await this.createOperation(auth, userId, callData, txOption)
     }
@@ -61,13 +60,13 @@ export abstract class FirstClassActions {
         params: TransferParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData
+        let callData: TransactionParams
         if (isERC721TransferParams(params)) {
-            callData = await erc721TransferCalldata(auth, userId, params, txOptions)
+            callData = await erc721TransferCalldata(params)
         } else if (isERC20TransferParams(params)) {
-            callData = await erc20TransferCalldata(auth, userId, params, txOptions)
+            callData = await erc20TransferCalldata(params)
         } else if (isNativeTransferParams(params)) {
-            callData = await ethTransferCalldata(auth, userId, params, txOptions)
+            callData = await ethTransferCalldata(params)
         } else {
             const currentLocation = "action.transfer"
             const helperMainMessage = "params were missing or incorrect"
@@ -85,9 +84,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData
         if (isERC20ApproveParams(params)) {
-            callData = await erc20ApproveCalldata(auth, userId, params, txOptions)
+            callData = await erc20ApproveCalldata(params)
         } else if (isERC721ApproveParams(params)) {
-            callData = await erc721ApproveCalldata(auth, userId, params, txOptions)
+            callData = await erc721ApproveCalldata(params)
         } else {
             const currentLocation = "action.tokenApprove"
             const helperMainMessage = "params were missing or incorrect"
@@ -103,7 +102,7 @@ export abstract class FirstClassActions {
         params: StakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await stakeCalldata(auth, userId, params, txOptions)
+        const callData = await stakeCalldata(params)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
@@ -113,13 +112,19 @@ export abstract class FirstClassActions {
         params: RequestUnstakeParams | FinishUnstakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData
+        let callData: TransactionParams
         if (isRequestUnstakeParams(params)) {
-            callData = await requestUnstakeCalldata(auth, userId, params as RequestUnstakeParams, txOptions)
+            callData = await requestUnstakeCalldata(params as RequestUnstakeParams)
+            return await this.createOperation(auth, userId, callData, txOptions)
         } else if (isFinishUnstakeParams(params)) {
-            callData = await finishUnstakeCalldata(auth, userId, params as FinishUnstakeParams, txOptions)
+            callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
+            return await this.createOperation(auth, userId, callData, txOptions)
+        } else {
+            const currentLocation = "action.unstake"
+            const helperMainMessage = "params were missing or incorrect"
+            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
+            throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
     }
 
     async execRawTx(
@@ -128,8 +133,7 @@ export abstract class FirstClassActions {
         params: TransactionParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await FunWallet.execFromEntryPoint(auth, userId, params, txOptions)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, params, txOptions)
     }
 
     async createSessionKey(
@@ -138,7 +142,7 @@ export abstract class FirstClassActions {
         params: SessionKeyParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await createSessionKeyCalldata(auth, userId, params, txOptions)
+        const callData = await createSessionKeyCalldata(params)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 }

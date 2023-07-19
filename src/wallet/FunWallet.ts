@@ -228,8 +228,8 @@ export class FunWallet extends FirstClassActions {
 
     // TODO: change userId parsing and call data building to support multi-sig
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [await this.getAddress(txOptions), 0, "0x"])
-        const operation: Operation = await this.createOperation(auth, userId, callData, txOptions)
+        const transactionParams: TransactionParams = { to: await this.getAddress(txOptions), data: "0x" }
+        const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
         const receipt = await this.executeOperation(auth, operation, txOptions)
         return receipt
     }
@@ -237,7 +237,7 @@ export class FunWallet extends FirstClassActions {
     async createOperation(
         auth: Auth,
         userId: string,
-        callData: Hex,
+        transactionParams: TransactionParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (!userId || userId === "") {
@@ -261,7 +261,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         const partialOp = {
-            callData,
+            callData: await this.execFromEntryPoint(auth, userId, transactionParams, txOptions),
             paymasterAndData,
             sender,
             maxFeePerGas: maxFeePerGas!,
@@ -501,7 +501,7 @@ export class FunWallet extends FirstClassActions {
      * @param options EnvOptions to read fee data from
      * @returns calldata to be passed into createUserOperation
      */
-    static async execFromEntryPoint(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+    async execFromEntryPoint(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
         if (options.fee) {
             if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
                 options.fee.token = options.gasSponsor.token
@@ -536,7 +536,12 @@ export class FunWallet extends FirstClassActions {
                     feedata
                 ])
                 const funwallet = new FunWallet({ uniqueId: "temporaryUniqueId" })
-                const userOp = await funwallet.createOperation(auth, userId, estimateGasCalldata, options)
+                const userOp = await funwallet.createOperation(
+                    auth,
+                    userId,
+                    { to: params.to, value: params.value, data: estimateGasCalldata },
+                    options
+                )
                 const gasUsed = await userOp.getMaxTxCost()
                 options.fee.amount = (Number(gasUsed) * options.fee.gasPercent) / 100
             } else {

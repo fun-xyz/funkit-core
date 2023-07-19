@@ -1,6 +1,4 @@
-import { Hex } from "viem"
 import { OneInchSwapParams, UniSwapPoolFeeOptions, UniswapParams } from "./types"
-import { Auth } from "../auth"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -9,7 +7,6 @@ import { Helper, ParameterError } from "../errors"
 import { sendRequest } from "../utils"
 import { UniswapV2Addrs, UniswapV3Addrs, fromReadableAmount, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
-import { FunWallet } from "../wallet"
 
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 
@@ -57,7 +54,7 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     return 18
 }
 
-export const OneInchCalldata = async (auth: Auth, userId: string, swapParams: OneInchSwapParams, txOptions: EnvOption): Promise<Hex> => {
+export const OneInchCalldata = async (swapParams: OneInchSwapParams, txOptions: EnvOption): Promise<TransactionParams> => {
     const supportedChains = [1, 137, 31337, 36865]
     if (!supportedChains.includes(swapParams.chainId)) {
         const helper = new Helper("oneInchCaldlata", swapParams.chainId, "Staking available only on Ethereum mainnet and Goerli")
@@ -77,7 +74,7 @@ export const OneInchCalldata = async (auth: Auth, userId: string, swapParams: On
         swapParams.in = eth1InchAddress
         const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, txOptions)
         const transactionParams: TransactionParams = { to: approveAndExecAddress, value: swapParams.amount, data: swapTx.data }
-        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
+        return transactionParams
     } else {
         approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, txOptions)
         const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, txOptions)
@@ -89,11 +86,11 @@ export const OneInchCalldata = async (auth: Auth, userId: string, swapParams: On
             approveTx.data
         ])
         const transactionParams: TransactionParams = { to: approveAndExecAddress, value: 0, data: data.data }
-        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
+        return transactionParams
     }
 }
 
-export const uniswapV3SwapCalldata = async (auth: Auth, userId: string, params: UniswapParams, txOptions: EnvOption): Promise<Hex> => {
+export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -140,10 +137,10 @@ export const uniswapV3SwapCalldata = async (auth: Auth, userId: string, params: 
         swapData = approveAndSwapInterface.encodeData("executeSwapERC20", [tokenInAddress, amount, data])
         transactionParams = { to: tokenSwapAddress, value: 0, data: swapData }
     }
-    return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
+    return transactionParams
 }
 
-export const uniswapV2SwapCalldata = async (auth: Auth, userId: string, params: UniswapParams, txOptions: EnvOption): Promise<Hex> => {
+export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -185,10 +182,10 @@ export const uniswapV2SwapCalldata = async (auth: Auth, userId: string, params: 
     if (tokenIn.isNative) {
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
         const transactionParams: TransactionParams = { to: tokenSwapAddress, value: 0, data: swapData.data }
-        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
+        return transactionParams
     } else {
         swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
         const transactionParams: TransactionParams = { to: tokenSwapAddress, value: 0, data: swapData.data }
-        return await FunWallet.execFromEntryPoint(auth, userId, transactionParams, txOptions)
+        return transactionParams
     }
 }
