@@ -515,13 +515,11 @@ export class FunWallet extends FirstClassActions {
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
             const token = new Token(options.fee.token)
-            console.log(options.fee.token)
             if (token.isNative) {
                 options.fee.token = AddressZero
             } else {
                 options.fee.token = await token.getAddress()
             }
-            console.log(options.fee.token)
 
             if (options.fee.amount) {
                 options.fee.amount = Number(await token.getDecimalAmount(options.fee.amount))

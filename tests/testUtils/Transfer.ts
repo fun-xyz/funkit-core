@@ -68,52 +68,6 @@ export const TransferTest = (config: TransferTestConfig) => {
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
 
-        it("transfer baseToken directly with fee", async () => {
-            const randomAddress = randomBytes(20)
-            const walletAddress = await wallet.getAddress()
-
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
-            const b5 = Token.getBalance(baseToken, await auth.getAddress())
-            const fee = 0.001
-            const options: EnvOption = {
-                chain: config.chainId,
-                fee: {
-                    token: baseToken,
-                    amount: fee,
-                    recipient: await auth.getAddress()
-                }
-            }
-
-            const userOp = await wallet.transfer(
-                auth,
-                await auth.getAddress(),
-                {
-                    to: randomAddress,
-                    amount: config.amount ? config.amount : 0.001
-                },
-                options
-            )
-            await wallet.executeOperation(auth, userOp)
-
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
-            const b6 = Token.getBalance(baseToken, await auth.getAddress())
-
-            const [
-                randomTokenBalanceBefore,
-                walletTokenBalanceBefore,
-                randomTokenBalanceAfter,
-                walletTokenBalanceAfter,
-                feeRecipientBalanceBefore,
-                feeRecipientBalanceAfter
-            ] = await Promise.all([b1, b2, b3, b4, b5, b6])
-
-            assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
-            assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
-            assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
-        })
-
         it("wallet should have lower balance of specified token", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
@@ -143,6 +97,123 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+        })
+
+        describe.only("Transaction Fees enabled", function () {
+            it.skip("pay a fixed amount of fees in eth", async function () {
+                const randomAddress = randomBytes(20)
+                const walletAddress = await wallet.getAddress()
+
+                const b1 = Token.getBalance(baseToken, randomAddress)
+                const b2 = Token.getBalance(baseToken, walletAddress)
+                const b5 = Token.getBalance(baseToken, await auth.getAddress())
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        amount: fee,
+                        recipient: await auth.getAddress()
+                    }
+                }
+
+                const userOp = await wallet.transfer(
+                    auth,
+                    await auth.getAddress(),
+                    {
+                        to: randomAddress,
+                        amount: config.amount ? config.amount : 0.001
+                    },
+                    options
+                )
+                await wallet.executeOperation(auth, userOp)
+
+                const b3 = Token.getBalance(baseToken, randomAddress)
+                const b4 = Token.getBalance(baseToken, walletAddress)
+                const b6 = Token.getBalance(baseToken, await auth.getAddress())
+
+                const [
+                    randomTokenBalanceBefore,
+                    walletTokenBalanceBefore,
+                    randomTokenBalanceAfter,
+                    walletTokenBalanceAfter,
+                    feeRecipientBalanceBefore,
+                    feeRecipientBalanceAfter
+                ] = await Promise.all([b1, b2, b3, b4, b5, b6])
+
+                assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+                assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+                assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
+            })
+            // it("pay a fixed amount of fees in tokens", async function () {})
+
+            // it("pay a percentage of gas for fees", async () => {})
+
+            // it("pay a percentage of gas for fees in tokens using the gas sponsor's token", async () => {})
+
+            it("negative test - fee token and gas token not set", async () => {
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        amount: fee,
+                        recipient: await auth.getAddress()
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("EnvOption.fee.token or EnvOption.gasSponsor.token is required")
+                }
+            })
+            it("negative test - fee recipient not set", async () => {
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        amount: fee
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("EnvOption.fee.recipient is required")
+                }
+            })
+            it("negative test - fee amount and gas percent not set", async () => {
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        recipient: await auth.getAddress()
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("fee.amount or fee.gasPercent is required")
+                }
+            })
+            it("negative test - fee uses gas percent but charges erc20 tokens", async () => {
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: outToken,
+                        gasPercent: 4, // 4%
+                        recipient: await auth.getAddress()
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("gasPercent is only valid for native tokens")
+                }
+            })
         })
 
         describe("With Session Key", () => {
