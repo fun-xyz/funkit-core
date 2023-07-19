@@ -515,7 +515,7 @@ export class FunWallet extends FirstClassActions {
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }
             const token = new Token(options.fee.token)
-            if (token.isNative && options.fee.gasPercent) {
+            if (options.fee.gasPercent && !token.isNative) {
                 const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
                 throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
             }

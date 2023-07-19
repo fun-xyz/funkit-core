@@ -49,15 +49,15 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
-        let callData: TransactionParams
+        let transactionParams: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
-            callData = await OneInchTransactionParams(params as OneInchSwapParams)
+            transactionParams = await OneInchTransactionParams(params as OneInchSwapParams)
         } else if (uniswapV3Supported.includes(params.chainId)) {
-            callData = await uniswapV3SwapTransactionParams(params as UniswapParams)
+            transactionParams = await uniswapV3SwapTransactionParams(params as UniswapParams)
         } else {
-            callData = await uniswapV2SwapTransactionParams(params as UniswapParams)
+            transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams)
         }
-        return await this.createOperation(auth, userId, callData, txOption)
+        return await this.createOperation(auth, userId, transactionParams, txOption)
     }
 
     async transfer(
@@ -66,20 +66,20 @@ export abstract class FirstClassActions {
         params: TransferParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData: TransactionParams
+        let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
-            callData = await erc721TransferTransactionParams(params)
+            transactionParams = await erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
-            callData = await erc20TransferTransactionParams(params)
+            transactionParams = await erc20TransferTransactionParams(params)
         } else if (isNativeTransferParams(params)) {
-            callData = await ethTransferTransactionParams(params)
+            transactionParams = await ethTransferTransactionParams(params)
         } else {
             const currentLocation = "action.transfer"
             const helperMainMessage = "params were missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async tokenApprove(
@@ -88,18 +88,18 @@ export abstract class FirstClassActions {
         params: ApproveParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData
+        let transactionParams
         if (isERC20ApproveParams(params)) {
-            callData = await erc20ApproveTransactionParams(params)
+            transactionParams = await erc20ApproveTransactionParams(params)
         } else if (isERC721ApproveParams(params)) {
-            callData = await erc721ApproveTransactionParams(params)
+            transactionParams = await erc721ApproveTransactionParams(params)
         } else {
             const currentLocation = "action.tokenApprove"
             const helperMainMessage = "params were missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async stake(
@@ -108,8 +108,8 @@ export abstract class FirstClassActions {
         params: StakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await stakeTransactionParams(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const transactionParams = await stakeTransactionParams(params)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async unstake(
@@ -118,18 +118,18 @@ export abstract class FirstClassActions {
         params: RequestUnstakeParams | FinishUnstakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData: TransactionParams
+        let transactionParams: TransactionParams
         if (isRequestUnstakeParams(params)) {
-            callData = await requestUnstakeTransactionParams(params as RequestUnstakeParams)
+            transactionParams = await requestUnstakeTransactionParams(params as RequestUnstakeParams)
         } else if (isFinishUnstakeParams(params)) {
-            callData = await finishUnstakeTransactionParams(params as FinishUnstakeParams)
+            transactionParams = await finishUnstakeTransactionParams(params as FinishUnstakeParams)
         } else {
             const currentLocation = "action.unstake"
             const helperMainMessage = "params were missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async execRawTx(
@@ -147,7 +147,7 @@ export abstract class FirstClassActions {
         params: SessionKeyParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await createSessionKeyTransactionParams(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const transactionParams = await createSessionKeyTransactionParams(params)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 }

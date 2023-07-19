@@ -65,16 +65,15 @@ export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams
         [readyToWithdrawRequestIds, 1, lastCheckpoint],
         chain
     )
-    const claimBatchWithdrawalTx = withdrawQueueInterface.encodeTransactionParams(withdrawQueueAddress, "claimWithdrawalsTo", [
+    if (!hints) {
+        const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
+        throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
+    }
+    return withdrawQueueInterface.encodeTransactionParams(withdrawQueueAddress, "claimWithdrawalsTo", [
         readyToWithdrawRequestIds,
         hints,
         params.recipient
     ])
-    if (claimBatchWithdrawalTx && claimBatchWithdrawalTx.data && claimBatchWithdrawalTx.to) {
-        return claimBatchWithdrawalTx
-    }
-    const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
-    throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
 }
 
 const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {

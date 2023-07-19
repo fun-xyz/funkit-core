@@ -24,7 +24,7 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
 
 export const erc721TransferTransactionParams = async (params: ERC721TransferParams): Promise<TransactionParams> => {
     const { to, tokenId, token, from } = params
-    return await ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "transferFrom", [from, to, tokenId])
+    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "transferFrom", [from, to, tokenId])
 }
 
 export const erc20TransferTransactionParams = async (params: ERC20TransferParams): Promise<TransactionParams> => {
