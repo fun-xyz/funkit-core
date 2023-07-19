@@ -10,7 +10,7 @@ import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
 export const HashOne = padHex("0x1", { size: 32 })
 
-export const createSessionKeyCalldata = async (params: SessionKeyParams): Promise<TransactionParams> => {
+export const createSessionKeyTransactionParams = async (params: SessionKeyParams): Promise<TransactionParams> => {
     if (params.targetWhitelist.length === 0) {
         const currentLocation = "createSessionKeyCalldata"
         const helper = new Helper(`${currentLocation} was given these parameters`, objectify(params), "targetWhitelist is empty")

@@ -1,13 +1,19 @@
 import { Address } from "viem"
-import { createSessionKeyCalldata } from "./AccessControl"
-import { finishUnstakeCalldata, isFinishUnstakeParams, isRequestUnstakeParams, requestUnstakeCalldata, stakeCalldata } from "./Stake"
-import { OneInchCalldata, uniswapV2SwapCalldata, uniswapV3SwapCalldata } from "./Swap"
+import { createSessionKeyTransactionParams } from "./AccessControl"
 import {
-    erc20ApproveCalldata,
-    erc20TransferCalldata,
-    erc721ApproveCalldata,
-    erc721TransferCalldata,
-    ethTransferCalldata,
+    finishUnstakeTransactionParams,
+    isFinishUnstakeParams,
+    isRequestUnstakeParams,
+    requestUnstakeTransactionParams,
+    stakeTransactionParams
+} from "./Stake"
+import { OneInchTransactionParams, uniswapV2SwapTransactionParams, uniswapV3SwapTransactionParams } from "./Swap"
+import {
+    erc20ApproveTransactionParams,
+    erc20TransferTransactionParams,
+    erc721ApproveTransactionParams,
+    erc721TransferTransactionParams,
+    ethTransferTransactionParams,
     isERC20ApproveParams,
     isERC20TransferParams,
     isERC721ApproveParams,
@@ -45,11 +51,11 @@ export abstract class FirstClassActions {
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let callData: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
-            callData = await OneInchCalldata(params as OneInchSwapParams)
+            callData = await OneInchTransactionParams(params as OneInchSwapParams)
         } else if (uniswapV3Supported.includes(params.chainId)) {
-            callData = await uniswapV3SwapCalldata(params as UniswapParams)
+            callData = await uniswapV3SwapTransactionParams(params as UniswapParams)
         } else {
-            callData = await uniswapV2SwapCalldata(params as UniswapParams)
+            callData = await uniswapV2SwapTransactionParams(params as UniswapParams)
         }
         return await this.createOperation(auth, userId, callData, txOption)
     }
@@ -62,11 +68,11 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData: TransactionParams
         if (isERC721TransferParams(params)) {
-            callData = await erc721TransferCalldata(params)
+            callData = await erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
-            callData = await erc20TransferCalldata(params)
+            callData = await erc20TransferTransactionParams(params)
         } else if (isNativeTransferParams(params)) {
-            callData = await ethTransferCalldata(params)
+            callData = await ethTransferTransactionParams(params)
         } else {
             const currentLocation = "action.transfer"
             const helperMainMessage = "params were missing or incorrect"
@@ -84,9 +90,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData
         if (isERC20ApproveParams(params)) {
-            callData = await erc20ApproveCalldata(params)
+            callData = await erc20ApproveTransactionParams(params)
         } else if (isERC721ApproveParams(params)) {
-            callData = await erc721ApproveCalldata(params)
+            callData = await erc721ApproveTransactionParams(params)
         } else {
             const currentLocation = "action.tokenApprove"
             const helperMainMessage = "params were missing or incorrect"
@@ -102,7 +108,7 @@ export abstract class FirstClassActions {
         params: StakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await stakeCalldata(params)
+        const callData = await stakeTransactionParams(params)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 
@@ -114,9 +120,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let callData: TransactionParams
         if (isRequestUnstakeParams(params)) {
-            callData = await requestUnstakeCalldata(params as RequestUnstakeParams)
+            callData = await requestUnstakeTransactionParams(params as RequestUnstakeParams)
         } else if (isFinishUnstakeParams(params)) {
-            callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
+            callData = await finishUnstakeTransactionParams(params as FinishUnstakeParams)
         } else {
             const currentLocation = "action.unstake"
             const helperMainMessage = "params were missing or incorrect"
@@ -141,7 +147,7 @@ export abstract class FirstClassActions {
         params: SessionKeyParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await createSessionKeyCalldata(params)
+        const callData = await createSessionKeyTransactionParams(params)
         return await this.createOperation(auth, userId, callData, txOptions)
     }
 }

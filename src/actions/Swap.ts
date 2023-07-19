@@ -54,7 +54,7 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     return 18
 }
 
-export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
+export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
     const supportedChains = [1, 137, 31337, 36865]
     if (!supportedChains.includes(swapParams.chainId)) {
         const helper = new Helper("oneInchCaldlata", swapParams.chainId, "Staking available only on Ethereum mainnet and Goerli")
@@ -78,18 +78,17 @@ export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<Tr
     } else {
         approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, options)
         const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
-        const data = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
+        return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,
             swapTx.data,
             inToken,
             approveTx.data
         ])
-        return { to: approveAndExecAddress, value: 0, data: data.data }
     }
 }
 
-export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<TransactionParams> => {
+export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -134,7 +133,7 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Tran
     }
 }
 
-export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<TransactionParams> => {
+export const uniswapV2SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")

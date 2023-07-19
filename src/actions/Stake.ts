@@ -13,12 +13,12 @@ export const isRequestUnstakeParams = (input: any) => {
 export const isFinishUnstakeParams = (input: any) => {
     return input.recipient !== undefined
 }
-export const stakeCalldata = async (params: StakeParams): Promise<TransactionParams> => {
+export const stakeTransactionParams = async (params: StakeParams): Promise<TransactionParams> => {
     const lidoAddress = getSteth(params.chainId.toString())
     return { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
 }
 
-export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Promise<TransactionParams> => {
+export const requestUnstakeTransactionParams = async (params: RequestUnstakeParams): Promise<TransactionParams> => {
     // Approve steth
     const steth = getSteth(params.chainId.toString())
     const withdrawalQueue: Address = getWithdrawalQueue(params.chainId.toString())
@@ -48,7 +48,7 @@ export const requestUnstakeCalldata = async (params: RequestUnstakeParams): Prom
     ])
 }
 
-export const finishUnstakeCalldata = async (params: FinishUnstakeParams): Promise<TransactionParams> => {
+export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const withdrawQueueAddress = getWithdrawalQueue(params.chainId.toString())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
