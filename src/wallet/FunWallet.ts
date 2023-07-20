@@ -212,11 +212,11 @@ export class FunWallet extends FirstClassActions {
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         let nonce = undefined
         let retryCount = 5
-        while ((nonce === undefined || nonce === null )&& retryCount > 0) {
-            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain)    
+        while ((nonce === undefined || nonce === null) && retryCount > 0) {
+            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain)
             retryCount--
         }
-        
+
         if (nonce !== undefined && nonce !== null) {
             return BigInt(nonce)
         } else {
