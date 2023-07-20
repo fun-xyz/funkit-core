@@ -1,7 +1,7 @@
 import { Address, isAddress, pad } from "viem"
 import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
-import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
 import { createExecuteBatchTxParams } from "./BatchActions"
+import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
 import {
     finishUnstakeTransactionParams,
     isFinishUnstakeParams,
@@ -328,7 +328,7 @@ export abstract class FirstClassActions {
         const txParams = await removeGroupTxParams(params)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
-    
+
     async createBatchOperation(
         auth: Auth,
         userId: string,
