@@ -53,12 +53,7 @@ export const getPromiseFromOp = async (op: UserOperation) => {
 export async function gasCalculation(txid: string, chain: Chain) {
     if (txid === "0x") return { gasUsed: BigInt(1), gasUSD: BigInt(1) }
     const provider = await chain.getClient()
-    let txReceipt
-    try {
-        txReceipt = await provider.waitForTransactionReceipt({ hash: txid as Hex })
-    } catch (e: any) {
-        console.log(e)
-    }
+    const txReceipt = await provider.waitForTransactionReceipt({ hash: txid as Hex })
     const gasUsed = txReceipt.gasUsed
     const gasPrice = txReceipt.effectiveGasPrice / BigInt(1e18)
     const gasTotal = gasUsed * gasPrice

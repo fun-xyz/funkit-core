@@ -48,7 +48,6 @@ export class WalletOnChainManager {
 
     async getReceipt(hash: Hash): Promise<TransactionReceipt | undefined> {
         const client = await this.chain.getClient()
-        console.log("txHash: ", hash)
         const txReceipt = await client.waitForTransactionReceipt({ hash })
         if (txReceipt && txReceipt.blockNumber) {
             return txReceipt
