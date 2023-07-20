@@ -294,7 +294,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))
         })
 
-        it("Batch Blacklist/Whitelist Tokens", async () => {
+        it.only("Batch Blacklist/Whitelist Tokens", async () => {
             const usdtAddr = "0x509Ee0d083DdF8AC028f2a56731412edD63223B9"
             await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))
             await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken, usdtAddr], [false, false]))

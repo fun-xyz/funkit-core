@@ -413,14 +413,19 @@ export class TokenSponsor extends Sponsor {
         modes: boolean[],
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
-        const calldata: string[] = []
+        const calldata: TransactionParams[] = []
         for (let i = 0; i < tokens.length; i++) {
             const tokenAddress = await Token.getAddress(tokens[i], options)
-            calldata.push(this.contractInterface.encodeData("setTokenBlacklistMode", [tokenAddress, modes[i]]))
+            calldata.push(
+                this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setTokenBlacklistMode", [
+                    tokenAddress,
+                    modes[i]
+                ])
+            )
         }
 
         await batchOperation(options.chain.toString(), tokens, modes, "tokensBlackList", this.paymasterType, sponsor)
-        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [calldata])
+        return this.batchTransaction(calldata)
     }
 
     static approve(token: string, amount: number): ActionFunction {

@@ -13,7 +13,6 @@ import {
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
-import { ActionFunction } from "../actions"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWallets } from "../apis/UserApis"
 import { TransactionData, TransactionParams } from "../common"
@@ -145,15 +144,8 @@ export class Auth {
         return `${authUniqueId}-${index}`
     }
 
-    async sendTx(
-        txData: TransactionParams | ActionFunction,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<TransactionReceipt> {
+    async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
-        if (typeof txData === "function") {
-            const chain = await getChainFromData(options.chain)
-            txData = (await txData({ wallet: this, chain, options })).data
-        }
         const chain = await getChainFromData(options.chain)
         const { to, data } = txData
         let { value } = txData
@@ -197,7 +189,7 @@ export class Auth {
         return receipt
     }
 
-    async sendTxs(txs: TransactionData[] | ActionFunction[]): Promise<TransactionReceipt[]> {
+    async sendTxs(txs: TransactionData[]): Promise<TransactionReceipt[]> {
         const receipts: TransactionReceipt[] = []
         for (const tx of txs) {
             receipts.push(await this.sendTx(tx))

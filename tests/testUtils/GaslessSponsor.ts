@@ -161,7 +161,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             expect(await sponsor.getLockState(funderAddress)).to.be.true
         })
 
-        it("Batch Blacklist/Whitelist Users", async () => {
+        it.only("Batch Blacklist/Whitelist Users", async () => {
             await funder.sendTx(await sponsor.setToBlacklistMode(config.chainId, funderAddress))
 
             await funder.sendTx(

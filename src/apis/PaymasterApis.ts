@@ -56,6 +56,7 @@ export async function addToList(
     sponsorAddress: string
 ): Promise<any> {
     try {
+        console.log("Adding to list", chainId, address, listType, paymasterType, sponsorAddress)
         return await sendPostRequest(INTERNAL_API_URL, "paymasters/add-to-list", {
             chain: chainId,
             sponsorAddress,
@@ -64,6 +65,7 @@ export async function addToList(
             updateAddrs: address
         })
     } catch (e) {
+        console.log(e)
         /* empty */
     }
 }
