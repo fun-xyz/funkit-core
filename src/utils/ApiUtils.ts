@@ -1,6 +1,6 @@
 import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
-import { stringifyOp } from "./UseropUtils"
+import { stringifyOp } from "./UserOpUtils"
 import { API_URL } from "../common/constants"
 import { Helper, InternalFailureError, InvalidParameterError, NoServerConnectionError, ServerMissingDataError } from "../errors"
 

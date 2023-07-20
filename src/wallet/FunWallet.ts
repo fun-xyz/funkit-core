@@ -24,7 +24,7 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, MissingParameterError, ParameterError, ParameterFormatError } from "../errors"
+import { Helper, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
@@ -394,8 +394,12 @@ export class FunWallet extends FirstClassActions {
             const gasData = await gasCalculation(txid!, chain)
             gasUsed = gasData.gasUsed
             gasUSD = gasData.gasUSD
-            if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
+            if (!(gasUsed || gasUSD)) {
+                const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
+                throw new TransactionError("FunWallet.executeOperaion", helper)
+            }
         } catch (e) {
+            console.log(e)
             txid = "Cannot find transaction id."
         }
 
