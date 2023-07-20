@@ -134,7 +134,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0xb00c7b880a57369e49a454dad27494253cf6efa5c63381c6f0e567d86d5d5cbc" // generateRandomGroupId()
+        const groupId: Hex = randomBytes(32) // generateRandomGroupId()
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
@@ -162,7 +162,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             if (prefund) await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 1)
         })
 
-        it.only("Approve tokens", async () => {
+        it("Approve tokens", async () => {
             const chain = await getChainFromData(config.chainId)
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const walletAddress = await wallet.getAddress()
