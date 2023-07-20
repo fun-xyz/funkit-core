@@ -160,6 +160,6 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const walletAddress = await this.getAddress(txOptions)
         const txParams = createExecuteBatchTxParams(params, walletAddress)
-        return this.createOperation(auth, userId, txParams, txOptions)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 }

@@ -5,5 +5,5 @@ export const createExecuteBatchTxParams = (params: TransactionParams[], walletAd
     const targets = params.map((param) => param.to)
     const values = params.map((param) => param.value ?? 0n)
     const datas = params.map((param) => param.data ?? "0x")
-    return WALLET_CONTRACT_INTERFACE.encodeTransactionParams(walletAddress, "createBatchOperation", [targets, values, datas])
+    return WALLET_CONTRACT_INTERFACE.encodeTransactionParams(walletAddress, "executeBatch", [targets, values, datas])
 }
