@@ -24,7 +24,7 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, MissingParameterError, ParameterError, ParameterFormatError } from "../errors"
+import { Helper, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
@@ -388,15 +388,20 @@ export class FunWallet extends FirstClassActions {
         const opHash = await operation.getOpHash(chain)
         const onChainDataManager = new WalletOnChainManager(chain)
 
-        let txid
+        let txid, gasUsed, gasUSD
         try {
             txid = await onChainDataManager.getTxId(opHash)
+            const gasData = await gasCalculation(txid!, chain)
+            gasUsed = gasData.gasUsed
+            gasUSD = gasData.gasUSD
+            if (!(gasUsed || gasUSD)) {
+                const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
+                throw new TransactionError("FunWallet.executeOperaion", helper)
+            }
         } catch (e) {
+            console.log(e)
             txid = "Cannot find transaction id."
         }
-
-        const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
-        if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
 
         const receipt: ExecutionReceipt = {
             opHash,
@@ -491,7 +496,6 @@ export class FunWallet extends FirstClassActions {
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
         }
-
         return this.abiManager.getInitCode(initCodeParams)
     }
 
