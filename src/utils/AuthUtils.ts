@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid"
+import { Address } from "viem"
 import { getAuth, setAuth } from "../apis"
-import { createUser, getUserUniqueId } from "../apis/UserApis"
+import { createUser, getUserAuthIdByAddr, getUserUniqueId } from "../apis/UserApis"
+import { ServerMissingDataError } from "../errors"
 
 export const getStoredUniqueId = async (authId: string) => {
     const auth = await getAuth(authId)
@@ -51,4 +53,19 @@ export const getAuthUniqueId = async (authId: string, chainId: string, addr = "N
     }
 
     return authUniqueId
+}
+
+export const getAuthIdFromAddr = async (addr: Address, chainId: string) => {
+    let authId: string
+    try {
+        authId = await getUserAuthIdByAddr(addr, chainId)
+    } catch (err) {
+        if (err instanceof ServerMissingDataError) {
+            authId = addr
+            await createUser(addr, chainId, addr, "eoa", uuidv4())
+        } else {
+            throw err
+        }
+    }
+    return authId
 }

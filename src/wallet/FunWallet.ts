@@ -323,30 +323,6 @@ export class FunWallet extends FirstClassActions {
         // sign the userOp directly here as we may not have the opId yet
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
 
-        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(
-                auth.authId!,
-                chain.chainId!,
-                await this.getAddress(),
-                Array.from(this.userInfo!.keys()),
-                this.walletUniqueId
-            )
-
-            if (isGroupOperation(operation)) {
-                const group = this.userInfo!.get(operation.groupId!)
-
-                if (group && group.groupInfo) {
-                    await createGroup(
-                        operation.groupId!,
-                        chain.chainId!,
-                        group.groupInfo.threshold,
-                        await this.getAddress(),
-                        group.groupInfo.memberIds
-                    )
-                }
-            }
-        }
-
         if (operation.groupId && txOptions.skipDBAction !== true) {
             // cache group info
             const group: Group = (await getGroups([operation.groupId], chain.chainId!))[0]
@@ -405,23 +381,47 @@ export class FunWallet extends FirstClassActions {
             gasUSD
         }
 
-        if (txOptions?.gasSponsor?.sponsorAddress && txOptions.skipDBAction !== true) {
-            const paymasterType = getPaymasterType(txOptions)
-            addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                txid,
-                {
-                    action: "sponsor",
-                    amount: -1, //Get amount from lazy processing
-                    from: txOptions.gasSponsor.sponsorAddress,
-                    to: await this.getAddress(),
-                    token: "eth",
-                    txid: txid
-                },
-                paymasterType,
-                txOptions.gasSponsor.sponsorAddress
+        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
+            await addUserToWallet(
+                auth.authId!,
+                chain.chainId!,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
             )
+
+            if (isGroupOperation(operation)) {
+                const group = this.userInfo!.get(operation.groupId!)
+
+                if (group && group.groupInfo) {
+                    await createGroup(
+                        operation.groupId!,
+                        chain.chainId!,
+                        group.groupInfo.threshold,
+                        await this.getAddress(),
+                        group.groupInfo.memberIds
+                    )
+                }
+            }
+
+            if (txOptions?.gasSponsor?.sponsorAddress) {
+                const paymasterType = getPaymasterType(txOptions)
+                addTransaction(
+                    await chain.getChainId(),
+                    Date.now(),
+                    txid,
+                    {
+                        action: "sponsor",
+                        amount: -1, //Get amount from lazy processing
+                        from: txOptions.gasSponsor.sponsorAddress,
+                        to: await this.getAddress(),
+                        token: "eth",
+                        txid: txid
+                    },
+                    paymasterType,
+                    txOptions.gasSponsor.sponsorAddress
+                )
+            }
         }
         return receipt
     }

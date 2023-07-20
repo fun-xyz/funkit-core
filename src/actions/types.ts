@@ -129,3 +129,53 @@ export type RuleStruct = {
     feeValueLimit: bigint
     feeRecipientTokenMerkleRootHash: Hex
 }
+
+export type Group = {
+    userIds: Hex[]
+    threshold: number
+}
+
+export type AddOwnerParams = {
+    ownerId: Hex
+    chainId: number
+}
+
+export type RemoveOwnerParams = {
+    ownerId: Hex
+    chainId: number
+}
+
+export type CreateGroupParams = {
+    groupId: Hex
+    group: Group
+    chainId: number
+}
+
+export type AddUserToGroupParams = {
+    groupId: Hex
+    userId: Hex
+    chainId: number
+}
+
+export type RemoveUserFromGroupParams = {
+    groupId: Hex
+    userId: Hex
+    chainId: number
+}
+
+export type UpdateThresholdOfGroupParams = {
+    groupId: Hex
+    threshold: number
+    chainId: number
+}
+
+export type UpdateGroupParams = {
+    groupId: Hex
+    group: Group
+    chainId: number
+}
+
+export type RemoveGroupParams = {
+    groupId: Hex
+    chainId: number
+}
