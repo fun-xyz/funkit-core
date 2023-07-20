@@ -1,6 +1,6 @@
 import { Address } from "viem"
 import { createSessionKeyTransactionParams } from "./AccessControl"
-import { createExecuteBatchTxParams } from "./Execution"
+import { createExecuteBatchTxParams } from "./BatchActions"
 import {
     finishUnstakeTransactionParams,
     isFinishUnstakeParams,

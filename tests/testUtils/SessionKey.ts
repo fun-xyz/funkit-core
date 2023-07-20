@@ -1,10 +1,11 @@
 import { assert } from "chai"
+import { randInt } from "./utils"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { AddressZero, ERC20_ABI } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet, randInt, randomBytes } from "../../src/utils"
+import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -49,7 +50,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             const user = createSessionUser()
             const second = 1000
             const minute = 60 * second
-            const deadline = BigInt(Date.now() + 1 * minute) / 1000n
+            const deadline = BigInt(Date.now() + 3 * minute) / 1000n
             const feeRecip = randomBytes(20)
             before(async () => {
                 const basetokenAddr = await Token.getAddress(baseToken)
@@ -103,7 +104,6 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                         await wallet.executeOperation(user, operation)
                         assert(false, "call succeded when it should have failed")
                     } catch (e: any) {
-                        console.log(e.message)
                         assert(e.message.includes("FW"))
                     }
                 })
@@ -128,8 +128,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 }
             })
 
-            it.only("Session key expires", async () => {
-                console.log("start")
+            it("Session key expires", async () => {
                 const waitTime = BigInt(Date.now())
                 const diff = deadline * 1000n - waitTime
                 if (diff > 0n) {

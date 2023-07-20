@@ -32,6 +32,3 @@ export const isGroupOperation = (operation: Operation): boolean => {
     return false
 }
 
-export const randInt = (int: number): number => {
-    return Math.ceil(Math.random() * int)
-}

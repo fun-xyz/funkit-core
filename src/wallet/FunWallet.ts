@@ -424,7 +424,6 @@ export class FunWallet extends FirstClassActions {
                 txOptions.gasSponsor.sponsorAddress
             )
         }
-
         return receipt
     }
 
@@ -493,7 +492,6 @@ export class FunWallet extends FirstClassActions {
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
         }
-
         return this.abiManager.getInitCode(initCodeParams)
     }
 

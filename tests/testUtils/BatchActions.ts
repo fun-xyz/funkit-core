@@ -1,15 +1,15 @@
 import { assert } from "chai"
 import { Address } from "viem"
+import { randInt } from "./utils"
 import { erc20ApproveTransactionParams } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { getChainFromData } from "../../src/data"
-import { fundWallet, randInt, randomBytes } from "../../src/utils"
+import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
-
 export interface BatchActionsTestConfig {
     chainId: number
     outToken: Address
