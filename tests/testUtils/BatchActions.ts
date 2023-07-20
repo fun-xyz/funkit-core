@@ -58,7 +58,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     token: outTokenAddress
                 })
             )
-            const operation = await wallet.executeBatch(auth, await auth.getAddress(), txParams)
+            const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), txParams)
             await wallet.executeOperation(auth, operation)
             for (const randomAddr of randomAddresses) {
                 const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
@@ -86,7 +86,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 })
             )
             try {
-                const operation = await wallet.executeBatch(randAuth, await randAuth.getAddress(), txParams)
+                const operation = await wallet.createBatchOperation(randAuth, await randAuth.getAddress(), txParams)
                 await wallet.executeOperation(randAuth, operation)
                 assert(false, "transaction passed")
             } catch (e: any) {
@@ -112,7 +112,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             })
             const walletAddress = await wallet.getAddress()
             const chain = await getChainFromData(config.chainId)
-            const operation = await wallet.executeBatch(auth, await auth.getAddress(), [swapParams, approveParams])
+            const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [swapParams, approveParams])
             await wallet.executeOperation(auth, operation)
             const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
                 outTokenAddress,

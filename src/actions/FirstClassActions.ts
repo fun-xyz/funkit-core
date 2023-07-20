@@ -152,7 +152,7 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
-    async executeBatch(
+    async createBatchOperation(
         auth: Auth,
         userId: string,
         params: TransactionParams[],
