@@ -1,5 +1,6 @@
 import { Address } from "viem"
 import { createSessionKeyTransactionParams } from "./AccessControl"
+import { createExecuteBatchTxParams } from "./Execution"
 import {
     finishUnstakeTransactionParams,
     isFinishUnstakeParams,
@@ -149,5 +150,16 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const transactionParams = await createSessionKeyTransactionParams(params)
         return await this.createOperation(auth, userId, transactionParams, txOptions)
+    }
+
+    async executeBatch(
+        auth: Auth,
+        userId: string,
+        params: TransactionParams[],
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const walletAddress = await this.getAddress(txOptions)
+        const txParams = createExecuteBatchTxParams(params, walletAddress)
+        return this.createOperation(auth, userId, txParams, txOptions)
     }
 }

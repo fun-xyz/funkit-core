@@ -388,15 +388,16 @@ export class FunWallet extends FirstClassActions {
         const opHash = await operation.getOpHash(chain)
         const onChainDataManager = new WalletOnChainManager(chain)
 
-        let txid
+        let txid, gasUsed, gasUSD
         try {
             txid = await onChainDataManager.getTxId(opHash)
+            const gasData = await gasCalculation(txid!, chain)
+            gasUsed = gasData.gasUsed
+            gasUSD = gasData.gasUSD
+            if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
         } catch (e) {
             txid = "Cannot find transaction id."
         }
-
-        const { gasUsed, gasUSD } = await gasCalculation(txid!, chain)
-        if (!(gasUsed || gasUSD)) throw new Error("Txid not found")
 
         const receipt: ExecutionReceipt = {
             opHash,
@@ -423,6 +424,7 @@ export class FunWallet extends FirstClassActions {
                 txOptions.gasSponsor.sponsorAddress
             )
         }
+
         return receipt
     }
 
