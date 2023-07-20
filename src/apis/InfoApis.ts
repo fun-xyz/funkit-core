@@ -1,3 +1,4 @@
+import { Address } from "viem"
 import {
     API_URL,
     BASE_WRAP_TOKEN_ADDR,
@@ -10,7 +11,7 @@ import {
 import { Helper, ServerMissingDataError } from "../errors"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
-export async function getTokenInfo(symbol: string, chainId: string): Promise<any> {
+export async function getTokenInfo(symbol: string, chainId: string): Promise<Address> {
     symbol = symbol.toLowerCase()
     let body
 

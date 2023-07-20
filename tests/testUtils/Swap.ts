@@ -54,9 +54,11 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
-                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), decAmount])
-                data.chain = chain
-                await auth.sendTx(data)
+                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    decAmount
+                ])
+                await auth.sendTx({ ...data, chain })
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.002 })
                 await wallet.executeOperation(auth, userOp)
@@ -212,9 +214,12 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
-                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), decAmount])
-                data.chain = chain
-                await auth1.sendTx(data)
+                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    decAmount
+                ])
+
+                await auth1.sendTx({ ...data, chain })
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth1, groupId, { to: wethAddr, amount: 0.002 })
                 await wallet.executeOperation(auth1, userOp)

@@ -11,7 +11,7 @@ export interface EnvOption {
     fee?: {
         token?: string
         amount?: number
-        gasPercent?: number
+        gasPercent?: number // 4% -> 4, 100% -> 100
         recipient?: Address
         oracle?: Address
     }

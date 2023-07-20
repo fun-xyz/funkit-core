@@ -1,13 +1,20 @@
-import { Address, Hex, isAddress, pad } from "viem"
-import { createSessionKeyCalldata } from "./AccessControl"
-import { finishUnstakeCalldata, isFinishUnstakeParams, isRequestUnstakeParams, requestUnstakeCalldata, stakeCalldata } from "./Stake"
-import { OneInchCalldata, uniswapV2SwapCalldata, uniswapV3SwapCalldata } from "./Swap"
+import { Address, isAddress, pad } from "viem"
+import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
+import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
 import {
-    erc20ApproveCalldata,
-    erc20TransferCalldata,
-    erc721ApproveCalldata,
-    erc721TransferCalldata,
-    ethTransferCalldata,
+    finishUnstakeTransactionParams,
+    isFinishUnstakeParams,
+    isRequestUnstakeParams,
+    requestUnstakeTransactionParams,
+    stakeTransactionParams
+} from "./Stake"
+import { OneInchTransactionParams, uniswapV2SwapTransactionParams, uniswapV3SwapTransactionParams } from "./Swap"
+import {
+    erc20ApproveTransactionParams,
+    erc20TransferTransactionParams,
+    erc721ApproveTransactionParams,
+    erc721TransferTransactionParams,
+    ethTransferTransactionParams,
     isERC20ApproveParams,
     isERC20TransferParams,
     isERC721ApproveParams,
@@ -33,18 +40,17 @@ import {
     UpdateGroupParams,
     UpdateThresholdOfGroupParams
 } from "./types"
-import { addOwnerCalldata, createGroupCalldata, removeGroupCalldata, removeOwnerCalldata, updateGroupCalldata } from "./User"
-import { createGroup, deleteGroup, getGroups, updateGroupThreshold } from "../apis/GroupApis"
+import { createGroup, deleteGroup, getGroups, updateGroup } from "../apis/GroupApis"
 import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletIdentity } from "../apis/UserApis"
 import { Auth } from "../auth"
-import { TransactionParams, WALLET_CONTRACT_INTERFACE } from "../common"
+import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
 import { Helper, InvalidParameterError, MissingParameterError } from "../errors"
 import { getAuthIdFromAddr } from "../utils"
 
 export abstract class FirstClassActions {
-    abstract createOperation(auth: Auth, userId: string, callData: Hex, txOptions: EnvOption): Promise<Operation>
+    abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
 
     abstract getAddress(options: EnvOption): Promise<Address>
 
@@ -56,15 +62,15 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
-        let callData
+        let transactionParams: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
-            callData = await OneInchCalldata(params as OneInchSwapParams)
+            transactionParams = await OneInchTransactionParams(params as OneInchSwapParams)
         } else if (uniswapV3Supported.includes(params.chainId)) {
-            callData = await uniswapV3SwapCalldata(params as UniswapParams)
+            transactionParams = await uniswapV3SwapTransactionParams(params as UniswapParams)
         } else {
-            callData = await uniswapV2SwapCalldata(params as UniswapParams)
+            transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams)
         }
-        return await this.createOperation(auth, userId, callData, txOption)
+        return await this.createOperation(auth, userId, transactionParams, txOption)
     }
 
     async transfer(
@@ -73,20 +79,20 @@ export abstract class FirstClassActions {
         params: TransferParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData
+        let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
-            callData = await erc721TransferCalldata(params)
+            transactionParams = await erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
-            callData = await erc20TransferCalldata(params)
+            transactionParams = await erc20TransferTransactionParams(params)
         } else if (isNativeTransferParams(params)) {
-            callData = await ethTransferCalldata(params)
+            transactionParams = await ethTransferTransactionParams(params)
         } else {
             const currentLocation = "action.transfer"
             const helperMainMessage = "params were missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async tokenApprove(
@@ -95,18 +101,18 @@ export abstract class FirstClassActions {
         params: ApproveParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData
+        let transactionParams
         if (isERC20ApproveParams(params)) {
-            callData = await erc20ApproveCalldata(params)
+            transactionParams = await erc20ApproveTransactionParams(params)
         } else if (isERC721ApproveParams(params)) {
-            callData = await erc721ApproveCalldata(params)
+            transactionParams = await erc721ApproveTransactionParams(params)
         } else {
             const currentLocation = "action.tokenApprove"
             const helperMainMessage = "params were missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
             throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async stake(
@@ -115,8 +121,8 @@ export abstract class FirstClassActions {
         params: StakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await stakeCalldata(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const transactionParams = await stakeTransactionParams(params)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async unstake(
@@ -125,13 +131,18 @@ export abstract class FirstClassActions {
         params: RequestUnstakeParams | FinishUnstakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        let callData
+        let transactionParams: TransactionParams
         if (isRequestUnstakeParams(params)) {
-            callData = await requestUnstakeCalldata(params as RequestUnstakeParams)
+            transactionParams = await requestUnstakeTransactionParams(params as RequestUnstakeParams)
         } else if (isFinishUnstakeParams(params)) {
-            callData = await finishUnstakeCalldata(params as FinishUnstakeParams)
+            transactionParams = await finishUnstakeTransactionParams(params as FinishUnstakeParams)
+        } else {
+            const currentLocation = "action.unstake"
+            const helperMainMessage = "params were missing or incorrect"
+            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
+            throw new MissingParameterError(currentLocation, helper)
         }
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async execRawTx(
@@ -140,8 +151,7 @@ export abstract class FirstClassActions {
         params: TransactionParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, params.value, params.data])
-        return await this.createOperation(auth, userId, callData, txOptions)
+        return await this.createOperation(auth, userId, params, txOptions)
     }
 
     async createSessionKey(
@@ -150,8 +160,8 @@ export abstract class FirstClassActions {
         params: SessionKeyParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const callData = await createSessionKeyCalldata(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const transactionParams = await createSessionKeyTransactionParams(params)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async addOwner(
@@ -166,8 +176,8 @@ export abstract class FirstClassActions {
             await addUserToWallet(authId, params.chainId.toString(), walletAddr, [pad(params.ownerId, { size: 32 })])
         }
 
-        const callData = await addOwnerCalldata(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await addOwnerTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async removeOwner(
@@ -181,8 +191,8 @@ export abstract class FirstClassActions {
             const authId = await getAuthIdFromAddr(params.ownerId as Address, params.chainId.toString())
             await removeUserWalletIdentity(authId, params.chainId.toString(), walletAddr, pad(params.ownerId, { size: 32 }))
         }
-        const callData = await removeOwnerCalldata(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await removeOwnerTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async createGroup(
@@ -197,8 +207,8 @@ export abstract class FirstClassActions {
             const authId = await getAuthIdFromAddr(userId as Address, params.chainId.toString())
             await addUserToGroup(authId, params.chainId.toString(), walletAddr, params.groupId)
         })
-        const callData = await createGroupCalldata(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await createGroupTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async addUserToGroup(
@@ -233,8 +243,8 @@ export abstract class FirstClassActions {
             chainId: params.chainId
         }
 
-        const callData = await updateGroupCalldata(updateGroupParams)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await updateGroupTxParams(updateGroupParams)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async removeUserFromGroup(
@@ -268,8 +278,8 @@ export abstract class FirstClassActions {
             },
             chainId: params.chainId
         }
-        const callData = await updateGroupCalldata(updateGroupParams)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await updateGroupTxParams(updateGroupParams)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async updateThresholdOfGroup(
@@ -293,7 +303,7 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError("action.updateThresholdOfGroup", "threshold", helper, false)
         }
 
-        await updateGroupThreshold(params.groupId, params.chainId.toString(), Number(params.threshold))
+        await updateGroup(params.groupId, params.chainId.toString(), { threshold: Number(params.threshold) })
 
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
@@ -303,8 +313,8 @@ export abstract class FirstClassActions {
             },
             chainId: params.chainId
         }
-        const callData = await updateGroupCalldata(updateGroupParams)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await updateGroupTxParams(updateGroupParams)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async removeGroup(
@@ -314,7 +324,7 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         await deleteGroup(params.groupId, params.chainId.toString())
-        const callData = await removeGroupCalldata(params)
-        return await this.createOperation(auth, userId, callData, txOptions)
+        const txParams = await removeGroupTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 }

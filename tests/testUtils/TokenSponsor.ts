@@ -34,7 +34,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe("TokenSponsor", function () {
+    describe.only("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
         let auth: Auth
@@ -108,20 +108,18 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const chain = await getChainFromData(options.chain)
                 const inTokenAddress = await Token.getAddress(config.inToken, options)
 
-                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [
+                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
                 ])
                 await chain.init()
-                inTokenMint.chain = chain
-                await auth.sendTx(inTokenMint)
+                await auth.sendTx({ ...inTokenMint, chain })
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
-                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(paymasterTokenAddress, "mint", [
+                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     funderAddress,
                     1000000000000000000000n
                 ])
-                paymasterTokenMint.chain = chain
-                await auth.sendTx(paymasterTokenMint)
+                await auth.sendTx({ ...paymasterTokenMint, chain })
 
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.1 })
@@ -188,7 +186,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it("Only User Whitelisted", async () => {
+        it.only("Only User Whitelisted", async () => {
             await funder.sendTx(sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode())

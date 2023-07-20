@@ -18,7 +18,7 @@ export interface GroupTestConfig {
 
 export const GroupTest = (config: GroupTestConfig) => {
     const { chainId, prefund, prefundAmt } = config
-    describe.only("Group Op ", function () {
+    describe("Group Op ", function () {
         this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
