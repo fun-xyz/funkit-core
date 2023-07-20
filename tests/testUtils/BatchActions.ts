@@ -1,18 +1,17 @@
 import { assert } from "chai"
-import { Address } from "viem"
 import { randInt } from "./utils"
-import { erc20ApproveTransactionParams } from "../../src/actions"
+import { erc20ApproveTransactionParams, uniswapV3SwapTransactionParams } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { getChainFromData } from "../../src/data"
+import { Token, getChainFromData } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
 export interface BatchActionsTestConfig {
     chainId: number
-    outToken: Address
+    outToken: string
     baseToken: string
     prefund: boolean
     index?: number
@@ -51,18 +50,19 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
+            const outTokenAddress = await Token.getAddress(outToken)
             const txParams = randomAddresses.map((randomAddress) =>
                 erc20ApproveTransactionParams({
                     spender: randomAddress,
                     amount: approveAmount,
-                    token: outToken as Address
+                    token: outTokenAddress
                 })
             )
             const operation = await wallet.executeBatch(auth, await auth.getAddress(), txParams)
             await wallet.executeOperation(auth, operation)
             for (const randomAddr of randomAddresses) {
                 const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
-                    outToken,
+                    outTokenAddress,
                     "allowance",
                     [walletAddress, randomAddr],
                     chain
@@ -76,11 +76,13 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const randAuth = new Auth({ privateKey: randomBytes(32) })
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const approveAmount = randInt(10000)
+            const outTokenAddress = await Token.getAddress(outToken)
+
             const txParams = randomAddresses.map((randomAddress) =>
                 erc20ApproveTransactionParams({
                     spender: randomAddress,
                     amount: approveAmount,
-                    token: outToken as Address
+                    token: outTokenAddress
                 })
             )
             try {
@@ -90,6 +92,37 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             } catch (e: any) {
                 assert(true)
             }
+        })
+
+        it("Swap, Approve", async () => {
+            const randomAddress = randomBytes(20)
+            const approveAmount = randInt(10000)
+            const swapParams = await uniswapV3SwapTransactionParams({
+                in: "eth",
+                out: outToken,
+                amount: 0.001,
+                returnAddress: randomAddress,
+                chainId: config.chainId
+            })
+            const outTokenAddress = await Token.getAddress(outToken)
+            const approveParams = erc20ApproveTransactionParams({
+                spender: randomAddress,
+                amount: approveAmount,
+                token: outTokenAddress
+            })
+            const walletAddress = await wallet.getAddress()
+            const chain = await getChainFromData(config.chainId)
+            const operation = await wallet.executeBatch(auth, await auth.getAddress(), [swapParams, approveParams])
+            await wallet.executeOperation(auth, operation)
+            const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
+                outTokenAddress,
+                "allowance",
+                [walletAddress, randomAddress],
+                chain
+            )
+            assert(BigInt(approvedAmount) === BigInt(approveAmount), "BatchActions failed")
+            const swappedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(outTokenAddress, "balanceOf", [randomAddress], chain)
+            assert(BigInt(swappedAmount) > 0, "Swap unsuccesful")
         })
     })
 }

@@ -31,4 +31,3 @@ export const isGroupOperation = (operation: Operation): boolean => {
     }
     return false
 }
-
