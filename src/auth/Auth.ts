@@ -13,15 +13,14 @@ import {
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
-import { ActionFunction } from "../actions"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
-import { TransactionData } from "../common"
+import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { getAuthUniqueId, objectify } from "../utils"
-
+import { convertProviderToClient } from "../viem"
 const gasSpecificChain = { "137": 850_000_000_000 }
 
 const preProcessesChains: any = {}
@@ -70,9 +69,7 @@ export class Auth {
                 transport: http(authInput.rpc)
             })
         } else if (authInput.provider) {
-            this.client = createWalletClient({
-                transport: custom(authInput.provider)
-            })
+            this.client = convertProviderToClient({ provider: authInput.provider })
         }
 
         if (authInput.privateKey) {
@@ -145,17 +142,11 @@ export class Auth {
         return `${authUniqueId}-${index}`
     }
 
-    async sendTx(
-        txData: TransactionData | ActionFunction,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<TransactionReceipt> {
+    async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
-        if (typeof txData === "function") {
-            const chain = await getChainFromData(options.chain)
-            txData = (await txData({ wallet: this, chain, options })).data
-        }
-        const { to, data, chain } = txData as TransactionData
-        let { value } = txData as TransactionData
+        const chain = await getChainFromData(options.chain)
+        const { to, data } = txData
+        let { value } = txData
         if (!chain || !chain.id) {
             const currentLocation = "Eoa.sendTx"
             const helperMainMessage = "Chain object is missing or incorrect"
@@ -196,7 +187,7 @@ export class Auth {
         return receipt
     }
 
-    async sendTxs(txs: TransactionData[] | ActionFunction[]): Promise<TransactionReceipt[]> {
+    async sendTxs(txs: TransactionData[]): Promise<TransactionReceipt[]> {
         const receipts: TransactionReceipt[] = []
         for (const tx of txs) {
             receipts.push(await this.sendTx(tx))

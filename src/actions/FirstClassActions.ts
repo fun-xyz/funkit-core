@@ -1,6 +1,7 @@
 import { Address, isAddress, pad } from "viem"
 import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
 import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
+import { createExecuteBatchTxParams } from "./BatchActions"
 import {
     finishUnstakeTransactionParams,
     isFinishUnstakeParams,
@@ -325,6 +326,17 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         await deleteGroup(params.groupId, params.chainId.toString())
         const txParams = await removeGroupTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+    
+    async createBatchOperation(
+        auth: Auth,
+        userId: string,
+        params: TransactionParams[],
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const walletAddress = await this.getAddress(txOptions)
+        const txParams = createExecuteBatchTxParams(params, walletAddress)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 }

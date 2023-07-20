@@ -1,7 +1,7 @@
 import { Address, formatUnits, isAddress, parseUnits } from "viem"
 import { getChainFromData } from "./Chain"
 import { getTokenInfo } from "../apis"
-import { ERC20_CONTRACT_INTERFACE, TransactionData } from "../common"
+import { ERC20_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Helper, ServerMissingDataError, TransactionError } from "../errors"
 
@@ -80,20 +80,16 @@ export class Token {
         return parseUnits(`${amount}`, Number(decimals))
     }
 
-    async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
-        const chain = await getChainFromData(options.chain)
+    async approve(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
         const amountDec = await this.getDecimalAmount(amount)
         const calldata = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(options), "approve", [spender, amountDec])
         const { to, data, value } = calldata
-        return { to: to!, data: data!, value: value!, chain }
+        return { to: to!, data: data!, value: value! }
     }
 
-    async transfer(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
-        const chain = await getChainFromData(options.chain)
+    async transfer(spender: string, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
         const amountDec = await this.getDecimalAmount(amount)
-        const calldata = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(options), "transfer", [spender, amountDec])
-        const { to, data, value } = calldata
-        return { to: to!, data: data!, value: value!, chain }
+        return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(options), "transfer", [spender, amountDec])
     }
 
     static async getAddress(data: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
@@ -135,7 +131,7 @@ export class Token {
         spender: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<TransactionData> {
+    ): Promise<TransactionParams> {
         const token = new Token(data)
         return await token.approve(spender, amount, options)
     }
@@ -145,7 +141,7 @@ export class Token {
         spender: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<TransactionData> {
+    ): Promise<TransactionParams> {
         const token = new Token(data)
         return await token.transfer(spender, amount, options)
     }
