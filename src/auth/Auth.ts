@@ -20,7 +20,7 @@ import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
 import { Helper, MissingParameterError } from "../errors"
 import { getAuthUniqueId, objectify } from "../utils"
-
+import { convertProviderToClient } from "../viem"
 const gasSpecificChain = { "137": 850_000_000_000 }
 
 const preProcessesChains: any = {}
@@ -69,9 +69,7 @@ export class Auth {
                 transport: http(authInput.rpc)
             })
         } else if (authInput.provider) {
-            this.client = createWalletClient({
-                transport: custom(authInput.provider)
-            })
+            this.client = convertProviderToClient({ provider: authInput.provider })
         }
 
         if (authInput.privateKey) {
