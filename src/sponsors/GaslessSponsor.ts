@@ -1,9 +1,8 @@
 import { Address } from "viem"
 import { Sponsor } from "./Sponsor"
 import { PaymasterType } from "./types"
-import { ActionData, ActionFunction } from "../actions"
 import { addTransaction } from "../apis/PaymasterApis"
-import { GASLESS_PAYMASTER_CONTRACT_INTERFACE } from "../common"
+import { GASLESS_PAYMASTER_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Token, getChainFromData } from "../data"
 export class GaslessSponsor extends Sponsor {
@@ -15,52 +14,64 @@ export class GaslessSponsor extends Sponsor {
         return (await this.getPaymasterAddress(options)) + this.sponsorAddress!.slice(2)
     }
 
-    stake(walletAddress: string, amount: number): ActionFunction {
-        return async (actionData: ActionData) => {
-            const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
-            const data = this.contractInterface.encodeData("addDepositTo", [walletAddress, amountdec])
+    async stake(
+        sponsor: Address,
+        walletAddress: string,
+        amount: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const amountdec = await Token.getDecimalAmount("eth", amount, options)
 
-            const chain = await getChainFromData(actionData.chain)
-            await addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                "0x",
-                {
-                    action: "stake",
-                    amount,
-                    from: await actionData.wallet.getAddress(),
-                    to: await this.getPaymasterAddress(actionData.options),
-                    token: "eth"
-                },
-                this.paymasterType,
-                walletAddress
-            )
-
-            return await this.encode(data, actionData.options, amountdec)
-        }
+        const chain = await getChainFromData(options.chain)
+        await addTransaction(
+            await chain.getChainId(),
+            Date.now(),
+            "0x",
+            {
+                action: "stake",
+                amount,
+                from: sponsor,
+                to: await this.getPaymasterAddress(options),
+                token: "eth"
+            },
+            this.paymasterType,
+            walletAddress
+        )
+        return this.contractInterface.encodeTransactionParams(
+            await this.getPaymasterAddress(),
+            "addDepositTo",
+            [walletAddress, amountdec],
+            BigInt(amountdec)
+        )
     }
 
-    unstake(walletAddress: string, amount: number): ActionFunction {
-        return async (actionData: ActionData) => {
-            const amountdec = await Token.getDecimalAmount("eth", amount, actionData.options)
-            const data = this.contractInterface.encodeData("withdrawDepositTo", [walletAddress, amountdec])
-            const chain = await getChainFromData(actionData.chain)
-            await addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                "0x",
-                {
-                    action: "unstake",
-                    amount,
-                    from: await actionData.wallet.getAddress(),
-                    to: await this.getPaymasterAddress(actionData.options),
-                    token: "eth"
-                },
-                this.paymasterType,
-                walletAddress
-            )
-            return await this.encode(data, actionData.options)
-        }
+    async unstake(
+        sponsor: Address,
+        walletAddress: string,
+        amount: number,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const amountdec = await Token.getDecimalAmount("eth", amount, options)
+
+        const chain = await getChainFromData(options.chain)
+        await addTransaction(
+            await chain.getChainId(),
+            Date.now(),
+            "0x",
+            {
+                action: "unstake",
+                amount,
+                from: sponsor,
+                to: await this.getPaymasterAddress(options),
+                token: "eth"
+            },
+            this.paymasterType,
+            walletAddress
+        )
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawDepositTo", [
+            walletAddress,
+            amountdec
+        ])
     }
 
     async getUnlockBlock(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<number> {
@@ -81,18 +92,12 @@ export class GaslessSponsor extends Sponsor {
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getBalance", [sponsor], chain)
     }
 
-    lockDeposit(): ActionFunction {
-        return async (actionData: ActionData) => {
-            const data = this.contractInterface.encodeData("lockDeposit", [])
-            return await this.encode(data, actionData.options)
-        }
+    async lockDeposit(): Promise<TransactionParams> {
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "lockDeposit", [])
     }
 
-    unlockDepositAfter(blocksToWait: number): ActionFunction {
-        return async (actionData: ActionData) => {
-            const data = this.contractInterface.encodeData("unlockDepositAfter", [blocksToWait])
-            return await this.encode(data, actionData.options)
-        }
+    async unlockDepositAfter(blocksToWait: number): Promise<TransactionParams> {
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "unlockDepositAfter", [blocksToWait])
     }
 
     async getSpenderBlacklistMode(

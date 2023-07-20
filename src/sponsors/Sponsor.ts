@@ -1,6 +1,6 @@
 import { Address, Hex } from "viem"
 import { PaymasterType } from "./types"
-import { ActionFunction, ActionResult } from "../actions"
+import { ActionResult } from "../actions"
 import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -56,13 +56,13 @@ export abstract class Sponsor {
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>
 
-    abstract stake(walletAddress: string, amount: number): ActionFunction
+    abstract stake(sponsor: Address, walletAddress: string, amount: number, options: EnvOption): Promise<TransactionParams>
 
-    abstract unstake(walletAddress: string, amount: number): ActionFunction
+    abstract unstake(sponsor: Address, walletAddress: string, amount: number, options: EnvOption): Promise<TransactionParams>
 
-    abstract lockDeposit(): ActionFunction
+    abstract lockDeposit(): Promise<TransactionParams>
 
-    abstract unlockDepositAfter(blocksToWait: number): ActionFunction
+    abstract unlockDepositAfter(blocksToWait: number): Promise<TransactionParams>
 
     async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const chain = await getChainFromData(options.chain)
@@ -81,20 +81,10 @@ export abstract class Sponsor {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [false])
     }
 
-    async batchTransaction(chainId: number, sponsor: Address, transactions: TransactionParams[]): Promise<TransactionParams> {
-        const batchActionsData: any[] = []
-        for (let i = 0; i < transactions.length; i++) {
-            const chain = new Chain({ chainId: chainId.toString() })
-            const client = await chain.getClient()
-            const calldata = await client.call({
-                account: sponsor,
-                data: transactions[i].data,
-                to: transactions[i].to,
-                value: BigInt(transactions[i].value!)
-            })
-            batchActionsData.push(calldata)
-        }
-        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [batchActionsData])
+    async batchTransaction(transactions: TransactionParams[]): Promise<TransactionParams> {
+        const batchActionsData: any[] = transactions.map((transaction) => (transaction.data ? transaction.data : "0x"))
+        const value = transactions.reduce((acc, transaction) => (transaction.value ? acc + BigInt(transaction.value) : acc), 0n)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [batchActionsData], value)
     }
 
     async addSpenderToWhiteList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
@@ -117,7 +107,7 @@ export abstract class Sponsor {
             }
         }
         batchOperation(chainId.toString(), users, modes, "walletsWhiteList", this.paymasterType, sponsor)
-        return await this.batchTransaction(chainId, sponsor, calldata)
+        return await this.batchTransaction(calldata)
     }
 
     async addSpenderToBlackList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
@@ -140,6 +130,6 @@ export abstract class Sponsor {
             }
         }
         batchOperation(chainId.toString(), users, modes, "walletsBlackList", this.paymasterType, sponsor)
-        return await this.batchTransaction(chainId, sponsor, calldata)
+        return await this.batchTransaction(calldata)
     }
 }

@@ -91,7 +91,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, config.stakeAmount / 4)
+            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 4)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
@@ -155,14 +155,15 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Lock/Unlock Base Tokens", async () => {
-            await funder.sendTx(sponsor.unlockDepositAfter(0))
+            await funder.sendTx(await sponsor.unlockDepositAfter(0))
             expect(await sponsor.getLockState(funderAddress)).to.be.false
-            await funder.sendTx(sponsor.lockDeposit())
+            await funder.sendTx(await sponsor.lockDeposit())
             expect(await sponsor.getLockState(funderAddress)).to.be.true
         })
 
         it("Batch Blacklist/Whitelist Users", async () => {
             await funder.sendTx(await sponsor.setToBlacklistMode(config.chainId, funderAddress))
+
             await funder.sendTx(
                 await sponsor.batchBlacklistUsers(config.chainId, funderAddress, [walletAddress, walletAddress1], [false, false])
             )
