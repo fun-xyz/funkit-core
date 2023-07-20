@@ -21,7 +21,7 @@ export const fundWallet = async (
     } else {
         txData = { to, data: "0x", value: parseEther(`${value}`) }
     }
-    const receipt = await auth.sendTx({ ...txData, chain })
+    const receipt = await auth.sendTx({ ...txData })
     return await receipt
 }
 
