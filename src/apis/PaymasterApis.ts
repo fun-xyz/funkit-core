@@ -56,7 +56,6 @@ export async function addToList(
     sponsorAddress: string
 ): Promise<any> {
     try {
-        console.log("Adding to list", chainId, address, listType, paymasterType, sponsorAddress)
         return await sendPostRequest(INTERNAL_API_URL, "paymasters/add-to-list", {
             chain: chainId,
             sponsorAddress,
@@ -65,7 +64,6 @@ export async function addToList(
             updateAddrs: address
         })
     } catch (e) {
-        console.log(e)
         /* empty */
     }
 }
@@ -118,6 +116,6 @@ export async function batchOperation(
         return !modes[i]
     })
 
-    await addToList(chainId, addList, list, paymasterType, sponsorAddress)
+    await addToList(chainId.toString(), addList, list, paymasterType, sponsorAddress)
     await removeFromList(chainId, removeList, list, paymasterType, sponsorAddress)
 }

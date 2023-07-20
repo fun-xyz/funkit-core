@@ -21,7 +21,6 @@ export class GaslessSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
-
         const chain = await getChainFromData(options.chain)
         await addTransaction(
             await chain.getChainId(),

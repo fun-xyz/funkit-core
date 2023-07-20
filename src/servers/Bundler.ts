@@ -21,7 +21,6 @@ export class Bundler {
         try {
             response = await validateChainId(this.chainId)
         } catch (e) {
-            console.log(e)
             const helper = new Helper("Chain ID", this.chainId, "Cannot connect to bundler.")
             throw new NoServerConnectionError("Chain.loadBundler", "Bundler", helper, true)
         }
