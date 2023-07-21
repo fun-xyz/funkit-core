@@ -37,7 +37,12 @@ export const getAuthUniqueId = async (authId: string, chainId: string, addr = "N
     if (skipDBActions) {
         authUniqueId = addr
     } else {
-        authUniqueId = await getUserUniqueId(authId)
+        try {
+            authUniqueId = await getUserUniqueId(authId)
+        } catch (err) {
+            //TODO use proper Error
+            authUniqueId = addr
+        }
     }
     if (!authUniqueId) {
         authUniqueId = uuidv4()
