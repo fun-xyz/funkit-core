@@ -22,7 +22,7 @@ export interface AutomatedActionsConfig {
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
     const { outToken, prefund, prefundAmt } = config
 
-    describe("Automated Actions Test - Store in DB and execute later", function () {
+    describe.only("Automated Actions Test - Store in DB and execute later", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
@@ -44,7 +44,7 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
-        it("transfer baseToken(ETH)", async () => {
+        it.only("transfer baseToken(ETH)", async () => {
             const randomAddress = randomBytes(20)
 
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {

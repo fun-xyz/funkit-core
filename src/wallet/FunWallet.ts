@@ -35,7 +35,15 @@ import {
 } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
+import {
+    gasCalculation,
+    generateRandomNonce,
+    generateRandomNonceKey,
+    getAuthUniqueId,
+    getWalletAddress,
+    isGroupOperation,
+    isWalletInitOp
+} from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -215,20 +223,24 @@ export class FunWallet extends FirstClassActions {
         return { ...tokens, ...nfts }
     }
 
-    async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+    async getNonce(
+        sender: string,
+        key = generateRandomNonceKey(),
+        option: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<bigint> {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         let nonce = undefined
         let retryCount = 5
         while ((nonce === undefined || nonce === null) && retryCount > 0) {
-            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain)
+            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key.toString()], chain)
             retryCount--
         }
 
         if (nonce !== undefined && nonce !== null) {
             return BigInt(nonce)
         } else {
-            return BigInt(generateRandomNonce())
+            return generateRandomNonce()
         }
     }
 

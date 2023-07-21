@@ -1,8 +1,8 @@
+import { getRandomValues } from "node:crypto"
 import { v4 as uuidv4 } from "uuid"
 import { Address, Hex, keccak256, toBytes } from "viem"
 import { FACTORY_CONTRACT_INTERFACE } from "../common"
 import { AuthType, Chain, Operation, UserOperation, encodeLoginData } from "../data"
-
 export const generateRandomBytes32 = (): Hex => {
     return keccak256(toBytes(uuidv4())) as Hex
 }
@@ -13,6 +13,23 @@ export const generateRandomWalletUniqueId = (): Hex => {
 
 export const generateRandomGroupId = (): Hex => {
     return generateRandomBytes32()
+}
+
+export const generateRandomNonceKey = (): bigint => {
+    // Step 1: Determine the number of bytes required (25 bytes for 2^192)
+    const bytesNeeded = 24
+
+    // Step 2: Generate 25 random bytes
+    const randomBytes = new Uint8Array(bytesNeeded)
+    getRandomValues(randomBytes)
+
+    // Step 3: Convert the random bytes to a decimal number
+    let randomDecimal = 0n
+    for (let i = 0; i < bytesNeeded; i++) {
+        randomDecimal += BigInt(randomBytes[i]) << BigInt(8 * (bytesNeeded - 1 - i))
+    }
+
+    return randomDecimal
 }
 
 export const getWalletAddress = async (chain: Chain, walletUniqueId: Hex): Promise<Address> => {
@@ -33,12 +50,6 @@ export const isGroupOperation = (operation: Operation): boolean => {
 }
 
 export const generateRandomNonce = (): bigint => {
-    const generateRandomNumber = (min: number, max: number): number => {
-        min = Math.ceil(min)
-        max = Math.floor(max)
-        return Math.floor(Math.random() * (max - min + 1)) + min
-    }
-
-    const randomKey = BigInt(generateRandomNumber(100, 1000))
-    return BigInt(randomKey << 64n)
+    const randomKey = generateRandomNonceKey()
+    return randomKey << 64n
 }
