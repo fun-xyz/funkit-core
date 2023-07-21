@@ -24,7 +24,7 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
+import { Helper, MissingParameterError, ParameterError, ParameterFormatError, ServerMissingDataError, TransactionError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
@@ -309,6 +309,65 @@ export class FunWallet extends FirstClassActions {
         }
 
         return operation
+    }
+
+    async scheduleOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Hex> {
+        txOptions = parseOptions(txOptions)
+        operation = Operation.convertTypeToObject(operation)
+        const chain = await getChainFromData(txOptions.chain)
+
+        // sign the userOp directly here as we may not have the opId yet
+        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+
+        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
+            await addUserToWallet(
+                auth.authId!,
+                chain.chainId!,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
+            )
+
+            if (isGroupOperation(operation)) {
+                const group = this.userInfo!.get(operation.groupId!)
+
+                if (group && group.groupInfo) {
+                    await createGroup(
+                        operation.groupId!,
+                        chain.chainId!,
+                        group.groupInfo.threshold,
+                        await this.getAddress(),
+                        group.groupInfo.memberIds
+                    )
+                }
+            }
+        }
+
+        if (operation.groupId && txOptions.skipDBAction !== true) {
+            // cache group info
+            const group: Group = (await getGroups([operation.groupId], chain.chainId!))[0]
+            this.userInfo?.set(operation.groupId, {
+                userId: operation.groupId,
+                groupInfo: {
+                    threshold: group.threshold,
+                    memberIds: group.memberIds
+                }
+            })
+
+            // check remote collected signature
+            const storedOperation = (await getOps([operation.opId!], chain.chainId!))[0]
+            if (storedOperation.signatures!.length + 1 < group.threshold) {
+                const helper = new Helper("executeOperation", chain.chainId, "Not enough signatures")
+                throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
+            }
+        }
+
+        await createOp(operation)
+        if (!operation.opId) {
+            const helper = new Helper("executeOperation", chain.chainId, "Failed to generate the opId")
+            throw new ServerMissingDataError("Funwallet.scheduleOperation", "DataServer", helper)
+        }
+        return operation.opId
     }
 
     async executeOperation(
