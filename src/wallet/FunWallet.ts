@@ -377,12 +377,13 @@ export class FunWallet extends FirstClassActions {
         let txid, gasUsed, gasUSD
         try {
             txid = await onChainDataManager.getTxId(opHash)
-            const gasData = await gasCalculation(txid!, chain)
-            gasUsed = gasData.gasUsed
-            gasUSD = gasData.gasUSD
-            if (!(gasUsed || gasUSD)) {
+            if (!txid || txid === "0x") {
                 const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
                 throw new TransactionError("FunWallet.executeOperaion", helper)
+            } else {
+                const gasData = await gasCalculation(txid!, chain)
+                gasUsed = gasData.gasUsed
+                gasUSD = gasData.gasUSD
             }
         } catch (e) {
             console.log(e)
