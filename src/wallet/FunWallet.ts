@@ -24,7 +24,7 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
+import { Helper, InvalidParameterError, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
@@ -335,18 +335,23 @@ export class FunWallet extends FirstClassActions {
 
         if (operation.groupId && txOptions.skipDBAction !== true) {
             // cache group info
-            const group: GroupMetadata = (await getGroups([operation.groupId], chain.chainId!))[0]
+            const groups: GroupMetadata[] = await getGroups([operation.groupId], chain.chainId!)
+            if (!groups || groups.length === 0) {
+                const helper = new Helper("Group does not exist", operation.groupId, "Bad Request.")
+                throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
+            }
+
             this.userInfo?.set(operation.groupId, {
                 userId: operation.groupId,
                 groupInfo: {
-                    threshold: group.threshold,
-                    memberIds: group.memberIds
+                    threshold: groups[0].threshold,
+                    memberIds: groups[0].memberIds
                 }
             })
 
             // check remote collected signature
             const storedOperation = (await getOps([operation.opId!], chain.chainId!))[0]
-            if (storedOperation.signatures!.length + 1 < group.threshold) {
+            if (storedOperation.signatures!.length + 1 < groups[0].threshold) {
                 const helper = new Helper("executeOperation", chain.chainId, "Not enough signatures")
                 throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
             }

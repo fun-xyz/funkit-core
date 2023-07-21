@@ -295,7 +295,7 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError("action.updateThresholdOfGroup", "groupId", helper, false)
         }
 
-        if (params.threshold < 1 || params.threshold > groups[0].memberIds.length) {
+        if (!Number.isInteger(params.threshold) || params.threshold < 1 || params.threshold > groups[0].memberIds.length) {
             const helper = new Helper(
                 "Threshold can not be 0 or bigger than number of members in the group",
                 params.threshold,
