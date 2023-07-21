@@ -14,11 +14,11 @@ import {
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
 import { Wallet } from "../apis/types"
-import { getUserWalletIdentities, getUserWallets } from "../apis/UserApis"
+import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
-import { Helper, MissingParameterError } from "../errors"
+import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
 import { getAuthUniqueId, objectify } from "../utils"
 import { convertProviderToClient } from "../viem"
 const gasSpecificChain = { "137": 850_000_000_000 }
@@ -38,7 +38,7 @@ chains["funtestnet"] = {
     rpcUrls: { default: { http: [Array] }, public: { http: [Array] } }
 }
 
-export interface EoaAuthInput {
+export interface AuthInput {
     web2AuthId?: string
     client?: WalletClient
     privateKey?: Hex
@@ -53,7 +53,7 @@ export class Auth {
     client?: WalletClient
     inited = false
     account?: Address
-    constructor(authInput: EoaAuthInput) {
+    constructor(authInput: AuthInput) {
         if (authInput.web2AuthId) {
             this.authId = authInput.web2AuthId
         }
@@ -202,6 +202,13 @@ export class Auth {
 
     async getWallets(chainId: string): Promise<Wallet[]> {
         await this.init()
-        return await getUserWallets(this.authId!, chainId)
+        try {
+            return await getUserWalletsByAddr(await this.getAddress(), chainId)
+        } catch (err) {
+            if (err instanceof ServerMissingDataError) {
+                return []
+            }
+            throw err
+        }
     }
 }

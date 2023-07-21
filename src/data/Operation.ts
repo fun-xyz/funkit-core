@@ -46,21 +46,7 @@ export class Operation {
 
     static convertTypeToObject(op: Operation): Operation {
         return new Operation(op.userOp, {
-            opId: op.opId,
-            chainId: op.chainId,
-            opType: op.opType,
-            authType: op.authType,
-            groupId: op.groupId,
-            message: op.message,
-            walletAddr: op.walletAddr,
-            status: op.status,
-            proposer: op.proposer,
-            proposedTime: op.proposedTime,
-            executedBy: op.executedBy,
-            executedTime: op.executedTime,
-            relatedOpId: op.relatedOpId,
-            signatures: op.signatures,
-            txid: op.txid
+            ...op
         })
     }
 
