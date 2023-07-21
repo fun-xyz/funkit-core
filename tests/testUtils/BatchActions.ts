@@ -1,12 +1,19 @@
-import { assert } from "chai"
-import { Hex } from "viem"
+import { assert, expect } from "chai"
+import { Hex, concat, decodeAbiParameters, keccak256, pad } from "viem"
 import { randInt } from "./utils"
-import { erc20ApproveTransactionParams, uniswapV3SwapTransactionParams } from "../../src/actions"
+import {
+    addOwnerTxParams,
+    createGroupTxParams,
+    erc20ApproveTransactionParams,
+    removeOwnerTxParams,
+    uniswapV3SwapTransactionParams,
+    updateGroupTxParams
+} from "../../src/actions"
 import { Auth } from "../../src/auth"
-import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
+import { ERC20_CONTRACT_INTERFACE, HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
-import { fundWallet, randomBytes } from "../../src/utils"
+import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -125,6 +132,104 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             assert(BigInt(approvedAmount) === BigInt(approveAmount), "BatchActions failed")
             const swappedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(outTokenAddress, "balanceOf", [randomAddress], chain)
             assert(BigInt(swappedAmount) > 0, "Swap unsuccesful")
+        })
+
+        it("create group, add user to group", async () => {
+            const groupId = generateRandomGroupId()
+            const threshold = 2
+            const memberIds: Hex[] = [
+                pad(randomBytes(20), { size: 32 }),
+                pad(randomBytes(20), { size: 32 }),
+                pad(randomBytes(20), { size: 32 })
+            ].sort((a, b) => b.localeCompare(a))
+            const newUserId = randomBytes(20)
+
+            const createGroupParams = await createGroupTxParams({
+                groupId: groupId,
+                group: {
+                    userIds: memberIds,
+                    threshold: threshold
+                },
+                chainId: config.chainId
+            })
+            const addUserToGroupParams = await updateGroupTxParams({
+                groupId: groupId,
+                group: {
+                    userIds: memberIds.concat([newUserId]),
+                    threshold: threshold
+                },
+                chainId: config.chainId
+            })
+
+            const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [createGroupParams, addUserToGroupParams])
+            expect(await wallet.executeOperation(auth, operation)).to.not.throw
+
+            const chain = await getChainFromData(config.chainId)
+            const userAuthContractAddr = await chain.getAddress("userAuthAddress")
+            const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
+
+            const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
+                await wallet.getAddress(),
+                "getState",
+                [groupKey],
+                chain
+            )
+            const [storedGroup]: any[] = decodeAbiParameters(
+                [
+                    {
+                        type: "tuple",
+                        components: [{ type: "bytes32[]" }, { type: "uint256" }]
+                    }
+                ],
+                storedGroupData
+            )
+            const currentMemberIds = memberIds.concat(pad(newUserId, { size: 32 })).sort((a, b) => b.localeCompare(a))
+            expect(storedGroup[0]).to.be.deep.equal(currentMemberIds)
+            expect(storedGroup[1]).to.be.equal(BigInt(threshold))
+        })
+
+        it("add owner, remove owner", async () => {
+            const newOwnerId1 = randomBytes(20)
+            const newOwnerId2 = randomBytes(20)
+            const addOwner1Params = await addOwnerTxParams({
+                ownerId: newOwnerId1,
+                chainId: config.chainId
+            })
+            const addOwner2Params = await addOwnerTxParams({
+                ownerId: newOwnerId2,
+                chainId: config.chainId
+            })
+            const removeOwner1Params = await removeOwnerTxParams({
+                ownerId: newOwnerId1,
+                chainId: config.chainId
+            })
+
+            const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [
+                addOwner1Params,
+                addOwner2Params,
+                removeOwner1Params
+            ])
+            expect(await wallet.executeOperation(auth, operation)).to.not.throw
+
+            const chain = await getChainFromData(config.chainId)
+            const rbacContractAddr = await chain.getAddress("rbacAddress")
+            const storedOwner1Rule = await WALLET_CONTRACT_INTERFACE.readFromChain(
+                await wallet.getAddress(),
+                "getState32WithAddr",
+                [pad(newOwnerId1, { size: 32 }), rbacContractAddr],
+                chain
+            )
+
+            expect(storedOwner1Rule === HashZero, "Owner rule not stored in wallet")
+
+            const storedOwner2Rule = await WALLET_CONTRACT_INTERFACE.readFromChain(
+                await wallet.getAddress(),
+                "getState32WithAddr",
+                [pad(newOwnerId2, { size: 32 }), rbacContractAddr],
+                chain
+            )
+
+            expect(storedOwner2Rule !== HashZero, "Owner rule not stored in wallet")
         })
     })
 

@@ -5,7 +5,7 @@ import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens } from
 import { createGroup, getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
-import { Group } from "../apis/types"
+import { GroupMetadata } from "../apis/types"
 import { addUserToWallet } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionParams, WALLET_CONTRACT_INTERFACE } from "../common"
@@ -24,10 +24,18 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, MissingParameterError, ParameterError, ParameterFormatError, ServerMissingDataError, TransactionError } from "../errors"
+import {
+    Helper,
+    InvalidParameterError,
+    MissingParameterError,
+    ParameterError,
+    ParameterFormatError,
+    ServerMissingDataError,
+    TransactionError
+} from "../errors"
 import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
+import { gasCalculation, generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -210,7 +218,18 @@ export class FunWallet extends FirstClassActions {
     async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
-        return BigInt(await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain))
+        let nonce = undefined
+        let retryCount = 5
+        while ((nonce === undefined || nonce === null) && retryCount > 0) {
+            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain)
+            retryCount--
+        }
+
+        if (nonce !== undefined && nonce !== null) {
+            return BigInt(nonce)
+        } else {
+            return BigInt(generateRandomNonce())
+        }
     }
 
     async getOperations(
@@ -226,9 +245,8 @@ export class FunWallet extends FirstClassActions {
         return (await getOps([opId], chain.chainId!))[0]
     }
 
-    // TODO: change userId parsing and call data building to support multi-sig
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const transactionParams: TransactionParams = { to: await this.getAddress(txOptions), data: "0x" }
+        const transactionParams: TransactionParams = { to: await this.getAddress(txOptions), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
         const receipt = await this.executeOperation(auth, operation, txOptions)
         return receipt
@@ -345,7 +363,7 @@ export class FunWallet extends FirstClassActions {
 
         if (operation.groupId && txOptions.skipDBAction !== true) {
             // cache group info
-            const group: Group = (await getGroups([operation.groupId], chain.chainId!))[0]
+            const group: GroupMetadata = (await getGroups([operation.groupId], chain.chainId!))[0]
             this.userInfo?.set(operation.groupId, {
                 userId: operation.groupId,
                 groupInfo: {
@@ -382,44 +400,25 @@ export class FunWallet extends FirstClassActions {
         // sign the userOp directly here as we may not have the opId yet
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
 
-        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(
-                auth.authId!,
-                chain.chainId!,
-                await this.getAddress(),
-                Array.from(this.userInfo!.keys()),
-                this.walletUniqueId
-            )
-
-            if (isGroupOperation(operation)) {
-                const group = this.userInfo!.get(operation.groupId!)
-
-                if (group && group.groupInfo) {
-                    await createGroup(
-                        operation.groupId!,
-                        chain.chainId!,
-                        group.groupInfo.threshold,
-                        await this.getAddress(),
-                        group.groupInfo.memberIds
-                    )
-                }
-            }
-        }
-
         if (operation.groupId && txOptions.skipDBAction !== true) {
             // cache group info
-            const group: Group = (await getGroups([operation.groupId], chain.chainId!))[0]
+            const groups: GroupMetadata[] = await getGroups([operation.groupId], chain.chainId!)
+            if (!groups || groups.length === 0) {
+                const helper = new Helper("Group does not exist", operation.groupId, "Bad Request.")
+                throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
+            }
+
             this.userInfo?.set(operation.groupId, {
                 userId: operation.groupId,
                 groupInfo: {
-                    threshold: group.threshold,
-                    memberIds: group.memberIds
+                    threshold: groups[0].threshold,
+                    memberIds: groups[0].memberIds
                 }
             })
 
             // check remote collected signature
             const storedOperation = (await getOps([operation.opId!], chain.chainId!))[0]
-            if (storedOperation.signatures!.length + 1 < group.threshold) {
+            if (storedOperation.signatures!.length + 1 < groups[0].threshold) {
                 const helper = new Helper("executeOperation", chain.chainId, "Not enough signatures")
                 throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
             }
@@ -450,12 +449,13 @@ export class FunWallet extends FirstClassActions {
         let txid, gasUsed, gasUSD
         try {
             txid = await onChainDataManager.getTxId(opHash)
-            const gasData = await gasCalculation(txid!, chain)
-            gasUsed = gasData.gasUsed
-            gasUSD = gasData.gasUSD
-            if (!(gasUsed || gasUSD)) {
+            if (!txid || txid === "0x") {
                 const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
                 throw new TransactionError("FunWallet.executeOperaion", helper)
+            } else {
+                const gasData = await gasCalculation(txid, chain)
+                gasUsed = gasData.gasUsed
+                gasUSD = gasData.gasUSD
             }
         } catch (e) {
             console.log(e)
@@ -469,23 +469,47 @@ export class FunWallet extends FirstClassActions {
             gasUSD
         }
 
-        if (txOptions?.gasSponsor?.sponsorAddress && txOptions.skipDBAction !== true) {
-            const paymasterType = getPaymasterType(txOptions)
-            addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                txid,
-                {
-                    action: "sponsor",
-                    amount: -1, //Get amount from lazy processing
-                    from: txOptions.gasSponsor.sponsorAddress,
-                    to: await this.getAddress(),
-                    token: "eth",
-                    txid: txid
-                },
-                paymasterType,
-                txOptions.gasSponsor.sponsorAddress
+        if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
+            await addUserToWallet(
+                auth.authId!,
+                chain.chainId!,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
             )
+
+            if (isGroupOperation(operation)) {
+                const group = this.userInfo!.get(operation.groupId!)
+
+                if (group && group.groupInfo) {
+                    await createGroup(
+                        operation.groupId!,
+                        chain.chainId!,
+                        group.groupInfo.threshold,
+                        await this.getAddress(),
+                        group.groupInfo.memberIds
+                    )
+                }
+            }
+
+            if (txOptions?.gasSponsor?.sponsorAddress) {
+                const paymasterType = getPaymasterType(txOptions)
+                addTransaction(
+                    await chain.getChainId(),
+                    Date.now(),
+                    txid,
+                    {
+                        action: "sponsor",
+                        amount: -1, //Get amount from lazy processing
+                        from: txOptions.gasSponsor.sponsorAddress,
+                        to: await this.getAddress(),
+                        token: "eth",
+                        txid: txid
+                    },
+                    paymasterType,
+                    txOptions.gasSponsor.sponsorAddress
+                )
+            }
         }
         return receipt
     }

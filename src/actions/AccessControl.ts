@@ -1,5 +1,5 @@
-import { Hex, getAddress, padHex } from "viem"
-import { RuleStruct, SessionKeyParams } from "./types"
+import { Hex, getAddress, pad, padHex } from "viem"
+import { AddOwnerParams, RemoveOwnerParams, RuleStruct, SessionKeyParams } from "./types"
 import { SessionKeyAuth } from "../auth"
 import { RBAC_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { getChainFromData } from "../data"
@@ -59,4 +59,18 @@ export const createSessionKeyTransactionParams = async (params: SessionKeyParams
 
 export const createSessionUser = () => {
     return new SessionKeyAuth({ privateKey: randomBytes(32) })
+}
+
+export const addOwnerTxParams = async (params: AddOwnerParams): Promise<TransactionParams> => {
+    const { ownerId, chainId } = params
+    const chain = await getChainFromData(chainId)
+    const rbacAddress = await chain.getAddress("rbacAddress")
+    return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "addOwner", [pad(ownerId, { size: 32 })])
+}
+
+export const removeOwnerTxParams = async (params: RemoveOwnerParams): Promise<TransactionParams> => {
+    const { ownerId, chainId } = params
+    const chain = await getChainFromData(chainId)
+    const rbacAddress = await chain.getAddress("rbacAddress")
+    return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "removeOwner", [pad(ownerId, { size: 32 })])
 }

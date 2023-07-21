@@ -16,7 +16,7 @@ export async function createUser(authId: string, chainId: string, addr: string, 
 
 export async function getUserUniqueId(authId: string): Promise<string> {
     try {
-        return (await sendGetRequest(API_URL, `user/${authId}/unique-id`)).userUniqueId
+        return (await sendGetRequest(API_URL, `user/auth/${authId}/unique-id`)).userUniqueId
     } catch (err) {
         if (err instanceof ServerMissingDataError) {
             return ""
@@ -25,8 +25,16 @@ export async function getUserUniqueId(authId: string): Promise<string> {
     }
 }
 
-export async function getUserWallets(authId: string, chainId: string): Promise<Wallet[]> {
-    return (await sendGetRequest(API_URL, `user/${authId}/chain/${chainId}/wallets`)).wallets
+export async function getUserAddr(authId: string, chainId: string): Promise<string> {
+    return (await sendGetRequest(API_URL, `user/auth/${authId}/chain/${chainId}/addr`)).addr
+}
+
+export async function getUserWalletsByAddr(addr: string, chainId: string): Promise<Wallet[]> {
+    return (await sendGetRequest(API_URL, `user/addr/${addr}/chain/${chainId}/wallets`)).wallets
+}
+
+export async function getUserAuthIdByAddr(addr: string, chainId: string): Promise<string> {
+    return (await sendGetRequest(API_URL, `user/addr/${addr}/chain/${chainId}/authId`)).authId
 }
 
 export async function addUserToWallet(
@@ -37,7 +45,7 @@ export async function addUserToWallet(
     walletUniqueId?: string
 ): Promise<void> {
     try {
-        await sendPostRequest(API_URL, `user/${authId}/chain/${chainId}/wallet`, {
+        await sendPostRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet`, {
             walletAddr,
             userIds,
             walletUniqueId
@@ -50,21 +58,21 @@ export async function addUserToWallet(
     }
 }
 
-export async function removeUserWallet(authId: string, chainId: string, walletAddr: Address): Promise<void> {
-    await sendDeleteRequest(API_URL, `user/${authId}/chain/${chainId}/wallet/${walletAddr}`)
+export async function removeUserWalletIdentity(authId: string, chainId: string, walletAddr: Address, userId: Hex): Promise<void> {
+    await sendDeleteRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/identity/${userId}`)
 }
 
 // return userIds of the specificed Wallet.
 export async function getUserWalletIdentities(authId: string, chainId: string, walletAddr: Address): Promise<Hex[]> {
-    return (await sendGetRequest(API_URL, `user/${authId}/chain/${chainId}/wallet/${walletAddr}/identities`)).ids
+    return (await sendGetRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/identities`)).ids
 }
 
 export async function addUserToGroup(authId: string, chainId: string, walletAddr: Address, groupId: Hex): Promise<void> {
-    await sendPostRequest(API_URL, `user/${authId}/chain/${chainId}/wallet/${walletAddr}/group`, {
+    await sendPostRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/group`, {
         groupId
     })
 }
 
 export async function removeUserFromGroup(authId: string, chainId: string, walletAddr: Address, groupId: Hex): Promise<void> {
-    await sendDeleteRequest(API_URL, `user/${authId}/chain/${chainId}/wallet/${walletAddr}/group/${groupId}`)
+    await sendDeleteRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/group/${groupId}`)
 }

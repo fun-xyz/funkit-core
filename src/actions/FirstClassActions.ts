@@ -1,6 +1,7 @@
-import { Address } from "viem"
-import { createSessionKeyTransactionParams } from "./AccessControl"
+import { Address, isAddress, pad } from "viem"
+import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
 import { createExecuteBatchTxParams } from "./BatchActions"
+import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
 import {
     finishUnstakeTransactionParams,
     isFinishUnstakeParams,
@@ -22,21 +23,33 @@ import {
     isNativeTransferParams
 } from "./Token"
 import {
+    AddOwnerParams,
+    AddUserToGroupParams,
     ApproveParams,
+    CreateGroupParams,
     FinishUnstakeParams,
     OneInchSwapParams,
+    RemoveGroupParams,
+    RemoveOwnerParams,
+    RemoveUserFromGroupParams,
     RequestUnstakeParams,
     SessionKeyParams,
     StakeParams,
     SwapParam,
     TransferParams,
-    UniswapParams
+    UniswapParams,
+    UpdateGroupParams,
+    UpdateThresholdOfGroupParams
 } from "./types"
+import { createGroup, deleteGroup, getGroups, updateGroup } from "../apis/GroupApis"
+import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletIdentity } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
-import { Helper, MissingParameterError } from "../errors"
+import { Helper, InvalidParameterError, MissingParameterError } from "../errors"
+import { getAuthIdFromAddr } from "../utils"
+
 export abstract class FirstClassActions {
     abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
 
@@ -150,6 +163,170 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const transactionParams = await createSessionKeyTransactionParams(params)
         return await this.createOperation(auth, userId, transactionParams, txOptions)
+    }
+
+    async addOwner(
+        auth: Auth,
+        userId: string,
+        walletAddr: Address,
+        params: AddOwnerParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        if (isAddress(params.ownerId)) {
+            const authId = await getAuthIdFromAddr(params.ownerId as Address, params.chainId.toString())
+            await addUserToWallet(authId, params.chainId.toString(), walletAddr, [pad(params.ownerId, { size: 32 })])
+        }
+
+        const txParams = await addOwnerTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+
+    async removeOwner(
+        auth: Auth,
+        userId: string,
+        walletAddr: Address,
+        params: RemoveOwnerParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        if (isAddress(params.ownerId)) {
+            const authId = await getAuthIdFromAddr(params.ownerId as Address, params.chainId.toString())
+            await removeUserWalletIdentity(authId, params.chainId.toString(), walletAddr, pad(params.ownerId, { size: 32 }))
+        }
+        const txParams = await removeOwnerTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+
+    async createGroup(
+        auth: Auth,
+        userId: string,
+        walletAddr: Address,
+        params: CreateGroupParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        await createGroup(params.groupId, params.chainId.toString(), Number(params.group.threshold), walletAddr, params.group.userIds)
+        params.group.userIds.forEach(async (userId) => {
+            const authId = await getAuthIdFromAddr(userId as Address, params.chainId.toString())
+            await addUserToGroup(authId, params.chainId.toString(), walletAddr, params.groupId)
+        })
+        const txParams = await createGroupTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+
+    async addUserToGroup(
+        auth: Auth,
+        userId: string,
+        walletAddr: Address,
+        params: AddUserToGroupParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const groups = await getGroups([params.groupId], params.chainId.toString())
+        if (!groups || groups.length === 0) {
+            const helper = new Helper("Group does not exist", params.groupId, "Bad Request.")
+            throw new InvalidParameterError("action.addUserToGroup", "groupId", helper, false)
+        }
+
+        let members = new Set(groups[0].memberIds)
+        members = members.add(params.userId)
+        if (members.size <= groups[0].memberIds.length) {
+            const helper = new Helper("User already exists in group", params.userId, "Bad Request.")
+            throw new InvalidParameterError("action.addUserToGroup", "userId", helper, false)
+        }
+
+        const authId = await getAuthIdFromAddr(params.userId as Address, params.chainId.toString())
+        await addUserToGroup(authId, params.chainId.toString(), walletAddr, params.groupId)
+
+        const updateGroupParams: UpdateGroupParams = {
+            groupId: params.groupId,
+            group: {
+                userIds: Array.from(members),
+                threshold: groups[0].threshold
+            },
+            chainId: params.chainId
+        }
+
+        const txParams = await updateGroupTxParams(updateGroupParams)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+
+    async removeUserFromGroup(
+        auth: Auth,
+        userId: string,
+        walletAddr: Address,
+        params: RemoveUserFromGroupParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const groups = await getGroups([params.groupId], params.chainId.toString())
+        if (!groups || groups.length === 0) {
+            const helper = new Helper("Group does not exist", params.groupId, "Bad Request.")
+            throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
+        }
+
+        const members = new Set(groups[0].memberIds)
+        members.delete(params.userId)
+        if (members.size >= groups[0].memberIds.length) {
+            const helper = new Helper("User does not exist in group", params.userId, "Bad Request.")
+            throw new InvalidParameterError("action.removeUserFromGroup", "userId", helper, false)
+        }
+
+        const authId = await getAuthIdFromAddr(params.userId as Address, params.chainId.toString())
+        await removeUserFromGroup(authId, params.chainId.toString(), walletAddr, params.groupId)
+
+        const updateGroupParams: UpdateGroupParams = {
+            groupId: params.groupId,
+            group: {
+                userIds: Array.from(members),
+                threshold: groups[0].threshold
+            },
+            chainId: params.chainId
+        }
+        const txParams = await updateGroupTxParams(updateGroupParams)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+
+    async updateThresholdOfGroup(
+        auth: Auth,
+        userId: string,
+        params: UpdateThresholdOfGroupParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const groups = await getGroups([params.groupId], params.chainId.toString())
+        if (!groups || groups.length === 0) {
+            const helper = new Helper("Group does not exist", params.groupId, "Bad Request.")
+            throw new InvalidParameterError("action.updateThresholdOfGroup", "groupId", helper, false)
+        }
+
+        if (!Number.isInteger(params.threshold) || params.threshold < 1 || params.threshold > groups[0].memberIds.length) {
+            const helper = new Helper(
+                "Threshold can not be 0 or bigger than number of members in the group",
+                params.threshold,
+                "Bad Request."
+            )
+            throw new InvalidParameterError("action.updateThresholdOfGroup", "threshold", helper, false)
+        }
+
+        await updateGroup(params.groupId, params.chainId.toString(), { threshold: Number(params.threshold) })
+
+        const updateGroupParams: UpdateGroupParams = {
+            groupId: params.groupId,
+            group: {
+                userIds: groups[0].memberIds,
+                threshold: params.threshold
+            },
+            chainId: params.chainId
+        }
+        const txParams = await updateGroupTxParams(updateGroupParams)
+        return await this.createOperation(auth, userId, txParams, txOptions)
+    }
+
+    async removeGroup(
+        auth: Auth,
+        userId: string,
+        params: RemoveGroupParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        await deleteGroup(params.groupId, params.chainId.toString())
+        const txParams = await removeGroupTxParams(params)
+        return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
     async createBatchOperation(
