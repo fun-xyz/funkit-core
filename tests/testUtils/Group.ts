@@ -75,7 +75,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 [groupKey],
                 chain
             )
-            const [storedGroup] = decodeAbiParameters(
+            const [storedGroup]: any[] = decodeAbiParameters(
                 [
                     {
                         type: "tuple",
@@ -105,7 +105,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 [groupKey],
                 chain
             )
-            const [storedGroup] = decodeAbiParameters(
+            const [storedGroup]: any[] = decodeAbiParameters(
                 [
                     {
                         type: "tuple",
@@ -135,7 +135,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 [groupKey],
                 chain
             )
-            const [storedGroup] = decodeAbiParameters(
+            const [storedGroup]: any[] = decodeAbiParameters(
                 [
                     {
                         type: "tuple",
@@ -164,7 +164,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 [groupKey],
                 chain
             )
-            const [storedGroup] = decodeAbiParameters(
+            const [storedGroup]: any[] = decodeAbiParameters(
                 [
                     {
                         type: "tuple",

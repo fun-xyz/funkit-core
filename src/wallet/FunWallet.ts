@@ -381,7 +381,7 @@ export class FunWallet extends FirstClassActions {
                 const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
                 throw new TransactionError("FunWallet.executeOperaion", helper)
             } else {
-                const gasData = await gasCalculation(txid!, chain)
+                const gasData = await gasCalculation(txid, chain)
                 gasUsed = gasData.gasUsed
                 gasUSD = gasData.gasUSD
             }
