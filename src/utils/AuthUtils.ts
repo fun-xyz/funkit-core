@@ -33,14 +33,13 @@ export const getUniqueId = async (authId: string, addr = "NO_ADDRESS") => {
 }
 
 export const getAuthUniqueId = async (authId: string, chainId: string, addr = "NO_ADDRESS", skipDBActions = false): Promise<string> => {
-    let authUniqueId
+    let authUniqueId: string
     if (skipDBActions) {
         authUniqueId = addr
     } else {
         try {
             authUniqueId = await getUserUniqueId(authId)
         } catch (err) {
-            //TODO use proper Error
             authUniqueId = addr
         }
     }
