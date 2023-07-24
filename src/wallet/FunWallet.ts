@@ -33,6 +33,7 @@ export interface FunWalletParams {
     users?: User[]
     uniqueId?: string
     walletAddr?: Address
+    loginData?: LoginData
 }
 
 export class FunWallet extends FirstClassActions {
@@ -40,6 +41,7 @@ export class FunWallet extends FirstClassActions {
     userInfo?: Map<Hex, User>
     abiManager: WalletAbiManager
     address?: Address
+    loginData?: LoginData
 
     /**
      * Creates FunWallet object
@@ -48,7 +50,7 @@ export class FunWallet extends FirstClassActions {
      */
     constructor(params: FunWalletParams) {
         super()
-        const { users, uniqueId, walletAddr } = params
+        const { users, uniqueId, walletAddr, loginData } = params
 
         if (!uniqueId && !walletAddr) {
             throw new MissingParameterError(
@@ -70,6 +72,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         this.abiManager = new WalletAbiManager()
+        this.loginData = loginData
     }
 
     /**
@@ -80,7 +83,7 @@ export class FunWallet extends FirstClassActions {
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
-            this.address = await getWalletAddress(chain, { salt: this.walletUniqueId! })
+            this.address = await getWalletAddress(chain, { loginType: 0, salt: this.walletUniqueId! })
         }
         return this.address!
     }
@@ -90,7 +93,7 @@ export class FunWallet extends FirstClassActions {
         const chainObj = await getChainFromData(chain.toString())
         const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
         const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
-        return await getWalletAddress(chainObj, { salt: walletUniqueId })
+        return await getWalletAddress(chainObj, { loginType: 0, salt: walletUniqueId })
     }
 
     static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {
@@ -492,6 +495,7 @@ export class FunWallet extends FirstClassActions {
         const rbac = await chain.getAddress("rbacAddress")
         const userAuth = await chain.getAddress("userAuthAddress")
         const loginData: LoginData = {
+            loginType: this.loginData?.loginType ?? 0,
             salt: this.walletUniqueId!
         }
         const rbacInitData = toBytes32Arr(owners)

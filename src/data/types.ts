@@ -35,7 +35,7 @@ export type Addresses = {
  */
 
 export type LoginData = {
-    loginType?: number
+    loginType: 0 | 1
     newFunWalletOwner?: Hex
     index?: number | bigint
     socialHandle?: Hex
