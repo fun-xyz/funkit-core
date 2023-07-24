@@ -52,7 +52,7 @@ export class FunWallet extends FirstClassActions {
         super()
         const { users, uniqueId, walletAddr, loginData } = params
 
-        if (!uniqueId && !walletAddr) {
+        if (!uniqueId && !walletAddr && !loginData) {
             throw new MissingParameterError(
                 "FunWallet.constructor",
                 new Helper("constructor", uniqueId, "uniqueId or walletAddr is required")
@@ -67,12 +67,13 @@ export class FunWallet extends FirstClassActions {
 
         if (uniqueId) {
             this.walletUniqueId = keccak256(toBytes(uniqueId))
-        } else {
+        } else if (walletAddr) {
             this.address = walletAddr
+        } else {
+            this.loginData = loginData
         }
 
         this.abiManager = new WalletAbiManager()
-        this.loginData = loginData
     }
 
     /**
@@ -83,7 +84,11 @@ export class FunWallet extends FirstClassActions {
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
-            this.address = await getWalletAddress(chain, { loginType: 0, salt: this.walletUniqueId! })
+            if (this.walletUniqueId) {
+                this.address = await getWalletAddress(chain, { loginType: 0, salt: this.walletUniqueId! })
+            } else if (this.loginData) {
+                this.address = await getWalletAddress(chain, this.loginData)
+            }
         }
         return this.address!
     }
