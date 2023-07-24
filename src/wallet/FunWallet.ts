@@ -80,7 +80,7 @@ export class FunWallet extends FirstClassActions {
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
             const chain = await getChainFromData(options.chain)
-            this.address = await getWalletAddress(chain, this.walletUniqueId!)
+            this.address = await getWalletAddress(chain, { salt: this.walletUniqueId! })
         }
         return this.address!
     }
@@ -90,7 +90,7 @@ export class FunWallet extends FirstClassActions {
         const chainObj = await getChainFromData(chain.toString())
         const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
         const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
-        return await getWalletAddress(chainObj, walletUniqueId)
+        return await getWalletAddress(chainObj, { salt: walletUniqueId })
     }
 
     static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {

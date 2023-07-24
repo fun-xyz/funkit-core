@@ -17,8 +17,8 @@ const walletSigEncodingTypes = [
     { type: "bytes" },
     extraDataStructType
 ]
-export function encodeLoginData(data: LoginData): Hex {
-    let { loginType, newFunWalletOwner, index, socialHandle, salt } = data
+export function encodeLoginData(loginData: LoginData): Hex {
+    let { loginType, newFunWalletOwner, index, socialHandle, salt } = loginData
     newFunWalletOwner = newFunWalletOwner ? newFunWalletOwner : AddressZero
     index = index ? BigInt(index) : 0n
     socialHandle = socialHandle ? socialHandle : "0x"
