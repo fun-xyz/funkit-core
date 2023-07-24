@@ -20,6 +20,7 @@ import {
     OperationStatus,
     OperationType,
     Token,
+    encodeLoginData,
     encodeUserAuthInitData,
     getChainFromData,
     toBytes32Arr
@@ -93,20 +94,42 @@ export class FunWallet extends FirstClassActions {
         return this.address!
     }
 
-    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<Address> {
+    static async getAddress(
+        authId: string,
+        index: number,
+        chain: string | number,
+        apiKey: string,
+        loginData?: LoginData
+    ): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
         const chainObj = await getChainFromData(chain.toString())
-        const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
-        const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
-        return await getWalletAddress(chainObj, { loginType: 0, salt: walletUniqueId })
+        if (!loginData) {
+            const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
+            const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
+            return await getWalletAddress(chainObj, { loginType: 0, salt: walletUniqueId })
+        } else {
+            return await getWalletAddress(chainObj, loginData)
+        }
     }
 
-    static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {
-        const walletUniqueId = keccak256(toBytes(`${uniqueId}-${index}`))
+    static async getAddressOffline(
+        uniqueId: string,
+        index: number,
+        rpcUrl: string,
+        factoryAddress: Address,
+        loginData?: LoginData
+    ): Promise<Address> {
         const client = await createPublicClient({
             transport: http(rpcUrl)
         })
-        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [walletUniqueId], client)
+        let data
+        if (!loginData) {
+            const walletUniqueId = keccak256(toBytes(`${uniqueId}-${index}`))
+            data = walletUniqueId
+        } else {
+            data = encodeLoginData(loginData)
+        }
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data], client)
     }
 
     /**
