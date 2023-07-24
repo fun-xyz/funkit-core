@@ -522,9 +522,14 @@ export class FunWallet extends FirstClassActions {
         const factoryAddress = await chain.getAddress("factoryAddress")
         const rbac = await chain.getAddress("rbacAddress")
         const userAuth = await chain.getAddress("userAuthAddress")
-        const loginData: LoginData = {
-            loginType: this.loginData?.loginType ?? 0,
-            salt: this.walletUniqueId!
+        let loginData: LoginData
+        if (this.walletUniqueId) {
+            loginData = {
+                loginType: 0,
+                salt: this.walletUniqueId!
+            }
+        } else {
+            loginData = this.loginData!
         }
         const rbacInitData = toBytes32Arr(owners)
 

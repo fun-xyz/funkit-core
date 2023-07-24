@@ -22,10 +22,12 @@ import {
     isERC721TransferParams,
     isNativeTransferParams
 } from "./Token"
+import { commitTransactionParams } from "./Twitter"
 import {
     AddOwnerParams,
     AddUserToGroupParams,
     ApproveParams,
+    CommitParams,
     CreateGroupParams,
     FinishUnstakeParams,
     OneInchSwapParams,
@@ -72,6 +74,16 @@ export abstract class FirstClassActions {
             transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams)
         }
         return await this.createOperation(auth, userId, transactionParams, txOption)
+    }
+
+    async commit(
+        auth: Auth,
+        userId: string,
+        params: CommitParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const transactionParams = await commitTransactionParams(params)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async transfer(

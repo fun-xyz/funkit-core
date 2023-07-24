@@ -179,3 +179,12 @@ export type RemoveGroupParams = {
     groupId: Hex
     chainId: number
 }
+
+export type CommitParams = {
+    socialHandle: Hex
+    index: bigint
+    seed: Hex
+    owner: Address
+    initializerCallData: Hex
+    walletInitAddress: Address
+}

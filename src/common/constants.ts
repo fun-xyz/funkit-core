@@ -22,6 +22,7 @@ import UNIV3_FACTORY from "../abis/univ3factory.json"
 import UNIV3_QUOTER from "../abis/univ3quoter.json"
 import UNIV3_ROUTER from "../abis/univ3router.json"
 import USER_AUTHENTICATION_CONTRACT from "../abis/UserAuthentication.json"
+import WALLET_INIT from "../abis/WalletInit.json"
 import { ContractInterface } from "../viem/ContractInterface"
 // local fork environment
 
@@ -122,6 +123,7 @@ export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
 export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
 export const ROLE_BASED_ACCESS_CONTROL_ABI = ROLE_BASED_ACCESS_CONTROL_CONTRACT["abi"]
 export const USER_AUTHENTICATION_ABI = USER_AUTHENTICATION_CONTRACT["abi"]
+export const WALLET_INIT_ABI = WALLET_INIT["abi"]
 
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
@@ -136,6 +138,7 @@ export const UNISWAPV2FACTORY_INTERFACE = new ContractInterface(UNISWAPV2FACTORY
 export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER02_ABI)
 export const RBAC_CONTRACT_INTERFACE = new ContractInterface(ROLE_BASED_ACCESS_CONTROL_ABI)
 export const USER_AUTHENTICATION_CONTRACT_INTERFACE = new ContractInterface(USER_AUTHENTICATION_ABI)
+export const WALLET_INIT_CONTRACT_INTERFACE = new ContractInterface(WALLET_INIT_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["addresses"],
