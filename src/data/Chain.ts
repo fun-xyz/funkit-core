@@ -97,6 +97,7 @@ export class Chain {
                 Object.assign(this, { ...this, addresses, rpcUrl: chain.rpcUrls.default })
             }
         } catch (e) {
+            console.log(e)
             const helper = new Helper("getChainInfo", chain, "call failed")
             helper.pushMessage(`Chain identifier ${chainId} not found`)
 
@@ -191,5 +192,6 @@ export const getChainFromData = async (chainIdentifier?: string | Chain | number
     } else {
         chain = new Chain({ chainName: chainIdentifier })
     }
+    await chain.init()
     return chain
 }

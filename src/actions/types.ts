@@ -186,5 +186,5 @@ export type CommitParams = {
     seed: Hex
     owner: Address
     initializerCallData: Hex
-    walletInitAddress: Address
+    chainId: number
 }

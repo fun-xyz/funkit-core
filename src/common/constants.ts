@@ -16,6 +16,7 @@ import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.j
 import TEST_NFT_CONTRACT from "../abis/TestNFT.json"
 import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
 import TOKEN_PRICE_ORACLE_CONTRACT from "../abis/TokenPriceOracle.json"
+import TWITTER_ORACLE_CONTRACT from "../abis/TwitterOracle.json"
 import UNISWAPV2FACTORY_CONTRACT from "../abis/UniswapV2Factory.json"
 import UNISWAPV2ROUTER02_CONTRACT from "../abis/UniswapV2Router02.json"
 import UNIV3_FACTORY from "../abis/univ3factory.json"
@@ -124,6 +125,7 @@ export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
 export const ROLE_BASED_ACCESS_CONTROL_ABI = ROLE_BASED_ACCESS_CONTROL_CONTRACT["abi"]
 export const USER_AUTHENTICATION_ABI = USER_AUTHENTICATION_CONTRACT["abi"]
 export const WALLET_INIT_ABI = WALLET_INIT["abi"]
+export const TWITTER_ORACLE_ABI = TWITTER_ORACLE_CONTRACT["abi"]
 
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
@@ -139,6 +141,7 @@ export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER
 export const RBAC_CONTRACT_INTERFACE = new ContractInterface(ROLE_BASED_ACCESS_CONTROL_ABI)
 export const USER_AUTHENTICATION_CONTRACT_INTERFACE = new ContractInterface(USER_AUTHENTICATION_ABI)
 export const WALLET_INIT_CONTRACT_INTERFACE = new ContractInterface(WALLET_INIT_ABI)
+export const TWITTER_ORACLE_CONTRACT_INTERFACE = new ContractInterface(TWITTER_ORACLE_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["addresses"],
@@ -157,5 +160,7 @@ export const CONTRACT_ADDRESSES = {
     univ3router: UNIV3_ROUTER["addresses"],
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
     UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
-    TestNFT: TEST_NFT_CONTRACT["addresses"]
+    TestNFT: TEST_NFT_CONTRACT["addresses"],
+    walletInitAddress: WALLET_INIT["addresses"],
+    twitterOracle: TWITTER_ORACLE_CONTRACT["addresses"]
 }
