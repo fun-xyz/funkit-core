@@ -31,3 +31,14 @@ export const isGroupOperation = (operation: Operation): boolean => {
     }
     return false
 }
+
+export const generateRandomNonce = (): bigint => {
+    const generateRandomNumber = (min: number, max: number): number => {
+        min = Math.ceil(min)
+        max = Math.floor(max)
+        return Math.floor(Math.random() * (max - min + 1)) + min
+    }
+
+    const randomKey = BigInt(generateRandomNumber(100, 1000))
+    return BigInt(randomKey << 64n)
+}

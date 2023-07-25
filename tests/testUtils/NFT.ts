@@ -55,9 +55,8 @@ export const NFTTest = (config: NFTTestConfig) => {
             const chain = await getChainFromData(options.chain)
             nftId = Math.floor(Math.random() * 10_000_000_000)
             nftAddress = await chain.getAddress("TestNFT")
-            const data = ERC721_CONTRACT_INTERFACE.encodeTransactionData(nftAddress, "mint", [await wallet1.getAddress(), nftId])
-            data.chain = chain
-            await auth.sendTx(data)
+            const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet1.getAddress(), nftId])
+            await auth.sendTx({ ...data })
         })
 
         describe("Write functions - Basic Functionality", () => {

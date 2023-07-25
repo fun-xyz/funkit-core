@@ -8,9 +8,8 @@ import {
     NativeTransferParams,
     TransferParams
 } from "./types"
-import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
+import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { Token } from "../data"
-
 export const isERC721TransferParams = (obj: TransferParams): obj is ERC721TransferParams => {
     return "tokenId" in obj
 }
@@ -23,17 +22,14 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
     return "amount" in obj && (!("token" in obj) || Token.isNative(obj.token))
 }
 
-export const erc721TransferCalldata = async (params: ERC721TransferParams): Promise<Hex> => {
+export const erc721TransferTransactionParams = (params: ERC721TransferParams): TransactionParams => {
     const { to, tokenId, token, from } = params
-    const transferData = await ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "transferFrom", [from, to, tokenId])
-
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
+    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "transferFrom", [from, to, tokenId])
 }
 
-export const erc20TransferCalldata = async (params: ERC20TransferParams): Promise<Hex> => {
+export const erc20TransferTransactionParams = (params: ERC20TransferParams): TransactionParams => {
     const { to, amount, token } = params
-    const transferData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "transfer", [to, amount])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, transferData.data])
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(token, "transfer", [to, amount])
 }
 
 export const isERC20ApproveParams = (obj: ApproveParams): obj is ApproveERC20Params => {
@@ -44,18 +40,16 @@ export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721P
     return "tokenId" in obj && "token" in obj
 }
 
-export const ethTransferCalldata = async (params: NativeTransferParams): Promise<Hex> => {
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [params.to, parseEther(`${params.amount}`), "0x"])
+export const ethTransferTransactionParams = (params: NativeTransferParams): TransactionParams => {
+    return { to: params.to, data: "0x" as Hex, value: parseEther(`${params.amount}`) }
 }
 
-export const erc20ApproveCalldata = async (params: ApproveERC20Params): Promise<Hex> => {
+export const erc20ApproveTransactionParams = (params: ApproveERC20Params): TransactionParams => {
     const { spender, amount, token } = params
-    const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, amount])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, approveData.data])
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(token, "approve", [spender, amount])
 }
 
-export const erc721ApproveCalldata = async (params: ApproveERC721Params): Promise<Hex> => {
+export const erc721ApproveTransactionParams = (params: ApproveERC721Params): TransactionParams => {
     const { spender, tokenId, token } = params
-    const approveData = ERC721_CONTRACT_INTERFACE.encodeTransactionData(token, "approve", [spender, tokenId])
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [token, 0, approveData.data])
+    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "approve", [spender, tokenId])
 }

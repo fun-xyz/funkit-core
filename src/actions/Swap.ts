@@ -1,6 +1,5 @@
-import { Hex } from "viem"
 import { OneInchSwapParams, UniSwapPoolFeeOptions, UniswapParams } from "./types"
-import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, WALLET_CONTRACT_INTERFACE } from "../common"
+import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
@@ -55,7 +54,7 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     return 18
 }
 
-export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<Hex> => {
+export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
     const supportedChains = [1, 137, 31337, 36865]
     if (!supportedChains.includes(swapParams.chainId)) {
         const helper = new Helper("oneInchCaldlata", swapParams.chainId, "Staking available only on Ethereum mainnet and Goerli")
@@ -63,6 +62,7 @@ export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<He
     }
     const chain = new Chain({ chainId: swapParams.chainId.toString() })
     const options: EnvOption = { chain }
+
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     let approveTx: TransactionData | undefined
 
@@ -74,22 +74,21 @@ export const OneInchCalldata = async (swapParams: OneInchSwapParams): Promise<He
     if (inToken.isNative) {
         swapParams.in = eth1InchAddress
         const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, swapTx.data])
+        return { to: approveAndExecAddress, value: swapParams.amount, data: swapTx.data }
     } else {
         approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, options)
         const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
-        const data = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionData(approveAndExecAddress, "approveAndExecute", [
+        return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,
             swapTx.data,
             inToken,
             approveTx.data
         ])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [approveAndExecAddress, 0, data.data])
     }
 }
 
-export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
+export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -127,16 +126,14 @@ export const uniswapV3SwapCalldata = async (params: UniswapParams): Promise<Hex>
     }
 
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
-    let swapData
     if (tokenIn.isNative) {
-        swapData = approveAndSwapInterface.encodeData("executeSwapETH", [amount, data])
+        return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [amount, data])
     } else {
-        swapData = approveAndSwapInterface.encodeData("executeSwapERC20", [tokenInAddress, amount, data])
+        return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
     }
-    return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData])
 }
 
-export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex> => {
+export const uniswapV2SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
     const chain = new Chain({ chainId: params.chainId.toString() })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
@@ -174,12 +171,10 @@ export const uniswapV2SwapCalldata = async (params: UniswapParams): Promise<Hex>
     const chainId = Number(await chain.getChainId())
 
     const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId)
-    let swapData
+
     if (tokenIn.isNative) {
-        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapETH", [to, amount, data])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+        return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [to, amount, data])
     } else {
-        swapData = await approveAndSwapInterface.encodeTransactionData(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
-        return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPoint", [tokenSwapAddress, 0, swapData.data])
+        return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
     }
 }

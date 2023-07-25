@@ -54,9 +54,11 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
-                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), decAmount])
-                data.chain = chain
-                await auth.sendTx(data)
+                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    decAmount
+                ])
+                await auth.sendTx({ ...data })
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.002 })
                 await wallet.executeOperation(auth, userOp)
@@ -98,14 +100,14 @@ export const SwapTest = (config: SwapTestConfig) => {
         it("ERC20 => ETH", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
-            const userOp = await wallet.swap(auth, await auth.getAddress(), {
+            const operation = await wallet.swap(auth, await auth.getAddress(), {
                 in: inToken,
                 amount: 1,
                 out: baseToken,
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, userOp)
+            await wallet.executeOperation(auth, operation)
             const tokenBalanceAfter = await Token.getBalance(inToken, walletAddress)
             assert(Number(tokenBalanceAfter) < Number(tokenBalanceBefore), "Swap did not execute")
         })
@@ -212,9 +214,12 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
-                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionData(inTokenAddress, "mint", [await wallet.getAddress(), decAmount])
-                data.chain = chain
-                await auth1.sendTx(data)
+                const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
+                    await wallet.getAddress(),
+                    decAmount
+                ])
+
+                await auth1.sendTx({ ...data })
                 const wethAddr = await Token.getAddress("weth", options)
                 const userOp = await wallet.transfer(auth1, groupId, { to: wethAddr, amount: 0.002 })
                 await wallet.executeOperation(auth1, userOp)

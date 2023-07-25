@@ -6,10 +6,15 @@ export type Wallet = {
     userIds: Hex[]
 }
 
-export type Group = {
+export type GroupMetadata = {
     groupId: Hex
     chainId: string
     threshold: number
     walletAddr: Address
     memberIds: Hex[]
+}
+
+export type UpdateGroupMetadata = {
+    threshold?: number
+    memberIds?: Hex[]
 }

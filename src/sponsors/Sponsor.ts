@@ -1,7 +1,8 @@
 import { Address, Hex } from "viem"
 import { PaymasterType } from "./types"
-import { ActionData, ActionFunction, ActionResult } from "../actions"
+import { ActionResult } from "../actions"
 import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
+import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, getChainFromData } from "../data"
 import { ContractInterface } from "../viem/ContractInterface"
@@ -55,164 +56,80 @@ export abstract class Sponsor {
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>
 
-    abstract stake(walletAddress: string, amount: number): ActionFunction
+    abstract stake(sponsor: Address, walletAddress: string, amount: number, options: EnvOption): Promise<TransactionParams>
 
-    abstract unstake(walletAddress: string, amount: number): ActionFunction
+    abstract unstake(sponsor: Address, walletAddress: string, amount: number, options: EnvOption): Promise<TransactionParams>
 
-    abstract lockDeposit(): ActionFunction
+    abstract lockDeposit(): Promise<TransactionParams>
 
-    abstract unlockDepositAfter(blocksToWait: number): ActionFunction
+    abstract unlockDepositAfter(blocksToWait: number): Promise<TransactionParams>
 
     async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const chain = await getChainFromData(options.chain)
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [sponsor], chain)
     }
 
-    setToBlacklistMode(): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await getChainFromData(actionData.chain)
-            await updatePaymasterMode(
-                await chain.getChainId(),
-                { mode: "blacklist" },
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-
-            const data = this.contractInterface.encodeData("setListMode", [true])
-            return await this.encode(data, actionData.options)
-        }
+    async setToBlacklistMode(chainId: number, sponsor: Address): Promise<TransactionParams> {
+        const chain = await getChainFromData(chainId)
+        await updatePaymasterMode(await chain.getChainId(), { mode: "blacklist" }, this.paymasterType, sponsor)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [true])
     }
 
-    setToWhitelistMode(): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await getChainFromData(actionData.chain)
-            await updatePaymasterMode(
-                await chain.getChainId(),
-                { mode: "whitelist" },
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-            const data = this.contractInterface.encodeData("setListMode", [false])
-            return await this.encode(data, actionData.options)
-        }
+    async setToWhitelistMode(chainId: number, sponsor: Address): Promise<TransactionParams> {
+        const chain = await getChainFromData(chainId)
+        await updatePaymasterMode(await chain.getChainId(), { mode: "whitelist" }, this.paymasterType, sponsor)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [false])
     }
 
-    batchTransaction(transactions: Function[]): ActionFunction {
-        return async (actionData: ActionData) => {
-            const calldata: any[] = []
-            for (let i = 0; i < transactions.length; i++) {
-                calldata.push(await transactions[i](await actionData.wallet.getAddress(), actionData.options))
+    async batchTransaction(transactions: TransactionParams[]): Promise<TransactionParams> {
+        const batchActionsData: any[] = transactions.map((transaction) => (transaction.data ? transaction.data : "0x"))
+        const value = transactions.reduce((acc, transaction) => (transaction.value ? acc + BigInt(transaction.value) : acc), 0n)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [batchActionsData], value)
+    }
+
+    async addSpenderToWhiteList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
+        await addToList(chainId.toString(), [spender], "walletsWhiteList", this.paymasterType, sponsor)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderWhitelistMode", [spender, true])
+    }
+
+    async removeSpenderFromWhiteList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
+        await removeFromList(chainId.toString(), [spender], "walletsWhiteList", this.paymasterType, sponsor)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderWhitelistMode", [spender, false])
+    }
+
+    async batchWhitelistUsers(chainId: number, sponsor: Address, users: string[], modes: boolean[]): Promise<TransactionParams> {
+        const calldata: TransactionParams[] = []
+        for (let i = 0; i < users.length; i++) {
+            if (modes[i]) {
+                calldata.push(await this.addSpenderToWhiteList(chainId, sponsor, users[i]))
+            } else {
+                calldata.push(await this.removeSpenderFromWhiteList(chainId, sponsor, users[i]))
             }
-            const data = this.contractInterface.encodeData("batchActions", [calldata])
-            return await this.encode(data, actionData.options)
         }
+        batchOperation(chainId.toString(), users, modes, "walletsWhiteList", this.paymasterType, sponsor)
+        return await this.batchTransaction(calldata)
     }
 
-    addSpenderToWhiteList(spender: string): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await getChainFromData(actionData.chain)
-            await addToList(
-                await chain.getChainId(),
-                [spender],
-                "walletsWhiteList",
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-
-            const data = this.contractInterface.encodeData("setSpenderWhitelistMode", [spender, true])
-            return await this.encode(data, actionData.options)
-        }
+    async addSpenderToBlackList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
+        await addToList(chainId.toString(), [spender], "walletsBlackList", this.paymasterType, sponsor)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderBlacklistMode", [spender, true])
     }
 
-    removeSpenderFromWhiteList(spender: string): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await getChainFromData(actionData.chain)
-            await removeFromList(
-                await chain.getChainId(),
-                [spender],
-                "walletsWhiteList",
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-
-            const data = this.contractInterface.encodeData("setSpenderWhitelistMode", [spender, false])
-            return await this.encode(data, actionData.options)
-        }
+    async removeSpenderFromBlackList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
+        await removeFromList(chainId.toString(), [spender], "walletsBlackList", this.paymasterType, sponsor)
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderBlacklistMode", [spender, false])
     }
 
-    batchWhitelistUsers(users: string[], modes: boolean[]): ActionFunction {
-        return async (actionData: ActionData) => {
-            const calldata: string[] = []
-            for (let i = 0; i < users.length; i++) {
-                calldata.push(this.contractInterface.encodeData("setSpenderWhitelistMode", [users[i], modes[i]]))
+    async batchBlacklistUsers(chainId: number, sponsor: Address, users: string[], modes: boolean[]): Promise<TransactionParams> {
+        const calldata: TransactionParams[] = []
+        for (let i = 0; i < users.length; i++) {
+            if (modes[i]) {
+                calldata.push(await this.addSpenderToBlackList(chainId, sponsor, users[i]))
+            } else {
+                calldata.push(await this.removeSpenderFromBlackList(chainId, sponsor, users[i]))
             }
-
-            const data = this.contractInterface.encodeData("batchActions", [calldata])
-
-            const chain = await getChainFromData(actionData.chain)
-            batchOperation(
-                await chain.getChainId(),
-                users,
-                modes,
-                "walletsWhiteList",
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-            return await this.encode(data, actionData.options)
         }
-    }
-
-    addSpenderToBlackList(spender: string): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await getChainFromData(actionData.chain)
-            await addToList(
-                await chain.getChainId(),
-                [spender],
-                "walletsBlackList",
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-
-            const data = this.contractInterface.encodeData("setSpenderBlacklistMode", [spender, true])
-            return await this.encode(data, actionData.options)
-        }
-    }
-
-    removeSpenderFromBlackList(spender: string): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await getChainFromData(actionData.chain)
-            await removeFromList(
-                await chain.getChainId(),
-                [spender],
-                "walletsBlackList",
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-
-            const data = this.contractInterface.encodeData("setSpenderBlacklistMode", [spender, false])
-            return await this.encode(data, actionData.options)
-        }
-    }
-
-    batchBlacklistUsers(users: string[], modes: boolean[]): ActionFunction {
-        return async (actionData: ActionData) => {
-            const calldata: string[] = []
-            for (let i = 0; i < users.length; i++) {
-                calldata.push(this.contractInterface.encodeData("setSpenderBlacklistMode", [users[i], modes[i]]))
-            }
-
-            const chain = await getChainFromData(actionData.chain)
-            batchOperation(
-                await chain.getChainId(),
-                users,
-                modes,
-                "walletsBlackList",
-                this.paymasterType,
-                await actionData.wallet.getAddress()
-            )
-
-            const data = this.contractInterface.encodeData("batchActions", [calldata])
-            return await this.encode(data, actionData.options)
-        }
+        batchOperation(chainId.toString(), users, modes, "walletsBlackList", this.paymasterType, sponsor)
+        return await this.batchTransaction(calldata)
     }
 }

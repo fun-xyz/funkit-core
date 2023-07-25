@@ -1,5 +1,5 @@
 import { Address, Hex, PublicClient, encodeFunctionData } from "viem"
-import { TransactionData } from "../common"
+import { TransactionParams } from "../common"
 import { Chain } from "../data"
 
 type ChainReadCall = {
@@ -36,13 +36,13 @@ export class ContractInterface {
         )
     }
 
-    encodeTransactionData(address: Address, functionName: string, args: any[]): TransactionData {
+    encodeTransactionParams(address: Address, functionName: string, args: any[], value = 0n): TransactionParams {
         const data = encodeFunctionData({
             abi: this.abi,
             functionName,
             args
         })
-        return { to: address, data, value: 0n }
+        return { to: address, data, value }
     }
 
     encodeData(functionName: string, args: any[]): Hex {

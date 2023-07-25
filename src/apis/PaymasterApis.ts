@@ -116,6 +116,6 @@ export async function batchOperation(
         return !modes[i]
     })
 
-    await addToList(chainId, addList, list, paymasterType, sponsorAddress)
+    await addToList(chainId.toString(), addList, list, paymasterType, sponsorAddress)
     await removeFromList(chainId, removeList, list, paymasterType, sponsorAddress)
 }

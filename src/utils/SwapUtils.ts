@@ -226,7 +226,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
     const wethAddr = await getTokenInfo("weth", chainId.toString())
     let swapTxData
     if (wethAddr === tokenOutAddress) {
-        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForETH", [
+        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionParams(router, "swapExactTokensForETH", [
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
@@ -235,7 +235,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
     } else {
-        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForTokens", [
+        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionParams(router, "swapExactTokensForTokens", [
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],

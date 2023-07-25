@@ -1,9 +1,8 @@
 import { assert, expect } from "chai"
 import { Hex } from "viem"
-import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth } from "../../src/auth"
-import { AddressZero, ERC20_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
+import { EnvOption, GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token, getChainFromData } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
 import { fundWallet, randomBytes } from "../../src/utils"
@@ -75,13 +74,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const chain = await getChainFromData(config.chainId)
                 const outTokenAddress = await Token.getAddress(outToken)
 
-                const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionData(outTokenAddress, "mint", [
+                const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
                 ])
                 await chain.init()
-                outTokenMint.chain = chain
-                await auth.sendTx(outTokenMint)
+                await auth.sendTx({ ...outTokenMint })
             }
 
             const b1 = Token.getBalanceBN(outToken, randomAddress)
@@ -99,109 +97,206 @@ export const TransferTest = (config: TransferTestConfig) => {
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
 
-        describe("With Session Key", () => {
-            const user = createSessionUser()
-            const second = 1000
-            const minute = 60 * second
-            const deadline = BigInt(Date.now() + 3 * minute) / 1000n
-            const feeRecip = randomBytes(20)
-            before(async () => {
-                const basetokenAddr = await Token.getAddress(baseToken)
-                const sessionKeyParams: SessionKeyParams = {
-                    user,
-                    targetWhitelist: [outToken, basetokenAddr],
-                    actionWhitelist: [
-                        {
-                            abi: ERC20_ABI,
-                            functionWhitelist: ["transfer"]
-                        }
-                    ],
-                    feeTokenWhitelist: [AddressZero],
-                    feeRecipientWhitelist: [feeRecip],
-                    deadline,
-                    chainId: config.chainId
-                }
-                const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
-                await wallet.executeOperation(auth, operation)
-            })
-
-            it("wallet should have lower balance of specified token", async () => {
+        describe("Transaction Fees enabled", function () {
+            it("pay a fixed amount of fees in eth", async function () {
                 const randomAddress = randomBytes(20)
+                const feeRecipientAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
-                const b1 = Token.getBalanceBN(outToken, randomAddress)
-                const b2 = Token.getBalanceBN(outToken, walletAddress)
-                const outTokenAddress = await new Token(outToken).getAddress()
-                const operation = await wallet.transfer(user, await user.getAddress(), {
-                    to: randomAddress,
-                    amount: 1,
-                    token: outTokenAddress
-                })
-                await wallet.executeOperation(user, operation)
-                const b3 = Token.getBalanceBN(outToken, randomAddress)
-                const b4 = Token.getBalanceBN(outToken, walletAddress)
 
-                const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
-                    await Promise.all([b1, b2, b3, b4])
+                const b1 = Token.getBalance(baseToken, randomAddress)
+                const b2 = Token.getBalance(baseToken, walletAddress)
+                const b5 = Token.getBalance(baseToken, feeRecipientAddress)
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        amount: fee,
+                        recipient: feeRecipientAddress
+                    }
+                }
+
+                const userOp = await wallet.transfer(
+                    auth,
+                    await auth.getAddress(),
+                    {
+                        to: randomAddress,
+                        amount: config.amount ? config.amount : 0.001
+                    },
+                    options
+                )
+                await wallet.executeOperation(auth, userOp)
+
+                const b3 = Token.getBalance(baseToken, randomAddress)
+                const b4 = Token.getBalance(baseToken, walletAddress)
+                const b6 = Token.getBalance(baseToken, feeRecipientAddress)
+
+                const [
+                    randomTokenBalanceBefore,
+                    walletTokenBalanceBefore,
+                    randomTokenBalanceAfter,
+                    walletTokenBalanceAfter,
+                    feeRecipientBalanceBefore,
+                    feeRecipientBalanceAfter
+                ] = await Promise.all([b1, b2, b3, b4, b5, b6])
 
                 assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+                assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
             })
+            it("pay a fixed amount of fees in tokens", async function () {
+                const randomAddress = randomBytes(20)
+                const feeRecipientAddress = randomBytes(20)
+                const walletAddress = await wallet.getAddress()
 
-            it("Session key function out of scope", async () => {
-                it("Session key selector out of scope", async () => {
-                    const randomAddress = randomBytes(20)
-                    const outTokenAddress = await new Token("usdc").getAddress()
-                    try {
-                        const operation = await wallet.tokenApprove(user, await user.getAddress(), {
-                            spender: randomAddress,
-                            amount: 1,
-                            token: outTokenAddress
-                        })
-                        await wallet.executeOperation(user, operation)
-                        assert(false, "call succeded when it should have failed")
-                    } catch {
-                        assert(true)
+                const b1 = Token.getBalance(baseToken, randomAddress)
+                const b2 = Token.getBalance(baseToken, walletAddress)
+                const b5 = Token.getBalance(outToken, feeRecipientAddress)
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: outToken,
+                        amount: fee,
+                        recipient: feeRecipientAddress
                     }
-                })
+                }
+
+                const userOp = await wallet.transfer(
+                    auth,
+                    await auth.getAddress(),
+                    {
+                        to: randomAddress,
+                        amount: config.amount ? config.amount : 0.001
+                    },
+                    options
+                )
+                await wallet.executeOperation(auth, userOp)
+
+                const b3 = Token.getBalance(baseToken, randomAddress)
+                const b4 = Token.getBalance(baseToken, walletAddress)
+                const b6 = Token.getBalance(outToken, feeRecipientAddress)
+
+                const [
+                    randomTokenBalanceBefore,
+                    walletTokenBalanceBefore,
+                    randomTokenBalanceAfter,
+                    walletTokenBalanceAfter,
+                    feeRecipientBalanceBefore,
+                    feeRecipientBalanceAfter
+                ] = await Promise.all([b1, b2, b3, b4, b5, b6])
+
+                assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+                assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+                assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
             })
 
-            it("Session key target out of scope", async () => {
+            it("pay a percentage of gas for fees", async () => {
                 const randomAddress = randomBytes(20)
-                const outTokenAddress = await new Token("usdc").getAddress()
-                try {
-                    const operation = await wallet.transfer(user, await user.getAddress(), {
-                        to: randomAddress,
-                        amount: 1,
-                        token: outTokenAddress
-                    })
-                    await wallet.executeOperation(user, operation)
-                    assert(false, "call succeded when it should have failed")
-                } catch (e: any) {
-                    assert(
-                        e.message.includes("Function or target is not allowed in session key"),
-                        "call succeded when it should have failed"
-                    )
+                const walletAddress = await wallet.getAddress()
+
+                const b1 = Token.getBalance(baseToken, randomAddress)
+                const b2 = Token.getBalance(baseToken, walletAddress)
+                const b5 = Token.getBalance(baseToken, await auth.getAddress())
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        gasPercent: 1,
+                        recipient: await auth.getAddress()
+                    }
                 }
+
+                const userOp = await wallet.transfer(
+                    auth,
+                    await auth.getAddress(),
+                    {
+                        to: randomAddress,
+                        amount: config.amount ? config.amount : 0.001
+                    },
+                    options
+                )
+                await wallet.executeOperation(auth, userOp)
+
+                const b3 = Token.getBalance(baseToken, randomAddress)
+                const b4 = Token.getBalance(baseToken, walletAddress)
+                const b6 = Token.getBalance(baseToken, await auth.getAddress())
+
+                const [
+                    randomTokenBalanceBefore,
+                    walletTokenBalanceBefore,
+                    randomTokenBalanceAfter,
+                    walletTokenBalanceAfter,
+                    feeRecipientBalanceBefore,
+                    feeRecipientBalanceAfter
+                ] = await Promise.all([b1, b2, b3, b4, b5, b6])
+
+                assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+                assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+                assert(feeRecipientBalanceAfter > feeRecipientBalanceBefore, "Transfer failed")
             })
 
-            it("Session key expires", async () => {
-                const waitTime = BigInt(Date.now())
-                const diff = deadline * 1000n - waitTime
-                if (diff > 0n) {
-                    await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.1))
+            it("negative test - fee token and gas token not set", async () => {
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        amount: fee,
+                        recipient: await auth.getAddress()
+                    }
                 }
-                const randomAddress = randomBytes(20)
-                const outTokenAddress = await new Token(outToken).getAddress()
                 try {
-                    const operation = await wallet.transfer(user, await user.getAddress(), {
-                        to: randomAddress,
-                        amount: 1,
-                        token: outTokenAddress
-                    })
-                    await wallet.executeOperation(user, operation)
-                    assert(false, "call succeded when it should have failed")
-                } catch (e: any) {
-                    assert(e.message.includes("FW406"), "call succeded when it should have failed")
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("EnvOption.fee.token or EnvOption.gasSponsor.token is required")
+                }
+            })
+            it("negative test - fee recipient not set", async () => {
+                const fee = 0.001
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        amount: fee
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("EnvOption.fee.recipient is required")
+                }
+            })
+            it("negative test - fee amount and gas percent not set", async () => {
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: baseToken,
+                        recipient: await auth.getAddress()
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("fee.amount or fee.gasPercent is required")
+                }
+            })
+            it("negative test - fee uses gas percent but charges erc20 tokens", async () => {
+                const options: EnvOption = {
+                    chain: config.chainId,
+                    fee: {
+                        token: outToken,
+                        gasPercent: 4, // 4%
+                        recipient: await auth.getAddress()
+                    }
+                }
+                try {
+                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    expect.fail("Should throw error")
+                } catch (error: any) {
+                    expect(error.message).to.include("gasPercent is only valid for native tokens")
                 }
             })
         })
