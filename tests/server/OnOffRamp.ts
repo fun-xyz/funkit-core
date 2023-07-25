@@ -11,7 +11,6 @@ describe("Get Operations", function () {
     let auth: Auth
     let wallet: FunWallet
     before(async function () {
-        // this.retries(config.numRetry ? config.numRetry : 0)
         const apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
             chain: chainId,
