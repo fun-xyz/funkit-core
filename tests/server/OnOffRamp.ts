@@ -4,7 +4,6 @@ import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 const chainId = "5"
-
 import "../../fetch-polyfill"
 
 describe("Get Operations", function () {
@@ -12,7 +11,6 @@ describe("Get Operations", function () {
     let auth: Auth
     let wallet: FunWallet
     before(async function () {
-        // this.retries(config.numRetry ? config.numRetry : 0)
         const apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
             chain: chainId,
@@ -27,11 +25,19 @@ describe("Get Operations", function () {
         })
     })
 
-    describe("wallet.getOperations", () => {
+    describe("MoonPay", () => {
         describe("Positive Unit Tests", () => {
-            it("Goerli, Funwallet", async () => {
-                const res = await wallet.getOperations()
-                expect(res).to.not.be.null
+            it("wallet.onRamp", async () => {
+                const res = await wallet.onRamp()
+                expect(res).to.have.string("http")
+                expect(res).to.have.string("buy")
+            })
+        })
+        describe("Positive Unit Tests", () => {
+            it("wallet.offRamp", async () => {
+                const res = await wallet.offRamp()
+                expect(res).to.have.string("http")
+                expect(res).to.have.string("sell")
             })
         })
     })
