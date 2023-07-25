@@ -247,9 +247,11 @@ export class FunWallet extends FirstClassActions {
     async onRamp() {
         return await getOnRampUrl(await this.getAddress())
     }
+
     async offRamp() {
         return await getOffRampUrl(await this.getAddress())
     }
+
     async createOperation(
         auth: Auth,
         userId: string,
