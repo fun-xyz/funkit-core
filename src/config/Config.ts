@@ -9,8 +9,11 @@ export function parseOptions(option: EnvOption) {
 
 export async function configureEnvironment(option: GlobalEnvOption) {
     const global = globalThis as any
-    global.globalEnvOption = {}
+    if (!global.globalEnvOption) {
+        global.globalEnvOption = {}
+    }
     const globalEnvOption = global.globalEnvOption as GlobalEnvOption
+
     if ((!option || !option.chain) && !globalEnvOption.chain) {
         globalEnvOption.chain = await getChainFromData("5")
     } else {
@@ -26,4 +29,5 @@ export async function configureEnvironment(option: GlobalEnvOption) {
         option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
     globalEnvOption.skipDBAction =
         option.skipDBAction === null || option.skipDBAction === undefined ? globalEnvOption.skipDBAction : option.skipDBAction
+    global.globalEnvOption = globalEnvOption
 }

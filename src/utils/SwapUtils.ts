@@ -249,6 +249,6 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
 const testIds = [36864, 31337]
 export async function oneInchAPIRequest(methodName: string, queryParams: any, options: EnvOption = (globalThis as any).globalEnvOption) {
     const chain = await getChainFromData(options.chain)
-    const chainId = testIds.includes(Number(chain.id)) ? 1 : chain.id
+    const chainId = testIds.includes(Number(await chain.getChainId())) ? 1 : await chain.getChainId()
     return apiBaseUrl + chainId + methodName + "?" + new URLSearchParams(queryParams).toString()
 }

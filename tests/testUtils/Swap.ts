@@ -50,8 +50,6 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
             if (mint) {
-                const chain = await getChainFromData(options.chain)
-                await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
                 const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
@@ -210,8 +208,6 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
             if (mint) {
-                const chain = await getChainFromData(options.chain)
-                await chain.init()
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
                 const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [

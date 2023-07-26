@@ -23,11 +23,7 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
     throw new ServerMissingDataError("Token.getAddress", "DataServer", helper)
 }
 
-export async function getChainInfo(chainId: string): Promise<any> {
-    if (!Number(chainId)) {
-        return await getChainFromName(chainId)
-    }
-
+export async function getChainFromId(chainId: string): Promise<any> {
     return await sendGetRequest(API_URL, `chain-info/${chainId}`).then((r) => {
         if (!r) {
             throw new Error(JSON.stringify(r))
@@ -37,7 +33,12 @@ export async function getChainInfo(chainId: string): Promise<any> {
 }
 
 export async function getChainFromName(name: string): Promise<any> {
-    return await sendGetRequest(API_URL, `chain-id?${name}`)
+    return await sendGetRequest(API_URL, `chain-info?name=${name}`).then((r) => {
+        if (!r) {
+            throw new Error(JSON.stringify(r))
+        }
+        return r
+    })
 }
 
 export async function getModuleInfo(moduleName: string, chainId: string): Promise<any> {
@@ -56,7 +57,7 @@ export async function getPaymasterAddress(chainId: string): Promise<any> {
         moduleAddresses: {
             paymaster: { paymasterAddress }
         }
-    } = await getChainInfo(chainId)
+    } = await getChainFromId(chainId)
 
     return paymasterAddress
 }

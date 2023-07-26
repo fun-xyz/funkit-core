@@ -3,7 +3,7 @@ import { Hex } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { EnvOption, GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token, getChainFromData } from "../../src/data"
+import { Token } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
 import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -71,14 +71,12 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
             if (config.chainId === 5) {
-                const chain = await getChainFromData(config.chainId)
                 const outTokenAddress = await Token.getAddress(outToken)
 
                 const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
                 ])
-                await chain.init()
                 await auth.sendTx({ ...outTokenMint })
             }
 

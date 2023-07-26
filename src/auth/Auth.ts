@@ -138,16 +138,17 @@ export class Auth {
 
     async getWalletUniqueId(chainId: string, index = 0, skipDBActions = false): Promise<string> {
         await this.init()
-        const authUniqueId = getAuthUniqueId(this.authId!, chainId, await this.getAddress(), skipDBActions)
+        const authUniqueId = await getAuthUniqueId(this.authId!, chainId, await this.getAddress(), skipDBActions)
         return `${authUniqueId}-${index}`
     }
 
     async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
         const chain = await getChainFromData(options.chain)
+        const chainId = await chain.getChainId()
         const { to, data } = txData
         let { value } = txData
-        if (!chain || !chain.id) {
+        if (!chain || !chainId) {
             const currentLocation = "Eoa.sendTx"
             const helperMainMessage = "Chain object is missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, objectify(txData), helperMainMessage)
@@ -166,12 +167,12 @@ export class Auth {
             })
         }
 
-        if ((gasSpecificChain as any)[chain!.id!]) {
+        if ((gasSpecificChain as any)[chainId]) {
             tx = {
                 to,
                 value: BigInt(value),
                 data,
-                maxFeePerGas: BigInt(gasSpecificChain[chain!.id!])
+                maxFeePerGas: BigInt(gasSpecificChain[chainId])
             }
         } else {
             tx = { to, value: BigInt(value), data }

@@ -1,6 +1,5 @@
 import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
 import { padHex } from "viem"
-import AAVE_WITHDRAW_CONTRACT from "../abis/AaveWithdraw.json"
 import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
 import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
 import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
@@ -109,7 +108,6 @@ export const CONTRACT_ADDRESSES = {
     entryPointAddress: ENTRYPOINT_CONTRACT["addresses"],
     factoryAddress: FACTORY_CONTRACT["addresses"],
     gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
-    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT["addresses"],
     tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
     oracle: TOKEN_PRICE_ORACLE_CONTRACT["addresses"],
     userAuthAddress: USER_AUTHENTICATION_CONTRACT["addresses"],

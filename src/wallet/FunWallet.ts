@@ -1,4 +1,4 @@
-import { Address, Hex, createPublicClient, http, keccak256, pad, toBytes } from "viem"
+import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, keccak256, pad, toBytes } from "viem"
 import { User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens } from "../apis"
@@ -20,12 +20,12 @@ import {
     OperationStatus,
     OperationType,
     Token,
+    encodeLoginData,
     encodeUserAuthInitData,
     getChainFromData,
     toBytes32Arr
 } from "../data"
 import { Helper, InvalidParameterError, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
-import { WalletAbiManager, WalletOnChainManager } from "../managers"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { gasCalculation, generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
@@ -38,13 +38,12 @@ export interface FunWalletParams {
 export class FunWallet extends FirstClassActions {
     walletUniqueId?: Hex
     userInfo?: Map<Hex, User>
-    abiManager: WalletAbiManager
     address?: Address
 
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the WalletIdentifier - users, uniqueId, walletAddr
+     * @param {object} params - The parameters for the constructing fun wallet - users, uniqueId, walletAddr
      */
     constructor(params: FunWalletParams) {
         super()
@@ -68,8 +67,6 @@ export class FunWallet extends FirstClassActions {
         } else {
             this.address = walletAddr
         }
-
-        this.abiManager = new WalletAbiManager()
     }
 
     /**
@@ -119,7 +116,7 @@ export class FunWallet extends FirstClassActions {
      */
     async getTokens(onlyVerifiedTokens = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
-        return await getTokens(chain.chainId!, await this.getAddress(), onlyVerifiedTokens)
+        return await getTokens(await chain.getChainId(), await this.getAddress(), onlyVerifiedTokens)
     }
 
     /**
@@ -137,7 +134,7 @@ export class FunWallet extends FirstClassActions {
      */
     async getNFTs(txOptions: EnvOption = (globalThis as any).globalEnvOption) {
         const chain = await getChainFromData(txOptions.chain)
-        return await getNFTs(chain.chainId!, await this.getAddress())
+        return await getNFTs(await chain.getChainId(), await this.getAddress())
     }
 
     /**
@@ -229,12 +226,12 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation[]> {
         const chain = await getChainFromData(txOptions.chain)
-        return await getOpsOfWallet(await this.getAddress(), chain.chainId!, status)
+        return await getOpsOfWallet(await this.getAddress(), await chain.getChainId(), status)
     }
 
     async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const chain = await getChainFromData(txOptions.chain)
-        return (await getOps([opId], chain.chainId!))[0]
+        return (await getOps([opId], await chain.getChainId()))[0]
     }
 
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
@@ -253,12 +250,12 @@ export class FunWallet extends FirstClassActions {
         if (!userId || userId === "") {
             throw new MissingParameterError("FunWallet.createOperation", new Helper("createOperation", userId, "userId is required"))
         }
+        userId = pad(userId as Hex, { size: 32 })
         const chain = await getChainFromData(txOptions.chain)
-        const onChainDataManager = new WalletOnChainManager(chain)
 
         const sender = await this.getAddress({ chain })
         const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await onChainDataManager.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
+        const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor) {
             if (txOptions.gasSponsor.token) {
@@ -283,10 +280,10 @@ export class FunWallet extends FirstClassActions {
             verificationGasLimit: BigInt(10e6)
         }
 
-        const isGroupOp: boolean = (await auth.getAddress()) !== (userId as Hex)
+        const isGroupOp: boolean = (await auth.getUserId()) !== (userId as Hex)
 
         const operation: Operation = new Operation(partialOp, {
-            chainId: chain.chainId!,
+            chainId: await chain.getChainId(),
             opType: isGroupOp ? OperationType.GROUP_OPERATION : OperationType.SINGLE_OPERATION,
             authType: isGroupOp ? AuthType.MULTI_SIG : AuthType.ECDSA,
             walletAddr: await this.getAddress(),
@@ -315,7 +312,7 @@ export class FunWallet extends FirstClassActions {
         operation = Operation.convertTypeToObject(operation)
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
-            await signOp(operation.opId!, chain.chainId!, operation.userOp.signature as Hex, await auth.getAddress())
+            await signOp(operation.opId!, await chain.getChainId(), operation.userOp.signature as Hex, await auth.getAddress())
         }
 
         return operation
@@ -329,13 +326,14 @@ export class FunWallet extends FirstClassActions {
         txOptions = parseOptions(txOptions)
         operation = Operation.convertTypeToObject(operation)
         const chain = await getChainFromData(txOptions.chain)
+        const chainId = await chain.getChainId()
 
         // sign the userOp directly here as we may not have the opId yet
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
 
         if (operation.groupId && txOptions.skipDBAction !== true) {
             // cache group info
-            const groups: GroupMetadata[] = await getGroups([operation.groupId], chain.chainId!)
+            const groups: GroupMetadata[] = await getGroups([operation.groupId], chainId)
             if (!groups || groups.length === 0) {
                 const helper = new Helper("Group does not exist", operation.groupId, "Bad Request.")
                 throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
@@ -350,9 +348,9 @@ export class FunWallet extends FirstClassActions {
             })
 
             // check remote collected signature
-            const storedOperation = (await getOps([operation.opId!], chain.chainId!))[0]
+            const storedOperation = (await getOps([operation.opId!], chainId))[0]
             if (storedOperation.signatures!.length + 1 < groups[0].threshold) {
-                const helper = new Helper("executeOperation", chain.chainId, "Not enough signatures")
+                const helper = new Helper("executeOperation", chainId, "Not enough signatures")
                 throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
             }
         }
@@ -360,7 +358,7 @@ export class FunWallet extends FirstClassActions {
         if (isGroupOperation(operation)) {
             await executeOp(
                 operation.opId!,
-                chain.chainId!,
+                chainId,
                 await auth.getAddress(),
                 await chain.getAddress("entryPointAddress"),
                 operation.userOp.signature as Hex
@@ -368,7 +366,7 @@ export class FunWallet extends FirstClassActions {
         } else {
             await executeOp(
                 operation.opId!,
-                chain.chainId!,
+                chainId,
                 await auth.getAddress(),
                 await chain.getAddress("entryPointAddress"),
                 operation.userOp.signature as Hex,
@@ -377,11 +375,10 @@ export class FunWallet extends FirstClassActions {
         }
 
         const opHash = await operation.getOpHash(chain)
-        const onChainDataManager = new WalletOnChainManager(chain)
 
         let txid, gasUsed, gasUSD
         try {
-            txid = await onChainDataManager.getTxId(opHash)
+            txid = await chain.getTxId(opHash)
             if (!txid || txid === "0x") {
                 const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
                 throw new TransactionError("FunWallet.executeOperaion", helper)
@@ -403,13 +400,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(
-                auth.authId!,
-                chain.chainId!,
-                await this.getAddress(),
-                Array.from(this.userInfo!.keys()),
-                this.walletUniqueId
-            )
+            await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
 
             if (isGroupOperation(operation)) {
                 const group = this.userInfo!.get(operation.groupId!)
@@ -417,7 +408,7 @@ export class FunWallet extends FirstClassActions {
                 if (group && group.groupInfo) {
                     await createGroup(
                         operation.groupId!,
-                        chain.chainId!,
+                        chainId,
                         group.groupInfo.threshold,
                         await this.getAddress(),
                         group.groupInfo.memberIds
@@ -450,7 +441,7 @@ export class FunWallet extends FirstClassActions {
     // TODO, use auth to do authentication
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
         const chain = await getChainFromData(txOptions.chain)
-        await deleteOp(operationId, chain.chainId!)
+        await deleteOp(operationId, await chain.getChainId())
     }
 
     async createRejectOperation(
@@ -512,7 +503,36 @@ export class FunWallet extends FirstClassActions {
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
         }
-        return this.abiManager.getInitCode(initCodeParams)
+        return this._getInitCode(initCodeParams)
+    }
+
+    private _getInitCode(input: InitCodeParams) {
+        const encodedVerificationInitdata = encodeAbiParameters(
+            [
+                {
+                    type: "address[]",
+                    name: "verificationAddresses"
+                },
+                {
+                    type: "bytes[]",
+                    name: "verificationData"
+                }
+            ],
+            [input.verificationAddresses, input.verificationData]
+        )
+        const initializerCallData = WALLET_CONTRACT_INTERFACE.encodeData("initialize", [
+            input.entryPointAddress,
+            encodedVerificationInitdata
+        ])
+
+        const implementationAddress = input.implementationAddress ? input.implementationAddress : AddressZero
+
+        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [
+            initializerCallData,
+            implementationAddress,
+            encodeLoginData(input.loginData)
+        ])
+        return concat([input.factoryAddress, data])
     }
 
     /**

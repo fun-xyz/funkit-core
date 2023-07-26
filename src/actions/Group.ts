@@ -5,6 +5,9 @@ import { getChainFromData } from "../data"
 
 export const createGroupTxParams = async (params: CreateGroupParams): Promise<TransactionParams> => {
     const { groupId, group, chainId } = params
+    if (group.userIds.length < 3 || group.threshold < 2) {
+        throw new Error("Group must have at least 3 users and threshold must be at least 2")
+    }
     group.userIds = group.userIds.map((userId) => {
         return pad(userId, { size: 32 })
     })
