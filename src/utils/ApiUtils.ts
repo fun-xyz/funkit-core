@@ -56,6 +56,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             }
 
             if (text) {
+                console.log(text)
                 return JSON.parse(text)
             } else {
                 return {}

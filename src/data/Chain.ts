@@ -163,6 +163,7 @@ export class Chain {
         }
         const hexifiedUserOp = deepHexlify(partialOp)
         const res = await estimateUserOpGas(hexifiedUserOp, this.addresses.entryPointAddress, this.chainId!)
+        console.log(res)
         let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
         if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
             throw new Error(JSON.stringify(res))

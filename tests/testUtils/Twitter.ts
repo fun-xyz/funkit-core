@@ -5,8 +5,8 @@ import { CommitParams } from "../../src/actions/types"
 import { Auth } from "../../src/auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_ABI, WALLET_INIT_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, LoginData } from "../../src/data"
-import { randomBytes } from "../../src/utils"
+import { Chain, LoginData, Token } from "../../src/data"
+import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -17,7 +17,7 @@ export interface TwitterTestConfig {
 }
 
 export const TwitterTest = (config: TwitterTestConfig) => {
-    describe.only("Twitter Account Creation Test", function () {
+    describe("Twitter Account Creation Test", function () {
         this.timeout(300_000)
         let auth: Auth
         let initializerCallData: Hex
@@ -85,7 +85,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             expect(committedHash[1]).to.equal(expectedHash)
         })
 
-        it.only("Verify the account was created and send a transaction", async () => {
+        it("Verify the account was created and send a transaction", async () => {
             // Create the wallet
             const loginData: LoginData = {
                 loginType: 1,
@@ -129,6 +129,17 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             expect(await wallet.getAddress()).to.equal(expectedAddress)
 
             // Send a transaction and initialize the wallet
+            await fundWallet(auth, wallet, 0.1)
+            const eth = new Token("eth")
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), {
+                to: await auth.getAddress(),
+                amount: Number(await eth.getBalanceBN(await auth.getAddress()))
+            })
+            console.log(userOp)
+            const authBalBefore = await eth.getBalanceBN(await auth.getAddress())
+            await wallet.executeOperation(auth, userOp)
+            const authBalAfter = await eth.getBalanceBN(await auth.getAddress())
+            console.log(authBalAfter, authBalBefore)
         })
     })
 }
