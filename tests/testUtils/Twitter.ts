@@ -17,7 +17,7 @@ export interface TwitterTestConfig {
 }
 
 export const TwitterTest = (config: TwitterTestConfig) => {
-    describe("Twitter Account Creation Test", function () {
+    describe.only("Twitter Account Creation Test", function () {
         this.timeout(300_000)
         let auth: Auth
         let initializerCallData: Hex
@@ -85,7 +85,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             expect(committedHash[1]).to.equal(expectedHash)
         })
 
-        it("Verify the account was created and send a transaction", async () => {
+        it.only("Verify the account was created and send a transaction", async () => {
             // Create the wallet
             const loginData: LoginData = {
                 loginType: 1,
@@ -127,13 +127,14 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 chain
             )
             expect(await wallet.getAddress()).to.equal(expectedAddress)
+            console.log(expectedAddress)
 
             // Send a transaction and initialize the wallet
-            await fundWallet(auth, wallet, 0.1)
+            await fundWallet(auth, wallet, 1)
             const eth = new Token("eth")
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: Number(await eth.getBalanceBN(await auth.getAddress()))
+                amount: 1
             })
             console.log(userOp)
             const authBalBefore = await eth.getBalanceBN(await auth.getAddress())

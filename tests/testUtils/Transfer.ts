@@ -46,7 +46,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
-        it.only("transfer baseToken directly", async () => {
+        it("transfer baseToken directly", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
