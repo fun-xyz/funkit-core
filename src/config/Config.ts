@@ -1,6 +1,5 @@
 import { EnvOption, GlobalEnvOption } from "./types"
 import { getOrgInfo } from "../apis"
-import { OPTION_TEST_API_KEY } from "../common/constants"
 import { getChainFromData } from "../data"
 
 export function parseOptions(option: EnvOption) {
@@ -18,12 +17,7 @@ export async function configureEnvironment(option: GlobalEnvOption) {
         globalEnvOption.chain = option.chain ? await getChainFromData(option.chain) : globalEnvOption.chain
     }
 
-    if ((!option || !option.apiKey) && !globalEnvOption.apiKey) {
-        globalEnvOption.apiKey = OPTION_TEST_API_KEY
-    } else {
-        globalEnvOption.apiKey = option.apiKey ? option.apiKey : globalEnvOption.apiKey
-    }
-
+    globalEnvOption.apiKey = option.apiKey ? option.apiKey : globalEnvOption.apiKey
     globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
     globalEnvOption.gasSponsor =
         option.gasSponsor === null || option.gasSponsor === undefined ? globalEnvOption.gasSponsor : option.gasSponsor

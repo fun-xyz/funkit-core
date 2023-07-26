@@ -1,17 +1,13 @@
 import { Address, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
-import { estimateUserOpGas, getChainInfo, getModuleInfo, sendUserOpToBundler } from "../apis"
+import { estimateOp, getChainInfo, getModuleInfo } from "../apis"
 import { CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
 import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
-import { Bundler } from "../servers/Bundler"
-import { deepHexlify } from "../utils/DataUtils"
 
 export class Chain {
     chainId?: string
     rpcUrl?: string
     chainName?: string
-    bundlerUrl?: string
-    bundler?: Bundler
     id?: string
     name?: string
     addresses: Addresses = {}
@@ -27,8 +23,6 @@ export class Chain {
             this.rpcUrl = chainInput.rpcUrl
         } else if (chainInput.chainName) {
             this.chainName = chainInput.chainName
-        } else if (chainInput.bundlerUrl) {
-            this.bundlerUrl = chainInput.bundlerUrl
         }
     }
 
@@ -41,16 +35,6 @@ export class Chain {
             await this.loadClient()
             const chainId = await this.client!.getChainId()
             await this.loadChainData(chainId.toString())
-        } else if (this.bundlerUrl) {
-            const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
-            await this.loadChainData(bundlerChainId)
-            await this.loadBundler()
-        }
-
-        try {
-            await this.loadBundler()
-        } catch {
-            // ignore
         }
 
         try {
@@ -65,19 +49,6 @@ export class Chain {
             this.client = createPublicClient({
                 transport: http(this.rpcUrl)
             })
-        }
-    }
-
-    async loadBundler() {
-        if (!this.bundler) {
-            if (!this.id || !this.bundlerUrl || !this.addresses || !this.addresses.entryPointAddress) {
-                const currentLocation = "Chain.loadBundler"
-                const helperMainMessage = "{id,bundlerUrl,addresses, or addresses.entryPointAddress} are missing"
-                const helper = new Helper(`${currentLocation} was given these parameters`, this, helperMainMessage)
-                throw new MissingParameterError(currentLocation, helper)
-            }
-            this.bundler = new Bundler(this.id, this.bundlerUrl, this.addresses.entryPointAddress)
-            await this.bundler.validateChainId()
         }
     }
 
@@ -142,12 +113,6 @@ export class Chain {
         else this.addresses = { ...this.addresses, ...addresses }
     }
 
-    async sendOpToBundler(userOp: UserOperation): Promise<void> {
-        await this.init()
-        const hexifiedUserOp = deepHexlify(userOp)
-        await sendUserOpToBundler(hexifiedUserOp, this.addresses.entryPointAddress, this.id as string)
-    }
-
     async getFeeData(): Promise<bigint> {
         await this.init()
         return this.client!.getGasPrice()
@@ -160,11 +125,14 @@ export class Chain {
             const helper = new Helper(currentLocation, "", "entryPointAddress is required.")
             throw new MissingParameterError(currentLocation, helper)
         }
-        const hexifiedUserOp = deepHexlify(partialOp)
-        const res = await estimateUserOpGas(hexifiedUserOp, this.addresses.entryPointAddress, this.chainId!)
-        let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
-        if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
-            throw new Error(JSON.stringify(res))
+
+        let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
+            chainId: this.chainId!,
+            entryPointAddress: this.addresses.entryPointAddress,
+            userOp: partialOp
+        })
+        if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
+            throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }
         callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
