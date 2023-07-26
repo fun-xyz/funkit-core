@@ -3,9 +3,11 @@ import { Hex, encodeAbiParameters, encodeFunctionData, keccak256, parseAbiParame
 import { commitTransactionParams } from "../../src/actions/Twitter"
 import { CommitParams } from "../../src/actions/types"
 import { Auth } from "../../src/auth"
-import { WALLET_ABI, WALLET_INIT_CONTRACT_INTERFACE } from "../../src/common"
+import { FACTORY_CONTRACT_INTERFACE, WALLET_ABI, WALLET_INIT_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data"
+import { Chain, LoginData } from "../../src/data"
+import { randomBytes } from "../../src/utils"
+import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
 
@@ -15,13 +17,14 @@ export interface TwitterTestConfig {
 }
 
 export const TwitterTest = (config: TwitterTestConfig) => {
-    describe("Twitter Account Creation Test", function () {
+    describe.only("Twitter Account Creation Test", function () {
         this.timeout(300_000)
         let auth: Auth
         let initializerCallData: Hex
         let chain: Chain
+        let wallet: FunWallet
         const seed = stringToHex("thisisaverysecureseed")
-        const socialHandle = stringToHex("paradigmeng420")
+        const socialHandle = stringToHex("albertsuzhu")
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -54,7 +57,6 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 initializerCallData: initializerCallData,
                 chainId: config.chainId
             }
-            const chain = new Chain({ chainId: params.chainId.toString() })
             const walletInitAddress = await chain.getAddress("walletInitAddress")
             const encodedCommitKey = encodeAbiParameters(parseAbiParameters("bytes, uint256, uint8"), [
                 params.socialHandle,
@@ -83,12 +85,50 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             expect(committedHash[1]).to.equal(expectedHash)
         })
 
-        it("Post the tweet", async () => {
-            console.log("hi")
-        })
+        it.only("Verify the account was created and send a transaction", async () => {
+            // Create the wallet
+            const loginData: LoginData = {
+                loginType: 1,
+                socialHandle: socialHandle,
+                newFunWalletOwner: await auth.getAddress(),
+                index: 0n
+            }
+            wallet = new FunWallet({ loginData: loginData })
 
-        it("Verify the account was created and send a transaction", async () => {
-            console.log("hi")
+            const loginDataBytes: Hex = encodeAbiParameters(
+                [
+                    {
+                        components: [
+                            { name: "loginType", type: "uint8" },
+                            { name: "newFunWalletOwner", type: "address" },
+                            { name: "salt", type: "bytes32" },
+                            { name: "index", type: "uint256" },
+                            { name: "socialHandle", type: "bytes" }
+                        ],
+                        name: "LoginData",
+                        type: "tuple"
+                    }
+                ],
+                [
+                    {
+                        loginType: loginData.loginType ?? 0,
+                        newFunWalletOwner: loginData.newFunWalletOwner ?? (await auth.getAddress()),
+                        salt: randomBytes(32),
+                        index: BigInt(loginData.index!) ?? 0n,
+                        socialHandle: loginData.socialHandle ?? socialHandle
+                    }
+                ]
+            )
+            // Make sure the wallet was correctly created with the correct address
+            const expectedAddress = await FACTORY_CONTRACT_INTERFACE.readFromChain(
+                await chain.getAddress("factoryAddress"),
+                "getAddress",
+                [loginDataBytes],
+                chain
+            )
+            expect(await wallet.getAddress()).to.equal(expectedAddress)
+
+            // Send a transaction and initialize the wallet
         })
     })
 }

@@ -147,7 +147,7 @@ export class Auth {
         const chain = await getChainFromData(options.chain)
         const { to, data } = txData
         let { value } = txData
-        if (!chain || !chain.id) {
+        if (!chain || !(await chain.getChainId())) {
             const currentLocation = "Eoa.sendTx"
             const helperMainMessage = "Chain object is missing or incorrect"
             const helper = new Helper(`${currentLocation} was given these parameters`, objectify(txData), helperMainMessage)

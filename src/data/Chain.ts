@@ -192,6 +192,5 @@ export const getChainFromData = async (chainIdentifier?: string | Chain | number
     } else {
         chain = new Chain({ chainName: chainIdentifier })
     }
-    await chain.init()
     return chain
 }
