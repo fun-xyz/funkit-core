@@ -4,7 +4,6 @@ export interface ChainInput {
     chainId?: string
     rpcUrl?: string
     chainName?: string
-    bundlerUrl?: string
 }
 
 export type FactoryCreateAccountParams = {

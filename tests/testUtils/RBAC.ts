@@ -49,7 +49,7 @@ export const RBACTest = (config: RBACTestConfig) => {
         })
 
         it("add owner", async () => {
-            const operation = await wallet.addOwner(auth, await auth.getAddress(), await wallet.getAddress(), {
+            const operation = await wallet.addOwner(auth, await auth.getAddress(), {
                 ownerId: ownerId,
                 chainId: config.chainId
             })
@@ -66,7 +66,7 @@ export const RBACTest = (config: RBACTestConfig) => {
         })
 
         it("remove owner", async () => {
-            const operation = await wallet.removeOwner(auth, await auth.getAddress(), await wallet.getAddress(), {
+            const operation = await wallet.removeOwner(auth, await auth.getAddress(), {
                 ownerId: ownerId,
                 chainId: config.chainId
             })

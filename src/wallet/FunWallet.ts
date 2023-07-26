@@ -1,7 +1,7 @@
 import { Address, Hex, createPublicClient, http, keccak256, pad, toBytes } from "viem"
 import { User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
-import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getTokens } from "../apis"
+import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
 import { createGroup, getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
@@ -273,6 +273,14 @@ export class FunWallet extends FirstClassActions {
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
         const receipt = await this.executeOperation(auth, operation, txOptions)
         return receipt
+    }
+
+    async onRamp() {
+        return await getOnRampUrl(await this.getAddress())
+    }
+
+    async offRamp() {
+        return await getOffRampUrl(await this.getAddress())
     }
 
     async createOperation(

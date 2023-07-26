@@ -57,7 +57,7 @@ export const GroupTest = (config: GroupTestConfig) => {
         })
 
         it("add group", async () => {
-            const operation = await wallet.createGroup(auth, await auth.getAddress(), await wallet.getAddress(), {
+            const operation = await wallet.createGroup(auth, await auth.getAddress(), {
                 groupId: groupId,
                 group: {
                     userIds: memberIds,
@@ -90,7 +90,7 @@ export const GroupTest = (config: GroupTestConfig) => {
         })
 
         it("add user to group", async () => {
-            const operation = await wallet.addUserToGroup(auth, await auth.getAddress(), await wallet.getAddress(), {
+            const operation = await wallet.addUserToGroup(auth, await auth.getAddress(), {
                 groupId: groupId,
                 userId: newUserId,
                 chainId: config.chainId
@@ -121,7 +121,7 @@ export const GroupTest = (config: GroupTestConfig) => {
         })
 
         it("remove user from group", async () => {
-            const operation = await wallet.removeUserFromGroup(auth, await auth.getAddress(), await wallet.getAddress(), {
+            const operation = await wallet.removeUserFromGroup(auth, await auth.getAddress(), {
                 groupId: groupId,
                 userId: newUserId,
                 chainId: config.chainId

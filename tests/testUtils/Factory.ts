@@ -1,7 +1,6 @@
 import { expect } from "chai"
 import { Hex } from "viem"
 import { Auth } from "../../src/auth"
-import { FUN_TESTNET_CHAIN_ID, LOCAL_FORK_CHAIN_ID } from "../../src/common/constants"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { getChainFromData } from "../../src/data"
 import { fundWallet, isContract, randomBytes } from "../../src/utils/ChainUtils"
@@ -53,7 +52,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         })
 
         it("wallet.create should create a wallet", async () => {
-            if (chainId === FUN_TESTNET_CHAIN_ID || chainId === LOCAL_FORK_CHAIN_ID || config.testCreate) {
+            if (config.testCreate) {
                 const wallet1 = new FunWallet({ users: [{ userId: await auth.getAddress() }], uniqueId: randomBytes(32) })
                 const walletAddress = await wallet1.getAddress()
                 const chain = await getChainFromData(chainId)
