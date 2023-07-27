@@ -9,8 +9,11 @@ export function parseOptions(option: EnvOption) {
 
 export async function configureEnvironment(option: GlobalEnvOption) {
     const global = globalThis as any
-    global.globalEnvOption = {}
-    const globalEnvOption = global.globalEnvOption as GlobalEnvOption
+    if (!global.globalEnvOption) {
+        global.globalEnvOption = {}
+    }
+    const globalEnvOption = global.globalEnvOption
+
     if ((!option || !option.chain) && !globalEnvOption.chain) {
         globalEnvOption.chain = await getChainFromData("5")
     } else {

@@ -1,78 +1,81 @@
-import { Address, PublicClient, createPublicClient, http } from "viem"
+import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
-import { estimateOp, getChainInfo, getModuleInfo } from "../apis"
-import { CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
-import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
+import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
+import { CONTRACT_ADDRESSES, ENTRYPOINT_CONTRACT_INTERFACE, EstimateGasResult } from "../common"
+import { Helper, MissingParameterError } from "../errors"
+import { isContract } from "../utils"
 
 export class Chain {
-    chainId?: string
-    rpcUrl?: string
-    chainName?: string
-    id?: string
-    name?: string
-    addresses: Addresses = {}
-    currency?: string
-
-    // viem
-    client?: PublicClient
+    private initialized = false
+    private id?: string
+    private name?: string
+    private addresses: Addresses = {}
+    private currency?: string
+    private rpcUrl?: string
+    private client?: PublicClient
 
     constructor(chainInput: ChainInput) {
         if (chainInput.chainId) {
-            this.chainId = chainInput.chainId
+            this.id = chainInput.chainId
         } else if (chainInput.rpcUrl) {
             this.rpcUrl = chainInput.rpcUrl
         } else if (chainInput.chainName) {
-            this.chainName = chainInput.chainName
+            this.name = chainInput.chainName
         }
     }
 
-    async init() {
-        if (this.chainId) {
-            await this.loadChainData(this.chainId.toString())
-        } else if (this.chainName) {
-            await this.loadChainData(this.chainName)
+    private async init() {
+        if (this.initialized) return
+
+        if (this.id) {
+            await this.loadChain(this.id)
+        } else if (this.name) {
+            await this.loadChain(this.name)
         } else if (this.rpcUrl) {
-            await this.loadClient()
-            const chainId = await this.client!.getChainId()
-            await this.loadChainData(chainId.toString())
+            await this.loadChainFromRpc()
         }
 
-        try {
-            await this.loadClient()
-        } catch {
-            // ignore
-        }
+        this.initialized = true
     }
 
-    async loadClient() {
-        if (!this.client) {
-            this.client = createPublicClient({
-                transport: http(this.rpcUrl)
-            })
-        }
+    private async loadChainFromRpc() {
+        this.client = createPublicClient({
+            transport: http(this.rpcUrl)
+        })
+        this.id = (await this.client.getChainId()).toString()
+        await this.loadChain(this.id)
     }
 
-    async loadChainData(chainId: string) {
+    private async loadChain(identifier: string) {
         let chain
-        try {
-            if (!this.id) {
-                chain = await getChainInfo(chainId)
-                this.id = chain.id
-                this.name = chain.name
-                this.currency = chain.nativeCurrency.symbol
-                const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
-                    result[key] = CONTRACT_ADDRESSES[key][this.id]
-                    return result
-                }, {})
-                const addresses = { ...abisAddresses }
-                Object.assign(this, { ...this, addresses, rpcUrl: chain.rpcUrls.default })
-            }
-        } catch (e) {
-            const helper = new Helper("getChainInfo", chain, "call failed")
-            helper.pushMessage(`Chain identifier ${chainId} not found`)
-
-            throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
+        if (!Number(identifier)) {
+            chain = await getChainFromName(identifier)
+        } else {
+            chain = await getChainFromId(identifier)
         }
+        this.id = chain.id
+        this.name = chain.name
+        this.currency = chain.nativeCurrency.symbol
+        const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
+            result[key] = CONTRACT_ADDRESSES[key][this.id]
+            return result
+        }, {})
+        const addresses = { ...abisAddresses }
+        this.rpcUrl = chain.rpcUrls.default
+        this.client = createPublicClient({
+            transport: http(this.rpcUrl)
+        })
+        Object.assign(this, { ...this, addresses })
+    }
+
+    async getChainId(): Promise<string> {
+        await this.init()
+        return this.id!
+    }
+
+    async getChainName(): Promise<string> {
+        await this.init()
+        return this.name!
     }
 
     async getAddress(name: string): Promise<Address> {
@@ -92,25 +95,14 @@ export class Chain {
         return await getModuleInfo(name, this.id!)
     }
 
-    async getActualChainId(): Promise<string> {
+    async getCurrency(): Promise<string> {
         await this.init()
-        const chainId = await this.client!.getChainId()
-        return chainId.toString()
-    }
-
-    async getChainId(): Promise<string> {
-        await this.init()
-        return this.id!
+        return this.currency!
     }
 
     async getClient(): Promise<PublicClient> {
         await this.init()
         return this.client!
-    }
-
-    setAddresses(addresses: Addresses) {
-        if (!this.addresses) this.addresses = addresses
-        else this.addresses = { ...this.addresses, ...addresses }
     }
 
     async getFeeData(): Promise<bigint> {
@@ -127,7 +119,7 @@ export class Chain {
         }
 
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
-            chainId: this.chainId!,
+            chainId: this.id!,
             entryPointAddress: this.addresses.entryPointAddress,
             userOp: partialOp
         })
@@ -138,6 +130,45 @@ export class Chain {
         preVerificationGas = BigInt(preVerificationGas) * 2n
         verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
+    }
+
+    async getTxId(userOpHash: string, timeout = 60_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
+        const endtime = Date.now() + timeout
+        const client = await this.getClient()
+        const entryPointAddress = await this.getAddress("entryPointAddress")
+        fromBlock = fromBlock ? fromBlock : (await client.getBlockNumber()) - 100n
+        let filter
+        while (Date.now() < endtime) {
+            let events
+            if ((await client.getChainId()) === 84531 || (await client.getChainId()) === 36865) {
+                events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    { userOpHash },
+                    client,
+                    fromBlock
+                )
+            } else {
+                filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    [userOpHash],
+                    client,
+                    fromBlock
+                )
+                events = await client.getFilterLogs({ filter })
+            }
+
+            if (events.length > 0) {
+                return events[0].transactionHash
+            }
+            await new Promise((resolve) => setTimeout(resolve, interval))
+        }
+        return null
+    }
+
+    async addressIsContract(address: Address): Promise<boolean> {
+        return isContract(address, await this.getClient())
     }
 }
 
@@ -159,5 +190,8 @@ export const getChainFromData = async (chainIdentifier?: string | Chain | number
     } else {
         chain = new Chain({ chainName: chainIdentifier })
     }
+
+    const global = globalThis as any
+    global.globalEnvOption.chain = chain
     return chain
 }

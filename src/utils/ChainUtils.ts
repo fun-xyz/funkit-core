@@ -14,10 +14,11 @@ export const fundWallet = async (
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ) => {
     const chain = await getChainFromData(txOptions.chain)
+    const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData
-    if ((gasSpecificChain as any)[chain.id!]) {
-        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: (gasSpecificChain as any)[chain.id!] }
+    if ((gasSpecificChain as any)[chainId]) {
+        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: (gasSpecificChain as any)[chainId] }
     } else {
         txData = { to, data: "0x", value: parseEther(`${value}`) }
     }

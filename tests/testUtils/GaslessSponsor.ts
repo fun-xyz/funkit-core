@@ -3,7 +3,7 @@ import { Address, Hex } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token, getChainFromData } from "../../src/data"
+import { Token } from "../../src/data"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -65,8 +65,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await fundWallet(auth, wallet, config.stakeAmount / 8)
                 await fundWallet(auth, wallet1, config.stakeAmount / 8)
             }
-            const chain = await getChainFromData(options.chain)
-            await chain.init()
 
             funderAddress = await funder.getAddress()
 

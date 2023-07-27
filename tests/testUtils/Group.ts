@@ -45,12 +45,12 @@ export const GroupTest = (config: GroupTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179388)
             })
             chain = await getChainFromData(chainId)
+            if (prefund) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
+            }
             const isWalletCreated = await isContract(await wallet.getAddress(), await chain.getClient())
             if (!isWalletCreated) {
                 expect(await wallet.create(auth, await auth.getAddress())).to.not.throw
-            }
-            if (prefund) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
             userAuthContractAddr = await chain.getAddress("userAuthAddress")
             groupId = generateRandomGroupId()

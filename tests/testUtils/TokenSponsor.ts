@@ -3,7 +3,7 @@ import { Address, Hex } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token, getChainFromData } from "../../src/data"
+import { Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -105,14 +105,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(Number(wallet1InTokenBalance) > requiredAmount, "wallet1 does have enough inToken balance")
             }
             if (mint) {
-                const chain = await getChainFromData(options.chain)
                 const inTokenAddress = await Token.getAddress(config.inToken, options)
 
                 const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
                 ])
-                await chain.init()
                 await auth.sendTx({ ...inTokenMint })
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
