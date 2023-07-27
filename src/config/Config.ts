@@ -12,7 +12,7 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     if (!global.globalEnvOption) {
         global.globalEnvOption = {}
     }
-    const globalEnvOption = global.globalEnvOption as GlobalEnvOption
+    const globalEnvOption = global.globalEnvOption
 
     if ((!option || !option.chain) && !globalEnvOption.chain) {
         globalEnvOption.chain = await getChainFromData("5")
@@ -29,5 +29,4 @@ export async function configureEnvironment(option: GlobalEnvOption) {
         option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
     globalEnvOption.skipDBAction =
         option.skipDBAction === null || option.skipDBAction === undefined ? globalEnvOption.skipDBAction : option.skipDBAction
-    global.globalEnvOption = globalEnvOption
 }
