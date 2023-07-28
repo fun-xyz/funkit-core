@@ -28,7 +28,7 @@ export interface SwapTestConfig {
 export const SwapTest = (config: SwapTestConfig) => {
     const { inToken, outToken, baseToken, prefund, amount, prefundAmt } = config
     const mint = Object.values(config).includes("mint") ? true : config.mint
-    describe("Single Auth Swap", function () {
+    describe.only("Single Auth Swap", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(200_000)
         let auth: Auth

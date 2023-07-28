@@ -1,5 +1,6 @@
 import { Address, Hex } from "viem"
 import { UserOperation } from "../data"
+import { GroupInfo } from "../wallet"
 
 export type Wallet = {
     walletUniqueId?: string
@@ -18,6 +19,16 @@ export type GroupMetadata = {
 export type UpdateGroupMetadata = {
     threshold?: number
     memberIds?: Hex[]
+}
+
+export type ExecuteOpInput = {
+    opId: Hex
+    chainId: string
+    executedBy: string
+    entryPointAddress: Address
+    signature: Hex
+    userOp?: UserOperation
+    groupInfo?: GroupInfo
 }
 
 export type EstimateOpInput = {

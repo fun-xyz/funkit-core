@@ -15,3 +15,7 @@ export type ErrorTransactionDetails = {
     contractAddress?: string
     chainId?: number | string
 }
+
+export enum ErrorType {
+    InvalidParameter = "InvalidParameter"
+}
