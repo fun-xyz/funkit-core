@@ -1,7 +1,7 @@
 import { Address, Hex } from "viem"
-import { EstimateOpInput, EstimatedGas } from "./types"
+import { EstimateOpInput, EstimatedGas, ExecuteOpInput } from "./types"
 import { API_URL } from "../common/constants"
-import { Operation, OperationStatus, UserOperation } from "../data"
+import { Operation, OperationStatus } from "../data"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createOp(op: Operation): Promise<string> {
@@ -35,15 +35,8 @@ export async function signOp(opId: Hex, chainId: string, signature: Hex, signedB
     await sendPostRequest(API_URL, "operation/sign", { opId, chainId, signature, signedBy })
 }
 
-export async function executeOp(
-    opId: Hex,
-    chainId: string,
-    executedBy: string,
-    entryPointAddress: Address,
-    signature: Hex,
-    userOp?: UserOperation
-): Promise<void> {
-    await sendPostRequest(API_URL, "operation/execute", { opId, chainId, executedBy, entryPointAddress, signature, userOp })
+export async function executeOp(executeOpInput: ExecuteOpInput): Promise<void> {
+    await sendPostRequest(API_URL, "operation/execute", executeOpInput)
 }
 
 export async function estimateOp(estimateOpInput: EstimateOpInput): Promise<EstimatedGas> {

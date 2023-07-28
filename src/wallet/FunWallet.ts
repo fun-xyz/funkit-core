@@ -25,9 +25,17 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, InvalidParameterError, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
+import { Helper, InvalidParameterError, MissingParameterError, ParameterFormatError, TransactionError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
+import {
+    gasCalculation,
+    generateRandomNonce,
+    getAuthUniqueId,
+    getWalletAddress,
+    isGroupOperation,
+    isSignatureRequired,
+    isWalletInitOp
+} from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -336,50 +344,58 @@ export class FunWallet extends FirstClassActions {
         const chain = await getChainFromData(txOptions.chain)
         const chainId = await chain.getChainId()
 
-        // sign the userOp directly here as we may not have the opId yet
-        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
-
-        if (operation.groupId && txOptions.skipDBAction !== true) {
+        if (txOptions.skipDBAction !== true) {
             // cache group info
-            const groups: GroupMetadata[] = await getGroups([operation.groupId], chainId)
-            if (!groups || groups.length === 0) {
-                const helper = new Helper("Group does not exist", operation.groupId, "Bad Request.")
-                throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
+            if (isGroupOperation(operation)) {
+                const groups: GroupMetadata[] = await getGroups([operation.groupId!], chainId)
+                if (groups && groups.length > 0) {
+                    // could be empty as a new wallet wants to create a group
+                    this.userInfo?.set(operation.groupId!, {
+                        userId: operation.groupId!,
+                        groupInfo: {
+                            threshold: groups[0].threshold,
+                            memberIds: groups[0].memberIds
+                        }
+                    })
+                }
             }
 
-            this.userInfo?.set(operation.groupId, {
-                userId: operation.groupId,
-                groupInfo: {
-                    threshold: groups[0].threshold,
-                    memberIds: groups[0].memberIds
-                }
-            })
+            const threshold = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
 
             // check remote collected signature
-            const storedOperation = (await getOps([operation.opId!], chainId))[0]
-            if (storedOperation.signatures!.length + 1 < groups[0].threshold) {
-                const helper = new Helper("executeOperation", chainId, "Not enough signatures")
-                throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
+            const storedOps = await getOps([operation.opId!], chainId)
+            let collectedSigCount = storedOps[0]?.signatures?.length ?? 0
+            if (isSignatureRequired(await auth.getUserId(), storedOps[0]?.signatures)) {
+                operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+                collectedSigCount += 1
             }
+
+            if (collectedSigCount < threshold) {
+                const helper = new Helper("executeOperation", chainId, "Not enough signatures")
+                throw new InvalidParameterError("Insufficient signatures for multi sig", "executeOperation", helper, false)
+            }
+        } else {
+            operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
 
         if (isGroupOperation(operation)) {
-            await executeOp(
-                operation.opId!,
+            await executeOp({
+                opId: operation.opId!,
                 chainId,
-                await auth.getAddress(),
-                await chain.getAddress("entryPointAddress"),
-                operation.userOp.signature as Hex
-            )
+                executedBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
+            })
         } else {
-            await executeOp(
-                operation.opId!,
+            await executeOp({
+                opId: operation.opId!,
                 chainId,
-                await auth.getAddress(),
-                await chain.getAddress("entryPointAddress"),
-                operation.userOp.signature as Hex,
-                operation.userOp
-            )
+                executedBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                userOp: operation.userOp
+            })
         }
 
         const opHash = await operation.getOpHash(chain)
