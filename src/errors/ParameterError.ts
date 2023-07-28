@@ -2,14 +2,6 @@ import { BaseError } from "./BaseError"
 import { DataFormatError } from "./DataError"
 import { Helper } from "./Helper"
 
-// code: string
-// type: string
-// timestamp: Date
-// functionName: string
-// paramsUsed: any
-// fixSuggestion: string
-// docLink: string
-
 export class ParameterError extends BaseError {
     constructor(errorType: string, location: string, helper: Helper, isInternal = false) {
         super(`${errorType} required parameters at ${location}`, helper, isInternal)
