@@ -19,7 +19,7 @@ export async function createListener(walletAddresses: Address[], chains: string[
     return result
 }
 
-export async function deleteListener(walletAddress: Address, chain: string[]): Promise<void> {
+export async function deleteListener(walletAddress: Address, chain: string): Promise<void> {
     const body = {
         walletAddress,
         chain
