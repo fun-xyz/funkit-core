@@ -13,10 +13,15 @@ export class BaseError extends Error {
         const errorMsg = `baseType: ${baseType}
             type: ${type}
             code: ${code}
-            timestamp: ${new Date().toUTCString}
+            timestamp: ${new Date().toUTCString()}
             message: ${msg}
             functionName: ${functionName}
-            paramsUsed: ${JSON.stringify(paramsUsed)}
+            paramsUsed: ${JSON.parse(
+                JSON.stringify(
+                    paramsUsed,
+                    (_, value) => (typeof value === "bigint" ? value.toString() : value)
+                )
+            )}
             fixSuggestion: ${fixSuggestion}
             docLink: ${docLink}`
         super(errorMsg)

@@ -10,6 +10,7 @@ import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 import "../../fetch-polyfill"
+import { UserOpFailureError } from "../../src/errors"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
@@ -129,7 +130,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 
@@ -148,7 +149,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not blacklisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 

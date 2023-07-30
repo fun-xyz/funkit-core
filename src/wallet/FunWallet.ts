@@ -577,7 +577,7 @@ export class FunWallet extends FirstClassActions {
             if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
                 options.fee.token = options.gasSponsor.token
             }
-            if (!options.fee.token || !options.fee.recipient) {
+            if (!options.fee.token) {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,
                     "EnvOption.fee.token or EnvOption.gasSponsor.token is required",

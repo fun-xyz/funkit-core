@@ -27,7 +27,8 @@ export enum ErrorType {
     ResourceNotFound = "ResourceNotFound",
     InvalidAction = "InvalidAction",
     ThrottlingError = "ThrottlingError",
-    AccessDeniedError = "AccessDeniedError"
+    AccessDeniedError = "AccessDeniedError",
+    UserOpFailureError = "UserOpFailureError"
 }
 
 export enum ErrorCode {
@@ -48,5 +49,6 @@ export enum ErrorCode {
     ServerMissingData = "ServerMissingData",
     ServerFailure = "ServerFailure",
     UnknownServerError = "UnknownServerError",
-    ServerConnectionError = "ServerConnectionError"
+    ServerConnectionError = "ServerConnectionError",
+    UserOpFailureError = "UserOpFailureError"
 }

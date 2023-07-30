@@ -145,7 +145,6 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     await wallet.executeOperation(user, operation)
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
-                    console.log(e)
                     assert(e.message.includes("FW406"), "call succeded when it should have failed")
                 }
             })

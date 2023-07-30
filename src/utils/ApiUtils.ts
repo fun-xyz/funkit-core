@@ -2,10 +2,10 @@ import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
 import { stringifyOp } from "./UserOpUtils"
 import { API_URL } from "../common/constants"
-import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError, UserOpFailureError } from "../errors"
 
 const errorHandler = (err: any, context: any) => {
-    if (err instanceof ResourceNotFoundError || err instanceof InvalidParameterError) {
+    if (err instanceof ResourceNotFoundError || err instanceof InvalidParameterError || err instanceof UserOpFailureError) {
         context.abort()
     }
 }
@@ -40,13 +40,13 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 redirect: "follow",
                 body: method !== "GET" ? stringifyOp(body) : undefined
             })
-            const text = await response.text()
-            if (response.status === 200) {
-                return JSON.parse(text)
+            const json = await response.json()
+            if (response.ok) {
+                return json
             } else if (response.status === 404) {
                 throw new ResourceNotFoundError(
                     ErrorCode.ServerMissingData,
-                    `data not found on api server ${text}`,
+                    `data not found on api server ${JSON.stringify(json)}`,
                     `sendRequest.ApiUtils ${method} ${uri}`,
                     { body },
                     "check the api call parameters. its mostly because some call parameters are wrong",
@@ -55,25 +55,36 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             } else if (response.status === 400) {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameter,
-                    `bad request ${text}`,
+                    `bad request ${JSON.stringify(json)}`,
                     `sendRequest.ApiUtils ${method} ${uri}`,
                     { body },
                     "check the api call parameters. its mostly because some call parameters are wrong",
                     "https://docs.fun.xyz"
                 )
             } else if (response.status === 500) {
-                throw new InternalFailureError(
-                    ErrorCode.ServerFailure,
-                    `server failure ${text}`,
-                    `sendRequest.ApiUtils ${method} ${uri}`,
-                    { body },
-                    "retry later. if it still fails, please contact us.",
-                    "https://docs.fun.xyz"
-                )
+                if (json.errorCode === ErrorCode.UserOpFailureError) {
+                    throw new UserOpFailureError(
+                        ErrorCode.UserOpFailureError,
+                        `user op failure ${JSON.stringify(json)}`,
+                        `sendRequest.ApiUtils ${method} ${uri}`,
+                        { body },
+                        "fix user op failure. Most of the time this is due to invalid parameters",
+                        "https://docs.fun.xyz"
+                    )
+                } else {
+                    throw new InternalFailureError(
+                        ErrorCode.ServerFailure,
+                        `server failure ${JSON.stringify(json)}`,
+                        `sendRequest.ApiUtils ${method} ${uri}`,
+                        { body },
+                        "retry later. if it still fails, please contact us.",
+                        "https://docs.fun.xyz"
+                    )
+                }
             } else if (!response.ok) {
                 throw new InternalFailureError(
                     ErrorCode.UnknownServerError,
-                    `unknown server failure ${text}`,
+                    `unknown server failure ${JSON.stringify(json)}`,
                     `sendRequest.ApiUtils ${method} ${uri}`,
                     { body },
                     "retry later. if it still fails, please contact us.",
