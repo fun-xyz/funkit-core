@@ -16,12 +16,7 @@ export class BaseError extends Error {
             timestamp: ${new Date().toUTCString()}
             message: ${msg}
             functionName: ${functionName}
-            paramsUsed: ${JSON.parse(
-                JSON.stringify(
-                    paramsUsed,
-                    (_, value) => (typeof value === "bigint" ? value.toString() : value)
-                )
-            )}
+            paramsUsed: ${JSON.parse(JSON.stringify(paramsUsed, (_, value) => (typeof value === "bigint" ? value.toString() : value)))}
             fixSuggestion: ${fixSuggestion}
             docLink: ${docLink}`
         super(errorMsg)

@@ -4,13 +4,13 @@ import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
+import { UserOpFailureError } from "../../src/errors"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 import "../../fetch-polyfill"
-import { UserOpFailureError } from "../../src/errors"
 
 export interface GaslessSponsorTestConfig {
     chainId: number
