@@ -18,8 +18,8 @@ import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
-import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
-import { getAuthUniqueId, objectify } from "../utils"
+import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
+import { getAuthUniqueId } from "../utils"
 import { convertProviderToClient } from "../viem"
 const gasSpecificChain = { "137": 850_000_000_000 }
 
@@ -149,10 +149,14 @@ export class Auth {
         const { to, data } = txData
         let { value } = txData
         if (!chain || !chainId) {
-            const currentLocation = "Eoa.sendTx"
-            const helperMainMessage = "Chain object is missing or incorrect"
-            const helper = new Helper(`${currentLocation} was given these parameters`, objectify(txData), helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
+            throw new InvalidParameterError(
+                ErrorCode.MissingParameter,
+                "chain object is missing or incorrect",
+                "auth.sendTx",
+                { options, chainId },
+                "Provide proper chain information from options field",
+                "https://docs.fun.xyz"
+            )
         }
         const client = await chain.getClient()
         let tx
@@ -206,7 +210,7 @@ export class Auth {
         try {
             return await getUserWalletsByAddr(await this.getAddress(), chainId)
         } catch (err) {
-            if (err instanceof ServerMissingDataError) {
+            if (err instanceof ResourceNotFoundError) {
                 return []
             }
             throw err

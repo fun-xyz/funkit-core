@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 import { Address } from "viem"
 import { createUser, getUserAuthIdByAddr, getUserUniqueId } from "../apis/UserApis"
-import { ServerMissingDataError } from "../errors"
+import { ResourceNotFoundError } from "../errors"
 
 export const getAuthUniqueId = async (authId: string, chainId: string, addr = "NO_ADDRESS", skipDBActions = false) => {
     let authUniqueId
@@ -31,7 +31,7 @@ export const getAuthIdFromAddr = async (addr: Address, chainId: string) => {
     try {
         authId = await getUserAuthIdByAddr(addr, chainId)
     } catch (err) {
-        if (err instanceof ServerMissingDataError) {
+        if (err instanceof ResourceNotFoundError) {
             authId = addr
             await createUser(addr, chainId, addr, "eoa", uuidv4())
         } else {

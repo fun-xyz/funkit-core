@@ -1,7 +1,7 @@
 import { Address, Hex, InvalidParameterError } from "viem"
 import { Wallet } from "./types"
 import { API_URL } from "../common/constants"
-import { ServerMissingDataError } from "../errors"
+import { ResourceNotFoundError } from "../errors"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createUser(authId: string, chainId: string, addr: string, method: string, userUniqueId: string): Promise<void> {
@@ -18,7 +18,7 @@ export async function getUserUniqueId(authId: string): Promise<string> {
     try {
         return (await sendGetRequest(API_URL, `user/auth/${authId}/unique-id`)).userUniqueId
     } catch (err) {
-        if (err instanceof ServerMissingDataError) {
+        if (err instanceof ResourceNotFoundError) {
             return ""
         }
         throw err

@@ -2,10 +2,10 @@ import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
 import { stringifyOp } from "./UserOpUtils"
 import { API_URL } from "../common/constants"
-import { Helper, InternalFailureError, InvalidParameterError, NoServerConnectionError, ServerMissingDataError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
 
 const errorHandler = (err: any, context: any) => {
-    if (err instanceof ServerMissingDataError || err instanceof InvalidParameterError) {
+    if (err instanceof ResourceNotFoundError || err instanceof InvalidParameterError) {
         context.abort()
     }
 }
@@ -41,29 +41,57 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 body: method !== "GET" ? stringifyOp(body) : undefined
             })
             const text = await response.text()
-            if (response.status === 404) {
-                const helper = new Helper(`Calling ${uri}`, method, "Data not found on server.")
-                throw new ServerMissingDataError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+            if (response.status === 200) {
+                return JSON.parse(text)
+            } else if (response.status === 404) {
+                throw new ResourceNotFoundError(
+                    ErrorCode.ServerMissingData,
+                    `data not found on api server ${text}`,
+                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    { body },
+                    "check the api call parameters. its mostly because some call parameters are wrong",
+                    "https://docs.fun.xyz"
+                )
             } else if (response.status === 400) {
-                const helper = new Helper(`Calling ${uri}`, method, "Bad Request.")
-                throw new InvalidParameterError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameter,
+                    `bad request ${text}`,
+                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    { body },
+                    "check the api call parameters. its mostly because some call parameters are wrong",
+                    "https://docs.fun.xyz"
+                )
             } else if (response.status === 500) {
-                const helper = new Helper(`Calling ${uri}`, method, text)
-                throw new InternalFailureError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+                throw new InternalFailureError(
+                    ErrorCode.ServerFailure,
+                    `server failure ${text}`,
+                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    { body },
+                    "retry later. if it still fails, please contact us.",
+                    "https://docs.fun.xyz"
+                )
             } else if (!response.ok) {
-                const helper = new Helper(`Calling ${uri}`, method, "Unknown Error.")
-                throw new NoServerConnectionError("sendRequest.ApiUtils", `HTTP error! status: ${response.status}`, helper, true)
+                throw new InternalFailureError(
+                    ErrorCode.UnknownServerError,
+                    `unknown server failure ${text}`,
+                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    { body },
+                    "retry later. if it still fails, please contact us.",
+                    "https://docs.fun.xyz"
+                )
             }
 
-            if (text) {
-                return JSON.parse(text)
-            } else {
-                return {}
-            }
+            return {}
         }, DEFAULT_RETRY_OPTIONS)
     } catch (err) {
-        const helper = new Helper(`Calling ${uri}`, method, "Cannot connect to Fun API Server.")
-        throw new NoServerConnectionError("sendRequest.ApiUtils", `Error: ${err}`, helper, true)
+        throw new InternalFailureError(
+            ErrorCode.ServerConnectionError,
+            `Cannot connect to Fun API Service ${err}`,
+            `sendRequest.ApiUtils ${method} ${uri}`,
+            { body },
+            "retry later. if it still fails, please contact us.",
+            "https://docs.fun.xyz"
+        )
     }
 }
 
