@@ -3,22 +3,29 @@ import { getChainFromData } from "./Chain"
 import { getNftAddress, getNftName } from "../apis/NFTApis"
 import { ERC721_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
-import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
+import { ErrorCode, InvalidParameterError } from "../errors"
 
 export class NFT {
     address?: Address
     name = ""
 
-    constructor(input: string, location = "NFT") {
+    constructor(input: string) {
+        if (!input) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidNFTIdentifier,
+                "valid NFT identifier is required, could be address or name",
+                "NFT.constructor",
+                { input },
+                "Please provide valid NFT identifier",
+                "https://docs.fun.xyz"
+            )
+        }
+
         if (isAddress(input)) {
             this.address = input
-            return
-        } else if (input) {
-            this.name = input
         } else {
-            throw new MissingParameterError(location)
+            this.name = input
         }
-        this.name = input
     }
 
     async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
@@ -40,15 +47,18 @@ export class NFT {
 
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            if (!this.name) throw new MissingParameterError("NFT.getAddress")
-            const nft = await getNftAddress(this.name)
-            if (nft.error) {
-                const helper = new Helper("getName", "", "call failed")
-                helper.pushMessage(`NFT address for ${this.name} not found`)
-                throw new ServerMissingDataError("NFT.getAddress", "NFT", helper)
-            } else {
-                return nft.address
+            if (!this.name) {
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidNFTIdentifier,
+                    "valid NFT identifier is required, could be address or name",
+                    "NFT.getAddress",
+                    {},
+                    "Please provide valid NFT identifier",
+                    "https://docs.fun.xyz"
+                )
             }
+            const nft = await getNftAddress(this.name)
+            return nft.address
         } else {
             return this.address
         }
@@ -58,13 +68,7 @@ export class NFT {
         if (!this.name && this.address) {
             const chain = await getChainFromData(options.chain)
             const nft = await getNftName(await chain.getChainId(), this.address)
-            if (nft.error) {
-                const helper = new Helper("getName", chain, "call failed")
-                helper.pushMessage(`NFT name for address ${this.address} and chain id ${await chain.getChainId()} not found`)
-                throw new ServerMissingDataError("NFT.getName", "NFT", helper)
-            } else {
-                return nft.name
-            }
+            return nft.name
         }
         return this.name
     }

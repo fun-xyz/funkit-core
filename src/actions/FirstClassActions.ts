@@ -47,7 +47,7 @@ import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
-import { Helper, InvalidParameterError, MissingParameterError } from "../errors"
+import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthIdFromAddr } from "../utils"
 
 export abstract class FirstClassActions {
@@ -88,10 +88,14 @@ export abstract class FirstClassActions {
         } else if (isNativeTransferParams(params)) {
             transactionParams = await ethTransferTransactionParams(params)
         } else {
-            const currentLocation = "action.transfer"
-            const helperMainMessage = "params were missing or incorrect"
-            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Params were missing or incorrect",
+                "wallet.transfer",
+                { params },
+                "Provide correct transfer params.",
+                "https://docs.fun.xyz"
+            )
         }
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
@@ -108,10 +112,14 @@ export abstract class FirstClassActions {
         } else if (isERC721ApproveParams(params)) {
             transactionParams = await erc721ApproveTransactionParams(params)
         } else {
-            const currentLocation = "action.tokenApprove"
-            const helperMainMessage = "params were missing or incorrect"
-            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Params were missing or incorrect",
+                "wallet.tokenApprove",
+                { params },
+                "Provide correct token approve params.",
+                "https://docs.fun.xyz"
+            )
         }
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
@@ -138,10 +146,14 @@ export abstract class FirstClassActions {
         } else if (isFinishUnstakeParams(params)) {
             transactionParams = await finishUnstakeTransactionParams(params as FinishUnstakeParams)
         } else {
-            const currentLocation = "action.unstake"
-            const helperMainMessage = "params were missing or incorrect"
-            const helper = new Helper(`${currentLocation} was given these parameters`, params, helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Params were missing or incorrect",
+                "wallet.unstake",
+                { params },
+                "Provide correct unstake params.",
+                "https://docs.fun.xyz"
+            )
         }
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
@@ -223,15 +235,28 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const groups = await getGroups([params.groupId], params.chainId.toString())
         if (!groups || groups.length === 0) {
-            const helper = new Helper("Group does not exist", params.groupId, "Bad Request.")
-            throw new InvalidParameterError("action.addUserToGroup", "groupId", helper, false)
+            throw new ResourceNotFoundError(
+                ErrorCode.GroupNotFound,
+                "group is not found",
+                "wallet.addUserToGroup",
+                { params },
+                "Provide correct groupId and chainId.",
+                "https://docs.fun.xyz"
+            )
         }
 
+        const originalMembers = new Set(groups[0].memberIds)
         let members = new Set(groups[0].memberIds)
-        members = members.add(params.userId)
-        if (members.size <= groups[0].memberIds.length) {
-            const helper = new Helper("User already exists in group", params.userId, "Bad Request.")
-            throw new InvalidParameterError("action.addUserToGroup", "userId", helper, false)
+        members.add(params.userId)
+        if (members.size <= originalMembers.size) {
+            throw new InvalidParameterError(
+                ErrorCode.UserAlreadyExists,
+                "user already exists in group",
+                "wallet.addUserToGroup",
+                { params, originalMembers, userId: params.userId },
+                "Catch this error and swallow it as the user is already added.",
+                "https://docs.fun.xyz"
+            )
         }
 
         const authId = await getAuthIdFromAddr(params.userId as Address, params.chainId.toString())
@@ -258,15 +283,28 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const groups = await getGroups([params.groupId], params.chainId.toString())
         if (!groups || groups.length === 0) {
-            const helper = new Helper("Group does not exist", params.groupId, "Bad Request.")
-            throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
+            throw new ResourceNotFoundError(
+                ErrorCode.GroupNotFound,
+                "group is not found",
+                "wallet.removeUserFromGroup",
+                { params },
+                "Provide correct groupId and chainId.",
+                "https://docs.fun.xyz"
+            )
         }
 
+        const originalMembers = new Set(groups[0].memberIds)
         const members = new Set(groups[0].memberIds)
         members.delete(params.userId)
-        if (members.size >= groups[0].memberIds.length) {
-            const helper = new Helper("User does not exist in group", params.userId, "Bad Request.")
-            throw new InvalidParameterError("action.removeUserFromGroup", "userId", helper, false)
+        if (members.size >= originalMembers.size) {
+            throw new ResourceNotFoundError(
+                ErrorCode.UserNotFound,
+                "user does not exist in group",
+                "wallet.addUserToGroup",
+                { params, originalMembers, userId: params.userId },
+                "Catch this error and swallow it as the user does not exist in the group.",
+                "https://docs.fun.xyz"
+            )
         }
 
         const authId = await getAuthIdFromAddr(params.userId as Address, params.chainId.toString())
@@ -292,17 +330,25 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const groups = await getGroups([params.groupId], params.chainId.toString())
         if (!groups || groups.length === 0) {
-            const helper = new Helper("Group does not exist", params.groupId, "Bad Request.")
-            throw new InvalidParameterError("action.updateThresholdOfGroup", "groupId", helper, false)
+            throw new ResourceNotFoundError(
+                ErrorCode.GroupNotFound,
+                "group is not found",
+                "wallet.updateThresholdOfGroup",
+                { params },
+                "Provide correct groupId and chainId.",
+                "https://docs.fun.xyz"
+            )
         }
 
         if (!Number.isInteger(params.threshold) || params.threshold < 1 || params.threshold > groups[0].memberIds.length) {
-            const helper = new Helper(
-                "Threshold can not be 0 or bigger than number of members in the group",
-                params.threshold,
-                "Bad Request."
+            throw new InvalidParameterError(
+                ErrorCode.InvalidThreshold,
+                "threshold can not be 0 or bigger than number of members in the group",
+                "wallet.updateThresholdOfGroup",
+                { params, memberIds: groups[0].memberIds },
+                "Provide proper threshold number.",
+                "https://docs.fun.xyz"
             )
-            throw new InvalidParameterError("action.updateThresholdOfGroup", "threshold", helper, false)
         }
 
         await updateGroup(params.groupId, params.chainId.toString(), { threshold: Number(params.threshold) })

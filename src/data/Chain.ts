@@ -2,7 +2,7 @@ import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
 import { CONTRACT_ADDRESSES, ENTRYPOINT_CONTRACT_INTERFACE, EstimateGasResult } from "../common"
-import { Helper, MissingParameterError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { isContract } from "../utils"
 
 export class Chain {
@@ -82,10 +82,14 @@ export class Chain {
         await this.init()
         const res = this.addresses![name]
         if (!res) {
-            const currentLocation = "Chain.getAddress"
-            const helperMainMessage = "Search key does not exist"
-            const helper = new Helper(`${currentLocation} was given these parameters`, name, helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
+            throw new ResourceNotFoundError(
+                ErrorCode.AddressNotFound,
+                "address not found",
+                "chain.getAddress",
+                { name },
+                "Provide correct name to query address",
+                "https://docs.fun.xyz"
+            )
         }
         return res
     }
@@ -113,9 +117,14 @@ export class Chain {
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
         if (!this.addresses || !this.addresses.entryPointAddress) {
-            const currentLocation = "data.chain"
-            const helper = new Helper(currentLocation, "", "entryPointAddress is required.")
-            throw new MissingParameterError(currentLocation, helper)
+            throw new InternalFailureError(
+                ErrorCode.AddressNotFound,
+                "entryPointAddress is required",
+                "chain.estimateOpGas",
+                { partialOp },
+                "This is an internal error, please contact support.",
+                "https://docs.fun.xyz"
+            )
         }
 
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
@@ -174,8 +183,14 @@ export class Chain {
 
 export const getChainFromData = async (chainIdentifier?: string | Chain | number): Promise<Chain> => {
     if (!chainIdentifier) {
-        const helper = new Helper("getChainFromData", chainIdentifier, "chainIdentifier is required")
-        throw new MissingParameterError("Chain.getChainFromData", helper)
+        throw new InvalidParameterError(
+            ErrorCode.InvalidChainIdentifier,
+            "valid chain identifier is required, could be chainId, chainName or Fun Chain object",
+            "chain.getChainFromData",
+            { chainIdentifier },
+            "Please provide valid chain identifier",
+            "https://docs.fun.xyz"
+        )
     }
 
     let chain: Chain

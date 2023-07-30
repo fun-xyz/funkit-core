@@ -3,7 +3,7 @@ import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionD
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
-import { Helper, ParameterError } from "../errors"
+import { ErrorCode, InvalidParameterError } from "../errors"
 import { sendRequest } from "../utils"
 import { UniswapV2Addrs, UniswapV3Addrs, fromReadableAmount, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
@@ -11,8 +11,6 @@ import { ContractInterface } from "../viem/ContractInterface"
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-// const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
-// const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
 
 const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
@@ -57,8 +55,14 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
 export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
     const supportedChains = [1, 137, 31337, 36865]
     if (!supportedChains.includes(swapParams.chainId)) {
-        const helper = new Helper("oneInchCaldlata", swapParams.chainId, "Staking available only on Ethereum mainnet and Goerli")
-        throw new ParameterError("Invalid Chain Id", "getLidoAddress", helper, false)
+        throw new InvalidParameterError(
+            ErrorCode.ChainNotSupported,
+            "Incorrect chainId, oneInch only available on Ethereum mainnet and polygon",
+            "wallet.swap",
+            { swapParams },
+            "Provide correct chainId.",
+            "https://docs.fun.xyz"
+        )
     }
     const chain = new Chain({ chainId: swapParams.chainId.toString() })
     const options: EnvOption = { chain }

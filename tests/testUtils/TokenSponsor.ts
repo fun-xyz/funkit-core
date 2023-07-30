@@ -10,6 +10,7 @@ import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 import "../../fetch-polyfill"
+import { UserOpFailureError } from "../../src/errors"
 
 export interface TokenSponsorTestConfig {
     chainId: number
@@ -208,7 +209,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 
@@ -238,7 +239,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not blacklisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
         it("Blacklist Mode Approved with permit", async () => {

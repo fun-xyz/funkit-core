@@ -1,7 +1,6 @@
 export * from "./ApiUtils"
 export * from "./AuthUtils"
 export * from "./ChainUtils"
-export * from "./DataUtils"
 export * from "./PaymasterUtils"
 export * from "./SwapUtils"
 export * from "./UserOpUtils"

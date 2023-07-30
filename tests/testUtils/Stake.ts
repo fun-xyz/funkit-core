@@ -91,11 +91,10 @@ export const StakeTest = (config: StakeTestConfig) => {
                         chainId: config.actualChainId
                     })
                     await wallet.executeOperation(auth, userOp)
+                    assert(false, "Did not throw error")
                 } catch (error: any) {
-                    assert(error.message.substring(0, 12) === "Lido Finance", "Incorrect StatusError")
-                    return
+                    assert(error.message.includes("Not ready to withdraw requests"), "Incorrect StatusError")
                 }
-                assert(false, "Did not throw error")
             }
         })
     })

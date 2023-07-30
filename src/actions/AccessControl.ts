@@ -4,17 +4,22 @@ import { SessionKeyAuth } from "../auth"
 import { RBAC_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { getChainFromData } from "../data"
 import { Token } from "../data/Token"
-import { Helper, MissingParameterError } from "../errors"
-import { objectify, randomBytes } from "../utils"
+import { ErrorCode, InvalidParameterError } from "../errors"
+import { randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
 export const HashOne = padHex("0x1", { size: 32 })
 
 export const createSessionKeyTransactionParams = async (params: SessionKeyParams): Promise<TransactionParams> => {
     if (params.targetWhitelist.length === 0) {
-        const currentLocation = "createSessionKeyCalldata"
-        const helper = new Helper(`${currentLocation} was given these parameters`, objectify(params), "targetWhitelist is empty")
-        throw new MissingParameterError(currentLocation, helper)
+        throw new InvalidParameterError(
+            ErrorCode.MissingParameter,
+            "targetWhitelist is required",
+            "createSessionKeyTransactionParams",
+            { params },
+            "Provide targetWhitelist when creating a session key.",
+            "https://docs.fun.xyz"
+        )
     }
     let { actionValueLimit, feeValueLimit } = params
     actionValueLimit ??= 0n
