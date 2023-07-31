@@ -2,7 +2,15 @@ import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
 import { stringifyOp } from "./UserOpUtils"
 import { API_URL } from "../common/constants"
-import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError, UserOpFailureError } from "../errors"
+import {
+    AccessDeniedError,
+    ErrorCode,
+    InternalFailureError,
+    InvalidParameterError,
+    ResourceNotFoundError,
+    ThrottlingError,
+    UserOpFailureError
+} from "../errors"
 
 const errorHandler = (err: any, context: any) => {
     if (err instanceof ResourceNotFoundError || err instanceof InvalidParameterError || err instanceof UserOpFailureError) {
@@ -43,6 +51,24 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             const json = await response.json()
             if (response.ok) {
                 return json
+            } else if (response.status === 400) {
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameter,
+                    `bad request ${JSON.stringify(json)}`,
+                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    { body },
+                    "check the api call parameters. its mostly because some call parameters are wrong",
+                    "https://docs.fun.xyz"
+                )
+            } else if (response.status === 403) {
+                throw new AccessDeniedError(
+                    ErrorCode.Unauthorized,
+                    `you are not authorized to access this resource ${JSON.stringify(json)}`,
+                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    { body },
+                    "check your api key and check with fun team if you believe something is off",
+                    "https://docs.fun.xyz"
+                )
             } else if (response.status === 404) {
                 throw new ResourceNotFoundError(
                     ErrorCode.ServerMissingData,
@@ -52,13 +78,13 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                     "check the api call parameters. its mostly because some call parameters are wrong",
                     "https://docs.fun.xyz"
                 )
-            } else if (response.status === 400) {
-                throw new InvalidParameterError(
-                    ErrorCode.InvalidParameter,
-                    `bad request ${JSON.stringify(json)}`,
+            } else if (response.status === 429) {
+                throw new ThrottlingError(
+                    ErrorCode.RequestLimitExceeded,
+                    `too many requests ${JSON.stringify(json)}`,
                     `sendRequest.ApiUtils ${method} ${uri}`,
                     { body },
-                    "check the api call parameters. its mostly because some call parameters are wrong",
+                    "you are making too many requests. please slow down. Reach out to fun team if you need more quota",
                     "https://docs.fun.xyz"
                 )
             } else if (response.status === 500) {
