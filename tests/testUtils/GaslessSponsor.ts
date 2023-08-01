@@ -4,6 +4,7 @@ import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
+import { UserOpFailureError } from "../../src/errors"
 import { GaslessSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -129,7 +130,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 
@@ -148,7 +149,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runSwap(wallet1)
                 throw new Error("Wallet is not blacklisted but transaction passed")
             } catch (error: any) {
-                assert(error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
 

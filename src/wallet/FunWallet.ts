@@ -25,9 +25,17 @@ import {
     getChainFromData,
     toBytes32Arr
 } from "../data"
-import { Helper, InvalidParameterError, MissingParameterError, ParameterError, ParameterFormatError, TransactionError } from "../errors"
+import { ErrorCode, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isWalletInitOp } from "../utils"
+import {
+    gasCalculation,
+    generateRandomNonce,
+    getAuthUniqueId,
+    getWalletAddress,
+    isGroupOperation,
+    isSignatureRequired,
+    isWalletInitOp
+} from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -49,10 +57,14 @@ export class FunWallet extends FirstClassActions {
         super()
         const { users, uniqueId, walletAddr } = params
 
-        if (!uniqueId && !walletAddr) {
-            throw new MissingParameterError(
+        if (!(uniqueId && users && users.length > 0) && !walletAddr) {
+            throw new InvalidParameterError(
+                ErrorCode.MissingParameter,
+                "(uniqueId, users) or walletAddr is required",
                 "FunWallet.constructor",
-                new Helper("constructor", uniqueId, "uniqueId or walletAddr is required")
+                params,
+                "Provide either (uniqueId, users) or walletAddr when constructing FunWallet",
+                "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
             )
         }
 
@@ -256,7 +268,14 @@ export class FunWallet extends FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (!userId || userId === "") {
-            throw new MissingParameterError("FunWallet.createOperation", new Helper("createOperation", userId, "userId is required"))
+            throw new InvalidParameterError(
+                ErrorCode.MissingParameter,
+                "userId is required",
+                "FunWallet.createOperation",
+                { userId: userId },
+                "Provide userId when createOperation",
+                "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+            )
         }
         userId = pad(userId as Hex, { size: 32 })
         const chain = await getChainFromData(txOptions.chain)
@@ -336,50 +355,64 @@ export class FunWallet extends FirstClassActions {
         const chain = await getChainFromData(txOptions.chain)
         const chainId = await chain.getChainId()
 
-        // sign the userOp directly here as we may not have the opId yet
-        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
-
-        if (operation.groupId && txOptions.skipDBAction !== true) {
+        if (txOptions.skipDBAction !== true) {
             // cache group info
-            const groups: GroupMetadata[] = await getGroups([operation.groupId], chainId)
-            if (!groups || groups.length === 0) {
-                const helper = new Helper("Group does not exist", operation.groupId, "Bad Request.")
-                throw new InvalidParameterError("action.removeUserFromGroup", "groupId", helper, false)
+            if (isGroupOperation(operation)) {
+                const groups: GroupMetadata[] = await getGroups([operation.groupId!], chainId)
+                if (groups && groups.length > 0) {
+                    // could be empty as a new wallet wants to create a group
+                    this.userInfo?.set(operation.groupId!, {
+                        userId: operation.groupId!,
+                        groupInfo: {
+                            threshold: groups[0].threshold,
+                            memberIds: groups[0].memberIds
+                        }
+                    })
+                }
             }
 
-            this.userInfo?.set(operation.groupId, {
-                userId: operation.groupId,
-                groupInfo: {
-                    threshold: groups[0].threshold,
-                    memberIds: groups[0].memberIds
-                }
-            })
+            const threshold = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
 
             // check remote collected signature
-            const storedOperation = (await getOps([operation.opId!], chainId))[0]
-            if (storedOperation.signatures!.length + 1 < groups[0].threshold) {
-                const helper = new Helper("executeOperation", chainId, "Not enough signatures")
-                throw new ParameterError("Insufficient signatues for multi sig", "executeOperation", helper, false)
+            const storedOps = await getOps([operation.opId!], chainId)
+            let collectedSigCount = storedOps[0]?.signatures?.length ?? 0
+            if (isSignatureRequired(await auth.getUserId(), storedOps[0]?.signatures)) {
+                operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+                collectedSigCount += 1
             }
+
+            if (collectedSigCount < threshold) {
+                throw new InvalidParameterError(
+                    ErrorCode.InsufficientSignatures,
+                    "userId is required",
+                    "FunWallet.executeOperation",
+                    { threshold, collectedSigCount, chainId },
+                    "Provide userId when createOperation",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                )
+            }
+        } else {
+            operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
 
         if (isGroupOperation(operation)) {
-            await executeOp(
-                operation.opId!,
+            await executeOp({
+                opId: operation.opId!,
                 chainId,
-                await auth.getAddress(),
-                await chain.getAddress("entryPointAddress"),
-                operation.userOp.signature as Hex
-            )
+                executedBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
+            })
         } else {
-            await executeOp(
-                operation.opId!,
+            await executeOp({
+                opId: operation.opId!,
                 chainId,
-                await auth.getAddress(),
-                await chain.getAddress("entryPointAddress"),
-                operation.userOp.signature as Hex,
-                operation.userOp
-            )
+                executedBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                userOp: operation.userOp
+            })
         }
 
         const opHash = await operation.getOpHash(chain)
@@ -388,15 +421,13 @@ export class FunWallet extends FirstClassActions {
         try {
             txid = await chain.getTxId(opHash)
             if (!txid || txid === "0x") {
-                const helper = new Helper("Txid not found", { txid, operation, chain }, "Tx id not found on chain")
-                throw new TransactionError("FunWallet.executeOperaion", helper)
+                txid = "Cannot find transaction id."
             } else {
                 const gasData = await gasCalculation(txid, chain)
                 gasUsed = gasData.gasUsed
                 gasUSD = gasData.gasUSD
             }
         } catch (e) {
-            console.log(e)
             txid = "Cannot find transaction id."
         }
 
@@ -555,17 +586,35 @@ export class FunWallet extends FirstClassActions {
                 options.fee.token = options.gasSponsor.token
             }
             if (!options.fee.token) {
-                const helper = new Helper("Fee", options.fee, "EnvOption.fee.token or EnvOption.gasSponsor.token is required")
-                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+                throw new InvalidParameterError(
+                    ErrorCode.MissingParameter,
+                    "EnvOption.fee.token or EnvOption.gasSponsor.token is required",
+                    "FunWallet.createOperation",
+                    { options },
+                    "Provide EnvOption.fee.token or EnvOption.gasSponsor.token when calling wallet.createOperation",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                )
             }
             if (!options.fee.recipient) {
-                const helper = new Helper("Fee", options.fee, "EnvOption.fee.recipient is required")
-                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+                throw new InvalidParameterError(
+                    ErrorCode.MissingParameter,
+                    "EnvOption.fee.recipient is required",
+                    "FunWallet.createOperation",
+                    { options },
+                    "Provide EnvOption.fee.recipient when calling wallet.createOperation",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                )
             }
             const token = new Token(options.fee.token)
             if (options.fee.gasPercent && !token.isNative) {
-                const helper = new Helper("Fee", options.fee, "gasPercent is only valid for native tokens")
-                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameterCombination,
+                    "GasPercent is only valid for native tokens",
+                    "FunWallet.createOperation",
+                    { options },
+                    "Use native token as the fee token if you want to charge fee based on percentage",
+                    "https://docs.fun.xyz/how-to-guides/configure-environment/set-developer-fee"
+                )
             }
 
             if (token.isNative) {
@@ -593,8 +642,14 @@ export class FunWallet extends FirstClassActions {
                 const gasUsed = await operation.getMaxTxCost()
                 options.fee.amount = Math.ceil((Number(gasUsed) * options.fee.gasPercent) / 100)
             } else {
-                const helper = new Helper("Fee", options.fee, "fee.amount or fee.gasPercent is required")
-                throw new ParameterFormatError("Wallet.execFromEntryPoint", helper)
+                throw new InvalidParameterError(
+                    ErrorCode.MissingParameter,
+                    "EnvOption.fee.amount or EnvOption.fee.gasPercent is required",
+                    "FunWallet.createOperation",
+                    { options },
+                    "Provide either EnvOption.fee.amount or EnvOption.fee.gasPercent when calling wallet.createOperation",
+                    "https://docs.fun.xyz/how-to-guides/configure-environment/set-developer-fee"
+                )
             }
             const feedata = [options.fee.token, options.fee.recipient, options.fee.amount]
             return WALLET_CONTRACT_INTERFACE.encodeData("execFromEntryPointWithFee", [params.to, params.value, params.data, feedata])

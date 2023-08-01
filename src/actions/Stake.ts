@@ -2,7 +2,7 @@ import { Address, parseEther } from "viem"
 import { FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, TransactionParams, WITHDRAW_QUEUE_ABI } from "../common"
 import { Chain } from "../data"
-import { Helper, ParameterError, StatusError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
 
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
@@ -23,8 +23,14 @@ export const requestUnstakeTransactionParams = async (params: RequestUnstakePara
     const steth = getSteth(params.chainId.toString())
     const withdrawalQueue: Address = getWithdrawalQueue(params.chainId.toString())
     if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
-        const helper = new Helper("Request Unstake", "Incorrect Chain Id", "Staking available only on Ethereum mainnet and Goerli")
-        throw new StatusError("Lido Finance", "", "action.requestUnstake", helper)
+        throw new InvalidParameterError(
+            ErrorCode.ChainNotSupported,
+            "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
+            "wallet.unstake",
+            { params },
+            "Provide correct chainId.",
+            "https://docs.fun.xyz"
+        )
     }
     const approveAmount: number = params.amounts.reduce((partialSum, a) => partialSum + a, 0)
     const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(steth, "approve", [
@@ -53,8 +59,14 @@ export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams
     const withdrawQueueAddress = getWithdrawalQueue(params.chainId.toString())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
     if (readyToWithdrawRequestIds.length === 0) {
-        const helper = new Helper("Finish Unstake", " ", "No ready to withdraw requests")
-        throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Not ready to withdraw requests",
+            "wallet.unstake",
+            { params },
+            "Please wait a bit.",
+            "https://docs.fun.xyz"
+        )
     }
 
     // claim batch withdrawal
@@ -66,8 +78,14 @@ export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams
         chain
     )
     if (!hints) {
-        const helper = new Helper("Finish Unstake", " ", "Error in batch claim")
-        throw new StatusError("Lido Finance", "", "action.finishUnstake", helper)
+        throw new InternalFailureError(
+            ErrorCode.CheckPointHintsNotFound,
+            "lido checkpoint hints are not found when batching the withdrawal",
+            "wallet.unstake",
+            { params, readyToWithdrawRequestIds, lastCheckpoint, hints },
+            "Retry later.",
+            "https://docs.fun.xyz"
+        )
     }
     return withdrawQueueInterface.encodeTransactionParams(withdrawQueueAddress, "claimWithdrawalsTo", [
         readyToWithdrawRequestIds,
@@ -114,11 +132,13 @@ const getWithdrawalQueue = (chainId: string): Address => {
         case 36865:
             return "0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1"
         default:
-            throw new ParameterError(
-                "Invalid Chain Id",
+            throw new InvalidParameterError(
+                ErrorCode.ChainNotSupported,
+                "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
                 "getWithdrawalQueue",
-                new Helper("getWithdrawalQueue", chainId, "Staking available only on Ethereum mainnet and Goerli"),
-                false
+                { chainId },
+                "Provide correct chainId.",
+                "https://docs.fun.xyz"
             )
     }
 }
@@ -132,11 +152,13 @@ const getSteth = (chainId: string): Address => {
         case 36865:
             return "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
         default:
-            throw new ParameterError(
-                "Invalid Chain Id",
+            throw new InvalidParameterError(
+                ErrorCode.ChainNotSupported,
+                "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
                 "getSteth",
-                new Helper("getSteth", chainId, "Staking available only on Ethereum mainnet and Goerli"),
-                false
+                { chainId },
+                "Provide correct chainId.",
+                "https://docs.fun.xyz"
             )
     }
 }

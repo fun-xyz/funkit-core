@@ -1,6 +1,6 @@
 import { Address } from "viem"
 import { API_URL, BASE_WRAP_TOKEN_ADDR } from "../common/constants"
-import { Helper, ServerMissingDataError } from "../errors"
+import { ErrorCode, ResourceNotFoundError } from "../errors"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function getTokenInfo(symbol: string, chainId: string): Promise<Address> {
@@ -19,8 +19,14 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
     if (tokenInfo.address) {
         return tokenInfo.address
     }
-    const helper = new Helper("token", symbol, "token symbol doesn't exist")
-    throw new ServerMissingDataError("Token.getAddress", "DataServer", helper)
+    throw new ResourceNotFoundError(
+        ErrorCode.TokenNotFound,
+        "token symbol does not exist on provided chain",
+        "infoApis.getTokenInfo",
+        { symbol, chainId },
+        "Provide correct symbol and chainId.",
+        "https://docs.fun.xyz"
+    )
 }
 
 export async function getChainFromId(chainId: string): Promise<any> {

@@ -1,6 +1,6 @@
 import { Address } from "viem"
 import { API_URL } from "../common/constants"
-import { Helper, InternalFailureError } from "../errors"
+import { ErrorCode, InternalFailureError } from "../errors"
 import { sendPostRequest } from "../utils/ApiUtils"
 
 export async function createListener(walletAddresses: Address[], chains: string[], webhookUrl: string): Promise<void> {
@@ -9,12 +9,18 @@ export async function createListener(walletAddresses: Address[], chains: string[
         chains,
         webhookUrl
     }
-    const result = await sendPostRequest(API_URL, "listeners/create", body).then((r) => {
+    const result = await sendPostRequest(API_URL, "listeners/", body).then((r) => {
         return r
     })
     if (!result) {
-        const helper = new Helper("Calling createListener", "POST", "Empty data returned")
-        throw new InternalFailureError("listenerApis.createListener", "Listener call failed.", helper, true)
+        throw new InternalFailureError(
+            ErrorCode.UnknownServerError,
+            "Listener call failed.",
+            "listenerApis.createListener",
+            { walletAddresses, chains, webhookUrl },
+            "This is an internal error, please contact support.",
+            "https://docs.fun.xyz"
+        )
     }
     return result
 }
@@ -28,8 +34,14 @@ export async function deleteListener(walletAddress: Address, chain: string): Pro
         return r
     })
     if (!result) {
-        const helper = new Helper("Calling deleteListener", "POST", "Empty data returned")
-        throw new InternalFailureError("listenerApis.deleteListener", "Listener call failed.", helper, true)
+        throw new InternalFailureError(
+            ErrorCode.UnknownServerError,
+            "Listener call failed.",
+            "listenerApis.createListener",
+            { walletAddress, chain },
+            "This is an internal error, please contact support.",
+            "https://docs.fun.xyz"
+        )
     }
     return result
 }

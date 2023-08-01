@@ -278,7 +278,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
                     expect.fail("Should throw error")
                 } catch (error: any) {
-                    expect(error.message).to.include("fee.amount or fee.gasPercent is required")
+                    expect(error.message).to.include("EnvOption.fee.amount or EnvOption.fee.gasPercent is required")
                 }
             })
             it("negative test - fee uses gas percent but charges erc20 tokens", async () => {
@@ -294,7 +294,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
                     expect.fail("Should throw error")
                 } catch (error: any) {
-                    expect(error.message).to.include("gasPercent is only valid for native tokens")
+                    expect(error.message).to.include("GasPercent is only valid for native tokens")
                 }
             })
         })
