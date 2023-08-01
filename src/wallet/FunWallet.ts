@@ -3,7 +3,7 @@ import { User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
 import { createGroup, getGroups } from "../apis/GroupApis"
-import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
+import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GroupMetadata } from "../apis/types"
 import { addUserToWallet } from "../apis/UserApis"
@@ -480,6 +480,84 @@ export class FunWallet extends FirstClassActions {
             }
         }
         return receipt
+    }
+
+    async scheduleOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Hex> {
+        txOptions = parseOptions(txOptions)
+        operation = Operation.convertTypeToObject(operation)
+        const chain = await getChainFromData(txOptions.chain)
+        const chainId = await chain.getChainId()
+
+        if (txOptions.skipDBAction !== true) {
+            // cache group info
+            if (isGroupOperation(operation)) {
+                const groups: GroupMetadata[] = await getGroups([operation.groupId!], chainId)
+                if (groups && groups.length > 0) {
+                    // could be empty as a new wallet wants to create a group
+                    this.userInfo?.set(operation.groupId!, {
+                        userId: operation.groupId!,
+                        groupInfo: {
+                            threshold: groups[0].threshold,
+                            memberIds: groups[0].memberIds
+                        }
+                    })
+                }
+            }
+
+            const threshold = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
+
+            // check remote collected signature
+            const storedOps = await getOps([operation.opId!], chainId)
+            let collectedSigCount = storedOps[0]?.signatures?.length ?? 0
+            if (isSignatureRequired(await auth.getUserId(), storedOps[0]?.signatures)) {
+                operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+                collectedSigCount += 1
+            }
+
+            if (collectedSigCount < threshold) {
+                throw new InvalidParameterError(
+                    ErrorCode.InsufficientSignatures,
+                    "userId is required",
+                    "FunWallet.executeOperation",
+                    { threshold, collectedSigCount, chainId },
+                    "Provide userId when createOperation",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                )
+            }
+        } else {
+            operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+        }
+
+        if (isGroupOperation(operation)) {
+            await scheduleOp({
+                opId: operation.opId!,
+                chainId,
+                executedBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
+            })
+        } else {
+            await scheduleOp({
+                opId: operation.opId!,
+                chainId,
+                executedBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                userOp: operation.userOp
+            })
+        }
+        if (!operation.opId) {
+            throw new InvalidParameterError(
+                ErrorCode.MissingParameter,
+                "Operation id is required",
+                "FunWallet.scheduleOperation",
+                operation,
+                "Make sure you are scheduling a valid operation",
+                "https://docs.fun.xyz/"
+            )
+        }
+        return operation.opId
     }
 
     // TODO, use auth to do authentication

@@ -31,6 +31,16 @@ export type ExecuteOpInput = {
     groupInfo?: GroupInfo
 }
 
+export type ScheduleOpInput = {
+    opId: Hex
+    chainId: string
+    executedBy: string
+    entryPointAddress: Address
+    signature: Hex
+    userOp?: UserOperation
+    groupInfo?: GroupInfo
+}
+
 export type EstimateOpInput = {
     opId?: Hex
     chainId: string

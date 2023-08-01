@@ -100,7 +100,8 @@ export enum OperationStatus {
     CANCELLED = "CANCELLED",
     PENDING = "PENDING",
     OP_SUCCEED = "OP_SUCCEED",
-    OP_REVERTED = "OP_REVERTED"
+    OP_REVERTED = "OP_REVERTED",
+    SCHEDULED = "SCHEDULED"
 }
 
 export type OperationMetadata = {
