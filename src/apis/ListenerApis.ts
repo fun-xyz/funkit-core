@@ -10,7 +10,7 @@ export async function createListener(walletAddresses: Address[], chains: string[
         webhookUrl
     }
     const result = await sendPostRequest(API_URL, "listeners/create", body).then((r) => {
-        return r.success
+        return r
     })
     if (!result) {
         const helper = new Helper("Calling createListener", "POST", "Empty data returned")
@@ -25,7 +25,7 @@ export async function deleteListener(walletAddress: Address, chain: string): Pro
         chain
     }
     const result = await sendPostRequest(API_URL, "listeners/delete", body).then((r) => {
-        return r.success
+        return r
     })
     if (!result) {
         const helper = new Helper("Calling deleteListener", "POST", "Empty data returned")
