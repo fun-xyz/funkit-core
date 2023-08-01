@@ -246,7 +246,7 @@ export abstract class FirstClassActions {
         }
 
         const originalMembers = new Set(groups[0].memberIds)
-        let members = new Set(groups[0].memberIds)
+        const members = new Set(groups[0].memberIds)
         members.add(params.userId)
         if (members.size <= originalMembers.size) {
             throw new InvalidParameterError(

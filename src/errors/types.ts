@@ -50,5 +50,7 @@ export enum ErrorCode {
     ServerFailure = "ServerFailure",
     UnknownServerError = "UnknownServerError",
     ServerConnectionError = "ServerConnectionError",
-    UserOpFailureError = "UserOpFailureError"
+    UserOpFailureError = "UserOpFailureError",
+    Unauthorized = "Unauthorized",
+    RequestLimitExceeded = "RequestLimitExceeded"
 }
