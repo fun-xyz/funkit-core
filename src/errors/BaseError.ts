@@ -1,3 +1,5 @@
+import { objectify } from "../utils"
+
 export class BaseError extends Error {
     constructor(
         baseType: string,
@@ -16,7 +18,7 @@ export class BaseError extends Error {
             timestamp: ${new Date().toUTCString()}
             message: ${msg}
             functionName: ${functionName}
-            paramsUsed: ${JSON.parse(JSON.stringify(paramsUsed, (_, value) => (typeof value === "bigint" ? value.toString() : value)))}
+            paramsUsed: ${objectify(paramsUsed)}
             fixSuggestion: ${fixSuggestion}
             docLink: ${docLink}`
         super(errorMsg)
