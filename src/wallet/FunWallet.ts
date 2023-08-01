@@ -30,6 +30,7 @@ import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import {
     gasCalculation,
     generateRandomNonce,
+    generateRandomNonceKey,
     getAuthUniqueId,
     getWalletAddress,
     isGroupOperation,
@@ -216,7 +217,11 @@ export class FunWallet extends FirstClassActions {
         return { ...tokens, ...nfts }
     }
 
-    async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+    async getNonce(
+        sender: string,
+        key = generateRandomNonceKey(),
+        option: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<bigint> {
         const chain = await getChainFromData(option.chain)
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         let nonce = undefined
@@ -229,7 +234,7 @@ export class FunWallet extends FirstClassActions {
         if (nonce !== undefined && nonce !== null) {
             return BigInt(nonce)
         } else {
-            return BigInt(generateRandomNonce())
+            return generateRandomNonce()
         }
     }
 
