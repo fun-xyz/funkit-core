@@ -1,4 +1,4 @@
-import { Hex, parseEther } from "viem"
+import { Hex, isAddress, parseEther } from "viem"
 import {
     ApproveERC20Params,
     ApproveERC721Params,
@@ -9,7 +9,7 @@ import {
     TransferParams
 } from "./types"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
-import { Token } from "../data"
+import { NFT, Token } from "../data"
 export const isERC721TransferParams = (obj: TransferParams): obj is ERC721TransferParams => {
     return "tokenId" in obj
 }
@@ -24,12 +24,24 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
 
 export const erc721TransferTransactionParams = (params: ERC721TransferParams): TransactionParams => {
     const { to, tokenId, token, from } = params
-    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "transferFrom", [from, to, tokenId])
+    let tokenAddr
+    if (isAddress(token)) {
+        tokenAddr = token
+    } else {
+        tokenAddr = NFT.getAddress(token)
+    }
+    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, tokenId])
 }
 
 export const erc20TransferTransactionParams = (params: ERC20TransferParams): TransactionParams => {
     const { to, amount, token } = params
-    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(token, "transfer", [to, amount])
+    let tokenAddr
+    if (isAddress(token)) {
+        tokenAddr = token
+    } else {
+        tokenAddr = Token.getAddress(token)
+    }
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transfer", [to, amount])
 }
 
 export const isERC20ApproveParams = (obj: ApproveParams): obj is ApproveERC20Params => {

@@ -1,5 +1,5 @@
 import { Address, isAddress } from "viem"
-import { getChainFromData } from "./Chain"
+import { Chain } from "./Chain"
 import { getNftAddress, getNftName } from "../apis/NFTApis"
 import { ERC721_CONTRACT_INTERFACE, TransactionData } from "../common"
 import { EnvOption } from "../config"
@@ -29,18 +29,18 @@ export class NFT {
     }
 
     async approve(spender: string, tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(), "approve", [spender, tokenId])
         return { ...data, chain }
     }
 
     async ownerOf(tokenId: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "ownerOf", [tokenId], chain)
     }
 
     async approveForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<any> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(), "setApprovalForAll", [spender, true])
         return { ...data, chain }
     }
@@ -66,7 +66,7 @@ export class NFT {
 
     async getName(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         if (!this.name && this.address) {
-            const chain = await getChainFromData(options.chain)
+            const chain = Chain.getChain({ chainIdentifier: options.chain })
             const nft = await getNftName(await chain.getChainId(), this.address)
             return nft.name
         }
@@ -74,17 +74,17 @@ export class NFT {
     }
 
     async getBalance(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
     }
 
     async getApproved(tokenId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         return await ERC721_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "getApproved", [tokenId], chain)
     }
 
     async revokeForAll(spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionData> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(), "setApprovalForAll", [spender, false])
         return { ...data, chain }
     }
@@ -95,7 +95,7 @@ export class NFT {
         tokenId: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<any> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(), "transferFrom", [sender, spender, tokenId])
         return { ...data, chain }
     }

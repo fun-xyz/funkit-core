@@ -1,6 +1,6 @@
 import { EnvOption, GlobalEnvOption } from "./types"
 import { getOrgInfo } from "../apis"
-import { getChainFromData } from "../data"
+import { Chain } from "../data"
 
 export function parseOptions(option: EnvOption) {
     const globalOptions = (globalThis as any).globalEnvOption
@@ -15,18 +15,18 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     const globalEnvOption = global.globalEnvOption
 
     if ((!option || !option.chain) && !globalEnvOption.chain) {
-        globalEnvOption.chain = await getChainFromData("5")
+        globalEnvOption.chain = Chain.getChain({ chainIdentifier: 5 })
     } else {
-        globalEnvOption.chain = option.chain ? await getChainFromData(option.chain) : globalEnvOption.chain
+        globalEnvOption.chain = option.chain ? Chain.getChain({ chainIdentifier: option.chain }) : globalEnvOption.chain
     }
 
     globalEnvOption.apiKey = option.apiKey ? option.apiKey : globalEnvOption.apiKey
     globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
     globalEnvOption.gasSponsor =
-        option.gasSponsor === null || option.gasSponsor === undefined ? globalEnvOption.gasSponsor : option.gasSponsor
+        option.gasSponsor === null || option.gasSponsor === undefined
+            ? { usePermit: true, ...globalEnvOption.gasSponsor }
+            : { usePermit: true, ...option.gasSponsor }
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
-    globalEnvOption.sendTxLater =
-        option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
     globalEnvOption.skipDBAction =
         option.skipDBAction === null || option.skipDBAction === undefined ? globalEnvOption.skipDBAction : option.skipDBAction
 }

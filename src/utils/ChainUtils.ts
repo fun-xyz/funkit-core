@@ -2,7 +2,7 @@ import { Address, PublicClient, parseEther, toHex } from "viem"
 import { Auth } from "../auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
-import { Chain, getChainFromData } from "../data"
+import { Chain } from "../data"
 import { FunWallet } from "../wallet"
 
 const gasSpecificChain = { 137: 350_000_000_000 }
@@ -13,7 +13,7 @@ export const fundWallet = async (
     value: number,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ) => {
-    const chain = await getChainFromData(txOptions.chain)
+    const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
     const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData
