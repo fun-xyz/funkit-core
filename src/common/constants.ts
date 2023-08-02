@@ -65,8 +65,8 @@ export const BASE_WRAP_TOKEN_ADDR = {
     }
 }
 
-export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["1", "5"]
-export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5", "80001"]
+export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5"]
+export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
 
 export const AddressZero = padHex("0x", { size: 20 })
 export const HashZero = padHex("0x", { size: 32 })
@@ -122,5 +122,5 @@ export const CONTRACT_ADDRESSES = {
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
     UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
     TestNFT: TEST_NFT_CONTRACT["addresses"],
-    sponsorAddress: "0x175C5611402815Eba550Dad16abd2ac366a63329"
+    sponsorAddress: { "5": "0x175C5611402815Eba550Dad16abd2ac366a63329" }
 }

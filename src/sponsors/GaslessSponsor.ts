@@ -12,7 +12,7 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        if (this.sponsorAddress === undefined) {
+        if (!this.sponsorAddress) {
             const chain = Chain.getChain({ chainIdentifier: options.chain })
             if (GASLESS_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
                 this.sponsorAddress = await chain.getAddress("sponsorAddress")

@@ -15,11 +15,21 @@ export class TokenSponsor extends Sponsor {
 
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
         super(options, TOKEN_PAYMASTER_CONTRACT_INTERFACE, "tokenPaymasterAddress", PaymasterType.TokenSponsor)
+        if (!options.gasSponsor?.token) {
+            throw new InvalidParameterError(
+                ErrorCode.MissingParameter,
+                "token field is missing",
+                "TokenSponsor.constructor",
+                { gasSponsor: options.gasSponsor },
+                "Provide correct token name or address.",
+                "https://docs.fun.xyz"
+            )
+        }
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
     async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        if (this.sponsorAddress === undefined) {
+        if (!this.sponsorAddress) {
             const chain = Chain.getChain({ chainIdentifier: options.chain })
             if (TOKEN_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
                 this.sponsorAddress = await chain.getAddress("sponsorAddress")

@@ -89,8 +89,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             })
             sponsor = new GaslessSponsor()
 
-            console.log("Env", globalThis.globalEnvOption)
-
             const depositInfo1S = await sponsor.getBalance(funderAddress)
             const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 4)
             await funder.sendTx(stake)
@@ -118,7 +116,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 
