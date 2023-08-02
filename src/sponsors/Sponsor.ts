@@ -4,7 +4,7 @@ import { ActionResult } from "../actions"
 import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
-import { Chain, getChainFromData } from "../data"
+import { Chain } from "../data"
 import { ContractInterface } from "../viem/ContractInterface"
 
 export abstract class Sponsor {
@@ -30,7 +30,7 @@ export abstract class Sponsor {
     }
 
     async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const chainId = await chain.getChainId()
         if (!this.paymasterAddress && chainId !== this.chainId) {
             this.paymasterAddress = await chain.getAddress(this.name)
@@ -43,7 +43,7 @@ export abstract class Sponsor {
         const to = await this.getPaymasterAddress(options)
         let chain: Chain
         if (typeof options.chain === "string" || typeof options.chain === "number") {
-            chain = new Chain({ chainId: options.chain.toString() })
+            chain = Chain.getChain({ chainIdentifier: options.chain })
         } else {
             chain = options.chain
         }
@@ -65,18 +65,18 @@ export abstract class Sponsor {
     abstract unlockDepositAfter(blocksToWait: number): Promise<TransactionParams>
 
     async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [sponsor], chain)
     }
 
     async setToBlacklistMode(chainId: number, sponsor: Address): Promise<TransactionParams> {
-        const chain = await getChainFromData(chainId)
+        const chain = Chain.getChain({ chainIdentifier: chainId })
         await updatePaymasterMode(await chain.getChainId(), { mode: "blacklist" }, this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [true])
     }
 
     async setToWhitelistMode(chainId: number, sponsor: Address): Promise<TransactionParams> {
-        const chain = await getChainFromData(chainId)
+        const chain = Chain.getChain({ chainIdentifier: chainId })
         await updatePaymasterMode(await chain.getChainId(), { mode: "whitelist" }, this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [false])
     }

@@ -43,7 +43,7 @@ export const requestUnstakeTransactionParams = async (params: RequestUnstakePara
         params.amounts.map((amount) => parseEther(`${amount}`)),
         params.recipient
     ])
-    const chain = new Chain({ chainId: params.chainId.toString() })
+    const chain = Chain.getChain({ chainIdentifier: params.chainId })
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
@@ -55,7 +55,7 @@ export const requestUnstakeTransactionParams = async (params: RequestUnstakePara
 }
 
 export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams): Promise<TransactionParams> => {
-    const chain = new Chain({ chainId: params.chainId.toString() })
+    const chain = Chain.getChain({ chainIdentifier: params.chainId })
     const withdrawQueueAddress = getWithdrawalQueue(params.chainId.toString())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
     if (readyToWithdrawRequestIds.length === 0) {
@@ -102,14 +102,14 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
         withdrawalQueueAddr,
         "getWithdrawalRequests",
         [params.walletAddress],
-        new Chain({ chainId: params.chainId.toString() })
+        Chain.getChain({ chainIdentifier: params.chainId })
     )
     // get the state of a particular nft
     const withdrawalStatusTx = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,
         "getWithdrawalStatus",
         [withdrawalRequests],
-        new Chain({ chainId: params.chainId.toString() })
+        Chain.getChain({ chainIdentifier: params.chainId })
     )
     const readyToWithdraw: bigint[] = []
     for (let i = 0; i < withdrawalStatusTx.length; i++) {
