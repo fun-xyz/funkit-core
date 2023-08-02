@@ -387,7 +387,7 @@ export class FunWallet extends FirstClassActions {
             operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
 
-        let receipt: ExecutionReceipt | undefined
+        let receipt: ExecutionReceipt
         if (isGroupOperation(operation)) {
             receipt = await executeOp({
                 opId: operation.opId!,
