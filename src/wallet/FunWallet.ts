@@ -386,7 +386,8 @@ export class FunWallet extends FirstClassActions {
         } else {
             operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
-        let receipt
+
+        let receipt: ExecutionReceipt | undefined
         if (isGroupOperation(operation)) {
             receipt = await executeOp({
                 opId: operation.opId!,
@@ -429,14 +430,14 @@ export class FunWallet extends FirstClassActions {
                 addTransaction(
                     await chain.getChainId(),
                     Date.now(),
-                    receipt.txid,
+                    receipt.txId,
                     {
                         action: "sponsor",
                         amount: -1, //Get amount from lazy processing
                         from: txOptions.gasSponsor.sponsorAddress,
                         to: await this.getAddress(),
                         token: "eth",
-                        txid: receipt.txid
+                        txid: receipt.txId
                     },
                     paymasterType,
                     txOptions.gasSponsor.sponsorAddress
