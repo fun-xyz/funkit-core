@@ -100,7 +100,7 @@ describe("createSessionKeyTransactionParams", () => {
     })
 
     it("should include feeRecipientTokenMerkleRootHash if feeRecipientWhitelist and feeTokenWhitelist are provided", async () => {
-        // Similar to the previous test but add assertions to check the correct feeRecipientTokenMerkleRootHash
+        //
     })
 
     afterEach(() => {
