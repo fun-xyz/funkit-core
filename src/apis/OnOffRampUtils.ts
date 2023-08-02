@@ -8,7 +8,7 @@ export async function getOnRampUrl(walletAddr: string): Promise<void> {
         throw new InternalFailureError(
             ErrorCode.ServerFailure,
             `fail to get on ramp url for ${walletAddr}`,
-            `FunWallet.onRamp`,
+            "FunWallet.onRamp",
             { walletAddr },
             "retry later. if it still fails, please contact us.",
             "https://docs.fun.xyz"
@@ -23,7 +23,7 @@ export async function getOffRampUrl(walletAddr: string): Promise<void> {
         throw new InternalFailureError(
             ErrorCode.ServerFailure,
             `fail to get off ramp url for ${walletAddr}`,
-            `FunWallet.offRamp`,
+            "FunWallet.offRamp",
             { walletAddr },
             "retry later. if it still fails, please contact us.",
             "https://docs.fun.xyz"

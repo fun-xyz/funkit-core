@@ -62,7 +62,10 @@ export const StakeTest = (config: StakeTestConfig) => {
                 const withdrawalsBefore: any = await wallet.getAssets(config.actualChainId.toString(), false, true)
                 await wallet.executeOperation(auth, userOp)
                 const withdrawalsAfter: any = await wallet.getAssets(config.actualChainId.toString(), false, true)
-                assert(withdrawalsAfter.lidoWithdrawals[1].length > withdrawalsBefore.lidoWithdrawals[1].length, "unable to start unstaking")
+                assert(
+                    withdrawalsAfter.lidoWithdrawals[1].length > withdrawalsBefore.lidoWithdrawals[1].length,
+                    "unable to start unstaking"
+                )
             }
         })
 

@@ -2,12 +2,12 @@ import { Hex, getAddress, pad, padHex } from "viem"
 import { AddOwnerParams, RemoveOwnerParams, RuleStruct, SessionKeyParams } from "./types"
 import { SessionKeyAuth } from "../auth"
 import { RBAC_CONTRACT_INTERFACE, TransactionParams } from "../common"
+import { Chain } from "../data"
 import { Token } from "../data/Token"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
-import { Chain } from "../data"
 
 export const HashOne = padHex("0x1", { size: 32 })
 

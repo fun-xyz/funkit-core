@@ -7,7 +7,7 @@ import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
-import { Token, UserOperation, Chain } from "../data"
+import { Chain, Token, UserOperation } from "../data"
 import { getWalletPermitHash, getWalletPermitNonce } from "../utils"
 export class TokenSponsor extends Sponsor {
     token: string

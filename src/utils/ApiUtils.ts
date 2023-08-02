@@ -1,6 +1,5 @@
 import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
-import { stringify } from "./index"
 import { API_URL } from "../common/constants"
 import {
     AccessDeniedError,
@@ -11,6 +10,7 @@ import {
     ThrottlingError,
     UserOpFailureError
 } from "../errors"
+import { stringify } from "./index"
 
 const errorHandler = (err: any, context: any) => {
     if (err instanceof ResourceNotFoundError || err instanceof InvalidParameterError || err instanceof UserOpFailureError) {

@@ -4,7 +4,7 @@ import { PaymasterType } from "./types"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { EnvOption } from "../config"
-import { Token, Chain } from "../data"
+import { Chain, Token } from "../data"
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
         super(options, GASLESS_PAYMASTER_CONTRACT_INTERFACE, "gaslessSponsorAddress", PaymasterType.GaslessSponsor)

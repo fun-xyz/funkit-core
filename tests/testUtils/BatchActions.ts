@@ -12,7 +12,7 @@ import {
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE, HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token, Chain } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
