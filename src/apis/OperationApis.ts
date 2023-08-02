@@ -36,7 +36,7 @@ export async function signOp(opId: Hex, chainId: string, signature: Hex, signedB
 }
 
 export async function executeOp(executeOpInput: ExecuteOpInput): Promise<void> {
-    await sendPostRequest(API_URL, "operation/execute", executeOpInput)
+    return await sendPostRequest(API_URL, "operation/execute", executeOpInput)
 }
 
 export async function estimateOp(estimateOpInput: EstimateOpInput): Promise<EstimatedGas> {

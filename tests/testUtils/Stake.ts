@@ -57,7 +57,7 @@ export const StakeTest = (config: StakeTestConfig) => {
             })
             if (config.chainId === 36865) {
                 const receipt = await wallet.executeOperation(auth, userOp)
-                assert(receipt.txid !== null && receipt.txid !== undefined, "unable to start unstaking")
+                assert(receipt.txId !== null && receipt.txId !== undefined, "unable to start unstaking")
             } else {
                 const withdrawalsBefore = await wallet.getAssets(false, true)
                 await wallet.executeOperation(auth, userOp)
