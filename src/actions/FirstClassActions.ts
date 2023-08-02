@@ -82,11 +82,11 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
-            transactionParams = await erc721TransferTransactionParams(params)
+            transactionParams = erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
-            transactionParams = await erc20TransferTransactionParams(params)
+            transactionParams = erc20TransferTransactionParams(params)
         } else if (isNativeTransferParams(params)) {
-            transactionParams = await ethTransferTransactionParams(params)
+            transactionParams = ethTransferTransactionParams(params)
         } else {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -156,15 +156,6 @@ export abstract class FirstClassActions {
             )
         }
         return await this.createOperation(auth, userId, transactionParams, txOptions)
-    }
-
-    async execRawTx(
-        auth: Auth,
-        userId: string,
-        params: TransactionParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Operation> {
-        return await this.createOperation(auth, userId, params, txOptions)
     }
 
     async createSessionKey(
