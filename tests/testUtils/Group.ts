@@ -3,7 +3,7 @@ import { Address, Hex, concat, decodeAbiParameters, keccak256, pad } from "viem"
 import { Auth } from "../../src/auth"
 import { WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, getChainFromData } from "../../src/data"
+import { Chain } from "../../src/data"
 import { fundWallet, generateRandomGroupId, isContract, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -44,7 +44,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179388)
             })
-            chain = await getChainFromData(chainId)
+            const chain = Chain.getChain({ chainIdentifier: chainId })
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }

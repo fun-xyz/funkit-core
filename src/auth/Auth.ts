@@ -17,7 +17,7 @@ import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
-import { Chain, Operation, WalletSignature, encodeWalletSignature, getChainFromData } from "../data"
+import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId } from "../utils"
 import { convertProviderToClient } from "../viem"
@@ -144,7 +144,7 @@ export class Auth {
 
     async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const chainId = await chain.getChainId()
         const { to, data } = txData
         let { value } = txData
