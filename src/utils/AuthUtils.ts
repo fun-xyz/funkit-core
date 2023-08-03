@@ -12,16 +12,16 @@ export const getAuthUniqueId = async (authId: string, chainId: string, addr = "N
     }
     if (!authUniqueId) {
         authUniqueId = uuidv4()
-
-        const words = authId.split("###")
-        let method
-        if (words[0].startsWith("0x")) {
-            method = "eoa"
-        } else {
-            method = words[0]
-        }
-        await createUser(authId, chainId, addr, method, authUniqueId)
     }
+
+    const words = authId.split("###")
+    let method
+    if (words[0].startsWith("0x")) {
+        method = "eoa"
+    } else {
+        method = words[0]
+    }
+    await createUser(authId, chainId, addr, method, authUniqueId)
 
     return authUniqueId
 }
