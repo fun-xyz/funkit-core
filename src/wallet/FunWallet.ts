@@ -233,6 +233,36 @@ export class FunWallet extends FirstClassActions {
         return (await getOps([opId], await chain.getChainId()))[0]
     }
 
+    async getUsers(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<User[]> {
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const storedUserIds = await auth.getUserIds(await this.getAddress(), await chain.getChainId())
+        const userIds = new Set([...storedUserIds, ...this.userInfo!.keys()])
+
+        const users: User[] = []
+        const groupIds: Hex[] = []
+
+        for (const userId of userIds) {
+            if (pad(userId, { size: 32 }) === (await auth.getUserId())) {
+                users.push({ userId: pad(userId, { size: 32 }) } as User)
+            } else {
+                groupIds.push(pad(userId, { size: 32 }))
+            }
+        }
+
+        const groups: GroupMetadata[] = await getGroups(groupIds, await chain.getChainId())
+        groups.forEach((group) => {
+            users.push({
+                userId: group.groupId,
+                groupInfo: {
+                    threshold: group.threshold,
+                    memberIds: group.memberIds
+                }
+            })
+        })
+
+        return users
+    }
+
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)

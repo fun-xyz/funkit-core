@@ -22,9 +22,15 @@ export async function configureEnvironment(option: GlobalEnvOption) {
 
     globalEnvOption.apiKey = option.apiKey ? option.apiKey : globalEnvOption.apiKey
     globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
+    if (globalEnvOption.gasSponsor) {
+        globalEnvOption.gasSponsor.usePermit =
+            globalEnvOption.gasSponsor.usePermit !== null || globalEnvOption.gasSponsor.usePermit !== undefined
+                ? globalEnvOption.gasSponsor.usePermit
+                : true
+    }
     globalEnvOption.gasSponsor =
         option.gasSponsor === null || option.gasSponsor === undefined
-            ? { usePermit: true, ...globalEnvOption.gasSponsor }
+            ? globalEnvOption.gasSponsor
             : { usePermit: true, ...option.gasSponsor }
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
     globalEnvOption.skipDBAction =
