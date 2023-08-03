@@ -26,7 +26,7 @@ import {
 } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { gasCalculation, generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureRequired, isWalletInitOp } from "../utils"
+import { generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureRequired, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -270,11 +270,11 @@ export class FunWallet extends FirstClassActions {
         return receipt
     }
 
-    async onRamp(address?: Address) {
+    async onRamp(address?: Address): Promise<string> {
         return await getOnRampUrl(address ? address : await this.getAddress())
     }
 
-    async offRamp(address?: Address) {
+    async offRamp(address?: Address): Promise<string> {
         return await getOffRampUrl(address ? address : await this.getAddress())
     }
 
@@ -412,8 +412,9 @@ export class FunWallet extends FirstClassActions {
             operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
 
+        let receipt: ExecutionReceipt
         if (isGroupOperation(operation)) {
-            await executeOp({
+            receipt = await executeOp({
                 opId: operation.opId!,
                 chainId,
                 executedBy: await auth.getAddress(),
@@ -422,7 +423,7 @@ export class FunWallet extends FirstClassActions {
                 groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
             })
         } else {
-            await executeOp({
+            receipt = await executeOp({
                 opId: operation.opId!,
                 chainId,
                 executedBy: await auth.getAddress(),
@@ -430,29 +431,6 @@ export class FunWallet extends FirstClassActions {
                 signature: operation.userOp.signature as Hex,
                 userOp: operation.userOp
             })
-        }
-
-        const opHash = await operation.getOpHash(chain)
-
-        let txid, gasUsed, gasUSD
-        try {
-            txid = await chain.getTxId(opHash)
-            if (!txid || txid === "0x") {
-                txid = "Cannot find transaction id."
-            } else {
-                const gasData = await gasCalculation(txid, chain)
-                gasUsed = gasData.gasUsed
-                gasUSD = gasData.gasUSD
-            }
-        } catch (e) {
-            txid = "Cannot find transaction id."
-        }
-
-        const receipt: ExecutionReceipt = {
-            opHash,
-            txid,
-            gasUsed,
-            gasUSD
         }
 
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
@@ -477,14 +455,14 @@ export class FunWallet extends FirstClassActions {
                 addTransaction(
                     await chain.getChainId(),
                     Date.now(),
-                    txid,
+                    receipt.txId,
                     {
                         action: "sponsor",
                         amount: -1, //Get amount from lazy processing
                         from: txOptions.gasSponsor.sponsorAddress,
                         to: await this.getAddress(),
                         token: "eth",
-                        txid: txid
+                        txid: receipt.txId
                     },
                     paymasterType,
                     txOptions.gasSponsor.sponsorAddress
