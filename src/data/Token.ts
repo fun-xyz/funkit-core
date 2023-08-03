@@ -1,5 +1,5 @@
 import { Address, formatUnits, isAddress, parseUnits } from "viem"
-import { getChainFromData } from "./Chain"
+import { Chain } from "./Chain"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -24,7 +24,7 @@ export class Token {
     }
 
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         const chainId = await chain.getChainId()
 
         if (this.isNative) {
@@ -50,7 +50,7 @@ export class Token {
         if (this.isNative) {
             return 18n
         }
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         return await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(options), "decimals", [], chain)
     }
 
@@ -61,7 +61,7 @@ export class Token {
     }
 
     async getBalanceBN(address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         let amount = 0n
         if (this.isNative) {
             const client = await chain.getClient()
@@ -83,7 +83,7 @@ export class Token {
                 "https://docs.fun.xyz"
             )
         }
-        const chain = await getChainFromData(options.chain)
+        const chain = Chain.getChain({ chainIdentifier: options.chain })
         return BigInt(await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(options), "allowance", [owner, spender], chain))
     }
 

@@ -22,12 +22,11 @@ import {
     Token,
     encodeLoginData,
     encodeUserAuthInitData,
-    getChainFromData,
     toBytes32Arr
 } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { generateRandomNonce, getAuthUniqueId, getWalletAddress, isGroupOperation, isSignatureRequired, isWalletInitOp } from "../utils"
+import { generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureRequired, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -74,38 +73,32 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
-     * Returns the wallet address
-     * @param {*} options
-     * @returns
+     * TODO: update chainId to 1
+     * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
+     * @returns Address
      */
-    async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getAddress(): Promise<Address> {
         if (!this.address) {
-            const chain = await getChainFromData(options.chain)
-            this.address = await getWalletAddress(chain, this.walletUniqueId!)
+            this.address = await getWalletAddress(Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(authId: string, index: number, chain: string | number, apiKey: string): Promise<Address> {
+    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        const chainObj = await getChainFromData(chain.toString())
-        const authUniqueId = await getAuthUniqueId(authId, await chainObj.getChainId())
-        const walletUniqueId = keccak256(toBytes(`${authUniqueId}-${index}`))
-        return await getWalletAddress(chainObj, walletUniqueId)
+        return await getWalletAddress(Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
     }
 
-    static async getAddressOffline(uniqueId: string, index: number, rpcUrl: string, factoryAddress: Address) {
-        const walletUniqueId = keccak256(toBytes(`${uniqueId}-${index}`))
+    static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
         const client = await createPublicClient({
             transport: http(rpcUrl)
         })
-        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [walletUniqueId], client)
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [keccak256(toBytes(uniqueId))], client)
     }
 
     /**
      * Get all tokens for a specific chain
-     * @param {string} chainId https://chainlist.org/
-     * @param {string} address defaults to the fun wallet address
+     * @param {string} chainId string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
      * @param {string} onlyVerifiedTokens If true, only return alchemy tokens that are verified(filters spam) - defaults to false
      * @returns JSON
      * {
@@ -118,15 +111,25 @@ export class FunWallet extends FirstClassActions {
      *     }
      * }
      */
-    async getTokens(onlyVerifiedTokens = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        return await getTokens(await chain.getChainId(), await this.getAddress(), onlyVerifiedTokens)
+    async getTokens(chainIdInput?: string, onlyVerifiedTokens = false) {
+        let chainId
+        if (!chainIdInput) {
+            const chain = Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+            chainId = await chain.getChainId()
+        } else {
+            chainId = chainIdInput
+        }
+
+        if (chainId === "ALL") {
+            return await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+        } else {
+            return await getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
+        }
     }
 
     /**
      * Given an address and a chain, returns all NFTs owned by that address
-     * @param {string} chainId Use the string version of the chainId
-     * @param {string} address Defaults to this fun wallet address
+     * @param {string} chainId string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
      * @returns array
      * [
      *     {
@@ -136,80 +139,72 @@ export class FunWallet extends FirstClassActions {
      *     }
      *  ]
      */
-    async getNFTs(txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        const chain = await getChainFromData(txOptions.chain)
-        return await getNFTs(await chain.getChainId(), await this.getAddress())
-    }
-
-    /**
-     * Return all NFTs on all supported chains.
-     * @param {*} address
-     * @param {*} onlyVerifiedTokens
-     * @returns JSON
-     * {
-     *  "chainId": [
-     *     {
-     *       "address": "string",
-     *       "token_id": "string",
-     *       "floor_price": "string",
-     *     }
-     *   ]
-     * }
-     */
-    async getAllNFTs() {
-        return await getAllNFTs(await this.getAddress())
-    }
-
-    /**
-     * Get all tokens on all supported chains. Merge tokens by symbol
-     * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
-     * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
-     * @returns JSON of all tokens owned by address
-     * {
-     *    1: {
-     *      "0xTokenAddress": {
-     *        "tokenBalance": "0x00001",
-     *        "symbol": "USDC",
-     *        "decimals": 6,
-     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-     *        "price": 1.0001,
-     *     }
-     *   }
-     * }
-     */
-    async getAllTokens(onlyVerifiedTokens = false) {
-        return await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
-    }
-
-    /**
-     * Get all tokens on all supported chains. Merge tokens by symbol
-     * @param {*} address String, leave null if you want getAllTokens on the instance of this Funwallet
-     * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
-     * @returns JSON of all tokens owned by address
-     * {
-     *    1: {
-     *      "0xTokenAddress": {
-     *        "tokenBalance": "0x00001",
-     *        "symbol": "USDC",
-     *        "decimals": 6,
-     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-     *        "price": 1.0001,
-     *     }
-     *   }
-     * }
-     */
-    async getAssets(onlyVerifiedTokens = false, status = false, txOptions: EnvOption = (globalThis as any).globalEnvOption) {
-        if (status) {
-            const chain = await getChainFromData(txOptions.chain)
-            return await getLidoWithdrawals(await chain.getChainId(), await this.getAddress())
+    async getNFTs(chainIdInput?: string) {
+        let chainId
+        if (!chainIdInput) {
+            const chain = Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+            chainId = await chain.getChainId()
+        } else {
+            chainId = chainIdInput
         }
-        const tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
-        const nfts = await getAllNFTs(await this.getAddress())
-        return { ...tokens, ...nfts }
+
+        if (chainId === "ALL") {
+            return await getAllNFTs(await this.getAddress())
+        } else {
+            return await getNFTs(chainId, await this.getAddress())
+        }
     }
 
-    async getNonce(sender: string, key = 0, option: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
-        const chain = await getChainFromData(option.chain)
+    /**
+     * Get all tokens on all supported chains. Merge tokens by symbol
+     * @param {string} chainIdInput string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
+     * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
+     * @param {boolean} checkStatus true if you want to check if the address has any pending lido withdrawals
+     * @returns JSON of all tokens owned by address
+     * {
+     *    1: {
+     *      "0xTokenAddress": {
+     *        "tokenBalance": "0x00001",
+     *        "symbol": "USDC",
+     *        "decimals": 6,
+     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
+     *        "price": 1.0001,
+     *     }
+     *   }
+     * }
+     */
+    async getAssets(chainIdInput?: string, onlyVerifiedTokens = false, checkStatus = false) {
+        let chainId
+        if (!chainIdInput) {
+            const chain = Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+            chainId = await chain.getChainId()
+        } else {
+            chainId = chainIdInput
+        }
+
+        let tokens = {},
+            nfts = {},
+            lidoWithdrawals = {}
+        if (chainId === "ALL") {
+            tokens = await getAllTokens(await this.getAddress(), onlyVerifiedTokens)
+            nfts = await getAllNFTs(await this.getAddress())
+            if (checkStatus) {
+                const ethMainnetLidoWithdrawals = await getLidoWithdrawals("1", await this.getAddress())
+                const goerliLidoWithdrawals = await getLidoWithdrawals("5", await this.getAddress())
+                lidoWithdrawals = { ...ethMainnetLidoWithdrawals, ...goerliLidoWithdrawals }
+            }
+        } else {
+            tokens = await getTokens(chainId, await this.getAddress(), onlyVerifiedTokens)
+            nfts = await getNFTs(chainId, await this.getAddress())
+            if (checkStatus) {
+                lidoWithdrawals = await getLidoWithdrawals(chainId, await this.getAddress())
+            }
+        }
+        return { ...lidoWithdrawals, ...tokens, ...nfts }
+    }
+
+    async getNonce(sender: string, key = 0, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         let nonce = undefined
         let retryCount = 5
@@ -229,28 +224,58 @@ export class FunWallet extends FirstClassActions {
         status: OperationStatus = OperationStatus.ALL,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation[]> {
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         return await getOpsOfWallet(await this.getAddress(), await chain.getChainId(), status)
     }
 
     async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         return (await getOps([opId], await chain.getChainId()))[0]
     }
 
+    async getUsers(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<User[]> {
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const storedUserIds = await auth.getUserIds(await this.getAddress(), await chain.getChainId())
+        const userIds = new Set([...storedUserIds, ...this.userInfo!.keys()])
+
+        const users: User[] = []
+        const groupIds: Hex[] = []
+
+        for (const userId of userIds) {
+            if (pad(userId, { size: 32 }) === (await auth.getUserId())) {
+                users.push({ userId: pad(userId, { size: 32 }) } as User)
+            } else {
+                groupIds.push(pad(userId, { size: 32 }))
+            }
+        }
+
+        const groups: GroupMetadata[] = await getGroups(groupIds, await chain.getChainId())
+        groups.forEach((group) => {
+            users.push({
+                userId: group.groupId,
+                groupInfo: {
+                    threshold: group.threshold,
+                    memberIds: group.memberIds
+                }
+            })
+        })
+
+        return users
+    }
+
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
-        const transactionParams: TransactionParams = { to: await this.getAddress(txOptions), data: "0x", value: 0n }
+        const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
         const receipt = await this.executeOperation(auth, operation, txOptions)
         return receipt
     }
 
-    async onRamp() {
-        return await getOnRampUrl(await this.getAddress())
+    async onRamp(address?: Address) {
+        return await getOnRampUrl(address ? address : await this.getAddress())
     }
 
-    async offRamp() {
-        return await getOffRampUrl(await this.getAddress())
+    async offRamp(address?: Address) {
+        return await getOffRampUrl(address ? address : await this.getAddress())
     }
 
     async createOperation(
@@ -270,9 +295,9 @@ export class FunWallet extends FirstClassActions {
             )
         }
         userId = pad(userId as Hex, { size: 32 })
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
 
-        const sender = await this.getAddress({ chain })
+        const sender = await this.getAddress()
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
@@ -327,7 +352,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         operation = Operation.convertTypeToObject(operation)
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
@@ -344,7 +369,7 @@ export class FunWallet extends FirstClassActions {
     ): Promise<ExecutionReceipt> {
         txOptions = parseOptions(txOptions)
         operation = Operation.convertTypeToObject(operation)
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = await chain.getChainId()
 
         if (txOptions.skipDBAction !== true) {
@@ -449,7 +474,7 @@ export class FunWallet extends FirstClassActions {
 
     // TODO, use auth to do authentication
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         await deleteOp(operationId, await chain.getChainId())
     }
 
@@ -460,11 +485,17 @@ export class FunWallet extends FirstClassActions {
         rejectionMessage?: string,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ) {
-        const rejectOperation = await this.transfer(auth, groupId, { to: await this.getAddress(), amount: 0 }, txOptions)
+        const rejectOperation = await this.transfer(
+            auth,
+            groupId,
+            { to: await this.getAddress(), amount: 0 },
+            { ...txOptions, skipDBAction: true }
+        )
         if (rejectionMessage) rejectOperation.message = rejectionMessage
         rejectOperation.userOp.nonce = operation.userOp.nonce
-        rejectOperation.relatedOpId = [operation.opId!]
+        rejectOperation.relatedOpIds = [operation.opId!]
         rejectOperation.opType = OperationType.REJECTION
+        rejectOperation.opId = (await createOp(rejectOperation)) as Hex
         return rejectOperation
     }
 
@@ -474,7 +505,7 @@ export class FunWallet extends FirstClassActions {
         operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const chain = await getChainFromData(txOptions.chain)
+        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
         const res = await chain.estimateOpGas(operation.userOp)

@@ -12,7 +12,7 @@ import {
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE, HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token, getChainFromData } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -36,6 +36,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
+        let chain: Chain
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -51,11 +52,11 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
+            chain = Chain.getChain({ chainIdentifier: config.chainId })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
         it("Approve tokens", async () => {
-            const chain = await getChainFromData(config.chainId)
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
@@ -120,7 +121,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 token: outTokenAddress
             })
             const walletAddress = await wallet.getAddress()
-            const chain = await getChainFromData(config.chainId)
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [swapParams, approveParams])
             await wallet.executeOperation(auth, operation)
             const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
@@ -164,7 +164,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [createGroupParams, addUserToGroupParams])
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const chain = await getChainFromData(config.chainId)
             const userAuthContractAddr = await chain.getAddress("userAuthAddress")
             const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
 
@@ -211,7 +210,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             ])
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const chain = await getChainFromData(config.chainId)
             const rbacContractAddr = await chain.getAddress("rbacAddress")
             const storedOwner1Rule = await WALLET_CONTRACT_INTERFACE.readFromChain(
                 await wallet.getAddress(),
@@ -239,6 +237,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
+        let chain: Chain
         const groupId: Hex = randomBytes(32) // generateRandomGroupId()
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -263,12 +262,12 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 ],
                 uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 6666)
             })
+            chain = Chain.getChain({ chainIdentifier: config.chainId })
 
             if (prefund) await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 1)
         })
 
         it("Approve tokens", async () => {
-            const chain = await getChainFromData(config.chainId)
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)

@@ -59,10 +59,13 @@ export const StakeTest = (config: StakeTestConfig) => {
                 const receipt = await wallet.executeOperation(auth, userOp)
                 assert(receipt.txId !== null && receipt.txId !== undefined, "unable to start unstaking")
             } else {
-                const withdrawalsBefore = await wallet.getAssets(false, true)
+                const withdrawalsBefore: any = await wallet.getAssets(config.actualChainId.toString(), false, true)
                 await wallet.executeOperation(auth, userOp)
-                const withdrawalsAfter = await wallet.getAssets(false, true)
-                assert(withdrawalsAfter[1].length > withdrawalsBefore[1].length, "unable to start unstaking")
+                const withdrawalsAfter: any = await wallet.getAssets(config.actualChainId.toString(), false, true)
+                assert(
+                    withdrawalsAfter.lidoWithdrawals[1].length > withdrawalsBefore.lidoWithdrawals[1].length,
+                    "unable to start unstaking"
+                )
             }
         })
 
@@ -71,7 +74,8 @@ export const StakeTest = (config: StakeTestConfig) => {
             if (config.chainId === 36865) {
                 withdrawals = [[]]
             } else {
-                withdrawals = await wallet.getAssets(false, true)
+                const assets: any = await wallet.getAssets(config.actualChainId.toString(), false, true)
+                withdrawals = assets.lidoWithdrawals
             }
             if (withdrawals[0].length > 0) {
                 const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())

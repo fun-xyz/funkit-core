@@ -3,7 +3,7 @@ import { Address, Hex, concat, decodeAbiParameters, keccak256, pad } from "viem"
 import { Auth } from "../../src/auth"
 import { WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, getChainFromData } from "../../src/data"
+import { Chain } from "../../src/data"
 import { fundWallet, generateRandomGroupId, isContract, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -25,12 +25,8 @@ export const GroupTest = (config: GroupTestConfig) => {
         let chain: Chain
         let userAuthContractAddr: Address
         let groupId: Hex
+        let memberIds: Hex[] = []
         const threshold = 2
-        const memberIds: Hex[] = [
-            pad(randomBytes(20), { size: 32 }),
-            pad(randomBytes(20), { size: 32 }),
-            pad(randomBytes(20), { size: 32 })
-        ].sort((a, b) => b.localeCompare(a))
         const newUserId = randomBytes(20)
         before(async function () {
             const apiKey = await getTestApiKey()
@@ -42,9 +38,15 @@ export const GroupTest = (config: GroupTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179388)
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179389)
             })
-            chain = await getChainFromData(chainId)
+            chain = Chain.getChain({ chainIdentifier: chainId })
+            memberIds = [
+                pad(randomBytes(20), { size: 32 }),
+                pad(randomBytes(20), { size: 32 }),
+                pad(randomBytes(20), { size: 32 }),
+                (await auth.getUserId()).toLowerCase() as Hex
+            ].sort((a, b) => b.localeCompare(a))
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
@@ -87,6 +89,8 @@ export const GroupTest = (config: GroupTestConfig) => {
 
             expect(storedGroup[0]).to.be.deep.equal(memberIds)
             expect(storedGroup[1]).to.be.equal(BigInt(threshold))
+            const authUsers = await wallet.getUsers(auth)
+            expect(authUsers.some((user) => user.userId === groupId)).to.be.true
         })
 
         it("add user to group", async () => {
@@ -118,6 +122,9 @@ export const GroupTest = (config: GroupTestConfig) => {
             const currentMemberIds = memberIds.concat(pad(newUserId, { size: 32 })).sort((a, b) => b.localeCompare(a))
             expect(storedGroup[0]).to.be.deep.equal(currentMemberIds)
             expect(storedGroup[1]).to.be.equal(BigInt(threshold))
+            const authUsers = await wallet.getUsers(auth)
+            const targetGroup = authUsers.find((user) => user.userId === groupId)
+            expect(targetGroup?.groupInfo?.memberIds.includes(pad(newUserId, { size: 32 }))).to.be.true
         })
 
         it("remove user from group", async () => {
@@ -147,6 +154,9 @@ export const GroupTest = (config: GroupTestConfig) => {
 
             expect(storedGroup[0]).to.be.deep.equal(memberIds)
             expect(storedGroup[1]).to.be.equal(BigInt(threshold))
+            const authUsers = await wallet.getUsers(auth)
+            const targetGroup = authUsers.find((user) => user.userId === groupId)
+            expect(targetGroup?.groupInfo?.memberIds.includes(pad(newUserId, { size: 32 }))).to.be.false
         })
 
         it("update group threshold", async () => {
@@ -176,6 +186,9 @@ export const GroupTest = (config: GroupTestConfig) => {
 
             expect(storedGroup[0]).to.be.deep.equal(memberIds)
             expect(storedGroup[1]).to.be.equal(BigInt(3))
+            const authUsers = await wallet.getUsers(auth)
+            const targetGroup = authUsers.find((user) => user.userId === groupId)
+            expect(targetGroup?.groupInfo?.threshold).to.be.equal(3)
         })
 
         it("remove group", async () => {
@@ -194,6 +207,9 @@ export const GroupTest = (config: GroupTestConfig) => {
             )
 
             expect(storedGroupData).to.be.equal("0x")
+            const authUsers = await wallet.getUsers(auth)
+            const targetGroup = authUsers.find((user) => user.userId === groupId)
+            expect(targetGroup).to.be.undefined
         })
     })
 }

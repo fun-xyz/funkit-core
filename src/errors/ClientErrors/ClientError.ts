@@ -3,7 +3,7 @@ import { ErrorBaseType, ErrorType } from "../types"
 
 export class ClientError extends BaseError {
     constructor(type: string, code: string, msg: string, functionName: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
-        super(ErrorBaseType.ClientError, type, code, msg, functionName, paramsUsed, fixSuggestion, docLink)
+        super(ErrorBaseType.ClientError, type, code, msg, functionName, paramsUsed, fixSuggestion, docLink, false)
     }
 }
 

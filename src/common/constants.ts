@@ -65,6 +65,9 @@ export const BASE_WRAP_TOKEN_ADDR = {
     }
 }
 
+export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5"]
+export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
+
 export const AddressZero = padHex("0x", { size: 20 })
 export const HashZero = padHex("0x", { size: 32 })
 
@@ -107,8 +110,8 @@ export const CONTRACT_ADDRESSES = {
     tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT["addresses"],
     entryPointAddress: ENTRYPOINT_CONTRACT["addresses"],
     factoryAddress: FACTORY_CONTRACT["addresses"],
-    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
-    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
+    gaslessPaymasterAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
+    tokenPaymasterAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
     oracle: TOKEN_PRICE_ORACLE_CONTRACT["addresses"],
     userAuthAddress: USER_AUTHENTICATION_CONTRACT["addresses"],
     rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT["addresses"],
@@ -118,5 +121,6 @@ export const CONTRACT_ADDRESSES = {
     univ3router: UNIV3_ROUTER["addresses"],
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
     UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
-    TestNFT: TEST_NFT_CONTRACT["addresses"]
+    TestNFT: TEST_NFT_CONTRACT["addresses"],
+    sponsorAddress: { "5": "0x175C5611402815Eba550Dad16abd2ac366a63329" }
 }
