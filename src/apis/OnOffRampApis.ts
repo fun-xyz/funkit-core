@@ -2,7 +2,7 @@ import { API_URL } from "../common/constants"
 import { ErrorCode, InternalFailureError } from "../errors"
 import { sendGetRequest } from "../utils/ApiUtils"
 
-export async function getOnRampUrl(walletAddr: string): Promise<void> {
+export async function getOnRampUrl(walletAddr: string): Promise<string> {
     const url = (await sendGetRequest(API_URL, `on-ramp/${walletAddr}?provider=moonpay`))?.url
     if (!url) {
         throw new InternalFailureError(
@@ -17,7 +17,7 @@ export async function getOnRampUrl(walletAddr: string): Promise<void> {
     return url
 }
 
-export async function getOffRampUrl(walletAddr: string): Promise<void> {
+export async function getOffRampUrl(walletAddr: string): Promise<string> {
     const url = (await sendGetRequest(API_URL, `off-ramp/${walletAddr}?provider=moonpay`))?.url
     if (!url) {
         throw new InternalFailureError(

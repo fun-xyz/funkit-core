@@ -270,11 +270,11 @@ export class FunWallet extends FirstClassActions {
         return receipt
     }
 
-    async onRamp(address?: Address) {
+    async onRamp(address?: Address): Promise<string> {
         return await getOnRampUrl(address ? address : await this.getAddress())
     }
 
-    async offRamp(address?: Address) {
+    async offRamp(address?: Address): Promise<string> {
         return await getOffRampUrl(address ? address : await this.getAddress())
     }
 
