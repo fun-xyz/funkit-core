@@ -8,7 +8,7 @@ import { getTestApiKey } from "../getAWSSecrets"
 async function setGlobal() {
     const apiKey = await getTestApiKey()
     const options: GlobalEnvOption = {
-        chain: Chain.getChain({ chainIdentifier: 5 }),
+        chain: await Chain.getChain({ chainIdentifier: 5 }),
         apiKey: apiKey
     }
     await configureEnvironment(options)

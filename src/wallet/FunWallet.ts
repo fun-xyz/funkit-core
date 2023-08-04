@@ -79,14 +79,14 @@ export class FunWallet extends FirstClassActions {
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
         }
         return this.address!
     }
 
     static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
     }
 
     static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
@@ -114,7 +114,7 @@ export class FunWallet extends FirstClassActions {
     async getTokens(chainIdInput?: string, onlyVerifiedTokens = false) {
         let chainId
         if (!chainIdInput) {
-            const chain = Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+            const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
             chainId = await chain.getChainId()
         } else {
             chainId = chainIdInput
@@ -142,7 +142,7 @@ export class FunWallet extends FirstClassActions {
     async getNFTs(chainIdInput?: string) {
         let chainId
         if (!chainIdInput) {
-            const chain = Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+            const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
             chainId = await chain.getChainId()
         } else {
             chainId = chainIdInput
@@ -176,7 +176,7 @@ export class FunWallet extends FirstClassActions {
     async getAssets(chainIdInput?: string, onlyVerifiedTokens = false, checkStatus = false) {
         let chainId
         if (!chainIdInput) {
-            const chain = Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+            const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
             chainId = await chain.getChainId()
         } else {
             chainId = chainIdInput
@@ -204,7 +204,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     async getNonce(sender: string, key = 0, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         let nonce = undefined
         let retryCount = 5
@@ -224,17 +224,17 @@ export class FunWallet extends FirstClassActions {
         status: OperationStatus = OperationStatus.ALL,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation[]> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         return await getOpsOfWallet(await this.getAddress(), await chain.getChainId(), status)
     }
 
     async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         return (await getOps([opId], await chain.getChainId()))[0]
     }
 
     async getUsers(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<User[]> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const storedUserIds = await auth.getUserIds(await this.getAddress(), await chain.getChainId())
         const userIds = new Set([...storedUserIds, ...this.userInfo!.keys()])
 
@@ -295,7 +295,7 @@ export class FunWallet extends FirstClassActions {
             )
         }
         userId = pad(userId as Hex, { size: 32 })
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
         const maxFeePerGas = await chain.getFeeData()
@@ -352,7 +352,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         operation = Operation.convertTypeToObject(operation)
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
@@ -369,7 +369,7 @@ export class FunWallet extends FirstClassActions {
     ): Promise<ExecutionReceipt> {
         txOptions = parseOptions(txOptions)
         operation = Operation.convertTypeToObject(operation)
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = await chain.getChainId()
 
         if (txOptions.skipDBAction !== true) {
@@ -474,7 +474,7 @@ export class FunWallet extends FirstClassActions {
 
     // TODO, use auth to do authentication
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         await deleteOp(operationId, await chain.getChainId())
     }
 
@@ -505,7 +505,7 @@ export class FunWallet extends FirstClassActions {
         operation: Operation,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
         const res = await chain.estimateOpGas(operation.userOp)

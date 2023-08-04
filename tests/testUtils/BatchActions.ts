@@ -52,7 +52,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
-            chain = Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
@@ -262,7 +262,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 ],
                 uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 6666)
             })
-            chain = Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
 
             if (prefund) await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 1)
         })

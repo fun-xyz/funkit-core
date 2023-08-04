@@ -13,7 +13,7 @@ export const fundWallet = async (
     value: number,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ) => {
-    const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData

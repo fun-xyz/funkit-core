@@ -144,7 +144,7 @@ export class Auth {
 
     async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
         await this.init()
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const chainId = await chain.getChainId()
         const { to, data } = txData
         let { value } = txData

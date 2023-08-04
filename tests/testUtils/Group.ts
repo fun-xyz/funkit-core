@@ -40,7 +40,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179389)
             })
-            chain = Chain.getChain({ chainIdentifier: chainId })
+            chain = await Chain.getChain({ chainIdentifier: chainId })
             memberIds = [
                 pad(randomBytes(20), { size: 32 }),
                 pad(randomBytes(20), { size: 32 }),

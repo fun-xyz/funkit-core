@@ -39,12 +39,14 @@ export class Chain {
         }
     }
 
-    public static getChain(chainInput: ChainInput): Chain {
-        if (
+    public static async getChain(chainInput: ChainInput): Promise<Chain> {
+        if (chainInput.chainIdentifier instanceof Chain) {
+            return chainInput.chainIdentifier
+        } else if (
             !Chain.chain ||
-            (Chain.chain.id !== chainInput.chainIdentifier?.toString() &&
-                Chain.chain.name !== chainInput.chainIdentifier?.toString() &&
-                Chain.chain.rpcUrl !== chainInput.rpcUrl)
+            ((await Chain.chain.getChainId()) !== chainInput.chainIdentifier?.toString() &&
+                (await Chain.chain.getChainName()) !== chainInput.chainIdentifier?.toString() &&
+                (await Chain.chain.getRpcUrl()) !== chainInput.rpcUrl)
         ) {
             Chain.chain = new Chain(chainInput)
         }
@@ -103,6 +105,11 @@ export class Chain {
     async getChainName(): Promise<string> {
         await this.init()
         return this.name!
+    }
+
+    async getRpcUrl(): Promise<string> {
+        await this.init()
+        return this.rpcUrl!
     }
 
     async getAddress(name: string): Promise<Address> {

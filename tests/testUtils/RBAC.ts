@@ -37,7 +37,7 @@ export const RBACTest = (config: RBACTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
 
-            chain = Chain.getChain({ chainIdentifier: chainId })
+            chain = await Chain.getChain({ chainIdentifier: chainId })
             const isWalletCreated = await isContract(await wallet.getAddress(), await chain.getClient())
             if (!isWalletCreated) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
