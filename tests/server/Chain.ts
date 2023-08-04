@@ -5,8 +5,6 @@ import { getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
 
 describe("Get Operations", function () {
-    this.timeout(200_000)
-
     before(async function () {
         const apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
@@ -23,6 +21,8 @@ describe("Get Operations", function () {
             expect(await eth.getChainId()).to.be.equal("1")
             const goerli = await Chain.getChain({ chainIdentifier: 5 })
             expect(await goerli.getChainId()).to.be.equal("5")
+            const eth2 = await Chain.getChain({ chainIdentifier: 1 })
+            expect(await eth2.getChainId()).to.be.equal("1")
         })
     })
 })
