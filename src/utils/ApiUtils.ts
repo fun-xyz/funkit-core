@@ -135,7 +135,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
 export async function sendGetRequest(
     uri: string = API_URL,
     endpoint: string,
-    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+    apiKey: string = (globalThis as any).globalEnvOption?.apiKey
 ): Promise<any> {
     return await sendRequest(`${uri}/${endpoint}`, "GET", apiKey)
 }
@@ -144,7 +144,7 @@ export async function sendPostRequest(
     uri: string = API_URL,
     endpoint: string,
     body: object,
-    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+    apiKey: string = (globalThis as any).globalEnvOption?.apiKey
 ): Promise<any> {
     return await sendRequest(`${uri}/${endpoint}`, "POST", apiKey, body)
 }

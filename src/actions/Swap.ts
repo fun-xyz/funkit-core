@@ -64,7 +64,7 @@ export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): P
             "https://docs.fun.xyz"
         )
     }
-    const chain = Chain.getChain({ chainIdentifier: swapParams.chainId })
+    const chain = await Chain.getChain({ chainIdentifier: swapParams.chainId })
     const options: EnvOption = { chain }
 
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
@@ -93,7 +93,7 @@ export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): P
 }
 
 export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
-    const chain = Chain.getChain({ chainIdentifier: params.chainId })
+    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
     const univ3quoter = await chain.getAddress("univ3quoter")
@@ -138,7 +138,7 @@ export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Pro
 }
 
 export const uniswapV2SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
-    const chain = Chain.getChain({ chainIdentifier: params.chainId })
+    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
     const factory = await chain.getAddress("UniswapV2Factory")

@@ -55,7 +55,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
             if (config.testCreate) {
                 const wallet1 = new FunWallet({ users: [{ userId: await auth.getAddress() }], uniqueId: randomBytes(32) })
                 const walletAddress = await wallet1.getAddress()
-                const chain = Chain.getChain({ chainIdentifier: config.chainId })
+                const chain = await Chain.getChain({ chainIdentifier: config.chainId })
                 let iscontract = await isContract(walletAddress, await chain.getClient())
                 expect(iscontract).to.be.false
                 await fundWallet(auth, wallet1, config.prefundAmt ? config.prefundAmt : 0.5)
