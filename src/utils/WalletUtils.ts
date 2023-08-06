@@ -47,12 +47,12 @@ export const isSignatureMissing = (userId: Hex, signatures: Signature[] | undefi
     if (!signatures) {
         return true
     }
-    let sigRequired = true
+    let sigMissing = true
     for (const signature of signatures) {
         if (pad(signature.userId.toLowerCase() as Hex, { size: 32 }) === pad(userId.toLowerCase() as Hex, { size: 32 })) {
-            sigRequired = false
+            sigMissing = false
             break
         }
     }
-    return sigRequired
+    return sigMissing
 }

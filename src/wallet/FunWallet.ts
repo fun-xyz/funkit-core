@@ -391,7 +391,7 @@ export class FunWallet extends FirstClassActions {
 
         const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
 
-        if (threshold === 1) {
+        if (threshold <= 1) {
             if (!operation.userOp.signature || operation.userOp.signature === "0x") {
                 operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
             }
@@ -416,7 +416,7 @@ export class FunWallet extends FirstClassActions {
                         "Signatures are not sufficient to execute the operation",
                         "FunWallet.executeOperation",
                         { threshold, collectedSigCount, chainId },
-                        "Provide userId when createOperation",
+                        "Only execute operation with enough signatures",
                         "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                     )
                 }
@@ -426,7 +426,7 @@ export class FunWallet extends FirstClassActions {
                     "Signatures are not sufficient to execute the operation",
                     "FunWallet.executeOperation",
                     { threshold, chainId, skipDBAction: txOptions.skipDBAction },
-                    "Provide userId when createOperation",
+                    "Only execute operation with enough signatures",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                 )
             }
