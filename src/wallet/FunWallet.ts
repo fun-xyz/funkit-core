@@ -387,11 +387,16 @@ export class FunWallet extends FirstClassActions {
                     })
                 }
             }
+        }
 
-            const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
+        const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
 
-            // check local collected signature first
-            if (!(threshold === 1 && operation.userOp.signature && operation.userOp.signature !== "0x")) {
+        if (threshold === 1) {
+            if (!operation.userOp.signature || operation.userOp.signature === "0x") {
+                operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+            }
+        } else {
+            if (txOptions.skipDBAction !== true) {
                 // check remote collected signature
                 const storedOps = await getOps([operation.opId!], chainId)
 
@@ -415,9 +420,16 @@ export class FunWallet extends FirstClassActions {
                         "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                     )
                 }
+            } else {
+                throw new InvalidParameterError(
+                    ErrorCode.InsufficientSignatures,
+                    "Signatures are not sufficient to execute the operation",
+                    "FunWallet.executeOperation",
+                    { threshold, chainId, skipDBAction: txOptions.skipDBAction },
+                    "Provide userId when createOperation",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                )
             }
-        } else {
-            operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
 
         let receipt: ExecutionReceipt
