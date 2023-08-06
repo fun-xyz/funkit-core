@@ -43,13 +43,13 @@ export const generateRandomNonce = (): bigint => {
     return BigInt(randomKey << 64n)
 }
 
-export const isSignatureRequired = (userId: Hex, signatures: Signature[] | undefined): boolean => {
+export const isSignatureMissing = (userId: Hex, signatures: Signature[] | undefined): boolean => {
     if (!signatures) {
         return true
     }
     let sigRequired = true
     for (const signature of signatures) {
-        if (pad(signature.userId, { size: 32 }) === userId) {
+        if (pad(signature.userId.toLowerCase() as Hex, { size: 32 }) === pad(userId.toLowerCase() as Hex, { size: 32 })) {
             sigRequired = false
             break
         }

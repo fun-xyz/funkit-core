@@ -26,7 +26,7 @@ import {
 } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureRequired, isWalletInitOp } from "../utils"
+import { generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -388,25 +388,33 @@ export class FunWallet extends FirstClassActions {
                 }
             }
 
-            const threshold = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
+            const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
 
-            // check remote collected signature
-            const storedOps = await getOps([operation.opId!], chainId)
-            let collectedSigCount = storedOps[0]?.signatures?.length ?? 0
-            if (isSignatureRequired(await auth.getUserId(), storedOps[0]?.signatures)) {
-                operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
-                collectedSigCount += 1
-            }
+            // check local collected signature first
+            if (!(threshold === 1 && operation.userOp.signature && operation.userOp.signature !== "0x")) {
+                // check remote collected signature
+                const storedOps = await getOps([operation.opId!], chainId)
 
-            if (collectedSigCount < threshold) {
-                throw new InvalidParameterError(
-                    ErrorCode.InsufficientSignatures,
-                    "userId is required",
-                    "FunWallet.executeOperation",
-                    { threshold, collectedSigCount, chainId },
-                    "Provide userId when createOperation",
-                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
-                )
+                let collectedSigCount: number
+                if (isSignatureMissing(await auth.getUserId(), storedOps[0]?.signatures)) {
+                    collectedSigCount = storedOps[0]?.signatures?.length ? storedOps[0]?.signatures?.length + 1 : 1
+                    if (collectedSigCount >= threshold) {
+                        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+                    }
+                } else {
+                    collectedSigCount = storedOps[0]?.signatures?.length ?? 1
+                }
+
+                if (collectedSigCount < threshold) {
+                    throw new InvalidParameterError(
+                        ErrorCode.InsufficientSignatures,
+                        "Signatures are not sufficient to execute the operation",
+                        "FunWallet.executeOperation",
+                        { threshold, collectedSigCount, chainId },
+                        "Provide userId when createOperation",
+                        "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                    )
+                }
             }
         } else {
             operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
