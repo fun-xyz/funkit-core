@@ -21,8 +21,8 @@ export interface TransactionDataWithFee extends TransactionData {
 export interface ExecutionReceipt {
     userOpHash: string
     txId?: Hex
-    gasUsed: bigint
-    gasUSD: bigint
+    gasUsed?: bigint
+    gasUSD?: bigint
 }
 
 export type EstimateGasResult = {

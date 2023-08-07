@@ -28,6 +28,7 @@ import { ErrorCode, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
+import { gasCalculation } from "../utils/UserOpUtils"
 export interface FunWalletParams {
     users?: User[]
     uniqueId?: string
@@ -451,6 +452,12 @@ export class FunWallet extends FirstClassActions {
                 signature: operation.userOp.signature as Hex,
                 userOp: operation.userOp
             })
+        }
+        if (receipt.txId) {
+            const { gasUsed, gasUSD } = await gasCalculation(receipt.txId, chain)
+            receipt.gasUSD = gasUSD
+            receipt.gasUsed = gasUsed
+            // console.log(receipt)
         }
 
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
