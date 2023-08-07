@@ -26,7 +26,7 @@ import {
 } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { generateRandomNonce, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
+import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 export interface FunWalletParams {
     users?: User[]
@@ -203,11 +203,15 @@ export class FunWallet extends FirstClassActions {
         return { ...lidoWithdrawals, ...tokens, ...nfts }
     }
 
-    async getNonce(sender: string, key = 0, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+    async getNonce(
+        sender: string,
+        key = generateRandomNonceKey(),
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<bigint> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         let nonce = undefined
-        let retryCount = 5
+        let retryCount = 3
         while ((nonce === undefined || nonce === null) && retryCount > 0) {
             nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain)
             retryCount--
@@ -216,7 +220,7 @@ export class FunWallet extends FirstClassActions {
         if (nonce !== undefined && nonce !== null) {
             return BigInt(nonce)
         } else {
-            return BigInt(generateRandomNonce())
+            return BigInt(key << 64n)
         }
     }
 
