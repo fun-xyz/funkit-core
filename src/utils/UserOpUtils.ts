@@ -69,15 +69,15 @@ async function getPriceData(chainCurrency: string): Promise<number> {
     return data.USD
 }
 
-export const stringifyOp = (op: any) => {
+export const stringify = (object: any) => {
     return JSON.stringify(
-        op,
+        object,
         (_, value) => (typeof value === "bigint" ? toHex(value) : value) // return everything else unchanged
     )
 }
 
 export const objectify = (op: any): any => {
-    return JSON.parse(stringifyOp(op))
+    return JSON.parse(stringify(op))
 }
 
 // Constants

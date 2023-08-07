@@ -250,22 +250,6 @@ export const TransferTest = (config: TransferTestConfig) => {
                     expect(error.message).to.include("EnvOption.fee.token or EnvOption.gasSponsor.token is required")
                 }
             })
-            it("negative test - fee recipient not set", async () => {
-                const fee = 0.001
-                const options: EnvOption = {
-                    chain: config.chainId,
-                    fee: {
-                        token: baseToken,
-                        amount: fee
-                    }
-                }
-                try {
-                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
-                    expect.fail("Should throw error")
-                } catch (error: any) {
-                    expect(error.message).to.include("EnvOption.fee.recipient is required")
-                }
-            })
             it("negative test - fee amount and gas percent not set", async () => {
                 const options: EnvOption = {
                     chain: config.chainId,

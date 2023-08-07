@@ -1,6 +1,5 @@
 import { retry } from "@lifeomic/attempt"
 import fetch from "node-fetch"
-import { stringifyOp } from "./index"
 import { API_URL } from "../common/constants"
 import {
     AccessDeniedError,
@@ -11,6 +10,7 @@ import {
     ThrottlingError,
     UserOpFailureError
 } from "../errors"
+import { stringify } from "./index"
 
 const errorHandler = (err: any, context: any) => {
     if (err instanceof ResourceNotFoundError || err instanceof InvalidParameterError || err instanceof UserOpFailureError) {
@@ -46,7 +46,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 method,
                 headers,
                 redirect: "follow",
-                body: method !== "GET" ? stringifyOp(body) : undefined
+                body: method !== "GET" ? stringify(body) : undefined
             })
             const json = await response.json()
             if (response.ok) {
@@ -65,7 +65,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                     ErrorCode.Unauthorized,
                     `you are not authorized to access this resource ${JSON.stringify(json)}`,
                     `sendRequest.ApiUtils ${method} ${uri}`,
-                    { body },
+                    { body, apiKey },
                     "check your api key and check with fun team if you believe something is off",
                     "https://docs.fun.xyz"
                 )
@@ -135,7 +135,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
 export async function sendGetRequest(
     uri: string = API_URL,
     endpoint: string,
-    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+    apiKey: string = (globalThis as any).globalEnvOption?.apiKey
 ): Promise<any> {
     return await sendRequest(`${uri}/${endpoint}`, "GET", apiKey)
 }
@@ -144,7 +144,7 @@ export async function sendPostRequest(
     uri: string = API_URL,
     endpoint: string,
     body: object,
-    apiKey: string = (globalThis as any).globalEnvOption.apiKey!
+    apiKey: string = (globalThis as any).globalEnvOption?.apiKey
 ): Promise<any> {
     return await sendRequest(`${uri}/${endpoint}`, "POST", apiKey, body)
 }

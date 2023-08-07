@@ -4,7 +4,7 @@ import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token, getChainFromData } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -115,7 +115,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             before(async () => {
                 const second = 1000
                 const minute = 60 * second
-                const chain = await getChainFromData(config.chainId)
+                const chain = await Chain.getChain({ chainIdentifier: config.chainId })
                 const deadline = BigInt(Date.now() + 2 * minute) / 1000n
                 const targetAddr = await chain.getAddress("tokenSwapAddress")
                 const sessionKeyParams: SessionKeyParams = {
