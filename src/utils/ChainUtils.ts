@@ -1,3 +1,4 @@
+import { randomBytes as randomBytesValue } from "crypto"
 import { Address, PublicClient, parseEther, toHex } from "viem"
 import { Auth } from "../auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
@@ -36,12 +37,7 @@ export const isContract = async (address: Address, client: PublicClient): Promis
 }
 
 export const randomBytes = (length: number) => {
-    const bytes = new Uint8Array(length)
-    for (let i = 0; i < length; i++) {
-        bytes[i] = Math.floor(Math.random() * 256)
-    }
-
-    return toHex(bytes)
+    return toHex(randomBytesValue(length))
 }
 
 export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
