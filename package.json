@@ -9,7 +9,7 @@
     },
     "scripts": {
         "build": "rm -rf dist && tsc",
-        "unit-test": "ts-mocha --exit tests/unit/*/*.ts",
+        "unit-test": "nyc ts-mocha --exit tests/unit/*/*.ts",
         "test": "ts-mocha --exit tests/tenderly/*.ts --exit",
         "test-tenderly": "ts-mocha --exit tests/tenderly/*.ts",
         "test-aws": "env PREFUND=false ts-mocha",
