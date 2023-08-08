@@ -17,6 +17,7 @@
         "local-test-goerli": "env NODE_ENV=local PREFUND=false ts-mocha --exit tests/goerli/*.ts",
         "staging-test-tenderly": "env NODE_ENV=staging ts-mocha --exit tests/tenderly/*.ts",
         "staging-test-goerli": "env NODE_ENV=staging PREFUND=false ts-mocha --exit tests/goerli/*.ts",
+        "staging-test-polygon": "env NODE_ENV=staging PREFUND=false ts-mocha --exit tests/polygon/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
