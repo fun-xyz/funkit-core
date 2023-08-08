@@ -231,7 +231,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         })
     })
 
-    describe.only("MultiSig Auth BatchActions", function () {
+    describe("MultiSig Auth BatchActions", function () {
         this.timeout(300_000)
         this.timeout(300_000)
         let auth1: Auth
