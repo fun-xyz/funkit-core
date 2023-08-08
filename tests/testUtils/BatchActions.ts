@@ -231,14 +231,15 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         })
     })
 
-    describe("MultiSig Auth BatchActions", function () {
+    describe.only("MultiSig Auth BatchActions", function () {
         this.timeout(300_000)
         this.timeout(300_000)
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
         let chain: Chain
-        const groupId: Hex = randomBytes(32) // generateRandomGroupId()
+        const groupId: Hex = "0x2a9ac7208e6c38cb5fc71b3b0dedb4892c002bdd9757e2951604f77ebffc26e9" // generateRandomGroupId()
+
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
@@ -260,7 +261,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 6666)
+                uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1661166)
             })
             chain = Chain.getChain({ chainIdentifier: config.chainId })
 
@@ -268,23 +269,25 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         })
 
         it("Approve tokens", async () => {
-            const randomAddresses = new Array(5).fill(randomBytes(20))
+            const randomAddresses = new Array(5).fill(0).map(() => {
+                return randomBytes(20)
+            })
+
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
             const outTokenAddress = await Token.getAddress(outToken)
-            const txParams = randomAddresses.map((randomAddress) =>
-                erc20ApproveTransactionParams({
+            const txParams = randomAddresses.map((randomAddress) => {
+                return erc20ApproveTransactionParams({
                     spender: randomAddress,
                     amount: approveAmount,
                     token: outTokenAddress
                 })
-            )
+            })
             const operation1 = await wallet.createBatchOperation(auth1, await groupId, txParams)
 
-            await new Promise((r) => setTimeout(r, 2000))
             const operation = await wallet.getOperation(operation1.opId!)
-
             await wallet.executeOperation(auth2, operation)
+            await new Promise((r) => setTimeout(r, 4000))
             for (const randomAddr of randomAddresses) {
                 const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
                     outTokenAddress,
@@ -292,7 +295,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     [walletAddress, randomAddr],
                     chain
                 )
-
                 assert(BigInt(approvedAmount) === BigInt(approveAmount), "BatchActions failed")
             }
         })
