@@ -301,15 +301,6 @@ export class FunWallet extends FirstClassActions {
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
-        if (txOptions.gasSponsor) {
-            if (txOptions.gasSponsor.token) {
-                const sponsor = new TokenSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            } else {
-                const sponsor = new GaslessSponsor(txOptions)
-                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
-            }
-        }
 
         const partialOp = {
             callData: await this._buildCalldata(auth, userId, transactionParams, txOptions),
@@ -337,6 +328,22 @@ export class FunWallet extends FirstClassActions {
         if (isGroupOp) {
             operation.groupId = pad(userId as Hex, { size: 32 })
         }
+        if (txOptions.gasSponsor) {
+            if (txOptions.gasSponsor.token) {
+                const sponsor = new TokenSponsor(txOptions)
+                if (txOptions.gasSponsor.usePermit) {
+                    paymasterAndData = (
+                        await sponsor.getPaymasterAndDataPermit(operation, await this.getAddress(), userId, auth)
+                    ).toLowerCase()
+                } else {
+                    paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+                }
+            } else {
+                const sponsor = new GaslessSponsor(txOptions)
+                paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
+            }
+        }
+        operation.userOp.paymasterAndData = paymasterAndData
 
         const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
 

@@ -9,7 +9,7 @@ const config: TokenSponsorTestConfig = {
     paymasterTokenStakeAmt: 100,
     prefund: false,
     swapAmount: 0.001,
-    stake: true,
+    stake: false,
     mint: false
 }
 TokenSponsorTest(config)

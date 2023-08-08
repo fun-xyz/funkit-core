@@ -15,16 +15,16 @@ export class ContractInterface {
 
     async readFromChain(address: Address, functionName: string, args: any[], chainOrClient: Chain | PublicClient): Promise<any> {
         const client = await parseClient(chainOrClient)
-        try {
-            return await client.readContract({
-                abi: this.abi,
-                address,
-                functionName,
-                args
-            })
-        } catch (e) {
-            throw new Error(`Error reading from chain: \n ${JSON.stringify(e)}`)
-        }
+        return await client.readContract({
+            abi: this.abi,
+            address,
+            functionName,
+            args
+        })
+        // try {
+        // } catch (e) {
+        //     throw new Error(`Error reading from chain: \n ${JSON.stringify(e)}`)
+        // }
     }
 
     async batchReadFromChain(address: Address, chainOrClient: Chain | PublicClient, calls: ChainReadCall[]): Promise<any[]> {

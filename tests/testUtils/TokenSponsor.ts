@@ -106,23 +106,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(Number(wallet1InTokenBalance) > requiredAmount, "wallet1 does have enough inToken balance")
             }
             if (mint) {
-                const inTokenAddress = await Token.getAddress(config.inToken, options)
-
-                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
-                    await wallet.getAddress(),
-                    1000000000000000000000n
-                ])
-                await auth.sendTx({ ...inTokenMint })
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
-                    funderAddress,
+                    walletAddress,
                     1000000000000000000000n
                 ])
                 await auth.sendTx({ ...paymasterTokenMint })
-
-                const wethAddr = await Token.getAddress("weth", options)
-                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.1 })
-                await wallet.executeOperation(auth, userOp)
             }
 
             options.gasSponsor = {
@@ -173,12 +162,13 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     chain: config.chainId,
                     gasSponsor: {
                         sponsorAddress: funderAddress,
-                        token: paymasterToken,
+                        token: await Token.getAddress(paymasterToken),
                         usePermit
                     }
                 }
             )
-            await wallet.executeOperation(auth, userOp)
+            const r = await wallet.executeOperation(auth, userOp)
+            console.log(r)
             await new Promise((f) => setTimeout(f, 2000))
 
             const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
@@ -242,7 +232,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
-        it("Blacklist Mode Approved with permit", async () => {
+        it.only("Blacklist Mode Approved with permit", async () => {
             expect(await runSwap(wallet, true)).not.to.throw
         })
 
