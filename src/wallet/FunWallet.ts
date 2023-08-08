@@ -458,9 +458,10 @@ export class FunWallet extends FirstClassActions {
             })
         }
         if (receipt.txId) {
-            const { gasUsed, gasUSD } = await gasCalculation(receipt.txId, chain)
+            const { gasUsed, gasUSD, gasTotal } = await gasCalculation(receipt.txId, chain)
             receipt.gasUSD = gasUSD
             receipt.gasUsed = gasUsed
+            receipt.gasTotal = gasTotal
         }
 
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
