@@ -5,6 +5,7 @@ import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
+import { sendRequest } from "."
 
 const gasSpecificChain = { 137: 350_000_000_000 }
 
@@ -63,4 +64,8 @@ export const getWalletPermitHash = async (
         [tokenAddress, targetAddress, amount, nonce],
         chain
     )
+}
+
+export const getGasStation = async (gasStationUrl: string) => {
+    return await sendRequest(gasStationUrl, "GET", "")
 }
