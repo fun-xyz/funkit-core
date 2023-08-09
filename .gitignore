@@ -7,8 +7,4 @@ test.js
 test.ts
 utils.sh
 **/dist
-.nyc_output/15bb7aa6-1454-4b64-bd7d-82439d5f844b.json
-.nyc_output/265fd35c-1d1a-4d4a-a8a9-f462c8e46683.json
-.nyc_output/processinfo/15bb7aa6-1454-4b64-bd7d-82439d5f844b.json
-.nyc_output/processinfo/265fd35c-1d1a-4d4a-a8a9-f462c8e46683.json
-.nyc_output/processinfo/index.json
+.nyc_output/*
