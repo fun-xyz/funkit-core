@@ -51,12 +51,12 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.walletIndex ? config.walletIndex : 129856341)
+                uniqueId: await auth.getWalletUniqueId(config.walletIndex ? config.walletIndex : 129856341)
             })
 
             wallet1 = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.funderIndex ? config.funderIndex : 1792811340)
+                uniqueId: await auth.getWalletUniqueId(config.funderIndex ? config.funderIndex : 1792811340)
             })
 
             walletAddress = await wallet.getAddress()

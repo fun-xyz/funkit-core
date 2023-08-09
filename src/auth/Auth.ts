@@ -136,9 +136,9 @@ export class Auth {
         return encodeWalletSignature(walletSignature)
     }
 
-    async getWalletUniqueId(chainId: string, index = 0, skipDBActions = false): Promise<string> {
+    async getWalletUniqueId(index = 0, skipDBActions = false): Promise<string> {
         await this.init()
-        const authUniqueId = await getAuthUniqueId(this.authId!, chainId, await this.getAddress(), skipDBActions)
+        const authUniqueId = await getAuthUniqueId(this.authId!, await this.getAddress(), skipDBActions)
         return `${authUniqueId}-${index}`
     }
 
@@ -205,7 +205,7 @@ export class Auth {
         return await getUserWalletIdentities(this.authId!, chainId, walletAddr)
     }
 
-    async getWallets(chainId: string): Promise<Wallet[]> {
+    async getWallets(chainId?: string): Promise<Wallet[]> {
         await this.init()
         try {
             return await getUserWalletsByAddr(await this.getAddress(), chainId)

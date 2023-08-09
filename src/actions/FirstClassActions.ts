@@ -175,7 +175,7 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
-            const authId = await getAuthIdFromAddr(params.ownerId as Address, params.chainId.toString())
+            const authId = await getAuthIdFromAddr(params.ownerId as Address)
             await addUserToWallet(authId, params.chainId.toString(), await this.getAddress(txOptions), [pad(params.ownerId, { size: 32 })])
         }
 
@@ -190,7 +190,7 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
-            const authId = await getAuthIdFromAddr(params.ownerId as Address, params.chainId.toString())
+            const authId = await getAuthIdFromAddr(params.ownerId as Address)
             await removeUserWalletIdentity(
                 authId,
                 params.chainId.toString(),
@@ -211,7 +211,7 @@ export abstract class FirstClassActions {
         const walletAddr = await this.getAddress(txOptions)
         await createGroup(params.groupId, params.chainId.toString(), Number(params.group.threshold), walletAddr, params.group.userIds)
         params.group.userIds.forEach(async (userId) => {
-            const authId = await getAuthIdFromAddr(userId as Address, params.chainId.toString())
+            const authId = await getAuthIdFromAddr(userId as Address)
             await addUserToGroup(authId, params.chainId.toString(), walletAddr, params.groupId)
         })
         const txParams = await createGroupTxParams(params)
@@ -252,7 +252,7 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address, params.chainId.toString())
+        const authId = await getAuthIdFromAddr(params.userId as Address)
         await addUserToGroup(authId, params.chainId.toString(), await this.getAddress(txOptions), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
@@ -302,7 +302,7 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address, params.chainId.toString())
+        const authId = await getAuthIdFromAddr(params.userId as Address)
         await removeUserFromGroup(authId, params.chainId.toString(), await this.getAddress(txOptions), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {

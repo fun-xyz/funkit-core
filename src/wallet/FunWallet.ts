@@ -2,6 +2,7 @@ import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, ke
 import { User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
+import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
 import { createGroup, getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
@@ -351,6 +352,9 @@ export class FunWallet extends FirstClassActions {
         if (txOptions.skipDBAction !== true) {
             const opId = await createOp(estimatedOperation)
             estimatedOperation.opId = opId as Hex
+            if (!(await checkWalletAccessInitialization(sender))) {
+                await initializeWalletAccess(sender, await auth.getAddress())
+            }
         }
 
         return estimatedOperation
