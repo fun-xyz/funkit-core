@@ -67,22 +67,23 @@ export class TokenSponsor extends Sponsor {
         partialOp.userOp.signature = estimateGasSignature.toLowerCase()
         const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas(partialOp.userOp)
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const requiredGas = (callGasLimit + verificationGasLimit * 3n + preVerificationGas) * maxFeePerGas
-        const tokenAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
+        const requiredGas = (callGasLimit + verificationGasLimit * 3n + preVerificationGas) * maxFeePerGas * 25n
+        const decAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
             paymasterAddress,
             "getTokenValueOfEth",
             [this.token, requiredGas],
             chain
         )
-        const nonce = await getWalletPermitNonce(walletAddr, chain)
+
         const tokenAddress = await Token.getAddress(this.token, options)
+        const nonce = await getWalletPermitNonce(walletAddr, chain)
         const factoryAddress = await chain.getAddress("factoryAddress")
-        const hash = await getWalletPermitHash(factoryAddress, chain, tokenAddress, paymasterAddress, tokenAmount, nonce)
+        const hash = await getWalletPermitHash(factoryAddress, chain, tokenAddress, paymasterAddress, decAmount, nonce)
 
         const sig = await auth.signHash(hash)
         const encodedSig = encodeAbiParameters(
             [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
-            [tokenAddress, paymasterAddress, tokenAmount, nonce, sig]
+            [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
         const sponsor = await this.getSponsorAddress(options)
         const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])

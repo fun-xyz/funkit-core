@@ -109,7 +109,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     walletAddress,
-                    1000000000000000000000n
+                    BigInt(10e18)
                 ])
                 await auth.sendTx({ ...paymasterTokenMint })
             }
@@ -121,6 +121,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await configureEnvironment(options)
 
             sponsor = new TokenSponsor()
+            console.log(await sponsor.getTokenInfo(paymasterToken))
 
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
@@ -167,8 +168,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     }
                 }
             )
-            const r = await wallet.executeOperation(auth, userOp)
-            console.log(r)
+            await wallet.executeOperation(auth, userOp)
             await new Promise((f) => setTimeout(f, 2000))
 
             const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
@@ -232,7 +232,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
-        it.only("Blacklist Mode Approved with permit", async () => {
+        it("Blacklist Mode Approved with permit", async () => {
             expect(await runSwap(wallet, true)).not.to.throw
         })
 
