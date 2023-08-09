@@ -28,7 +28,7 @@ export interface GaslessSponsorTestConfig {
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe.only("GaslessSponsor", function () {
+    describe("GaslessSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(250_000)
         let funder: Auth
@@ -68,7 +68,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             }
 
             funderAddress = await funder.getAddress()
-            console.log("Funder Address", funderAddress)
 
             if (mint) {
                 const wethAddr = await Token.getAddress("weth", options)
@@ -91,8 +90,8 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount)
-            console.log("Stake to sponsor", await funder.sendTx(stake))
+            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 2)
+            await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
             assert(depositInfo1E > depositInfo1S, "Stake Failed")
@@ -117,7 +116,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 
