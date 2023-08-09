@@ -20,7 +20,7 @@ import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId } from "../utils"
-import { convertProviderToClient } from "../viem"
+import { convertProviderToClient, convertSignerToClient } from "../viem"
 const gasSpecificChain = { "137": 850_000_000_000 }
 
 const preProcessesChains: any = {}
@@ -45,6 +45,7 @@ export interface AuthInput {
     windowEth?: any
     rpc?: string
     provider?: any
+    signer?: any
 }
 
 export class Auth {
@@ -70,6 +71,8 @@ export class Auth {
             })
         } else if (authInput.provider) {
             this.client = convertProviderToClient({ provider: authInput.provider })
+        } else if (authInput.signer) {
+            this.client = convertSignerToClient({ signer: authInput.signer })
         }
 
         if (authInput.privateKey) {
