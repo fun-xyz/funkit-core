@@ -78,16 +78,20 @@ export class FunWallet extends FirstClassActions {
      * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
      * @returns Address
      */
-    async getAddress(): Promise<Address> {
+    async getAddress(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
+    static async getAddress(
+        uniqueId: string,
+        apiKey: string,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), keccak256(toBytes(uniqueId)))
     }
 
     static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
