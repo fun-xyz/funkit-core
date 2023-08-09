@@ -1,2 +1,2 @@
 export * from "./ContractInterface"
-export * from "./Provider"
+export * from "./Converter"
