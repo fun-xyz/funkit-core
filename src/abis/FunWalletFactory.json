@@ -14,7 +14,7 @@
                     "type": "address"
                 },
                 {
-                    "internalType": "address",
+                    "internalType": "address payable",
                     "name": "_feeOracle",
                     "type": "address"
                 },
@@ -26,27 +26,6 @@
             ],
             "stateMutability": "nonpayable",
             "type": "constructor"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "bytes",
-                    "name": "",
-                    "type": "bytes"
-                }
-            ],
-            "name": "ErrorCreatingContract",
-            "type": "error"
-        },
-        {
-            "inputs": [],
-            "name": "ErrorCreatingProxy",
-            "type": "error"
-        },
-        {
-            "inputs": [],
-            "name": "TargetAlreadyExists",
-            "type": "error"
         },
         {
             "anonymous": false,
@@ -62,6 +41,12 @@
                     "internalType": "address",
                     "name": "implementation",
                     "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes",
+                    "name": "initializerCallData",
+                    "type": "bytes"
                 }
             ],
             "name": "AccountCreated",
@@ -86,11 +71,6 @@
                     "internalType": "bytes",
                     "name": "initializerCallData",
                     "type": "bytes"
-                },
-                {
-                    "internalType": "address",
-                    "name": "implementation",
-                    "type": "address"
                 },
                 {
                     "internalType": "bytes",
@@ -124,23 +104,10 @@
         },
         {
             "inputs": [],
-            "name": "deployerSalt",
-            "outputs": [
-                {
-                    "internalType": "bytes32",
-                    "name": "",
-                    "type": "bytes32"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [],
             "name": "feeOracle",
             "outputs": [
                 {
-                    "internalType": "address",
+                    "internalType": "address payable",
                     "name": "",
                     "type": "address"
                 }
@@ -150,7 +117,7 @@
         },
         {
             "inputs": [],
-            "name": "funWalletImpAddress",
+            "name": "funWalletImplementation",
             "outputs": [
                 {
                     "internalType": "address",
@@ -185,7 +152,7 @@
             "name": "getFeeOracle",
             "outputs": [
                 {
-                    "internalType": "address",
+                    "internalType": "address payable",
                     "name": "",
                     "type": "address"
                 }
@@ -194,9 +161,22 @@
             "type": "function"
         },
         {
+            "inputs": [],
+            "name": "moduleId",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
             "inputs": [
                 {
-                    "internalType": "address",
+                    "internalType": "address payable",
                     "name": "_feeOracle",
                     "type": "address"
                 }

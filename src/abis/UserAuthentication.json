@@ -6,6 +6,12 @@
             "inputs": [
                 {
                     "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
                     "internalType": "bytes32",
                     "name": "groupId",
                     "type": "bytes32"
@@ -37,6 +43,12 @@
             "inputs": [
                 {
                     "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
                     "internalType": "bytes32",
                     "name": "groupId",
                     "type": "bytes32"
@@ -48,6 +60,12 @@
         {
             "anonymous": false,
             "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
                 {
                     "indexed": true,
                     "internalType": "bytes32",
@@ -79,6 +97,12 @@
         {
             "anonymous": false,
             "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
                 {
                     "indexed": false,
                     "internalType": "bytes",
@@ -339,9 +363,22 @@
             "name": "isValidAction",
             "outputs": [
                 {
-                    "internalType": "bool",
+                    "internalType": "uint256",
                     "name": "",
-                    "type": "bool"
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "moduleId",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
                 }
             ],
             "stateMutability": "view",

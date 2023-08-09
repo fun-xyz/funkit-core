@@ -185,8 +185,8 @@ export class Auth {
                     to,
                     value: BigInt(value),
                     data,
-                    maxFeePerGas: BigInt(maxFee * 10e9),
-                    maxPriorityFeePerGas: BigInt(maxPriorityFee * 10e9)
+                    maxFeePerGas: BigInt(Math.floor(maxFee * 1e9)),
+                    maxPriorityFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9))
                 }
             } else {
                 tx = {

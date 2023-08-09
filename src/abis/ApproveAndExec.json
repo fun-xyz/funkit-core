@@ -40,19 +40,6 @@
         },
         {
             "inputs": [],
-            "name": "EMPTY_BYTES32",
-            "outputs": [
-                {
-                    "internalType": "bytes32",
-                    "name": "",
-                    "type": "bytes32"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [],
             "name": "EMPTY_STATE",
             "outputs": [
                 {

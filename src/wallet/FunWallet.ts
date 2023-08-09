@@ -78,16 +78,20 @@ export class FunWallet extends FirstClassActions {
      * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
      * @returns Address
      */
-    async getAddress(): Promise<Address> {
+    async getAddress(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
+    static async getAddress(
+        uniqueId: string,
+        apiKey: string,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), keccak256(toBytes(uniqueId)))
     }
 
     static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
@@ -559,9 +563,11 @@ export class FunWallet extends FirstClassActions {
         const factoryAddress = await chain.getAddress("factoryAddress")
         const rbac = await chain.getAddress("rbacAddress")
         const userAuth = await chain.getAddress("userAuthAddress")
+
         const loginData: LoginData = {
             salt: this.walletUniqueId!
         }
+
         const rbacInitData = toBytes32Arr(owners)
 
         let userAuthInitData = "0x" as Hex
@@ -580,6 +586,7 @@ export class FunWallet extends FirstClassActions {
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
         }
+
         return this._getInitCode(initCodeParams)
     }
 
@@ -602,13 +609,7 @@ export class FunWallet extends FirstClassActions {
             encodedVerificationInitdata
         ])
 
-        const implementationAddress = input.implementationAddress ? input.implementationAddress : AddressZero
-
-        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [
-            initializerCallData,
-            implementationAddress,
-            encodeLoginData(input.loginData)
-        ])
+        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [initializerCallData, encodeLoginData(input.loginData)])
         return concat([input.factoryAddress, data])
     }
 
