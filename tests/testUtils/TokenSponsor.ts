@@ -121,7 +121,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await configureEnvironment(options)
 
             sponsor = new TokenSponsor()
-            console.log(await sponsor.getTokenInfo(paymasterToken))
 
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
