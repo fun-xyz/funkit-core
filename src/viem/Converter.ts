@@ -46,8 +46,7 @@ export const convertSignerToClient = ({ signer, viemChain }: web3SignerConversio
                 if (method === "eth_requestAccounts") {
                     return [await signer.getAddress()]
                 } else if (method === "personal_sign") {
-                    const sig = await signer.signMessage(toBytes(params[0]))
-                    return sig
+                    return await signer.signMessage(toBytes(params[0]))
                 }
             }
         })
