@@ -552,9 +552,11 @@ export class FunWallet extends FirstClassActions {
         const factoryAddress = await chain.getAddress("factoryAddress")
         const rbac = await chain.getAddress("rbacAddress")
         const userAuth = await chain.getAddress("userAuthAddress")
+
         const loginData: LoginData = {
             salt: this.walletUniqueId!
         }
+
         const rbacInitData = toBytes32Arr(owners)
 
         let userAuthInitData = "0x" as Hex
@@ -573,6 +575,7 @@ export class FunWallet extends FirstClassActions {
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
         }
+
         return this._getInitCode(initCodeParams)
     }
 
@@ -595,13 +598,7 @@ export class FunWallet extends FirstClassActions {
             encodedVerificationInitdata
         ])
 
-        const implementationAddress = input.implementationAddress ? input.implementationAddress : AddressZero
-
-        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [
-            initializerCallData,
-            implementationAddress,
-            encodeLoginData(input.loginData)
-        ])
+        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [initializerCallData, encodeLoginData(input.loginData)])
         return concat([input.factoryAddress, data])
     }
 

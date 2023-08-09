@@ -686,7 +686,7 @@
         {
             "inputs": [
                 {
-                    "internalType": "address",
+                    "internalType": "address payable",
                     "name": "target",
                     "type": "address"
                 },

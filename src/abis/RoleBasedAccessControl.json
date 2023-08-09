@@ -6,6 +6,12 @@
             "inputs": [
                 {
                     "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
                     "internalType": "bytes32",
                     "name": "roleId",
                     "type": "bytes32"
@@ -25,17 +31,10 @@
             "inputs": [
                 {
                     "indexed": true,
-                    "internalType": "bytes32",
-                    "name": "ruleId",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "RemoveRule",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
                 {
                     "indexed": true,
                     "internalType": "bytes32",
@@ -54,13 +53,51 @@
         },
         {
             "anonymous": false,
-            "inputs": [],
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                }
+            ],
             "name": "RoleBasedAccessControlInitialized",
             "type": "event"
         },
         {
             "anonymous": false,
             "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "user",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "ruleId",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "RuleAdded",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
                 {
                     "indexed": true,
                     "internalType": "bytes32",
@@ -82,6 +119,31 @@
             "inputs": [
                 {
                     "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "ruleId",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "RuleDeleted",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
                     "internalType": "bytes32",
                     "name": "user",
                     "type": "bytes32"
@@ -99,6 +161,12 @@
         {
             "anonymous": false,
             "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
                 {
                     "indexed": true,
                     "internalType": "bytes32",
@@ -120,23 +188,10 @@
             "inputs": [
                 {
                     "indexed": true,
-                    "internalType": "bytes4",
-                    "name": "selector",
-                    "type": "bytes4"
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
                 },
-                {
-                    "indexed": true,
-                    "internalType": "bytes32",
-                    "name": "ruleId",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "SelectorRuleAdded",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
                 {
                     "indexed": true,
                     "internalType": "bytes32",
@@ -177,7 +232,7 @@
                     "type": "tuple"
                 }
             ],
-            "name": "SetRule",
+            "name": "RuleSet",
             "type": "event"
         },
         {
@@ -186,28 +241,9 @@
                 {
                     "indexed": true,
                     "internalType": "address",
-                    "name": "target",
+                    "name": "wallet",
                     "type": "address"
                 },
-                {
-                    "indexed": true,
-                    "internalType": "bytes4",
-                    "name": "selector",
-                    "type": "bytes4"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "bytes32",
-                    "name": "ruleId",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "TargetRuleAdded",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
                 {
                     "indexed": true,
                     "internalType": "bytes32",
@@ -229,6 +265,12 @@
             "inputs": [
                 {
                     "indexed": true,
+                    "internalType": "address",
+                    "name": "wallet",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
                     "internalType": "bytes32",
                     "name": "roleId",
                     "type": "bytes32"
@@ -241,25 +283,6 @@
                 }
             ],
             "name": "UserRemovedFromRole",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "internalType": "bytes32",
-                    "name": "user",
-                    "type": "bytes32"
-                },
-                {
-                    "indexed": true,
-                    "internalType": "bytes32",
-                    "name": "ruleId",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "UserRuleAdded",
             "type": "event"
         },
         {
@@ -462,6 +485,19 @@
                     "type": "bytes32"
                 }
             ],
+            "name": "deleteRule",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "ruleId",
+                    "type": "bytes32"
+                }
+            ],
             "name": "getRule",
             "outputs": [
                 {
@@ -582,9 +618,9 @@
             "name": "isValidAction",
             "outputs": [
                 {
-                    "internalType": "bool",
-                    "name": "",
-                    "type": "bool"
+                    "internalType": "uint256",
+                    "name": "sigTimeRange",
+                    "type": "uint256"
                 }
             ],
             "stateMutability": "view",
@@ -620,7 +656,7 @@
                             "type": "address"
                         },
                         {
-                            "internalType": "address",
+                            "internalType": "address payable",
                             "name": "recipient",
                             "type": "address"
                         },
@@ -638,9 +674,22 @@
             "name": "isValidActionAndFee",
             "outputs": [
                 {
-                    "internalType": "bool",
+                    "internalType": "uint256",
                     "name": "",
-                    "type": "bool"
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "moduleId",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
                 }
             ],
             "stateMutability": "view",
@@ -668,19 +717,6 @@
                 }
             ],
             "name": "removeOwner",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "bytes32",
-                    "name": "ruleId",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "removeRule",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"

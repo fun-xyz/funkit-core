@@ -23,7 +23,7 @@ export const NFTTest = (config: NFTTestConfig) => {
     const { prefund } = config
     let nftAddress: Address
 
-    describe("NFT Tests", function () {
+    describe.only("NFT Tests", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000_000)
         let auth: Auth
@@ -60,7 +60,8 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it("transfer", async () => {
+            it.only("transfer", async () => {
+                console.log("Wallet address", await wallet1.getAddress())
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 try {

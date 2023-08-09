@@ -146,6 +146,19 @@
             "type": "function"
         },
         {
+            "inputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "loginData",
+                    "type": "bytes"
+                }
+            ],
+            "name": "invalidateUsedSeed",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
             "inputs": [],
             "name": "offchainSocialOracle",
             "outputs": [
@@ -194,6 +207,19 @@
         {
             "inputs": [
                 {
+                    "internalType": "address",
+                    "name": "_funWalletFactory",
+                    "type": "address"
+                }
+            ],
+            "name": "setFunWalletFactory",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
                     "internalType": "contract IOffchainSocialOracle",
                     "name": "_oracle",
                     "type": "address"
@@ -215,6 +241,44 @@
             "name": "transferOwnership",
             "outputs": [],
             "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "usedCommitHashes",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "name": "usedSeeds",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
             "type": "function"
         },
         {
