@@ -1,1 +1,144 @@
-{"name":"UniswapPriceOracle","abi":[{"inputs":[{"internalType":"address","name":"_sushiswapRouterAddress","type":"address"},{"internalType":"address","name":"_uniswapRouterAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"NoTokenPriceFound","type":"error"},{"inputs":[{"internalType":"address","name":"aggregatorOrToken","type":"address"},{"internalType":"uint256","name":"ethAmount","type":"uint256"},{"internalType":"uint8","name":"","type":"uint8"}],"name":"getTokenValueOfEth","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"sushiswapFactory","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"sushiswapRouterAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"sushiswapWETH","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"uniswapFactory","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"uniswapRouterAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"uniswapWETH","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}],"addresses":{"5":"0xf6149506AcCCe2173C1bD94BcD1d199bC7dE9785","31337":"0xB2ff9d5e60d68A52cea3cd041b32f1390A880365","36865":"0xA7BE2c12e7d42C8c19ecf9D458c0911c9b8Da552"}}
+{
+    "name": "UniswapPriceOracle",
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_sushiswapRouterAddress",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_uniswapRouterAddress",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "token",
+                    "type": "address"
+                }
+            ],
+            "name": "NoTokenPriceFound",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "aggregatorOrToken",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "ethAmount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "name": "getTokenValueOfEth",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "sushiswapFactory",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "sushiswapRouterAddress",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "sushiswapWETH",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "uniswapFactory",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "uniswapRouterAddress",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "uniswapWETH",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ],
+    "addresses": {
+        "5": "0xf6149506AcCCe2173C1bD94BcD1d199bC7dE9785",
+        "31337": "0xB2ff9d5e60d68A52cea3cd041b32f1390A880365",
+        "36865": "0xA7BE2c12e7d42C8c19ecf9D458c0911c9b8Da552"
+    }
+}

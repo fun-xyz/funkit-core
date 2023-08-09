@@ -1,9 +1,11 @@
+import { randomBytes as randomBytesValue } from "crypto"
 import { Address, PublicClient, parseEther, toHex } from "viem"
 import { Auth } from "../auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
+import { sendRequest } from "."
 
 const gasSpecificChain = { 137: 350_000_000_000 }
 
@@ -13,7 +15,7 @@ export const fundWallet = async (
     value: number,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ) => {
-    const chain = Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData
@@ -36,12 +38,7 @@ export const isContract = async (address: Address, client: PublicClient): Promis
 }
 
 export const randomBytes = (length: number) => {
-    const bytes = new Uint8Array(length)
-    for (let i = 0; i < length; i++) {
-        bytes[i] = Math.floor(Math.random() * 256)
-    }
-
-    return toHex(bytes)
+    return toHex(randomBytesValue(length))
 }
 
 export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
@@ -67,4 +64,8 @@ export const getWalletPermitHash = async (
         [tokenAddress, targetAddress, amount, nonce],
         chain
     )
+}
+
+export const getGasStation = async (gasStationUrl: string) => {
+    return await sendRequest(gasStationUrl, "GET", "")
 }

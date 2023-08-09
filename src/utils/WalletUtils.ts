@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid"
 import { Address, Hex, keccak256, pad, toBytes } from "viem"
 import { FACTORY_CONTRACT_INTERFACE } from "../common"
 import { AuthType, Chain, Operation, Signature, UserOperation, encodeLoginData } from "../data"
+import { randomBytes } from "../utils/ChainUtils"
 
 export const generateRandomBytes32 = (): Hex => {
     return keccak256(toBytes(uuidv4())) as Hex
@@ -32,27 +33,20 @@ export const isGroupOperation = (operation: Operation): boolean => {
     return false
 }
 
-export const generateRandomNonce = (): bigint => {
-    const generateRandomNumber = (min: number, max: number): number => {
-        min = Math.ceil(min)
-        max = Math.floor(max)
-        return Math.floor(Math.random() * (max - min + 1)) + min
-    }
-
-    const randomKey = BigInt(generateRandomNumber(100, 1000))
-    return BigInt(randomKey << 64n)
+export const generateRandomNonceKey = (): bigint => {
+    return BigInt(randomBytes(24))
 }
 
-export const isSignatureRequired = (userId: Hex, signatures: Signature[] | undefined): boolean => {
+export const isSignatureMissing = (userId: Hex, signatures: Signature[] | undefined): boolean => {
     if (!signatures) {
         return true
     }
-    let sigRequired = true
+    let sigMissing = true
     for (const signature of signatures) {
-        if (pad(signature.userId, { size: 32 }) === userId) {
-            sigRequired = false
+        if (pad(signature.userId.toLowerCase() as Hex, { size: 32 }) === pad(userId.toLowerCase() as Hex, { size: 32 })) {
+            sigMissing = false
             break
         }
     }
-    return sigRequired
+    return sigMissing
 }

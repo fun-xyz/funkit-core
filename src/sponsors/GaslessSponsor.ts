@@ -13,7 +13,7 @@ export class GaslessSponsor extends Sponsor {
 
     async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.sponsorAddress) {
-            const chain = Chain.getChain({ chainIdentifier: options.chain })
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
             if (GASLESS_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
                 this.sponsorAddress = await chain.getAddress("sponsorAddress")
             } else {
@@ -43,7 +43,7 @@ export class GaslessSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         await addTransaction(
             await chain.getChainId(),
             Date.now(),
@@ -74,7 +74,7 @@ export class GaslessSponsor extends Sponsor {
     ): Promise<TransactionParams> {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
 
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         await addTransaction(
             await chain.getChainId(),
             Date.now(),
@@ -96,20 +96,20 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async getUnlockBlock(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<number> {
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getUnlockBlock", [sponsor], chain)
     }
 
     async getLockState(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const unlockBlock = Number(await this.getUnlockBlock(sponsor, options))
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const client = await chain.getClient()
         const currentBlock = await client.getBlockNumber()
         return unlockBlock === 0 || unlockBlock > currentBlock
     }
 
     async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getBalance", [sponsor], chain)
     }
 
@@ -126,7 +126,7 @@ export class GaslessSponsor extends Sponsor {
         sponsor: string,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getSpenderBlacklistMode",
@@ -140,7 +140,7 @@ export class GaslessSponsor extends Sponsor {
         sponsor: string,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getSpenderWhitelistMode",
@@ -150,7 +150,7 @@ export class GaslessSponsor extends Sponsor {
     }
 
     static async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await chain.getAddress(this.name)
     }
 }

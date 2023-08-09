@@ -66,7 +66,7 @@ export class Operation {
         if (!this.userOp.signature || this.userOp.signature === "0x") {
             this.userOp.signature = await auth.getEstimateGasSignature(userId, this)
         }
-        const chain = Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const res = await chain.estimateOpGas({
             ...this.userOp,
             paymasterAndData: "0x",

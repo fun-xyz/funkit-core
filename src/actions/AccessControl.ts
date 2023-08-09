@@ -56,7 +56,7 @@ export const createSessionKeyTransactionParams = async (params: SessionKeyParams
     const setRuleCallData = RBAC_CONTRACT_INTERFACE.encodeData("setRule", [ruleId, ruleStruct])
     const connectRuleAndRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addRuleToRole", [roleId, ruleId])
     const connectUserToRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addUserToRole", [roleId, userid])
-    const chain = Chain.getChain({ chainIdentifier: params.chainId })
+    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "multiCall", [
         [setRuleCallData, connectRuleAndRoleCallData, connectUserToRoleCallData]
@@ -68,13 +68,13 @@ export const createSessionUser = () => {
 }
 
 export const addOwnerTxParams = async (params: AddOwnerParams): Promise<TransactionParams> => {
-    const chain = Chain.getChain({ chainIdentifier: params.chainId })
+    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "addOwner", [pad(params.ownerId, { size: 32 })])
 }
 
 export const removeOwnerTxParams = async (params: RemoveOwnerParams): Promise<TransactionParams> => {
-    const chain = Chain.getChain({ chainIdentifier: params.chainId })
+    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "removeOwner", [pad(params.ownerId, { size: 32 })])
 }
