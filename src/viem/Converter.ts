@@ -1,4 +1,4 @@
-import { createWalletClient, custom } from "viem"
+import { createWalletClient, custom, toBytes } from "viem"
 import { Chain, mainnet } from "viem/chains"
 
 interface web3ProviderConversionInterface {
@@ -39,16 +39,15 @@ export const convertSignerToClient = ({ signer, viemChain }: web3SignerConversio
             transport: custom(signer)
         })
     }
-    if (!signer.signMessage) throw new Error("Signer isn't EIP 1193 compliant")
     return createWalletClient({
         chain,
         transport: custom({
             async request({ method, params }) {
-                console.log(method, params, signer)
                 if (method === "eth_requestAccounts") {
-                    return [signer.address]
-                } else if (method === "signMessage") {
-                    return await signer.signMessage(params.message)
+                    return [await signer.getAddress()]
+                } else if (method === "personal_sign") {
+                    const sig = await signer.signMessage(toBytes(params[0]))
+                    return sig
                 }
             }
         })

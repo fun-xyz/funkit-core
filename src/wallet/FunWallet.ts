@@ -613,6 +613,9 @@ export class FunWallet extends FirstClassActions {
      * @returns calldata to be passed into createUserOperation
      */
     private async _buildCalldata(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+        if (!params.value) {
+            params.value = 0n
+        }
         if (options.fee) {
             if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
                 options.fee.token = options.gasSponsor.token
