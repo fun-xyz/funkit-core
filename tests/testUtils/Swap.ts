@@ -48,8 +48,8 @@ export const SwapTest = (config: SwapTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
 
-            if (prefund) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.01)
             }
             if (mint) {
                 const inTokenAddress = await Token.getAddress(inToken, options)
@@ -86,7 +86,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 in: inToken,
-                amount: config.erc20toerc20Amt ?? 1, //((erc20Delta / 2).toFixed(3)),
+                amount: 0.0001,
                 out: outToken,
                 slippage: config.slippage ? config.slippage : 0.5,
                 returnAddress: walletAddress,
@@ -102,7 +102,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 in: inToken,
-                amount: config.erc20toethAmt ?? 1,
+                amount: 0.0001,
                 out: baseToken,
                 returnAddress: walletAddress,
                 chainId: config.chainId

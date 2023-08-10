@@ -43,9 +43,16 @@ export const TransferTest = (config: TransferTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
-            if (Number(Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
             }
+        })
+
+        after(async function () {
+            await wallet.transfer(auth, await auth.getAddress(), {
+                to: await auth.getAddress(),
+                amount: (Number(await Token.getBalance(baseToken, await wallet.getAddress())) * 4) / 5
+            })
         })
 
         it("transfer baseToken directly", async () => {
@@ -69,13 +76,9 @@ export const TransferTest = (config: TransferTestConfig) => {
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
 
-        it.only("wallet should have lower balance of specified token", async () => {
-            const randomAddress = await auth.getAddress()
-            const walletAddress = await wallet.getAddress()
-            console.log("walletAddress", walletAddress)
+        it("wallet should have lower balance of specified token", async () => {
             if (config.chainId === 5) {
                 const outTokenAddress = await Token.getAddress(outToken)
-
                 const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
@@ -83,13 +86,17 @@ export const TransferTest = (config: TransferTestConfig) => {
                 await auth.sendTx({ ...outTokenMint })
             }
 
-            const b1 = Token.getBalanceBN(outToken, randomAddress)
-            const b2 = Token.getBalanceBN(outToken, walletAddress)
+            const b1 = Token.getBalanceBN(outToken, await auth.getAddress())
+            const b2 = Token.getBalanceBN(outToken, await wallet.getAddress())
             const outTokenAddress = await new Token(outToken).getAddress()
-            const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: randomAddress, amount: 1, token: outTokenAddress })
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), {
+                to: await auth.getAddress(),
+                amount: 1,
+                token: outTokenAddress
+            })
             console.log(await wallet.executeOperation(auth, userOp))
-            const b3 = Token.getBalanceBN(outToken, randomAddress)
-            const b4 = Token.getBalanceBN(outToken, walletAddress)
+            const b3 = Token.getBalanceBN(outToken, await auth.getAddress())
+            const b4 = Token.getBalanceBN(outToken, await wallet.getAddress())
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
