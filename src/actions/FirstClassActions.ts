@@ -295,7 +295,7 @@ export abstract class FirstClassActions {
             throw new ResourceNotFoundError(
                 ErrorCode.UserNotFound,
                 "user does not exist in group",
-                "wallet.addUserToGroup",
+                "wallet.removeUserFromGroup",
                 { params, originalMembers, userId: params.userId },
                 "Catch this error and swallow it as the user does not exist in the group.",
                 "https://docs.fun.xyz"

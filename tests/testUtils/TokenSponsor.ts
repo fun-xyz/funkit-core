@@ -61,7 +61,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.walletIndex ? config.walletIndex : 1223452391856341)
+                uniqueId: await auth.getWalletUniqueId(config.walletIndex ? config.walletIndex : 1223452391856349)
             })
 
             wallet1 = new FunWallet({

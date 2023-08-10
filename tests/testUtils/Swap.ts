@@ -173,7 +173,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         })
     })
 
-    describe.only("Multi Sig Swap", function () {
+    describe("Multi Sig Swap", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(200_000)
         let auth1: Auth
@@ -191,8 +191,6 @@ export const SwapTest = (config: SwapTestConfig) => {
             auth2 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
 
             // auth1 creates the wallet with a group of auth1 and auth2. The group is the owner of the wallet
-
-            console.log("groupId", groupId)
             wallet = new FunWallet({
                 users: [
                     {
@@ -224,7 +222,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
         })
 
-        it.only("Group Wallet Create, Collect Sig, and Execute -- ETH => ERC20", async () => {
+        it("Group Wallet Create, Collect Sig, and Execute -- ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalance(inToken, walletAddress)
 

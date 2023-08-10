@@ -4,6 +4,6 @@ const config: BatchActionsTestConfig = {
     chainId: 5,
     outToken: "dai",
     baseToken: "eth",
-    prefund: true
+    prefund: false
 }
 BatchActionsTest(config)

@@ -50,7 +50,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811341)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811349)
             })
             chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
