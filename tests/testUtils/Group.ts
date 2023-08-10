@@ -4,7 +4,7 @@ import { Auth } from "../../src/auth"
 import { WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain } from "../../src/data"
-import { fundWallet, generateRandomGroupId, isContract, randomBytes } from "../../src/utils"
+import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -38,7 +38,7 @@ export const GroupTest = (config: GroupTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179389)
+                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179701)
             })
             chain = await Chain.getChain({ chainIdentifier: chainId })
             memberIds = [
@@ -49,10 +49,6 @@ export const GroupTest = (config: GroupTestConfig) => {
             ].sort((a, b) => b.localeCompare(a))
             if (prefund) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
-            }
-            const isWalletCreated = await isContract(await wallet.getAddress(), await chain.getClient())
-            if (!isWalletCreated) {
-                expect(await wallet.create(auth, await auth.getAddress())).to.not.throw
             }
             userAuthContractAddr = await chain.getAddress("userAuthAddress")
             groupId = generateRandomGroupId()

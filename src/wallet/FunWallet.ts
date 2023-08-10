@@ -462,9 +462,10 @@ export class FunWallet extends FirstClassActions {
             })
         }
         if (receipt.txId) {
-            const { gasUsed, gasUSD } = await gasCalculation(receipt.txId, chain)
+            const { gasUsed, gasUSD, gasTotal } = await gasCalculation(receipt.txId, chain)
             receipt.gasUSD = gasUSD
             receipt.gasUsed = gasUsed
+            receipt.gasTotal = gasTotal
         }
 
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
@@ -613,6 +614,9 @@ export class FunWallet extends FirstClassActions {
      * @returns calldata to be passed into createUserOperation
      */
     private async _buildCalldata(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+        if (!params.value) {
+            params.value = 0n
+        }
         if (options.fee) {
             if (!options.fee.token && options.gasSponsor && options.gasSponsor.token) {
                 options.fee.token = options.gasSponsor.token

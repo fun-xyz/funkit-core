@@ -1,4 +1,4 @@
-import { Hex, encodeAbiParameters, keccak256, toBytes, toHex } from "viem"
+import { Hex, encodeAbiParameters, formatUnits, keccak256, toBytes, toHex } from "viem"
 import { sendRequest } from "./ApiUtils"
 import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common"
 import { Chain, UserOperation } from "../data"
@@ -51,15 +51,16 @@ export const getPromiseFromOp = async (op: UserOperation) => {
 }
 
 export async function gasCalculation(txid: string, chain: Chain) {
-    if (!txid || txid === "0x") return { gasUsed: BigInt(1), gasUSD: BigInt(1) }
+    if (!txid || txid === "0x") return { gasUsed: "-1", gasUSD: "-1" }
     const provider = await chain.getClient()
     const txReceipt = await provider.waitForTransactionReceipt({ hash: txid as Hex })
     const gasUsed = txReceipt.gasUsed
-    const gasPrice = txReceipt.effectiveGasPrice / BigInt(1e18)
+    const gasPrice = txReceipt.effectiveGasPrice
     const gasTotal = gasUsed * gasPrice
-    const chainPrice = await getPriceData(await chain.getCurrency())
-    const gasUSD = (gasTotal * BigInt(chainPrice * 1e20)) / BigInt(1e20)
-    return { gasUsed, gasUSD }
+    const chainPrice = BigInt((await getPriceData(await chain.getCurrency())) * 100)
+    const gasUSD = gasTotal * BigInt(chainPrice)
+
+    return { gasUsed: gasUsed.toString(), gasTotal: formatUnits(gasTotal, 18).toString(), gasUSD: formatUnits(gasUSD, 20).toString() }
 }
 
 const PRICE_URL = "https://min-api.cryptocompare.com/data/price"
