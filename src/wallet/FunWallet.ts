@@ -324,7 +324,7 @@ export class FunWallet extends FirstClassActions {
             maxFeePerGas: maxFeePerGas!,
             maxPriorityFeePerGas: maxFeePerGas!,
             initCode,
-            nonce: await this.getNonce(sender),
+            nonce: txOptions.nonce !== null && txOptions.nonce !== undefined ? txOptions.nonce : await this.getNonce(sender),
             preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
@@ -524,10 +524,9 @@ export class FunWallet extends FirstClassActions {
             auth,
             groupId,
             { to: await this.getAddress(), amount: 0 },
-            { ...txOptions, skipDBAction: true }
+            { ...txOptions, skipDBAction: true, nonce: BigInt(operation.userOp.nonce) }
         )
         if (rejectionMessage) rejectOperation.message = rejectionMessage
-        rejectOperation.userOp.nonce = operation.userOp.nonce
         rejectOperation.relatedOpIds = [operation.opId!]
         rejectOperation.opType = OperationType.REJECTION
         rejectOperation.opId = (await createOp(rejectOperation)) as Hex
