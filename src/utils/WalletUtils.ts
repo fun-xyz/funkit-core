@@ -1,6 +1,6 @@
-import { getRandomValues } from "node:crypto"
 import { v4 as uuidv4 } from "uuid"
 import { Address, Hex, keccak256, pad, toBytes } from "viem"
+import { randomBytes } from "./ChainUtils"
 import { FACTORY_CONTRACT_INTERFACE } from "../common"
 import { AuthType, Chain, Operation, Signature, UserOperation, encodeLoginData } from "../data"
 
@@ -19,18 +19,7 @@ export const generateRandomGroupId = (): Hex => {
 export const generateRandomNonceKey = (): bigint => {
     // Step 1: Determine the number of bytes required (25 bytes for 2^192)
     const bytesNeeded = 24
-
-    // Step 2: Generate 25 random bytes
-    const randomBytes = new Uint8Array(bytesNeeded)
-    getRandomValues(randomBytes)
-
-    // Step 3: Convert the random bytes to a decimal number
-    let randomDecimal = 0n
-    for (let i = 0; i < bytesNeeded; i++) {
-        randomDecimal += BigInt(randomBytes[i]) << BigInt(8 * (bytesNeeded - 1 - i))
-    }
-
-    return randomDecimal
+    return BigInt(randomBytes(bytesNeeded))
 }
 
 export const generateRandomNonce = (): bigint => {
