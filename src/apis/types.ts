@@ -34,7 +34,7 @@ export type ExecuteOpInput = {
 export type ScheduleOpInput = {
     opId: Hex
     chainId: string
-    executedBy: string
+    scheduledBy: string
     entryPointAddress: Address
     signature: Hex
     userOp?: UserOperation

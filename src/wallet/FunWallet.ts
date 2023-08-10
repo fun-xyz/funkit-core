@@ -532,7 +532,7 @@ export class FunWallet extends FirstClassActions {
             await scheduleOp({
                 opId: operation.opId!,
                 chainId,
-                executedBy: await auth.getAddress(),
+                scheduledBy: await auth.getAddress(),
                 entryPointAddress: await chain.getAddress("entryPointAddress"),
                 signature: operation.userOp.signature as Hex,
                 groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
@@ -541,7 +541,7 @@ export class FunWallet extends FirstClassActions {
             await scheduleOp({
                 opId: operation.opId!,
                 chainId,
-                executedBy: await auth.getAddress(),
+                scheduledBy: await auth.getAddress(),
                 entryPointAddress: await chain.getAddress("entryPointAddress"),
                 signature: operation.userOp.signature as Hex,
                 userOp: operation.userOp
