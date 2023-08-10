@@ -20,7 +20,7 @@ import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId, getGasStation } from "../utils"
-import { convertProviderToClient } from "../viem"
+import { convertProviderToClient, convertSignerToClient } from "../viem"
 const gasSpecificChain = {
     "137": {
         gasStationUrl: "https://gasstation.polygon.technology/v2",
