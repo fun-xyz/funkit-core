@@ -20,7 +20,7 @@ export interface AutomatedActionsConfig {
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
     const { prefund, prefundAmt } = config
 
-    describe.only("Automated Actions Test - Store in DB and execute later", function () {
+    describe("Automated Actions Test - Store in DB and execute later", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
