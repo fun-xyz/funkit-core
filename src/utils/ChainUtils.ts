@@ -1,5 +1,5 @@
 import { randomBytes as randomBytesValue } from "crypto"
-import { Address, PublicClient, parseEther, toHex } from "viem"
+import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
 import { Auth } from "../auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
@@ -7,6 +7,15 @@ import { Chain } from "../data"
 import { FunWallet } from "../wallet"
 
 const gasSpecificChain = { 137: 350_000_000_000 }
+
+export const isAddress = (address: string): boolean => {
+    try {
+        const [decodedAddr] = decodeAbiParameters([{ type: "address" }], pad(address as Hex, { size: 32 }))
+        return isAddressViem(decodedAddr)
+    } catch (err) {
+        return false
+    }
+}
 
 export const fundWallet = async (
     auth: Auth,
