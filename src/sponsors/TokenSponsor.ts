@@ -96,7 +96,6 @@ export class TokenSponsor extends Sponsor {
     ): Promise<TransactionParams> {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
-
         await addTransaction(
             await chain.getChainId(),
             Date.now(),
@@ -379,10 +378,11 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const tokenAddress = await Token.getAddress(tokenAddr, options)
         return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getTokenWhitelisted",
-            [tokenAddr, sponsor],
+            [tokenAddress, sponsor],
             chain
         )
     }

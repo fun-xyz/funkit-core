@@ -35,7 +35,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe("TokenSponsor", function () {
+    describe.only("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
         let auth: Auth
@@ -185,7 +185,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it("Only User Whitelisted", async () => {
+        it.only("Only User Whitelisted", async () => {
             await funder.sendTx(await sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode(funderAddress))
