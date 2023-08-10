@@ -11,7 +11,7 @@ const gasSpecificChain = { 137: 350_000_000_000 }
 export const isAddress = (address: string): boolean => {
     try {
         const [decodedAddr] = decodeAbiParameters([{ type: "address" }], pad(address as Hex, { size: 32 }))
-        return isAddressViem(decodedAddr)
+        return isAddressViem(decodedAddr as string)
     } catch (err) {
         return false
     }
