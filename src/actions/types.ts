@@ -25,7 +25,7 @@ export type TransferParam = {
 
 export interface ERC721TransferParams extends TransferParam {
     tokenId: number
-    token: Address
+    token: string
     from: Address
 }
 export interface NativeTransferParams extends TransferParam {
@@ -33,7 +33,7 @@ export interface NativeTransferParams extends TransferParam {
 }
 
 export interface ERC20TransferParams extends NativeTransferParams {
-    token: Address
+    token: string
 }
 
 export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams

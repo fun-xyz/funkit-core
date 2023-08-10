@@ -1,7 +1,7 @@
 import { Address, Hex, PublicClient, encodeFunctionData } from "viem"
 import { TransactionParams } from "../common"
 import { Chain } from "../data"
-import { stringifyOp } from "../utils"
+import { stringify } from "../utils"
 
 type ChainReadCall = {
     functionName: string
@@ -24,7 +24,7 @@ export class ContractInterface {
                 args
             })
         } catch (e) {
-            throw new Error(`Error reading from chain: \n ${stringifyOp(e)}`)
+            throw new Error(`Error reading from chain: \n ${stringify(e)}`)
         }
     }
 

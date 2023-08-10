@@ -1,9 +1,9 @@
 import { Address, Hex } from "viem"
+import { Chain } from "./Chain"
 
 export interface ChainInput {
-    chainId?: string
+    chainIdentifier?: string | Chain | number
     rpcUrl?: string
-    chainName?: string
 }
 
 export type FactoryCreateAccountParams = {
@@ -97,7 +97,6 @@ export enum OperationStatus {
     ALL = "",
     PENDING_APPROVED = "PENDING_APPROVED",
     APPROVED = "APPROVED",
-    CANCELLED = "CANCELLED",
     PENDING = "PENDING",
     OP_SUCCEED = "OP_SUCCEED",
     OP_REVERTED = "OP_REVERTED",
@@ -117,7 +116,7 @@ export type OperationMetadata = {
     proposedTime?: number
     executedBy?: string
     executedTime?: number
-    relatedOpId?: Hex[]
+    relatedOpIds?: Hex[]
     signatures?: Signature[]
     txid?: string
 }

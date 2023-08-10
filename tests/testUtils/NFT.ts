@@ -3,7 +3,7 @@ import { Address } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { getChainFromData } from "../../src/data"
+import { Chain } from "../../src/data"
 import { NFT } from "../../src/data/NFT"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -52,7 +52,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 await fundWallet(auth, wallet1, config.amount ? config.amount : 0.2)
                 await fundWallet(auth, wallet2, config.amount ? config.amount : 0.2)
             }
-            const chain = await getChainFromData(options.chain)
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
             nftId = Math.floor(Math.random() * 10_000_000_000)
             nftAddress = await chain.getAddress("TestNFT")
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet1.getAddress(), nftId])

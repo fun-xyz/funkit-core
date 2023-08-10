@@ -1,1 +1,202 @@
-{"name":"TwitterOracle","abi":[{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferStarted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"tweetsKey","type":"bytes32"},{"indexed":false,"internalType":"bytes","name":"seed","type":"bytes"},{"indexed":false,"internalType":"address","name":"owner","type":"address"}],"name":"TweetSet","type":"event"},{"inputs":[],"name":"acceptOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes[]","name":"socialHandles","type":"bytes[]"},{"internalType":"uint8[]","name":"loginTypes","type":"uint8[]"},{"internalType":"bytes[]","name":"seeds","type":"bytes[]"},{"internalType":"address[]","name":"owners","type":"address[]"}],"name":"batchSetTweet","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes","name":"socialHandle","type":"bytes"},{"internalType":"uint8","name":"loginType","type":"uint8"}],"name":"fetchTweet","outputs":[{"internalType":"bytes","name":"seed","type":"bytes"},{"internalType":"address","name":"owner","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pendingOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes","name":"socialHandle","type":"bytes"},{"internalType":"uint8","name":"loginType","type":"uint8"},{"internalType":"bytes","name":"seed","type":"bytes"},{"internalType":"address","name":"owner","type":"address"}],"name":"setTweet","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"tweets","outputs":[{"internalType":"bytes","name":"seed","type":"bytes"},{"internalType":"address","name":"owner","type":"address"}],"stateMutability":"view","type":"function"}],"addresses":{"5":"0x5242b34D4B171f7cA556913b8e61c92aab908258","137":"0x7F0F35D1DB4C0827ECe4dD4228F047DD53A2F073","420":"0xd2f1f1fA7F8a3ED1Acf104b532769a65CD8147e8","31337":"0x20BBE62B175134D21b10C157498b663F048672bA","36865":"0xda61D613F1444d0AeA96F60384F7ae83d6781979","84531":"0x8Ba91835011707DB97c8AA09A0cf3938E4A628A9"}}
+{
+    "name": "TwitterOracle",
+    "abi": [
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "previousOwner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "tweetsKey",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "bytes",
+                    "name": "seed",
+                    "type": "bytes"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "name": "TweetSet",
+            "type": "event"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes[]",
+                    "name": "socialHandles",
+                    "type": "bytes[]"
+                },
+                {
+                    "internalType": "uint8[]",
+                    "name": "loginTypes",
+                    "type": "uint8[]"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "seeds",
+                    "type": "bytes[]"
+                },
+                {
+                    "internalType": "address[]",
+                    "name": "owners",
+                    "type": "address[]"
+                }
+            ],
+            "name": "batchSetTweet",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "socialHandle",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "loginType",
+                    "type": "uint8"
+                }
+            ],
+            "name": "fetchTweet",
+            "outputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "seed",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "renounceOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "socialHandle",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "loginType",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "seed",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "name": "setTweet",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "newOwner",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "tweets",
+            "outputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "seed",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ],
+    "addresses": {
+        "5": "0x14EBD2A935112603e620C17bea6550226fC98e1f",
+        "10": "0xbD58A2E8F69E45C552e5f499901dd4de0b00920d",
+        "137": "0x60435850706A270fbbca5C890331C3771902B508",
+        "420": "0xd2f1f1fA7F8a3ED1Acf104b532769a65CD8147e8",
+        "8453": "0xbD58A2E8F69E45C552e5f499901dd4de0b00920d",
+        "31337": "0x20BBE62B175134D21b10C157498b663F048672bA",
+        "36865": "0xda61D613F1444d0AeA96F60384F7ae83d6781979",
+        "42161": "0xbD58A2E8F69E45C552e5f499901dd4de0b00920d",
+        "84531": "0x8Ba91835011707DB97c8AA09A0cf3938E4A628A9"
+    }
+}

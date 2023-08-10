@@ -17,9 +17,7 @@ export const generateRandomGroupId = (): Hex => {
 }
 
 export const generateRandomNonceKey = (): bigint => {
-    // Step 1: Determine the number of bytes required (25 bytes for 2^192)
-    const bytesNeeded = 24
-    return BigInt(randomBytes(bytesNeeded))
+    return BigInt(randomBytes(24))
 }
 
 export const generateRandomNonce = (): bigint => {
@@ -44,16 +42,16 @@ export const isGroupOperation = (operation: Operation): boolean => {
     return false
 }
 
-export const isSignatureRequired = (userId: Hex, signatures: Signature[] | undefined): boolean => {
+export const isSignatureMissing = (userId: Hex, signatures: Signature[] | undefined): boolean => {
     if (!signatures) {
         return true
     }
-    let sigRequired = true
+    let sigMissing = true
     for (const signature of signatures) {
-        if (pad(signature.userId, { size: 32 }) === userId) {
-            sigRequired = false
+        if (pad(signature.userId.toLowerCase() as Hex, { size: 32 }) === pad(userId.toLowerCase() as Hex, { size: 32 })) {
+            sigMissing = false
             break
         }
     }
-    return sigRequired
+    return sigMissing
 }

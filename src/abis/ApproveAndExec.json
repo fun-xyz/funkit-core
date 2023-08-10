@@ -40,19 +40,6 @@
         },
         {
             "inputs": [],
-            "name": "EMPTY_BYTES32",
-            "outputs": [
-                {
-                    "internalType": "bytes32",
-                    "name": "",
-                    "type": "bytes32"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [],
             "name": "EMPTY_STATE",
             "outputs": [
                 {
@@ -158,11 +145,14 @@
     ],
     "addresses": {
         "1": "0xb717384AbA085138c20205fe9BD3Af61763b7167",
-        "5": "0x2f397ec668340c227b5a559bDC67b9e254665fC1",
-        "137": "0xbb15B0a332420242aA9E231e45e53f9a9F4Df289",
+        "5": "0x18f504B4AfF78820E626BD60037aA001373Ec3cD",
+        "10": "0x18f504B4AfF78820E626BD60037aA001373Ec3cD",
+        "137": "0xB1397c0B21Bd5dB4b331aD54217D108d6B63a5D7",
         "420": "0x1589Da3AA1805E28e3A5D3D92344cff17572038C",
+        "8453": "0x18f504B4AfF78820E626BD60037aA001373Ec3cD",
         "31337": "0xfE66633ac080350a486C6127e6aB0C278820c84D",
         "36865": "0xb717384AbA085138c20205fe9BD3Af61763b7167",
+        "42161": "0x18f504B4AfF78820E626BD60037aA001373Ec3cD",
         "84531": "0x70634c57D272ec45efb594CECF385AeDa6002207"
     }
 }

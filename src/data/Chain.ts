@@ -14,14 +14,43 @@ export class Chain {
     private rpcUrl?: string
     private client?: PublicClient
 
-    constructor(chainInput: ChainInput) {
-        if (chainInput.chainId) {
-            this.id = chainInput.chainId
-        } else if (chainInput.rpcUrl) {
-            this.rpcUrl = chainInput.rpcUrl
-        } else if (chainInput.chainName) {
-            this.name = chainInput.chainName
+    private static chain: Chain
+
+    private constructor(chainInput: ChainInput) {
+        if (!chainInput.chainIdentifier && !chainInput.rpcUrl) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidChainIdentifier,
+                "valid chain identifier or rpcUrl is required, could be chainId, chainName, Fun Chain object, or rpcUrl",
+                "Chain.constructor",
+                { chainInput },
+                "Please provide valid chain identifier or rpcUrl",
+                "https://docs.fun.xyz"
+            )
         }
+
+        if (chainInput.rpcUrl) {
+            this.rpcUrl = chainInput.rpcUrl
+        } else if (chainInput.chainIdentifier instanceof Chain) {
+            return chainInput.chainIdentifier
+        } else if (typeof chainInput.chainIdentifier === "number" || Number(chainInput.chainIdentifier)) {
+            this.id = chainInput.chainIdentifier!.toString()
+        } else {
+            this.name = chainInput.chainIdentifier
+        }
+    }
+
+    public static async getChain(chainInput: ChainInput): Promise<Chain> {
+        if (chainInput.chainIdentifier instanceof Chain) {
+            return chainInput.chainIdentifier
+        } else if (
+            !Chain.chain ||
+            ((await Chain.chain.getChainId()) !== chainInput.chainIdentifier?.toString() &&
+                (await Chain.chain.getChainName()) !== chainInput.chainIdentifier?.toString() &&
+                (await Chain.chain.getRpcUrl()) !== chainInput.rpcUrl)
+        ) {
+            Chain.chain = new Chain(chainInput)
+        }
+        return Chain.chain
     }
 
     private async init() {
@@ -76,6 +105,11 @@ export class Chain {
     async getChainName(): Promise<string> {
         await this.init()
         return this.name!
+    }
+
+    async getRpcUrl(): Promise<string> {
+        await this.init()
+        return this.rpcUrl!
     }
 
     async getAddress(name: string): Promise<Address> {
@@ -179,34 +213,4 @@ export class Chain {
     async addressIsContract(address: Address): Promise<boolean> {
         return isContract(address, await this.getClient())
     }
-}
-
-export const getChainFromData = async (chainIdentifier?: string | Chain | number): Promise<Chain> => {
-    if (!chainIdentifier) {
-        throw new InvalidParameterError(
-            ErrorCode.InvalidChainIdentifier,
-            "valid chain identifier is required, could be chainId, chainName or Fun Chain object",
-            "chain.getChainFromData",
-            { chainIdentifier },
-            "Please provide valid chain identifier",
-            "https://docs.fun.xyz"
-        )
-    }
-
-    let chain: Chain
-    if (chainIdentifier instanceof Chain) {
-        return chainIdentifier
-    }
-
-    if (typeof chainIdentifier === "number" || Number(chainIdentifier)) {
-        chain = new Chain({ chainId: chainIdentifier.toString() })
-    } else if (chainIdentifier.indexOf("http") + 1) {
-        chain = new Chain({ rpcUrl: chainIdentifier })
-    } else {
-        chain = new Chain({ chainName: chainIdentifier })
-    }
-
-    const global = globalThis as any
-    global.globalEnvOption.chain = chain
-    return chain
 }

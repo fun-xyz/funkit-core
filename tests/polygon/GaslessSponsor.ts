@@ -4,8 +4,7 @@ const config: GaslessSponsorTestConfig = {
     chainId: 137,
     inToken: "matic",
     outToken: "usdc",
-    stakeAmount: 1,
-    prefund: true
+    stakeAmount: 0.002,
+    prefund: false
 }
-
 GaslessSponsorTest(config)

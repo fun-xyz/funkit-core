@@ -1,4 +1,4 @@
-import { Address, isAddress, pad } from "viem"
+import { Address, pad } from "viem"
 import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
 import { createExecuteBatchTxParams } from "./BatchActions"
 import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
@@ -48,7 +48,7 @@ import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
-import { getAuthIdFromAddr } from "../utils"
+import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
     abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
@@ -61,7 +61,7 @@ export abstract class FirstClassActions {
         params: SwapParam,
         txOption: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
+        const oneInchSupported = [1, 56, 31337, 36864, 42161]
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let transactionParams: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
@@ -82,11 +82,11 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
-            transactionParams = await erc721TransferTransactionParams(params)
+            transactionParams = erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
-            transactionParams = await erc20TransferTransactionParams(params)
+            transactionParams = erc20TransferTransactionParams(params)
         } else if (isNativeTransferParams(params)) {
-            transactionParams = await ethTransferTransactionParams(params)
+            transactionParams = ethTransferTransactionParams(params)
         } else {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -158,15 +158,6 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
-    async execRawTx(
-        auth: Auth,
-        userId: string,
-        params: TransactionParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Operation> {
-        return await this.createOperation(auth, userId, params, txOptions)
-    }
-
     async createSessionKey(
         auth: Auth,
         userId: string,
@@ -233,6 +224,8 @@ export abstract class FirstClassActions {
         params: AddUserToGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        params.userId = pad(params.userId, { size: 32 })
+        params.groupId = pad(params.groupId, { size: 32 })
         const groups = await getGroups([params.groupId], params.chainId.toString())
         if (!groups || groups.length === 0) {
             throw new ResourceNotFoundError(
@@ -281,6 +274,8 @@ export abstract class FirstClassActions {
         params: RemoveUserFromGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        params.userId = pad(params.userId, { size: 32 })
+        params.groupId = pad(params.groupId, { size: 32 })
         const groups = await getGroups([params.groupId], params.chainId.toString())
         if (!groups || groups.length === 0) {
             throw new ResourceNotFoundError(
@@ -328,6 +323,7 @@ export abstract class FirstClassActions {
         params: UpdateThresholdOfGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        params.groupId = pad(params.groupId, { size: 32 })
         const groups = await getGroups([params.groupId], params.chainId.toString())
         if (!groups || groups.length === 0) {
             throw new ResourceNotFoundError(
@@ -371,6 +367,7 @@ export abstract class FirstClassActions {
         params: RemoveGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        params.groupId = pad(params.groupId, { size: 32 })
         await deleteGroup(params.groupId, params.chainId.toString())
         const txParams = await removeGroupTxParams(params)
         return await this.createOperation(auth, userId, txParams, txOptions)

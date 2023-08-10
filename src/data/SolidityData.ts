@@ -51,7 +51,7 @@ export function encodeWalletSignature(data: WalletSignature): Hex {
     ruleId ??= HashZero
     authType ??= 0
     const extraDataEncoded: Hex[][] = extraData ? parseExtraData(extraData) : [[], [], [], []]
-    return encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded])
+    return encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded]).toLowerCase() as Hex
 }
 
 export function encodeUserAuthInitData(groupUsers: User[]): Hex {

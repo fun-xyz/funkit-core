@@ -1,4 +1,4 @@
-import { objectify } from "../utils"
+import { stringify } from "../utils"
 
 export class BaseError extends Error {
     constructor(
@@ -18,7 +18,7 @@ export class BaseError extends Error {
             timestamp: ${new Date().toUTCString()}
             message: ${msg}
             functionName: ${functionName}
-            paramsUsed: ${objectify(paramsUsed)}
+            paramsUsed: ${stringify(paramsUsed)}
             fixSuggestion: ${fixSuggestion}
             docLink: ${docLink}`
         super(errorMsg)

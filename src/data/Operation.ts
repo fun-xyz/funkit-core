@@ -1,5 +1,5 @@
 import { Address, Hex } from "viem"
-import { Chain, getChainFromData } from "./Chain"
+import { Chain } from "./Chain"
 import { AuthType, OperationMetadata, OperationStatus, OperationType, Signature, UserOperation } from "./types"
 import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common/constants"
@@ -20,7 +20,7 @@ export class Operation {
     proposedTime?: number
     executedBy?: string
     executedTime?: number
-    relatedOpId?: Hex[]
+    relatedOpIds?: Hex[]
     signatures?: Signature[]
     txid?: string
 
@@ -39,7 +39,7 @@ export class Operation {
         this.proposedTime = metadata.proposedTime
         this.executedBy = metadata.executedBy
         this.executedTime = metadata.executedTime
-        this.relatedOpId = metadata.relatedOpId
+        this.relatedOpIds = metadata.relatedOpIds
         this.signatures = metadata.signatures
         this.txid = metadata.txid
     }
@@ -62,11 +62,11 @@ export class Operation {
         return maxFeePerGas * requiredGas!
     }
 
-    async estimateGas(auth: Auth, userId: string, option: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+    async estimateGas(auth: Auth, userId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         if (!this.userOp.signature || this.userOp.signature === "0x") {
             this.userOp.signature = await auth.getEstimateGasSignature(userId, this)
         }
-        const chain = await getChainFromData(option.chain)
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const res = await chain.estimateOpGas({
             ...this.userOp,
             paymasterAndData: "0x",

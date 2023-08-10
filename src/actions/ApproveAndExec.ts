@@ -4,12 +4,9 @@ import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE } from ".
 import { Chain } from "../data"
 
 export const approveAndExecTransactionParams = async (params: ApproveAndExecParams): Promise<TransactionParams> => {
-    const chain = new Chain({ chainId: params.chainId.toString() })
+    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
-    const approveData = await ERC20_CONTRACT_INTERFACE.encodeTransactionParams(params.approve.token, "approve", [
-        params.approve.spender,
-        params.approve.amount
-    ])
+    const approveData = await ERC20_CONTRACT_INTERFACE.encodeData("approve", [params.approve.spender, params.approve.amount])
     return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         params.exec.to,
         params.exec.value,

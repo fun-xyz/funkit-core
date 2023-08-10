@@ -1,1 +1,58 @@
-{"name":"TokenPriceOracle","abi":[{"inputs":[{"internalType":"address","name":"aggregatorOrToken","type":"address"},{"internalType":"uint256","name":"ethAmount","type":"uint256"},{"internalType":"uint8","name":"tokenDecimals","type":"uint8"}],"name":"getTokenValueOfEth","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}],"addresses":{"5":"0x0a6A3B652696F8Fc76e5A3A70F8D7C74e751F732","137":"0x82cD6102110FC66cBA5c615F3769E4B422219c6f","420":"0xCe3e90336235338CF67A37f1D907dbEf7a39A2B9","31337":"0x9f62EE65a8395824Ee0821eF2Dc4C947a23F0f25","36865":"0x16dFB25F13925C50781C4229D26E4Ba1A62abf8c","84531":"0xc4Ab06df2b378279E120B50A23d4E45dAd41b5e5"}}
+{
+    "name": "TokenPriceOracle",
+    "abi": [
+        {
+            "inputs": [],
+            "name": "WEI_IN_ETH",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "aggregatorOrToken",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "ethAmount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "tokenDecimals",
+                    "type": "uint8"
+                }
+            ],
+            "name": "getTokenValueOfEth",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ],
+    "addresses": {
+        "5": "0x09Cd8F901017DfC2D741d2629571B65AaBa3a99e",
+        "10": "0x2e3dFDc18B5Da850C29B27a68748e92BF5B7ed13",
+        "137": "0x4331Ae6fD6665A86Bd376656368AE04301FB7Af0",
+        "420": "0xCe3e90336235338CF67A37f1D907dbEf7a39A2B9",
+        "8453": "0x2e3dFDc18B5Da850C29B27a68748e92BF5B7ed13",
+        "31337": "0x9f62EE65a8395824Ee0821eF2Dc4C947a23F0f25",
+        "36865": "0x16dFB25F13925C50781C4229D26E4Ba1A62abf8c",
+        "42161": "0x2e3dFDc18B5Da850C29B27a68748e92BF5B7ed13",
+        "84531": "0xc4Ab06df2b378279E120B50A23d4E45dAd41b5e5"
+    }
+}

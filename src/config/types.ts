@@ -12,10 +12,8 @@ export interface EnvOption {
         token?: string
         amount?: number
         gasPercent?: number // 4% -> 4, 100% -> 100
-        recipient?: Address
-        oracle?: Address
+        recipient: Address
     }
-    sendTxLater?: boolean
     skipDBAction?: boolean
 }
 

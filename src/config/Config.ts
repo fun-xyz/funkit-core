@@ -1,6 +1,7 @@
 import { EnvOption, GlobalEnvOption } from "./types"
 import { getOrgInfo } from "../apis"
-import { getChainFromData } from "../data"
+import { Chain } from "../data"
+import { ErrorCode, InvalidParameterError } from "../errors"
 
 export function parseOptions(option: EnvOption) {
     const globalOptions = (globalThis as any).globalEnvOption
@@ -15,18 +16,35 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     const globalEnvOption = global.globalEnvOption
 
     if ((!option || !option.chain) && !globalEnvOption.chain) {
-        globalEnvOption.chain = await getChainFromData("5")
+        globalEnvOption.chain = await Chain.getChain({ chainIdentifier: 5 })
     } else {
-        globalEnvOption.chain = option.chain ? await getChainFromData(option.chain) : globalEnvOption.chain
+        globalEnvOption.chain = option.chain ? await Chain.getChain({ chainIdentifier: option.chain }) : globalEnvOption.chain
     }
 
     globalEnvOption.apiKey = option.apiKey ? option.apiKey : globalEnvOption.apiKey
+    if (!globalEnvOption.apiKey) {
+        throw new InvalidParameterError(
+            ErrorCode.MissingParameter,
+            "apiKey is required",
+            "configureEnvironment",
+            { option },
+            "Provide apiKey when configureEnvironment.",
+            "https://docs.fun.xyz"
+        )
+    }
+
     globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
+    if (globalEnvOption.gasSponsor) {
+        globalEnvOption.gasSponsor.usePermit =
+            globalEnvOption.gasSponsor.usePermit !== null || globalEnvOption.gasSponsor.usePermit !== undefined
+                ? globalEnvOption.gasSponsor.usePermit
+                : true
+    }
     globalEnvOption.gasSponsor =
-        option.gasSponsor === null || option.gasSponsor === undefined ? globalEnvOption.gasSponsor : option.gasSponsor
+        option.gasSponsor === null || option.gasSponsor === undefined
+            ? globalEnvOption.gasSponsor
+            : { usePermit: true, ...option.gasSponsor }
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
-    globalEnvOption.sendTxLater =
-        option.sendTxLater === null || option.sendTxLater === undefined ? globalEnvOption.sendTxLater : option.sendTxLater
     globalEnvOption.skipDBAction =
         option.skipDBAction === null || option.skipDBAction === undefined ? globalEnvOption.skipDBAction : option.skipDBAction
 }

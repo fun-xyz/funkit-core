@@ -3,7 +3,7 @@ import { Address, pad } from "viem"
 import { Auth } from "../../src/auth"
 import { HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, getChainFromData } from "../../src/data"
+import { Chain } from "../../src/data"
 import { fundWallet, isContract, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -37,7 +37,7 @@ export const RBACTest = (config: RBACTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
 
-            chain = await getChainFromData(chainId)
+            chain = await Chain.getChain({ chainIdentifier: chainId })
             const isWalletCreated = await isContract(await wallet.getAddress(), await chain.getClient())
             if (!isWalletCreated) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
@@ -45,7 +45,7 @@ export const RBACTest = (config: RBACTestConfig) => {
             }
 
             rbacContractAddr = await chain.getAddress("rbacAddress")
-            ownerId = randomBytes(20)
+            ownerId = randomBytes(32)
         })
 
         it("add owner", async () => {
