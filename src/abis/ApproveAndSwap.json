@@ -197,6 +197,7 @@
     "numDeployments": 1,
     "addresses": {
         "5": "0x6fB0e03A670c2aAE8bD0821bA9f2Cb2882041Ef8",
+        "10": "0x44236F2d6788a49556dD2F82e50243591Ce5aeab",
         "137": "0x44236F2d6788a49556dD2F82e50243591Ce5aeab",
         "420": "0xdbA46bF1c2F974835dAf2662c4594c3A2a27316D",
         "8453": "0x2c2854b691e6299c5e2FCd567aa09229fD1f96C7",
