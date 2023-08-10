@@ -1,4 +1,4 @@
-import { Address, isAddress, pad } from "viem"
+import { Address, pad } from "viem"
 import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
 import { createExecuteBatchTxParams } from "./BatchActions"
 import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
@@ -48,7 +48,7 @@ import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Operation } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
-import { getAuthIdFromAddr } from "../utils"
+import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
     abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
