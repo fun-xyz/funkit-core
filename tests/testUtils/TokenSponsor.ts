@@ -185,7 +185,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             await funder.sendTx(await sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode(funderAddress))
