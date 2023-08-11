@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid"
 import { Address, Hex, keccak256, pad, toBytes } from "viem"
 import { randomBytes } from "./ChainUtils"
 import { FACTORY_CONTRACT_INTERFACE } from "../common"
-import { AuthType, Chain, Operation, Signature, UserOperation, encodeLoginData } from "../data"
+import { AuthType, Chain, LoginData, Operation, Signature, UserOperation, encodeLoginData } from "../data"
 
 export const generateRandomBytes32 = (): Hex => {
     return keccak256(toBytes(uuidv4())) as Hex
@@ -25,8 +25,8 @@ export const generateRandomNonce = (): bigint => {
     return randomKey << 64n
 }
 
-export const getWalletAddress = async (chain: Chain, walletUniqueId: Hex): Promise<Address> => {
-    const data = encodeLoginData({ salt: walletUniqueId })
+export const getWalletAddress = async (chain: Chain, loginData: LoginData): Promise<Address> => {
+    const data = encodeLoginData(loginData)
     const factoryAddress = await chain.getAddress("factoryAddress")
     return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data], chain)
 }

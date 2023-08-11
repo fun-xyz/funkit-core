@@ -34,12 +34,14 @@ export interface FunWalletParams {
     users?: User[]
     uniqueId?: string
     walletAddr?: Address
+    loginData?: LoginData
 }
 
 export class FunWallet extends FirstClassActions {
     walletUniqueId?: Hex
     userInfo?: Map<Hex, User>
     address?: Address
+    loginData?: LoginData
 
     /**
      * Creates FunWallet object
@@ -48,9 +50,9 @@ export class FunWallet extends FirstClassActions {
      */
     constructor(params: FunWalletParams) {
         super()
-        const { users, uniqueId, walletAddr } = params
+        const { users, uniqueId, walletAddr, loginData } = params
 
-        if (!(uniqueId && users && users.length > 0) && !walletAddr) {
+        if (!(uniqueId && users && users.length > 0) && !walletAddr && !loginData) {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
                 "(uniqueId, users) or walletAddr is required",
@@ -69,8 +71,10 @@ export class FunWallet extends FirstClassActions {
 
         if (uniqueId) {
             this.walletUniqueId = keccak256(toBytes(uniqueId))
-        } else {
+        } else if (walletAddr) {
             this.address = walletAddr
+        } else {
+            this.loginData = loginData
         }
     }
 
@@ -81,21 +85,41 @@ export class FunWallet extends FirstClassActions {
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
+            if (this.walletUniqueId) {
+                this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), {
+                    loginType: 0,
+                    salt: this.walletUniqueId!
+                })
+            } else if (this.loginData) {
+                this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.loginData)
+            }
         }
         return this.address!
     }
 
-    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
+    static async getAddress(uniqueId: string, apiKey: string, loginData: LoginData): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
+        if (!loginData) {
+            return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), {
+                loginType: 0,
+                salt: keccak256(toBytes(uniqueId))
+            })
+        } else {
+            return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), loginData)
+        }
     }
 
-    static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
+    static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address, loginData?: LoginData): Promise<Address> {
         const client = await createPublicClient({
             transport: http(rpcUrl)
         })
-        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [keccak256(toBytes(uniqueId))], client)
+        let data
+        if (!loginData) {
+            data = encodeLoginData({ salt: keccak256(toBytes(uniqueId)) })
+        } else {
+            data = encodeLoginData(loginData)
+        }
+        return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data], client)
     }
 
     /**
@@ -654,9 +678,14 @@ export class FunWallet extends FirstClassActions {
         const factoryAddress = await chain.getAddress("factoryAddress")
         const rbac = await chain.getAddress("rbacAddress")
         const userAuth = await chain.getAddress("userAuthAddress")
-
-        const loginData: LoginData = {
-            salt: this.walletUniqueId!
+        let loginData: LoginData
+        if (this.walletUniqueId) {
+            loginData = {
+                loginType: 0,
+                salt: this.walletUniqueId
+            }
+        } else {
+            loginData = this.loginData!
         }
 
         const rbacInitData = toBytes32Arr(owners)

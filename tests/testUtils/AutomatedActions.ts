@@ -16,6 +16,7 @@ export interface AutomatedActionsConfig {
     amount?: number
     prefundAmt?: number
     numRetry?: number
+    walletIndex?: number
 }
 
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
@@ -39,7 +40,7 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
+                uniqueId: await auth.getWalletUniqueId(config.walletIndex ? config.walletIndex : 129856349)
             })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
