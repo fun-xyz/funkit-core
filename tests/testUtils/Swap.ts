@@ -6,7 +6,7 @@ import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
-import { fundWallet } from "../../src/utils"
+import { fundWallet, isContract } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -16,7 +16,6 @@ export interface SwapTestConfig {
     inToken: string
     outToken: string
     baseToken: string
-    prefund: boolean
     amount?: number
     index?: number
     prefundAmt?: number
@@ -28,7 +27,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { inToken, outToken, baseToken, prefund, amount, prefundAmt } = config
+    const { inToken, outToken, baseToken, amount, prefundAmt } = config
     const mint = Object.values(config).includes("mint") ? true : config.mint
     describe("Single Auth Swap", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
@@ -48,6 +47,10 @@ export const SwapTest = (config: SwapTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
 
+            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
+            }
             if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.01)
             }
@@ -206,9 +209,14 @@ export const SwapTest = (config: SwapTestConfig) => {
                 uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 6668)
             })
 
-            if (prefund) {
+            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+                await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.01)
+            }
+
             if (mint) {
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
