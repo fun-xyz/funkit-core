@@ -24,7 +24,7 @@ export interface TransferTestConfig {
 export const TransferTest = (config: TransferTestConfig) => {
     const { outToken, baseToken, prefund, prefundAmt } = config
 
-    describe.only("Single Auth Transfer", function () {
+    describe("Single Auth Transfer", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet

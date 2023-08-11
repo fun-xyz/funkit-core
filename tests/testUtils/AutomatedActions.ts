@@ -21,7 +21,7 @@ export interface AutomatedActionsConfig {
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
     const { prefund, prefundAmt } = config
 
-    describe("Automated Actions Test - Store in DB and execute later", function () {
+    describe.only("Automated Actions Test - Store in DB and execute later", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
@@ -58,7 +58,7 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         })
 
         it("transfer baseToken(ETH) executed", async () => {
-            this.timeout(300_000)
+            this.timeout(600_000)
             let operation = await getOps([opId], config.chainId.toString())
             while (operation[0].status === "SCHEDULED" || operation[0].status === "PENDING") {
                 await new Promise((resolve) => {

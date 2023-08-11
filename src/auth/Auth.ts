@@ -18,13 +18,14 @@ import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
-import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
+import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId, getGasStation } from "../utils"
 import { convertProviderToClient, convertSignerToClient } from "../viem"
 const gasSpecificChain = {
     "137": {
         gasStationUrl: "https://gasstation.polygon.technology/v2",
-        backupFee: "1_000_000_000_000"
+        backupPriorityFee: "1000", // 1000 gwei
+        backupFee: "200" // 200 gwei
     }
 }
 
@@ -178,9 +179,8 @@ export class Auth {
                 chain: chains[preProcessesChains[await chain.getChainId()]]
             })
         }
-
+        let maxPriorityFee, maxFee
         if ((gasSpecificChain as any)[chainId]) {
-            let maxPriorityFee, maxFee
             try {
                 const {
                     standard: { maxPriorityFee1, maxFee1 }
@@ -188,32 +188,16 @@ export class Auth {
                 maxPriorityFee = maxPriorityFee1
                 maxFee = maxFee1
             } catch (e) {
-                throw new InternalFailureError(
-                    ErrorCode.UnknownServerError,
-                    "Polygon Gas station failed to respond",
-                    "FunWallet.onRamp",
-                    { chainId },
-                    "This is an external error, please check if https://gasstation.polygon.technology/v2 works",
-                    "https://docs.fun.xyz"
-                )
+                maxPriorityFee = BigInt(gasSpecificChain[chainId].backupPriorityFee)
+                maxFee = BigInt(gasSpecificChain[chainId].backupFee)
             }
 
-            if (maxPriorityFee && maxFee) {
-                tx = {
-                    to,
-                    value: BigInt(value),
-                    data,
-                    maxFeePerGas: BigInt(Math.floor(maxFee * 1e9)),
-                    maxPriorityFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9))
-                }
-            } else {
-                tx = {
-                    to,
-                    value: BigInt(value),
-                    data,
-                    maxFeePerGas: BigInt(gasSpecificChain[chainId]),
-                    maxPriorityFeePerGas: BigInt(gasSpecificChain[chainId])
-                }
+            tx = {
+                to,
+                value: BigInt(value),
+                data,
+                maxFeePerGas: BigInt(Math.floor(maxFee * 1e9)),
+                maxPriorityFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9))
             }
         } else {
             tx = { to, value: BigInt(value), data }
