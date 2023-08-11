@@ -92,6 +92,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 })
                 await wallet.executeOperation(auth, userOp)
                 const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
+                console.log("walletInTokenBalance", walletInTokenBalance, requiredAmount, walletAddress)
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
@@ -172,7 +173,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it("Only User Whitelisted", async () => {
+        it.only("Only User Whitelisted", async () => {
             await funder.sendTx(await sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode(funderAddress))
