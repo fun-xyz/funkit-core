@@ -115,7 +115,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
         })
 
-        describe.skip("With Session Key", () => {
+        describe("With Session Key", () => {
             const user = createSessionUser()
             before(async () => {
                 const second = 1000
@@ -184,7 +184,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0xd68cf0f5577f162dc4c4c61464808be02745469e530703c42da16dac3bf38129" // generateRandomGroupId()
+        const groupId: Hex = "0x4f25e8ade77a481567b7a75c40711e57bbbb36ad0270a3b58e37a6e5232a082f" //generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -206,7 +206,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 6668)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 7468)
             })
 
             const chain = await Chain.getChain({ chainIdentifier: config.chainId })
