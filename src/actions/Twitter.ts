@@ -1,9 +1,9 @@
 import { Hex, encodeAbiParameters, keccak256, parseAbiParameters } from "viem"
-import { CommitParams } from "./types"
+import { SocialHandleCommitParams } from "./types"
 import { TransactionParams, WALLET_INIT_CONTRACT_INTERFACE } from "../common"
 import { Chain } from "../data"
 
-export const commitTransactionParams = async (params: CommitParams): Promise<Promise<TransactionParams>> => {
+export const commitTransactionParams = async (params: SocialHandleCommitParams): Promise<TransactionParams> => {
     const { socialHandle, seed, owner, initializerCallData } = params
     const chain = await Chain.getChain({ chainIdentifier: params.chainId.toString() })
     const walletInitAddress = await chain.getAddress("walletInitAddress")

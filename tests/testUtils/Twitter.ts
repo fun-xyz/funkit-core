@@ -1,7 +1,7 @@
 import { expect } from "chai"
 import { Hex, encodeAbiParameters, keccak256, parseAbiParameters, stringToHex } from "viem"
 import { commitTransactionParams } from "../../src/actions/Twitter"
-import { CommitParams } from "../../src/actions/types"
+import { SocialHandleCommitParams } from "../../src/actions/types"
 import { Auth } from "../../src/auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_INIT_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
@@ -50,7 +50,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
         })
 
         it("Commit a secret", async () => {
-            const params: CommitParams = {
+            const params: SocialHandleCommitParams = {
                 socialHandle: socialHandle,
                 index: 1n,
                 seed: seed,

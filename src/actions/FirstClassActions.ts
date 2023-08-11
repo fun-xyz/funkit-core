@@ -27,7 +27,6 @@ import {
     AddOwnerParams,
     AddUserToGroupParams,
     ApproveParams,
-    CommitParams,
     CreateGroupParams,
     FinishUnstakeParams,
     OneInchSwapParams,
@@ -36,6 +35,7 @@ import {
     RemoveUserFromGroupParams,
     RequestUnstakeParams,
     SessionKeyParams,
+    SocialHandleCommitParams,
     StakeParams,
     SwapParam,
     TransferParams,
@@ -57,10 +57,10 @@ export abstract class FirstClassActions {
 
     abstract getAddress(options: EnvOption): Promise<Address>
 
-    async commit(
+    async socialHandleCommmit(
         auth: Auth,
         userId: string,
-        params: CommitParams,
+        params: SocialHandleCommitParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const transactionParams = await commitTransactionParams(params)

@@ -180,7 +180,7 @@ export type RemoveGroupParams = {
     chainId: number
 }
 
-export type CommitParams = {
+export type SocialHandleCommitParams = {
     socialHandle: Hex
     index: bigint
     seed: Hex
