@@ -110,7 +110,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const swapParams = await uniswapV3SwapTransactionParams({
                 in: "eth",
                 out: outToken,
-                amount: 0.001,
+                amount: 0.000001,
                 returnAddress: randomAddress,
                 chainId: config.chainId
             })

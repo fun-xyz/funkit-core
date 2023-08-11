@@ -71,6 +71,7 @@ class SwapToken {
     }
 
     async getPoolInfo(tokenIn: Token, tokenOut: Token, poolFee: FeeAmount) {
+        console.log(tokenIn, tokenOut)
         const currentPoolAddress = computePoolAddress({
             factoryAddress: this.poolFactoryContractAddr!,
             tokenA: tokenIn,

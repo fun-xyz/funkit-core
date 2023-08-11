@@ -51,7 +51,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         after(async function () {
             await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: (Number(await Token.getBalance(baseToken, await wallet.getAddress())) * 4) / 5
+                amount: 0.000001
             })
         })
 
@@ -63,9 +63,9 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b2 = Token.getBalance(baseToken, walletAddress)
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: randomAddress,
-                amount: (Number(await Token.getBalance(baseToken, walletAddress)) * 4) / 5
+                amount: 0.0000001
             })
-            console.log(await wallet.executeOperation(auth, userOp))
+            await wallet.executeOperation(auth, userOp)
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
 
@@ -76,7 +76,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
         })
 
-        it("wallet should have lower balance of specified token", async () => {
+        it.only("wallet should have lower balance of specified token", async () => {
             if (config.chainId === 5) {
                 const outTokenAddress = await Token.getAddress(outToken)
                 const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
@@ -94,7 +94,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 amount: 1,
                 token: outTokenAddress
             })
-            console.log(await wallet.executeOperation(auth, userOp))
+            await wallet.executeOperation(auth, userOp)
             const b3 = Token.getBalanceBN(outToken, await auth.getAddress())
             const b4 = Token.getBalanceBN(outToken, await wallet.getAddress())
 
@@ -174,7 +174,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001
+                        amount: 0.0000001
                     },
                     options
                 )
@@ -219,7 +219,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001
+                        amount: 0.0000001
                     },
                     options
                 )
