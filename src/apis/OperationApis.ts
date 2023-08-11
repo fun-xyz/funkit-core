@@ -62,7 +62,7 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             /* empty */
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 3000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
     }
 
     return {
