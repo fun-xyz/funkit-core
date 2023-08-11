@@ -38,7 +38,7 @@ export const GroupTest = (config: GroupTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 179701)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 179709)
             })
             chain = await Chain.getChain({ chainIdentifier: chainId })
             memberIds = [

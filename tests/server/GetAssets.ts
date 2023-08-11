@@ -23,7 +23,7 @@ describe("GetAssets", function () {
 
         wallet = new FunWallet({
             users: [{ userId: await auth.getAddress() }],
-            uniqueId: await auth.getWalletUniqueId(chainId.toString(), 14142)
+            uniqueId: await auth.getWalletUniqueId(14142)
         })
     })
 

@@ -23,7 +23,7 @@ describe("Get Operations", function () {
         auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
         wallet = new FunWallet({
             users: [{ userId: await auth.getAddress() }],
-            uniqueId: await auth.getWalletUniqueId("5", 1792811340)
+            uniqueId: await auth.getWalletUniqueId(1792811340)
         })
     })
 

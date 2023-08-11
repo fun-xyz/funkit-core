@@ -2,6 +2,7 @@ import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, ke
 import { User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
+import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
 import { createGroup, getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
@@ -323,7 +324,7 @@ export class FunWallet extends FirstClassActions {
             maxFeePerGas: maxFeePerGas!,
             maxPriorityFeePerGas: maxFeePerGas!,
             initCode,
-            nonce: await this.getNonce(sender),
+            nonce: txOptions.nonce !== null && txOptions.nonce !== undefined ? txOptions.nonce : await this.getNonce(sender),
             preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
@@ -351,6 +352,9 @@ export class FunWallet extends FirstClassActions {
         if (txOptions.skipDBAction !== true) {
             const opId = await createOp(estimatedOperation)
             estimatedOperation.opId = opId as Hex
+            if (!(await checkWalletAccessInitialization(sender))) {
+                await initializeWalletAccess(sender, await auth.getAddress())
+            }
         }
 
         return estimatedOperation
@@ -520,10 +524,9 @@ export class FunWallet extends FirstClassActions {
             auth,
             groupId,
             { to: await this.getAddress(), amount: 0 },
-            { ...txOptions, skipDBAction: true }
+            { ...txOptions, skipDBAction: true, nonce: BigInt(operation.userOp.nonce) }
         )
         if (rejectionMessage) rejectOperation.message = rejectionMessage
-        rejectOperation.userOp.nonce = operation.userOp.nonce
         rejectOperation.relatedOpIds = [operation.opId!]
         rejectOperation.opType = OperationType.REJECTION
         rejectOperation.opId = (await createOp(rejectOperation)) as Hex

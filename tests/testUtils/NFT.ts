@@ -42,11 +42,11 @@ export const NFTTest = (config: NFTTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet1 = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), 1792811340)
+                uniqueId: await auth.getWalletUniqueId(1792811340)
             })
             wallet2 = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), 1792811341)
+                uniqueId: await auth.getWalletUniqueId(1792811341)
             })
             if (prefund) {
                 await fundWallet(auth, wallet1, config.amount ? config.amount : 0.2)

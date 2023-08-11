@@ -43,7 +43,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
 
             if (prefund) {
@@ -179,7 +179,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0xb00c7b880a57369e49a454dad27494253cf6efa5c63381c6f0e567d86d5d5cbc" // generateRandomGroupId()
+        const groupId: Hex = "0xd68cf0f5577f162dc4c4c61464808be02745469e530703c42da16dac3bf38129" // generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -201,7 +201,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 6666)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 6668)
             })
 
             if (prefund) {
