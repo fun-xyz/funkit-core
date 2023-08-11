@@ -86,7 +86,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 in: inToken,
-                amount: 0.00001,
+                amount: 0.0001,
                 out: outToken,
                 slippage: config.slippage ? config.slippage : 0.5,
                 returnAddress: walletAddress,

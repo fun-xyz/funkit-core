@@ -23,7 +23,6 @@ export interface GaslessSponsorTestConfig {
     funderIndex?: number
     mint?: boolean
     numRetry?: number
-    prefundAmt?: number
 }
 
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
@@ -64,15 +63,15 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             walletAddress1 = await wallet1.getAddress()
 
             if (config.prefund) {
-                await fundWallet(auth, wallet, config.prefundAmt ?? 0.0001)
-                await fundWallet(auth, wallet1, config.prefundAmt ?? 0.0001)
+                await fundWallet(auth, wallet, config.stakeAmount / 8)
+                await fundWallet(auth, wallet1, config.stakeAmount / 8)
             }
 
             funderAddress = await funder.getAddress()
 
             if (mint) {
                 const wethAddr = await Token.getAddress("weth", options)
-                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.00001 })
+                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.001 })
                 await wallet.executeOperation(auth, userOp)
                 const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
@@ -91,7 +90,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount)
+            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 2)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
@@ -117,7 +116,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.skip("Only User Whitelisted", async () => {
+        it("Only User Whitelisted", async () => {
             const walletAddress = await wallet.getAddress()
             const walletAddress1 = await wallet1.getAddress()
 
@@ -156,14 +155,12 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
         it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(await sponsor.unlockDepositAfter(0))
-            await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getLockState(funderAddress)).to.be.false
             await funder.sendTx(await sponsor.lockDeposit())
-            await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getLockState(funderAddress)).to.be.true
         })
 
-        it.skip("Batch Blacklist/Whitelist Users", async () => {
+        it("Batch Blacklist/Whitelist Users", async () => {
             await funder.sendTx(await sponsor.setToBlacklistMode(config.chainId, funderAddress))
 
             await funder.sendTx(
