@@ -1,11 +1,11 @@
 import { randomBytes as randomBytesValue } from "crypto"
 import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
+import { sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
 import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
-import { sendRequest } from "."
 
 const gasSpecificChain = { 137: 350_000_000_000 }
 
@@ -75,6 +75,6 @@ export const getWalletPermitHash = async (
     )
 }
 
-export const getGasStation = async (gasStationUrl: string) => {
+export const getGasStation = async (gasStationUrl: string): Promise<any> => {
     return await sendRequest(gasStationUrl, "GET", "")
 }

@@ -18,7 +18,7 @@ import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
-import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId, getGasStation } from "../utils"
 import { convertProviderToClient, convertSignerToClient } from "../viem"
 const gasSpecificChain = {
@@ -180,9 +180,24 @@ export class Auth {
         }
 
         if ((gasSpecificChain as any)[chainId]) {
-            const {
-                standard: { maxPriorityFee, maxFee }
-            } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+            let maxPriorityFee, maxFee
+            try {
+                const {
+                    standard: { maxPriorityFee1, maxFee1 }
+                } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+                maxPriorityFee = maxPriorityFee1
+                maxFee = maxFee1
+            } catch (e) {
+                throw new InternalFailureError(
+                    ErrorCode.UnknownServerError,
+                    "Polygon Gas station failed to respond",
+                    "FunWallet.onRamp",
+                    { chainId },
+                    "This is an external error, please check if https://gasstation.polygon.technology/v2 works",
+                    "https://docs.fun.xyz"
+                )
+            }
+
             if (maxPriorityFee && maxFee) {
                 tx = {
                     to,
