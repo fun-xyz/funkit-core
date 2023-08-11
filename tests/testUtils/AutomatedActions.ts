@@ -21,7 +21,7 @@ export interface AutomatedActionsConfig {
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
     const { prefund, prefundAmt } = config
 
-    describe.only("Automated Actions Test - Store in DB and execute later", function () {
+    describe("Automated Actions Test - Store in DB and execute later", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
@@ -39,7 +39,7 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
