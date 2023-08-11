@@ -4,7 +4,7 @@ import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
 import { createGroup, getGroups } from "../apis/GroupApis"
-import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
+import { createOp, deleteOp, executeOp, getFullReceipt, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GroupMetadata } from "../apis/types"
 import { addUserToWallet } from "../apis/UserApis"
@@ -29,7 +29,7 @@ import { ErrorCode, InternalFailureError, InvalidParameterError } from "../error
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
-import { gasCalculation } from "../utils/UserOpUtils"
+
 export interface FunWalletParams {
     users?: User[]
     uniqueId?: string
@@ -461,13 +461,7 @@ export class FunWallet extends FirstClassActions {
                 userOp: operation.userOp
             })
         }
-        if (receipt.txId) {
-            const { gasUsed, gasUSD, gasTotal } = await gasCalculation(receipt.txId, chain)
-            receipt.gasUSD = gasUSD
-            receipt.gasUsed = gasUsed
-            receipt.gasTotal = gasTotal
-        }
-
+        receipt = await getFullReceipt(operation.opId, chainId, receipt.userOpHash)
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
             await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
 
