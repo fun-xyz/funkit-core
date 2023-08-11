@@ -68,7 +68,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             }
         })
 
-        it("ETH => ERC20", async () => {
+        it.only("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
@@ -78,7 +78,8 @@ export const SwapTest = (config: SwapTestConfig) => {
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, operation)
+            const rec = await wallet.executeOperation(auth, operation)
+            console.log(rec)
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
