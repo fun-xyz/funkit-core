@@ -78,20 +78,16 @@ export class FunWallet extends FirstClassActions {
      * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
      * @returns Address
      */
-    async getAddress(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(
-        uniqueId: string,
-        apiKey: string,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Address> {
+    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
     }
 
     static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
@@ -528,29 +524,49 @@ export class FunWallet extends FirstClassActions {
                     })
                 }
             }
+        }
 
-            const threshold = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
+        const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
 
-            // check remote collected signature
-            const storedOps = await getOps([operation.opId!], chainId)
-            let collectedSigCount = storedOps[0]?.signatures?.length ?? 0
-            if (isSignatureMissing(await auth.getUserId(), storedOps[0]?.signatures)) {
+        if (threshold <= 1) {
+            if (!operation.userOp.signature || operation.userOp.signature === "0x") {
                 operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
-                collectedSigCount += 1
             }
+        } else {
+            if (txOptions.skipDBAction !== true) {
+                // check remote collected signature
+                const storedOps = await getOps([operation.opId!], chainId)
 
-            if (collectedSigCount < threshold) {
+                let collectedSigCount: number
+                if (isSignatureMissing(await auth.getUserId(), storedOps[0]?.signatures)) {
+                    collectedSigCount = storedOps[0]?.signatures?.length ? storedOps[0]?.signatures?.length + 1 : 1
+                    if (collectedSigCount >= threshold) {
+                        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+                    }
+                } else {
+                    collectedSigCount = storedOps[0]?.signatures?.length ?? 1
+                }
+
+                if (collectedSigCount < threshold) {
+                    throw new InvalidParameterError(
+                        ErrorCode.InsufficientSignatures,
+                        "Signatures are not sufficient to execute the operation",
+                        "FunWallet.executeOperation",
+                        { threshold, collectedSigCount, chainId },
+                        "Only execute operation with enough signatures",
+                        "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                    )
+                }
+            } else {
                 throw new InvalidParameterError(
                     ErrorCode.InsufficientSignatures,
-                    "userId is required",
+                    "Signatures are not sufficient to execute the operation",
                     "FunWallet.executeOperation",
-                    { threshold, collectedSigCount, chainId },
-                    "Provide userId when createOperation",
+                    { threshold, chainId, skipDBAction: txOptions.skipDBAction },
+                    "Only execute operation with enough signatures",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                 )
             }
-        } else {
-            operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         }
 
         if (isGroupOperation(operation)) {
