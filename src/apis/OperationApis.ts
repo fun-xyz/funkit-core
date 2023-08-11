@@ -47,3 +47,22 @@ export async function estimateOp(estimateOpInput: EstimateOpInput): Promise<Esti
 export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void> {
     await sendPostRequest(API_URL, "operation/schedule", scheduleOpInput)
 }
+
+export const getFullReceipt = async (userOpHash, chainId): Promise<ExecutionReceipt> => {
+    const retries = 5
+    let result: any
+
+    for (let i = 0; i < retries; i++) {
+        result = await sendGetRequest(API_URL, `operation/receipt/${userOpHash}/${chainId}`)
+        if (result.status === "included") {
+            break
+        }
+        await new Promise((resolve) => setTimeout(resolve, 3000))
+    }
+
+    return {
+        userOpHash,
+        txId: result.receipt.transactionHash,
+        ...result.receipt.gasData
+    }
+}
