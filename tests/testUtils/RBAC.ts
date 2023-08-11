@@ -45,7 +45,7 @@ export const RBACTest = (config: RBACTestConfig) => {
             }
 
             rbacContractAddr = await chain.getAddress("rbacAddress")
-            ownerId = randomBytes(20)
+            ownerId = randomBytes(32)
         })
 
         it("add owner", async () => {

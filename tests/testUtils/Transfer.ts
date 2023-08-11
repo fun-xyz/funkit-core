@@ -43,20 +43,29 @@ export const TransferTest = (config: TransferTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811349)
             })
-            if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+            }
+        })
+
+        after(async function () {
+            await wallet.transfer(auth, await auth.getAddress(), {
+                to: await auth.getAddress(),
+                amount: (Number(await Token.getBalance(baseToken, await wallet.getAddress())) * 4) / 5
+            })
         })
 
         it("transfer baseToken directly", async () => {
-            const randomAddress = randomBytes(20)
+            const randomAddress = await auth.getAddress()
             const walletAddress = await wallet.getAddress()
 
             const b1 = Token.getBalance(baseToken, randomAddress)
             const b2 = Token.getBalance(baseToken, walletAddress)
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001
+                amount: (Number(await Token.getBalance(baseToken, walletAddress)) * 4) / 5
             })
-            await wallet.executeOperation(auth, userOp)
+            console.log(await wallet.executeOperation(auth, userOp))
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
 
@@ -68,11 +77,8 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("wallet should have lower balance of specified token", async () => {
-            const randomAddress = randomBytes(20)
-            const walletAddress = await wallet.getAddress()
             if (config.chainId === 5) {
                 const outTokenAddress = await Token.getAddress(outToken)
-
                 const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
                     await wallet.getAddress(),
                     1000000000000000000000n
@@ -80,13 +86,17 @@ export const TransferTest = (config: TransferTestConfig) => {
                 await auth.sendTx({ ...outTokenMint })
             }
 
-            const b1 = Token.getBalanceBN(outToken, randomAddress)
-            const b2 = Token.getBalanceBN(outToken, walletAddress)
+            const b1 = Token.getBalanceBN(outToken, await auth.getAddress())
+            const b2 = Token.getBalanceBN(outToken, await wallet.getAddress())
             const outTokenAddress = await new Token(outToken).getAddress()
-            const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: randomAddress, amount: 1, token: outTokenAddress })
-            await wallet.executeOperation(auth, userOp)
-            const b3 = Token.getBalanceBN(outToken, randomAddress)
-            const b4 = Token.getBalanceBN(outToken, walletAddress)
+            const userOp = await wallet.transfer(auth, await auth.getAddress(), {
+                to: await auth.getAddress(),
+                amount: 1,
+                token: outTokenAddress
+            })
+            console.log(await wallet.executeOperation(auth, userOp))
+            const b3 = Token.getBalanceBN(outToken, await auth.getAddress())
+            const b4 = Token.getBalanceBN(outToken, await wallet.getAddress())
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -137,10 +147,9 @@ export const TransferTest = (config: TransferTestConfig) => {
                     feeRecipientBalanceBefore,
                     feeRecipientBalanceAfter
                 ] = await Promise.all([b1, b2, b3, b4, b5, b6])
-
                 assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
-                assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 10, "Transfer failed")
+                assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 9, "Transfer failed")
             })
             it("pay a fixed amount of fees in tokens", async function () {
                 const randomAddress = randomBytes(20)

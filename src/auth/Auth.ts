@@ -19,9 +19,14 @@ import { TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
-import { getAuthUniqueId } from "../utils"
+import { getAuthUniqueId, getGasStation } from "../utils"
 import { convertProviderToClient, convertSignerToClient } from "../viem"
-const gasSpecificChain = { "137": 850_000_000_000 }
+const gasSpecificChain = {
+    "137": {
+        gasStationUrl: "https://gasstation.polygon.technology/v2",
+        backupFee: "1_000_000_000_000"
+    }
+}
 
 const preProcessesChains: any = {}
 for (const key in chains) {
@@ -175,11 +180,25 @@ export class Auth {
         }
 
         if ((gasSpecificChain as any)[chainId]) {
-            tx = {
-                to,
-                value: BigInt(value),
-                data,
-                maxFeePerGas: BigInt(gasSpecificChain[chainId])
+            const {
+                standard: { maxPriorityFee, maxFee }
+            } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+            if (maxPriorityFee && maxFee) {
+                tx = {
+                    to,
+                    value: BigInt(value),
+                    data,
+                    maxFeePerGas: BigInt(Math.floor(maxFee * 1e9)),
+                    maxPriorityFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9))
+                }
+            } else {
+                tx = {
+                    to,
+                    value: BigInt(value),
+                    data,
+                    maxFeePerGas: BigInt(gasSpecificChain[chainId]),
+                    maxPriorityFeePerGas: BigInt(gasSpecificChain[chainId])
+                }
             }
         } else {
             tx = { to, value: BigInt(value), data }

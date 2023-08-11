@@ -61,7 +61,7 @@ export abstract class FirstClassActions {
         params: SwapParam,
         txOption: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const oneInchSupported = [1, 56, 137, 31337, 36864, 42161]
+        const oneInchSupported = [1, 56, 31337, 36864]
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let transactionParams: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {

@@ -90,7 +90,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 4)
+            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 2)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 
@@ -123,8 +123,8 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             await funder.sendTx(await sponsor.lockDeposit())
             await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress))
             await funder.sendTx(await sponsor.addSpenderToWhiteList(config.chainId, funderAddress, walletAddress))
-            await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
             await runSwap(wallet)
+            await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
 
             try {
                 await runSwap(wallet1)

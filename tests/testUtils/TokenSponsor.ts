@@ -89,6 +89,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 })
                 await wallet.executeOperation(auth, userOp)
                 const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
+                console.log("walletInTokenBalance", walletInTokenBalance, requiredAmount, walletAddress)
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
@@ -103,23 +104,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(Number(wallet1InTokenBalance) > requiredAmount, "wallet1 does have enough inToken balance")
             }
             if (mint) {
-                const inTokenAddress = await Token.getAddress(config.inToken, options)
-
-                const inTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
-                    await wallet.getAddress(),
-                    1000000000000000000000n
-                ])
-                await auth.sendTx({ ...inTokenMint })
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     funderAddress,
-                    1000000000000000000000n
+                    BigInt(10e18)
                 ])
                 await auth.sendTx({ ...paymasterTokenMint })
-
-                const wethAddr = await Token.getAddress("weth", options)
-                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.1 })
-                await wallet.executeOperation(auth, userOp)
             }
 
             options.gasSponsor = {
@@ -133,7 +123,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
                 const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
-
                 const depositInfoS = await sponsor.getTokenBalance(paymasterToken, walletAddress)
                 const depositInfo1S = await sponsor.getTokenBalance("eth", funderAddress)
 
@@ -146,7 +135,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
                 const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
                 const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
-
                 assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
                 assert(depositInfoE > depositInfoS, "Token Stake Failed")
                 await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))

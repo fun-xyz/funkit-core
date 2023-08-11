@@ -51,6 +51,9 @@ export const BASE_WRAP_TOKEN_ADDR = {
     "5": {
         weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
     },
+    "10": {
+        weth: "0x4200000000000000000000000000000000000006"
+    },
     "137": {
         wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
     },

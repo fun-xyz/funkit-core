@@ -5,7 +5,7 @@ const config: SwapTestConfig = {
     inToken: "dai",
     outToken: "weth",
     baseToken: "eth",
-    prefund: false,
+    prefund: true,
     amount: 0.0001
 }
 SwapTest(config)
