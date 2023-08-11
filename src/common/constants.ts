@@ -27,7 +27,7 @@ import { ContractInterface } from "../viem/ContractInterface"
 export const LOCAL_API_URL = "http://127.0.0.1:3000"
 
 // prod
-let API_URL = "https://api.fun.xyz"
+let API_URL = "https://api.fun.xyz/v1"
 
 switch (process.env.NODE_ENV) {
     case "staging":
