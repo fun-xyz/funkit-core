@@ -43,9 +43,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.index ? config.index : 1792811340)
             })
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
-            }
+
+            await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
         after(async function () {
