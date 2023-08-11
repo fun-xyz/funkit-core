@@ -64,7 +64,14 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
     }
-
+    if (!result.receipt) {
+        result.receipt = {
+            txId: "Failed to find.",
+            gasUsed: "Failed to find.",
+            gasUSD: "Failed to find.",
+            gasTotal: "Failed to find."
+        }
+    }
     return {
         ...result.receipt
     }

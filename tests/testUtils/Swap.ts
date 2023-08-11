@@ -78,8 +78,8 @@ export const SwapTest = (config: SwapTestConfig) => {
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, operation)
-
+            const rec = await wallet.executeOperation(auth, operation)
+            console.log(rec)
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
