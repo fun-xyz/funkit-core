@@ -41,6 +41,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
         if (apiKey) {
             headers["X-Api-Key"] = apiKey
         }
+
         return retry(async function () {
             const response = await fetch(uri, {
                 method,
