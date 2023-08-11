@@ -48,12 +48,12 @@ export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void
     await sendPostRequest(API_URL, "operation/schedule", scheduleOpInput)
 }
 
-export const getFullReceipt = async (opId, chainId): Promise<ExecutionReceipt> => {
+export const getFullReceipt = async (opId, chainId, userOpHash): Promise<ExecutionReceipt> => {
     const retries = 5
     let result: any
 
     for (let i = 0; i < retries; i++) {
-        result = await sendGetRequest(API_URL, `operation/receipt/${opId}/${chainId}`)
+        result = await sendGetRequest(API_URL, `operation/${opId}/chain/${chainId}/receipt?userOpHash=${userOpHash}`)
         if (result.status === "included") {
             break
         }

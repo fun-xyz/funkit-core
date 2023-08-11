@@ -461,7 +461,7 @@ export class FunWallet extends FirstClassActions {
                 userOp: operation.userOp
             })
         }
-        receipt = await getFullReceipt(operation.opId, chainId)
+        receipt = await getFullReceipt(operation.opId, chainId, receipt.userOpHash)
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
             await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
 
