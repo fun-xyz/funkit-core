@@ -1,5 +1,5 @@
 import { Address, Hex } from "viem"
-import { EstimateOpInput, EstimatedGas, ExecuteOpInput } from "./types"
+import { EstimateOpInput, EstimatedGas, ExecuteOpInput, ScheduleOpInput } from "./types"
 import { API_URL } from "../common/constants"
 import { ExecutionReceipt } from "../common/types"
 import { Operation, OperationStatus } from "../data"
@@ -42,4 +42,8 @@ export async function executeOp(executeOpInput: ExecuteOpInput): Promise<Executi
 
 export async function estimateOp(estimateOpInput: EstimateOpInput): Promise<EstimatedGas> {
     return await sendPostRequest(API_URL, "operation/estimate", estimateOpInput)
+}
+
+export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void> {
+    await sendPostRequest(API_URL, "operation/schedule", scheduleOpInput)
 }

@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid"
 import { Address, Hex, keccak256, pad, toBytes } from "viem"
+import { randomBytes } from "./ChainUtils"
 import { FACTORY_CONTRACT_INTERFACE } from "../common"
 import { AuthType, Chain, Operation, Signature, UserOperation, encodeLoginData } from "../data"
-import { randomBytes } from "../utils/ChainUtils"
 
 export const generateRandomBytes32 = (): Hex => {
     return keccak256(toBytes(uuidv4())) as Hex
@@ -14,6 +14,15 @@ export const generateRandomWalletUniqueId = (): Hex => {
 
 export const generateRandomGroupId = (): Hex => {
     return generateRandomBytes32()
+}
+
+export const generateRandomNonceKey = (): bigint => {
+    return BigInt(randomBytes(24))
+}
+
+export const generateRandomNonce = (): bigint => {
+    const randomKey = generateRandomNonceKey()
+    return randomKey << 64n
 }
 
 export const getWalletAddress = async (chain: Chain, walletUniqueId: Hex): Promise<Address> => {
@@ -31,10 +40,6 @@ export const isGroupOperation = (operation: Operation): boolean => {
         return true
     }
     return false
-}
-
-export const generateRandomNonceKey = (): bigint => {
-    return BigInt(randomBytes(24))
 }
 
 export const isSignatureMissing = (userId: Hex, signatures: Signature[] | undefined): boolean => {

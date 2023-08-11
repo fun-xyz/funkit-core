@@ -4,7 +4,7 @@ import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
 import { createGroup, getGroups } from "../apis/GroupApis"
-import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, signOp } from "../apis/OperationApis"
+import { createOp, deleteOp, executeOp, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GroupMetadata } from "../apis/types"
 import { addUserToWallet } from "../apis/UserApis"
@@ -25,7 +25,7 @@ import {
     encodeUserAuthInitData,
     toBytes32Arr
 } from "../data"
-import { ErrorCode, InvalidParameterError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
@@ -79,20 +79,16 @@ export class FunWallet extends FirstClassActions {
      * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
      * @returns Address
      */
-    async getAddress(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
         }
         return this.address!
     }
 
-    static async getAddress(
-        uniqueId: string,
-        apiKey: string,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Address> {
+    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: txOptions.chain }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
     }
 
     static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
@@ -509,6 +505,104 @@ export class FunWallet extends FirstClassActions {
             }
         }
         return receipt
+    }
+
+    async scheduleOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Hex> {
+        txOptions = parseOptions(txOptions)
+        operation = Operation.convertTypeToObject(operation)
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chainId = await chain.getChainId()
+
+        if (txOptions.skipDBAction !== true) {
+            // cache group info
+            if (isGroupOperation(operation)) {
+                const groups: GroupMetadata[] = await getGroups([operation.groupId!], chainId)
+                if (groups && groups.length > 0) {
+                    // could be empty as a new wallet wants to create a group
+                    this.userInfo?.set(operation.groupId!, {
+                        userId: operation.groupId!,
+                        groupInfo: {
+                            threshold: groups[0].threshold,
+                            memberIds: groups[0].memberIds
+                        }
+                    })
+                }
+            }
+        }
+
+        const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
+
+        if (threshold <= 1) {
+            if (!operation.userOp.signature || operation.userOp.signature === "0x") {
+                operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+            }
+        } else {
+            if (txOptions.skipDBAction !== true) {
+                // check remote collected signature
+                const storedOps = await getOps([operation.opId!], chainId)
+
+                let collectedSigCount: number
+                if (isSignatureMissing(await auth.getUserId(), storedOps[0]?.signatures)) {
+                    collectedSigCount = storedOps[0]?.signatures?.length ? storedOps[0]?.signatures?.length + 1 : 1
+                    if (collectedSigCount >= threshold) {
+                        operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
+                    }
+                } else {
+                    collectedSigCount = storedOps[0]?.signatures?.length ?? 1
+                }
+
+                if (collectedSigCount < threshold) {
+                    throw new InvalidParameterError(
+                        ErrorCode.InsufficientSignatures,
+                        "Signatures are not sufficient to execute the operation",
+                        "FunWallet.executeOperation",
+                        { threshold, collectedSigCount, chainId },
+                        "Only execute operation with enough signatures",
+                        "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                    )
+                }
+            } else {
+                throw new InvalidParameterError(
+                    ErrorCode.InsufficientSignatures,
+                    "Signatures are not sufficient to execute the operation",
+                    "FunWallet.executeOperation",
+                    { threshold, chainId, skipDBAction: txOptions.skipDBAction },
+                    "Only execute operation with enough signatures",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
+                )
+            }
+        }
+
+        if (isGroupOperation(operation)) {
+            await scheduleOp({
+                opId: operation.opId!,
+                chainId,
+                scheduledBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
+            })
+        } else {
+            await scheduleOp({
+                opId: operation.opId!,
+                chainId,
+                scheduledBy: await auth.getAddress(),
+                entryPointAddress: await chain.getAddress("entryPointAddress"),
+                signature: operation.userOp.signature as Hex,
+                userOp: operation.userOp
+            })
+        }
+        if (!operation.opId) {
+            throw new InternalFailureError(
+                ErrorCode.ServerFailure,
+                "Operation id is required",
+                "FunWallet.scheduleOperation",
+                operation,
+                "Make sure you are scheduling a valid operation",
+                "https://docs.fun.xyz/"
+            )
+        }
+        return operation.opId
     }
 
     // TODO, use auth to do authentication

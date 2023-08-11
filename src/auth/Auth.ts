@@ -24,7 +24,8 @@ import { convertProviderToClient, convertSignerToClient } from "../viem"
 const gasSpecificChain = {
     "137": {
         gasStationUrl: "https://gasstation.polygon.technology/v2",
-        backupFee: "1_000_000_000_000"
+        backupPriorityFee: "1000", // 1000 gwei
+        backupFee: "200" // 200 gwei
     }
 }
 
@@ -178,27 +179,25 @@ export class Auth {
                 chain: chains[preProcessesChains[await chain.getChainId()]]
             })
         }
-
+        let maxPriorityFee, maxFee
         if ((gasSpecificChain as any)[chainId]) {
-            const {
-                standard: { maxPriorityFee, maxFee }
-            } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
-            if (maxPriorityFee && maxFee) {
-                tx = {
-                    to,
-                    value: BigInt(value),
-                    data,
-                    maxFeePerGas: BigInt(Math.floor(maxFee * 1e9)),
-                    maxPriorityFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9))
-                }
-            } else {
-                tx = {
-                    to,
-                    value: BigInt(value),
-                    data,
-                    maxFeePerGas: BigInt(gasSpecificChain[chainId]),
-                    maxPriorityFeePerGas: BigInt(gasSpecificChain[chainId])
-                }
+            try {
+                const {
+                    standard: { maxPriorityFee1, maxFee1 }
+                } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+                maxPriorityFee = maxPriorityFee1
+                maxFee = maxFee1
+            } catch (e) {
+                maxPriorityFee = BigInt(gasSpecificChain[chainId].backupPriorityFee)
+                maxFee = BigInt(gasSpecificChain[chainId].backupFee)
+            }
+
+            tx = {
+                to,
+                value: BigInt(value),
+                data,
+                maxFeePerGas: BigInt(Math.floor(maxFee * 1e9)),
+                maxPriorityFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9))
             }
         } else {
             tx = { to, value: BigInt(value), data }
