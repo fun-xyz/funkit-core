@@ -32,7 +32,7 @@ import { getPaymasterType } from "../utils/PaymasterUtils"
 
 export interface FunWalletParams {
     users?: User[]
-    uniqueId?: string
+    uniqueId?: Hex
     walletAddr?: Address
 }
 
@@ -68,7 +68,7 @@ export class FunWallet extends FirstClassActions {
         )
 
         if (uniqueId) {
-            this.walletUniqueId = keccak256(toBytes(uniqueId))
+            this.walletUniqueId = uniqueId
         } else {
             this.address = walletAddr
         }

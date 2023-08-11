@@ -44,7 +44,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811940)
             })
 
             const chain = await Chain.getChain({ chainIdentifier: config.chainId })
@@ -78,7 +78,8 @@ export const SwapTest = (config: SwapTestConfig) => {
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, operation)
+            expect(await wallet.executeOperation(auth, operation)).to.not.throw
+
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
@@ -94,7 +95,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, operation)
+            expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
         })
@@ -109,7 +110,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 returnAddress: walletAddress,
                 chainId: config.chainId
             })
-            await wallet.executeOperation(auth, operation)
+            expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
         })
@@ -183,7 +184,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0x4f25e8ade77a481567b7a75c40711e57bbbb36ad0270a3b58e37a6e5232a082f" //generateRandomGroupId()
+        const groupId: Hex = "0xbaec3e7f11004e16972a0392ad0d114b7c6378b7b47b6cddd802ba44c3f56bb7" // generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -205,7 +206,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 7468)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 12909468)
             })
 
             const chain = await Chain.getChain({ chainIdentifier: config.chainId })

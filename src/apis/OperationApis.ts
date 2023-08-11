@@ -49,7 +49,7 @@ export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void
 }
 
 export const getFullReceipt = async (opId, chainId, userOpHash): Promise<ExecutionReceipt> => {
-    const retries = 6
+    const retries = 12
     let result: any
 
     for (let i = 0; i < retries; i++) {
