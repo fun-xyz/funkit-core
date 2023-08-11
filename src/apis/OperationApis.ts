@@ -53,10 +53,15 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
     let result: any
 
     for (let i = 0; i < retries; i++) {
-        result = await sendGetRequest(API_URL, `operation/${opId}/chain/${chainId}/receipt?userOpHash=${userOpHash}`)
-        if (result.status === "included") {
-            break
+        try {
+            result = await sendGetRequest(API_URL, `operation/${opId}/chain/${chainId}/receipt?userOpHash=${userOpHash}`)
+            if (result.status === "included") {
+                break
+            }
+        } catch (e) {
+            /* empty */
         }
+
         await new Promise((resolve) => setTimeout(resolve, 3000))
     }
 
