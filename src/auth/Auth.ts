@@ -8,6 +8,7 @@ import {
     createWalletClient,
     custom,
     http,
+    keccak256,
     pad,
     toBytes
 } from "viem"
@@ -145,10 +146,10 @@ export class Auth {
         return encodeWalletSignature(walletSignature)
     }
 
-    async getWalletUniqueId(index = 0, skipDBActions = false): Promise<string> {
+    async getWalletUniqueId(index = 0, skipDBActions = false): Promise<Hex> {
         await this.init()
         const authUniqueId = await getAuthUniqueId(this.authId!, await this.getAddress(), skipDBActions)
-        return `${authUniqueId}-${index}`
+        return keccak256(toBytes(`${authUniqueId}-${index}`))
     }
 
     async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {

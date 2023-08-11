@@ -40,7 +40,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811349)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1992811349)
             })
 
             const chain = await Chain.getChain({ chainIdentifier: config.chainId })
@@ -302,7 +302,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0xca68329709c43f22c3df0d487eed938d40feaf34a3abd57ef36fdfce896cc373" //generateRandomGroupId()
+        const groupId: Hex = "0x149b4d0ada7707782e74fef64f083cda823f45213f99ff177d3327e9761a245a" // generateRandomGroupId()
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
@@ -324,7 +324,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 7976)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 99976)
             })
 
             const chain = await Chain.getChain({ chainIdentifier: config.chainId })

@@ -23,7 +23,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         let auth: Auth
         let auth2: Auth
         let wallet: FunWallet
-        let uniqueId: string
+        let uniqueId: Hex
 
         this.timeout(400_000)
         before(async function () {
