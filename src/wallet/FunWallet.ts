@@ -590,7 +590,7 @@ export class FunWallet extends FirstClassActions {
         }
         if (!operation.opId) {
             throw new InternalFailureError(
-                ErrorCode.MissingParameter,
+                ErrorCode.ServerFailure,
                 "Operation id is required",
                 "FunWallet.scheduleOperation",
                 operation,
