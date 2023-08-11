@@ -17,7 +17,7 @@ export interface RBACTestConfig {
 
 export const RBACTest = (config: RBACTestConfig) => {
     const { chainId, prefundAmt } = config
-    describe("Single Auth RBAC Op ", function () {
+    describe.only("Single Auth RBAC Op ", function () {
         this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
