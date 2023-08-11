@@ -49,7 +49,7 @@ export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void
 }
 
 export const getFullReceipt = async (opId, chainId, userOpHash): Promise<ExecutionReceipt> => {
-    const retries = 5
+    const retries = 6
     let result: any
 
     for (let i = 0; i < retries; i++) {
@@ -62,9 +62,16 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             /* empty */
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 2500))
     }
-
+    if (!result.receipt) {
+        result.receipt = {
+            txId: "Failed to find.",
+            gasUsed: "Failed to find.",
+            gasUSD: "Failed to find.",
+            gasTotal: "Failed to find."
+        }
+    }
     return {
         ...result.receipt
     }
