@@ -710,6 +710,39 @@ export class FunWallet extends FirstClassActions {
         return this._getInitCode(initCodeParams)
     }
 
+    async getInitializerCalldata(chain: Chain): Promise<Hex> {
+        let userAuthInitData = "0x" as Hex
+        const groupUsers: User[] = Array.from(this.userInfo!.values()).filter(
+            (user) => user.groupInfo !== null && user.groupInfo !== undefined
+        )
+        if (groupUsers.length > 0) {
+            userAuthInitData = encodeUserAuthInitData(groupUsers)
+        }
+        const owners: Hex[] = Array.from(this.userInfo!.keys())
+        const rbacInitData = toBytes32Arr(owners)
+        const rbac = await chain.getAddress("rbacAddress")
+        const userAuth = await chain.getAddress("userAuthAddress")
+        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        const encodedVerificationInitdata = encodeAbiParameters(
+            [
+                {
+                    type: "address[]",
+                    name: "verificationAddresses"
+                },
+                {
+                    type: "bytes[]",
+                    name: "verificationData"
+                }
+            ],
+            [
+                [rbac, userAuth],
+                [rbacInitData, userAuthInitData]
+            ]
+        )
+        const initializerCallData = WALLET_CONTRACT_INTERFACE.encodeData("initialize", [entryPointAddress, encodedVerificationInitdata])
+        return initializerCallData
+    }
+
     private _getInitCode(input: InitCodeParams) {
         const encodedVerificationInitdata = encodeAbiParameters(
             [

@@ -1,9 +1,9 @@
 import { expect } from "chai"
-import { Hex, encodeAbiParameters, encodeFunctionData, keccak256, parseAbiParameters, stringToHex } from "viem"
+import { Hex, encodeAbiParameters, keccak256, parseAbiParameters, stringToHex } from "viem"
 import { commitTransactionParams } from "../../src/actions/Twitter"
 import { CommitParams } from "../../src/actions/types"
 import { Auth } from "../../src/auth"
-import { FACTORY_CONTRACT_INTERFACE, WALLET_ABI, WALLET_INIT_CONTRACT_INTERFACE } from "../../src/common"
+import { FACTORY_CONTRACT_INTERFACE, WALLET_INIT_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, LoginData, Token } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
@@ -23,8 +23,9 @@ export const TwitterTest = (config: TwitterTestConfig) => {
         let initializerCallData: Hex
         let chain: Chain
         let wallet: FunWallet
-        const seed = stringToHex("thisisaverysecureseed")
-        const socialHandle = stringToHex("albertsuzhu")
+        let loginData: LoginData
+        const seed = stringToHex("asfjaldskjfklsad")
+        const socialHandle = stringToHex("ezwillstarr")
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -37,15 +38,15 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             chain = await Chain.getChain({ chainIdentifier: config.chainId })
-            const validationInitData = encodeAbiParameters(parseAbiParameters("address[], bytes[]"), [
-                [await chain.getAddress("rbacAddress")],
-                [stringToHex("")]
-            ])
-            initializerCallData = encodeFunctionData({
-                abi: WALLET_ABI,
-                functionName: "initialize",
-                args: [await chain.getAddress("twitterOracle"), validationInitData]
-            })
+            // Create the wallet
+            loginData = {
+                loginType: 1,
+                socialHandle: socialHandle,
+                newFunWalletOwner: await auth.getAddress(),
+                index: 0n
+            }
+            wallet = new FunWallet({ loginData: loginData, users: [{ userId: await auth.getAddress() }] })
+            initializerCallData = await wallet.getInitializerCalldata(chain)
         })
 
         it("Commit a secret", async () => {
@@ -58,11 +59,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 chainId: config.chainId
             }
             const walletInitAddress = await chain.getAddress("walletInitAddress")
-            const encodedCommitKey = encodeAbiParameters(parseAbiParameters("bytes, uint256, uint8"), [
-                params.socialHandle,
-                params.index,
-                1
-            ])
+            const encodedCommitKey = encodeAbiParameters(parseAbiParameters("bytes, uint8"), [params.socialHandle, 1])
             const commitKey: Hex = keccak256(encodedCommitKey)
             const encodedHash = encodeAbiParameters(parseAbiParameters("bytes, address, bytes"), [
                 params.seed,
@@ -70,6 +67,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 params.initializerCallData
             ])
             const expectedHash: Hex = keccak256(encodedHash)
+            console.log("Expected Hash", expectedHash)
             const preExistingCommitHash = await WALLET_INIT_CONTRACT_INTERFACE.readFromChain(
                 walletInitAddress,
                 "commits",
@@ -77,7 +75,15 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 chain
             )
             const client = await chain.getClient()
+            console.log("CommitKey", commitKey)
+            console.log("Seed", params.seed)
+            console.log("Owner", params.owner)
+            console.log("Social Handle", params.socialHandle)
+            console.log("Initializer Call Data", params.initializerCallData)
+            console.log(preExistingCommitHash[0], (await client.getBlock()).timestamp)
+            console.log(preExistingCommitHash[0], (await client.getBlock()).timestamp)
             if (preExistingCommitHash[0] < (await client.getBlock()).timestamp) {
+                console.log("Committing", commitKey)
                 await auth.sendTx(await commitTransactionParams(params))
             }
 
@@ -85,16 +91,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             expect(committedHash[1]).to.equal(expectedHash)
         })
 
-        it.only("Verify the account was created and send a transaction", async () => {
-            // Create the wallet
-            const loginData: LoginData = {
-                loginType: 1,
-                socialHandle: socialHandle,
-                newFunWalletOwner: await auth.getAddress(),
-                index: 0n
-            }
-            wallet = new FunWallet({ loginData: loginData })
-
+        it("Verify the account was created and send a transaction", async () => {
             const loginDataBytes: Hex = encodeAbiParameters(
                 [
                     {
@@ -127,10 +124,12 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 chain
             )
             expect(await wallet.getAddress()).to.equal(expectedAddress)
-            console.log(expectedAddress)
+            console.log("Expected address", expectedAddress)
 
             // Send a transaction and initialize the wallet
-            await fundWallet(auth, wallet, 1)
+            if (Number(await Token.getBalance("eth", await wallet.getAddress())) < 1) {
+                await fundWallet(auth, wallet, 1)
+            }
             const eth = new Token("eth")
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
