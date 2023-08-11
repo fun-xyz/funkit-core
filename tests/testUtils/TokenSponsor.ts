@@ -89,7 +89,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 })
                 await wallet.executeOperation(auth, userOp)
                 const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
-                console.log("walletInTokenBalance", walletInTokenBalance, requiredAmount, walletAddress)
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {

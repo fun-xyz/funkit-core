@@ -5,7 +5,6 @@ const config: SwapTestConfig = {
     inToken: "dai",
     outToken: "wmatic",
     baseToken: "matic",
-    prefund: false,
     amount: 0.0001,
     erc20toerc20Amt: 0.00001,
     erc20toethAmt: 0.0001

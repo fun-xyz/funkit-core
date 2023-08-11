@@ -6,7 +6,7 @@ import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
-import { fundWallet } from "../../src/utils"
+import { fundWallet, isContract } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -16,7 +16,6 @@ export interface SwapTestConfig {
     inToken: string
     outToken: string
     baseToken: string
-    prefund: boolean
     amount?: number
     index?: number
     prefundAmt?: number
@@ -28,7 +27,7 @@ export interface SwapTestConfig {
 }
 
 export const SwapTest = (config: SwapTestConfig) => {
-    const { inToken, outToken, baseToken, prefund, amount, prefundAmt } = config
+    const { inToken, outToken, baseToken, amount, prefundAmt } = config
     const mint = Object.values(config).includes("mint") ? true : config.mint
     describe("Single Auth Swap", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
@@ -48,6 +47,10 @@ export const SwapTest = (config: SwapTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
 
+            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
+            }
             if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.01)
             }
@@ -112,7 +115,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
         })
 
-        describe.skip("With Session Key", () => {
+        describe("With Session Key", () => {
             const user = createSessionUser()
             before(async () => {
                 const second = 1000
@@ -181,7 +184,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0xd68cf0f5577f162dc4c4c61464808be02745469e530703c42da16dac3bf38129" // generateRandomGroupId()
+        const groupId: Hex = "0x4f25e8ade77a481567b7a75c40711e57bbbb36ad0270a3b58e37a6e5232a082f" //generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -203,12 +206,17 @@ export const SwapTest = (config: SwapTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 6668)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 7468)
             })
 
-            if (prefund) {
+            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+                await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.01)
+            }
+
             if (mint) {
                 const inTokenAddress = await Token.getAddress(inToken, options)
                 const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)

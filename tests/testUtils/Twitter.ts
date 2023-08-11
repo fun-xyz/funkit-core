@@ -17,15 +17,15 @@ export interface TwitterTestConfig {
 }
 
 export const TwitterTest = (config: TwitterTestConfig) => {
-    describe.only("Twitter Account Creation Test", function () {
+    describe("Twitter Account Creation Test", function () {
         this.timeout(300_000)
         let auth: Auth
         let initializerCallData: Hex
         let chain: Chain
         let wallet: FunWallet
         let loginData: LoginData
-        const seed = stringToHex("asfjaldskjfklsad")
-        const socialHandle = stringToHex("ezwillstarr")
+        const seed = stringToHex("asdghjkadshgkja")
+        const socialHandle = stringToHex("NighttrekETH")
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -67,7 +67,6 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 params.initializerCallData
             ])
             const expectedHash: Hex = keccak256(encodedHash)
-            console.log("Expected Hash", expectedHash)
             const preExistingCommitHash = await WALLET_INIT_CONTRACT_INTERFACE.readFromChain(
                 walletInitAddress,
                 "commits",
@@ -75,15 +74,7 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 chain
             )
             const client = await chain.getClient()
-            console.log("CommitKey", commitKey)
-            console.log("Seed", params.seed)
-            console.log("Owner", params.owner)
-            console.log("Social Handle", params.socialHandle)
-            console.log("Initializer Call Data", params.initializerCallData)
-            console.log(preExistingCommitHash[0], (await client.getBlock()).timestamp)
-            console.log(preExistingCommitHash[0], (await client.getBlock()).timestamp)
             if (preExistingCommitHash[0] < (await client.getBlock()).timestamp) {
-                console.log("Committing", commitKey)
                 await auth.sendTx(await commitTransactionParams(params))
             }
 
@@ -124,7 +115,6 @@ export const TwitterTest = (config: TwitterTestConfig) => {
                 chain
             )
             expect(await wallet.getAddress()).to.equal(expectedAddress)
-            console.log("Expected address", expectedAddress)
 
             // Send a transaction and initialize the wallet
             if (Number(await Token.getBalance("eth", await wallet.getAddress())) < 1) {
@@ -133,13 +123,12 @@ export const TwitterTest = (config: TwitterTestConfig) => {
             const eth = new Token("eth")
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: 1
+                amount: 0.0001
             })
-            console.log(userOp)
             const authBalBefore = await eth.getBalanceBN(await auth.getAddress())
             await wallet.executeOperation(auth, userOp)
             const authBalAfter = await eth.getBalanceBN(await auth.getAddress())
-            console.log(authBalAfter, authBalBefore)
+            expect(authBalAfter > authBalBefore).to.be.true
         })
     })
 }
