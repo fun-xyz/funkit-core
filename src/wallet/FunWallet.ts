@@ -24,7 +24,7 @@ import {
     encodeUserAuthInitData,
     toBytes32Arr
 } from "../data"
-import { ErrorCode, InvalidParameterError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
@@ -589,7 +589,7 @@ export class FunWallet extends FirstClassActions {
             })
         }
         if (!operation.opId) {
-            throw new InvalidParameterError(
+            throw new InternalFailureError(
                 ErrorCode.MissingParameter,
                 "Operation id is required",
                 "FunWallet.scheduleOperation",
