@@ -1,4 +1,3 @@
-import { randomBytes as randomBytesValue } from "crypto"
 import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
 import { sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
@@ -47,7 +46,12 @@ export const isContract = async (address: Address, client: PublicClient): Promis
 }
 
 export const randomBytes = (length: number) => {
-    return toHex(randomBytesValue(length))
+    const bytes = new Uint8Array(length)
+    for (let i = 0; i < length; i++) {
+        bytes[i] = Math.floor(Math.random() * 256)
+    }
+
+    return toHex(bytes)
 }
 
 export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
