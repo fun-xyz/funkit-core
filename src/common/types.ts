@@ -19,10 +19,11 @@ export interface TransactionDataWithFee extends TransactionData {
     oracle?: Address
 }
 export interface ExecutionReceipt {
-    opHash: string
-    txid?: Hex
-    gasUsed: bigint
-    gasUSD: bigint
+    userOpHash: string
+    txId?: Hex
+    gasUsed?: string
+    gasUSD?: string
+    gasTotal?: string
 }
 
 export type EstimateGasResult = {

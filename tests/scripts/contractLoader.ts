@@ -8,7 +8,7 @@ import { getTestApiKey } from "../getAWSSecrets"
 async function setGlobal() {
     const apiKey = await getTestApiKey()
     const options: GlobalEnvOption = {
-        chain: new Chain({ chainId: "5" }),
+        chain: await Chain.getChain({ chainIdentifier: 5 }),
         apiKey: apiKey
     }
     await configureEnvironment(options)
@@ -33,7 +33,8 @@ const loadAbis = async (): Promise<void> => {
         "WETH",
         "univ3factory",
         "univ3quoter",
-        "univ3router"
+        "univ3router",
+        "TestNFT"
     ]
 
     for (const contract of contracts) {

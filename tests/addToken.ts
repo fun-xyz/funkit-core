@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv"
 import { getTestApiKey } from "./getAWSSecrets"
-import { Eoa } from "../src/auth"
+import { Auth } from "../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../src/config"
 import { TokenSponsor } from "../src/sponsors"
 dotenv.config()
@@ -16,7 +16,7 @@ const getOptions = async (chain = 36865) => {
 const paymasterConfig = async (chainId, privateKey, aggergator, oracle, tokenAddress) => {
     await configureEnvironment(await getOptions(chainId))
     // const tokenAddress = await Token.getAddress("usdc")
-    const eoa = new Eoa({ privateKey: privateKey })
+    const eoa = new Auth({ privateKey: privateKey })
     const sponsor = new TokenSponsor({
         chain: "5",
         gasSponsor: {

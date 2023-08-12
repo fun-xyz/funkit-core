@@ -1,10 +1,9 @@
 import { Address, Hex } from "viem"
+import { Chain } from "./Chain"
 
 export interface ChainInput {
-    chainId?: string
+    chainIdentifier?: string | Chain | number
     rpcUrl?: string
-    chainName?: string
-    bundlerUrl?: string
 }
 
 export type FactoryCreateAccountParams = {
@@ -50,8 +49,17 @@ export type WalletInitialzeParams = {
 export type WalletSignature = {
     authType?: number
     userId: Hex
+    roleId?: Hex
+    ruleId?: Hex
     signature: Hex
-    extraData?: Hex
+    extraData?: ExtraDataType
+}
+
+export type ExtraDataType = {
+    targetPath?: Hex[]
+    selectorPath?: Hex[]
+    feeRecipientPath?: Hex[]
+    tokenPath?: Hex[]
 }
 
 export type UserOperation = {
@@ -66,4 +74,49 @@ export type UserOperation = {
     maxPriorityFeePerGas: bigint
     paymasterAndData?: string
     signature?: string
+}
+
+export enum AuthType {
+    ECDSA = 0,
+    MULTI_SIG = 1
+}
+
+export type Signature = {
+    userId: Hex
+    signature: Hex
+    signedTime: number
+}
+
+export enum OperationType {
+    SINGLE_OPERATION = "SINGLE_OPERATION",
+    GROUP_OPERATION = "GROUP_OPERATION",
+    REJECTION = "REJECTION"
+}
+
+export enum OperationStatus {
+    ALL = "",
+    PENDING_APPROVED = "PENDING_APPROVED",
+    APPROVED = "APPROVED",
+    PENDING = "PENDING",
+    OP_SUCCEED = "OP_SUCCEED",
+    OP_REVERTED = "OP_REVERTED",
+    SCHEDULED = "SCHEDULED"
+}
+
+export type OperationMetadata = {
+    opId?: Hex
+    chainId: string
+    opType: OperationType
+    authType: AuthType
+    groupId?: Hex
+    message?: string
+    walletAddr: Address
+    status?: OperationStatus
+    proposer: string // do not use address in case we later use non-address data as the proposer
+    proposedTime?: number
+    executedBy?: string
+    executedTime?: number
+    relatedOpIds?: Hex[]
+    signatures?: Signature[]
+    txid?: string
 }

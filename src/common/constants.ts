@@ -1,6 +1,5 @@
 import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json"
 import { padHex } from "viem"
-import AAVE_WITHDRAW_CONTRACT from "../abis/AaveWithdraw.json"
 import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
 import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
 import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
@@ -13,6 +12,7 @@ import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
 import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
 import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
 import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
+import TEST_NFT_CONTRACT from "../abis/TestNFT.json"
 import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
 import TOKEN_PRICE_ORACLE_CONTRACT from "../abis/TokenPriceOracle.json"
 import UNISWAPV2FACTORY_CONTRACT from "../abis/UniswapV2Factory.json"
@@ -22,50 +22,37 @@ import UNIV3_QUOTER from "../abis/univ3quoter.json"
 import UNIV3_ROUTER from "../abis/univ3router.json"
 import USER_AUTHENTICATION_CONTRACT from "../abis/UserAuthentication.json"
 import { ContractInterface } from "../viem/ContractInterface"
-// local fork environment
 
-export const LOCAL_FORK_CHAIN_ID = 31337
-export const LOCAL_FORK_CHAIN_KEY = "ethereum-localfork"
-export const LOCAL_FORK_RPC_URL = "http://127.0.0.1:8545"
+// local environment
 export const LOCAL_API_URL = "http://127.0.0.1:3000"
-export const LOCAL_TOKEN_ADDRS = {
-    usdc: "0x966bf8795c89AceFd79385aA61295a70fa24dEEC",
-    usdt: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-    dai: "0x401348dBC5C269028832f060859A0944B22106Ce",
-    weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-}
-export const FORK_DEFAULT_ADDRESSES = {
-    "1inchOracleAddress": "0x07D91f5fb9Bf7798734C3f606dB065549F6893bb"
-}
-
-// fun testnet environment
-export const FUN_TESTNET_CHAIN_ID = 36865
-export const FUN_TESTNET_CHAIN_KEY = "fun-testnet"
-export const FUN_TESTNET_RPC_URL = "http://34.221.214.161:3001"
 
 // prod
-let API_URL = "https://api.fun.xyz"
+let API_URL = "https://api.fun.xyz/v1"
 
 switch (process.env.NODE_ENV) {
     case "staging":
-        API_URL = "https://api.fun.xyz/staging"
+        API_URL = "https://api.fun.xyz/staging/v1"
         break
     case "testing":
         API_URL = "https://api.fun.xyz/testing"
         break
-    default:
-        API_URL = "https://api.fun.xyz"
+    case "local":
+        API_URL = LOCAL_API_URL
+        break
 }
 
 export { API_URL }
 
-export const INTERNAL_API_URL = "https://zl8bx9p7f4.execute-api.us-west-2.amazonaws.com/Prod"
+export const DASHBOARD_API_URL = "https://api.fun.xyz/dashboard"
 export const BASE_WRAP_TOKEN_ADDR = {
     "1": {
         weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     },
     "5": {
         weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+    },
+    "10": {
+        weth: "0x4200000000000000000000000000000000000006"
     },
     "137": {
         wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
@@ -81,28 +68,15 @@ export const BASE_WRAP_TOKEN_ADDR = {
     }
 }
 
+export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5"]
+export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
+
 export const AddressZero = padHex("0x", { size: 20 })
 export const HashZero = padHex("0x", { size: 32 })
 
 export const TEST_API_KEY = "localtest"
-export const OPTION_TEST_API_KEY = "nbiQS2Ut932ewF5TqiCpl2ZTUqPWb1P29N8GcJjy"
-export const TRANSACTION_TYPE = "FunWalletInteraction"
-export const CHAIN_INFO_MAPPER = {
-    eoaAaveWithdrawAddress: "AaveWithdraw",
-    approveAndExecAddress: "ApproveAndExec",
-    tokenSwapAddress: "ApproveAndSwap",
-    gaslessSponsorAddress: "GaslessPaymaster",
-    tokenSponsorAddress: "TokenPaymaster",
-    oracle: "TokenPriceOracle",
-    entryPointAddress: "EntryPoint",
-    factoryAddress: "FunWalletFactory",
-    feeOracle: "FeePercentOracle",
-    userAuthAddress: "UserAuthentication",
-    rbacAddress: "RoleBasedAccessControl",
-    UniswapV2Factory: "UniswapV2Factory",
-    UniswapV2Router02: "UniswapV2Router02"
-}
 
+// abis
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT["abi"]
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT["abi"]
 export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT["abi"]
@@ -116,7 +90,10 @@ export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
 export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
 export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
+export const ROLE_BASED_ACCESS_CONTROL_ABI = ROLE_BASED_ACCESS_CONTROL_CONTRACT["abi"]
+export const USER_AUTHENTICATION_ABI = USER_AUTHENTICATION_CONTRACT["abi"]
 
+// contract interface
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
 export const ERC20_CONTRACT_INTERFACE = new ContractInterface(ERC20_ABI)
@@ -128,15 +105,16 @@ export const POOL_CONTRACT_INTERFACE = new ContractInterface(IUniswapV3PoolABI["
 export const APPROVE_AND_EXEC_CONTRACT_INTERFACE = new ContractInterface(APPROVE_AND_EXEC_ABI)
 export const UNISWAPV2FACTORY_INTERFACE = new ContractInterface(UNISWAPV2FACTORY_ABI)
 export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER02_ABI)
+export const RBAC_CONTRACT_INTERFACE = new ContractInterface(ROLE_BASED_ACCESS_CONTROL_ABI)
+export const USER_AUTHENTICATION_CONTRACT_INTERFACE = new ContractInterface(USER_AUTHENTICATION_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["addresses"],
     tokenSwapAddress: APPROVE_AND_SWAP_CONTRACT["addresses"],
     entryPointAddress: ENTRYPOINT_CONTRACT["addresses"],
     factoryAddress: FACTORY_CONTRACT["addresses"],
-    gaslessSponsorAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
-    eoaAaveWithdrawAddress: AAVE_WITHDRAW_CONTRACT["addresses"],
-    tokenSponsorAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
+    gaslessPaymasterAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
+    tokenPaymasterAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
     oracle: TOKEN_PRICE_ORACLE_CONTRACT["addresses"],
     userAuthAddress: USER_AUTHENTICATION_CONTRACT["addresses"],
     rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT["addresses"],
@@ -145,5 +123,7 @@ export const CONTRACT_ADDRESSES = {
     univ3quoter: UNIV3_QUOTER["addresses"],
     univ3router: UNIV3_ROUTER["addresses"],
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
-    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"]
+    UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
+    TestNFT: TEST_NFT_CONTRACT["addresses"],
+    sponsorAddress: { "5": "0x175C5611402815Eba550Dad16abd2ac366a63329" }
 }

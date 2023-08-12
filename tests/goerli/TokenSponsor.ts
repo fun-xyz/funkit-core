@@ -2,13 +2,14 @@ import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSpon
 
 const config: TokenSponsorTestConfig = {
     chainId: 5,
-    inToken: "eth",
+    inToken: "usdc",
     outToken: "dai",
-    paymasterToken: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
-    baseTokenStakeAmt: 0.006,
+    paymasterToken: "0x712110295e4eCc0F46dC06684AA21263613b08dd",
+    baseTokenStakeAmt: 0.2,
     paymasterTokenStakeAmt: 100,
-    prefund: false,
+    prefund: true,
     swapAmount: 0.001,
-    stake: false
+    stake: true,
+    mint: false
 }
 TokenSponsorTest(config)

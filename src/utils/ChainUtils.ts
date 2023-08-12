@@ -1,10 +1,22 @@
-import { Address, PublicClient, parseEther, toHex } from "viem"
+import { randomBytes as randomBytesValue } from "crypto"
+import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
+import { sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
+import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
 import { EnvOption } from "../config"
-import { getChainFromData } from "../data"
+import { Chain } from "../data"
 import { FunWallet } from "../wallet"
 
 const gasSpecificChain = { 137: 350_000_000_000 }
+
+export const isAddress = (address: string): boolean => {
+    try {
+        const [decodedAddr] = decodeAbiParameters([{ type: "address" }], pad(address as Hex, { size: 32 }))
+        return isAddressViem(decodedAddr as string)
+    } catch (err) {
+        return false
+    }
+}
 
 export const fundWallet = async (
     auth: Auth,
@@ -12,15 +24,16 @@ export const fundWallet = async (
     value: number,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ) => {
-    const chain = await getChainFromData(txOptions.chain)
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData
-    if ((gasSpecificChain as any)[chain.id!]) {
-        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: (gasSpecificChain as any)[chain.id!] }
+    if ((gasSpecificChain as any)[chainId]) {
+        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: (gasSpecificChain as any)[chainId] }
     } else {
         txData = { to, data: "0x", value: parseEther(`${value}`) }
     }
-    const receipt = await auth.sendTx({ ...txData, chain })
+    const receipt = await auth.sendTx({ ...txData })
     return await receipt
 }
 
@@ -34,10 +47,34 @@ export const isContract = async (address: Address, client: PublicClient): Promis
 }
 
 export const randomBytes = (length: number) => {
-    const bytes = new Uint8Array(length)
-    for (let i = 0; i < length; i++) {
-        bytes[i] = Math.floor(Math.random() * 256)
-    }
+    return toHex(randomBytesValue(length))
+}
 
-    return toHex(bytes)
+export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
+    try {
+        return await WALLET_CONTRACT_INTERFACE.readFromChain(walletAddr, "getNonce", [nonceKey], chain)
+    } catch {
+        return 0
+    }
+}
+
+export const getWalletPermitHash = async (
+    factoryAddress: Address,
+    chain: Chain,
+    tokenAddress: Address,
+    targetAddress: Address,
+    amount: bigint,
+    nonce: bigint
+) => {
+    const walletImpAddr = await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "funWalletImpAddress", [], chain)
+    return await WALLET_CONTRACT_INTERFACE.readFromChain(
+        walletImpAddr,
+        "getPermitHash",
+        [tokenAddress, targetAddress, amount, nonce],
+        chain
+    )
+}
+
+export const getGasStation = async (gasStationUrl: string): Promise<any> => {
+    return await sendRequest(gasStationUrl, "GET", "")
 }

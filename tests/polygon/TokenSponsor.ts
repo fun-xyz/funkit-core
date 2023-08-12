@@ -4,12 +4,13 @@ const config: TokenSponsorTestConfig = {
     chainId: 137,
     inToken: "matic",
     outToken: "dai",
-    paymasterToken: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-    baseTokenStakeAmt: 1,
-    paymasterTokenStakeAmt: 1,
-    prefund: true,
-    swapAmount: 0.01,
-    stake: true
+    paymasterToken: "0x88A940be4EcC9470400Ad76D30479594E15B1637",
+    baseTokenStakeAmt: 0,
+    prefundAmt: 1,
+    paymasterTokenStakeAmt: 10,
+    prefund: false,
+    swapAmount: 0.001,
+    stake: false,
+    mint: false
 }
-
 TokenSponsorTest(config)

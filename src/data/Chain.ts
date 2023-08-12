@@ -1,118 +1,129 @@
-import { Address, PublicClient, createPublicClient, http } from "viem"
+import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
-import { getChainInfo, getModuleInfo } from "../apis"
-import { CONTRACT_ADDRESSES, EstimateGasResult } from "../common"
-import { Helper, MissingParameterError, ServerMissingDataError } from "../errors"
-import { Bundler } from "../servers/Bundler"
-import { flattenObj } from "../utils/DataUtils"
+import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
+import { CONTRACT_ADDRESSES, ENTRYPOINT_CONTRACT_INTERFACE, EstimateGasResult } from "../common"
+import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
+import { isContract } from "../utils"
 
 export class Chain {
-    chainId?: string
-    rpcUrl?: string
-    chainName?: string
-    bundlerUrl?: string
-    bundler?: Bundler
-    id?: string
-    name?: string
-    addresses: Addresses = {}
-    currency?: string
+    private initialized = false
+    private id?: string
+    private name?: string
+    private addresses: Addresses = {}
+    private currency?: string
+    private rpcUrl?: string
+    private client?: PublicClient
 
-    // viem
-    client?: PublicClient
+    private static chain: Chain
 
-    constructor(chainInput: ChainInput) {
-        if (chainInput.chainId) {
-            this.chainId = chainInput.chainId
-        } else if (chainInput.rpcUrl) {
+    private constructor(chainInput: ChainInput) {
+        if (!chainInput.chainIdentifier && !chainInput.rpcUrl) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidChainIdentifier,
+                "valid chain identifier or rpcUrl is required, could be chainId, chainName, Fun Chain object, or rpcUrl",
+                "Chain.constructor",
+                { chainInput },
+                "Please provide valid chain identifier or rpcUrl",
+                "https://docs.fun.xyz"
+            )
+        }
+
+        if (chainInput.rpcUrl) {
             this.rpcUrl = chainInput.rpcUrl
-        } else if (chainInput.chainName) {
-            this.chainName = chainInput.chainName
-        } else if (chainInput.bundlerUrl) {
-            this.bundlerUrl = chainInput.bundlerUrl
+        } else if (chainInput.chainIdentifier instanceof Chain) {
+            return chainInput.chainIdentifier
+        } else if (typeof chainInput.chainIdentifier === "number" || Number(chainInput.chainIdentifier)) {
+            this.id = chainInput.chainIdentifier!.toString()
+        } else {
+            this.name = chainInput.chainIdentifier
         }
     }
 
-    async init() {
-        if (this.chainId) {
-            await this.loadChainData(this.chainId.toString())
-        } else if (this.chainName) {
-            await this.loadChainData(this.chainName)
+    public static async getChain(chainInput: ChainInput): Promise<Chain> {
+        if (chainInput.chainIdentifier instanceof Chain) {
+            return chainInput.chainIdentifier
+        } else if (
+            !Chain.chain ||
+            ((await Chain.chain.getChainId()) !== chainInput.chainIdentifier?.toString() &&
+                (await Chain.chain.getChainName()) !== chainInput.chainIdentifier?.toString() &&
+                (await Chain.chain.getRpcUrl()) !== chainInput.rpcUrl)
+        ) {
+            Chain.chain = new Chain(chainInput)
+        }
+        return Chain.chain
+    }
+
+    private async init() {
+        if (this.initialized) return
+
+        if (this.id) {
+            await this.loadChain(this.id)
+        } else if (this.name) {
+            await this.loadChain(this.name)
         } else if (this.rpcUrl) {
-            await this.loadClient()
-            const chainId = await this.client!.getChainId()
-            await this.loadChainData(chainId.toString())
-        } else if (this.bundlerUrl) {
-            const bundlerChainId = await Bundler.getChainId(this.bundlerUrl)
-            await this.loadChainData(bundlerChainId)
-            await this.loadBundler()
+            await this.loadChainFromRpc()
         }
 
-        try {
-            await this.loadBundler()
-        } catch {
-            // ignore
-        }
-
-        try {
-            await this.loadClient()
-        } catch {
-            // ignore
-        }
+        this.initialized = true
     }
 
-    async loadClient() {
-        if (!this.client) {
-            this.client = createPublicClient({
-                transport: http(this.rpcUrl)
-            })
-        }
+    private async loadChainFromRpc() {
+        this.client = createPublicClient({
+            transport: http(this.rpcUrl)
+        })
+        this.id = (await this.client.getChainId()).toString()
+        await this.loadChain(this.id)
     }
 
-    async loadBundler() {
-        if (!this.bundler) {
-            if (!this.id || !this.bundlerUrl || !this.addresses || !this.addresses.entryPointAddress) {
-                const currentLocation = "Chain.loadBundler"
-                const helperMainMessage = "{id,bundlerUrl,addresses, or addresses.entryPointAddress} are missing"
-                const helper = new Helper(`${currentLocation} was given these parameters`, this, helperMainMessage)
-                throw new MissingParameterError(currentLocation, helper)
-            }
-            this.bundler = new Bundler(this.id, this.bundlerUrl, this.addresses.entryPointAddress)
-            await this.bundler.validateChainId()
-        }
-    }
-
-    async loadChainData(chainId: string) {
+    private async loadChain(identifier: string) {
         let chain
-        try {
-            if (!this.id) {
-                chain = await getChainInfo(chainId)
-                this.id = chain.chain
-                this.name = chain.key
-                this.currency = chain.currency
-                const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
-                    result[key] = CONTRACT_ADDRESSES[key][this.id]
-                    return result
-                }, {})
-                const addresses = { ...chain.aaData, ...flattenObj(chain.moduleAddresses), ...abisAddresses }
-                Object.assign(this, { ...this, addresses, ...chain.rpcdata })
-            }
-        } catch (e) {
-            console.log(e)
-            const helper = new Helper("getChainInfo", chain, "call failed")
-            helper.pushMessage(`Chain identifier ${chainId} not found`)
-
-            throw new ServerMissingDataError("Chain.loadChainData", "DataServer", helper)
+        if (!Number(identifier)) {
+            chain = await getChainFromName(identifier)
+        } else {
+            chain = await getChainFromId(identifier)
         }
+        this.id = chain.id
+        this.name = chain.name
+        this.currency = chain.nativeCurrency.symbol
+        const abisAddresses = Object.keys(CONTRACT_ADDRESSES).reduce((result, key) => {
+            result[key] = CONTRACT_ADDRESSES[key][this.id]
+            return result
+        }, {})
+        const addresses = { ...abisAddresses }
+        this.rpcUrl = chain.rpcUrls.default
+        this.client = createPublicClient({
+            transport: http(this.rpcUrl)
+        })
+        Object.assign(this, { ...this, addresses })
+    }
+
+    async getChainId(): Promise<string> {
+        await this.init()
+        return this.id!
+    }
+
+    async getChainName(): Promise<string> {
+        await this.init()
+        return this.name!
+    }
+
+    async getRpcUrl(): Promise<string> {
+        await this.init()
+        return this.rpcUrl!
     }
 
     async getAddress(name: string): Promise<Address> {
         await this.init()
         const res = this.addresses![name]
         if (!res) {
-            const currentLocation = "Chain.getAddress"
-            const helperMainMessage = "Search key does not exist"
-            const helper = new Helper(`${currentLocation} was given these parameters`, name, helperMainMessage)
-            throw new MissingParameterError(currentLocation, helper)
+            throw new ResourceNotFoundError(
+                ErrorCode.AddressNotFound,
+                "address not found",
+                "chain.getAddress",
+                { name },
+                "Provide correct name to query address",
+                "https://docs.fun.xyz"
+            )
         }
         return res
     }
@@ -122,30 +133,14 @@ export class Chain {
         return await getModuleInfo(name, this.id!)
     }
 
-    async getActualChainId(): Promise<string> {
+    async getCurrency(): Promise<string> {
         await this.init()
-        const chainId = await this.client!.getChainId()
-        return chainId.toString()
-    }
-
-    async getChainId(): Promise<string> {
-        await this.init()
-        return this.id!
+        return this.currency!
     }
 
     async getClient(): Promise<PublicClient> {
         await this.init()
         return this.client!
-    }
-
-    setAddress(name: string, address: Address) {
-        if (!this.addresses) this.addresses = {}
-        this.addresses[name] = address
-    }
-
-    async sendOpToBundler(userOp: UserOperation): Promise<string> {
-        await this.init()
-        return await this.bundler!.sendUserOpToBundler(userOp)
     }
 
     async getFeeData(): Promise<bigint> {
@@ -155,35 +150,67 @@ export class Chain {
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
         await this.init()
-        const res = await this.bundler!.estimateUserOpGas(partialOp)
-        let { preVerificationGas, callGasLimit, verificationGas: verificationGasLimit } = res
-        if (!(preVerificationGas || verificationGasLimit || callGasLimit)) {
-            throw new Error(JSON.stringify(res))
+        if (!this.addresses || !this.addresses.entryPointAddress) {
+            throw new InternalFailureError(
+                ErrorCode.AddressNotFound,
+                "entryPointAddress is required",
+                "chain.estimateOpGas",
+                { partialOp },
+                "This is an internal error, please contact support.",
+                "https://docs.fun.xyz"
+            )
+        }
+
+        let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
+            chainId: this.id!,
+            entryPointAddress: this.addresses.entryPointAddress,
+            userOp: partialOp
+        })
+        if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
+            throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }
         callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
-        verificationGasLimit = BigInt(verificationGasLimit!) + 100_000n
+        verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
-}
 
-export const getChainFromData = async (chainIdentifier?: string | Chain | number): Promise<Chain> => {
-    if (!chainIdentifier) {
-        const helper = new Helper("getChainFromData", chainIdentifier, "chainIdentifier is required")
-        throw new MissingParameterError("Chain.getChainFromData", helper)
+    async getTxId(userOpHash: string, timeout = 60_000, interval = 5_000, fromBlock?: bigint): Promise<Hex | null> {
+        const endtime = Date.now() + timeout
+        const client = await this.getClient()
+        const entryPointAddress = await this.getAddress("entryPointAddress")
+        fromBlock = fromBlock ? fromBlock : (await client.getBlockNumber()) - 100n
+        let filter
+        while (Date.now() < endtime) {
+            let events
+            if ((await client.getChainId()) === 84531 || (await client.getChainId()) === 36865) {
+                events = await ENTRYPOINT_CONTRACT_INTERFACE.getLog(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    { userOpHash },
+                    client,
+                    fromBlock
+                )
+            } else {
+                filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
+                    entryPointAddress,
+                    "UserOperationEvent",
+                    [userOpHash],
+                    client,
+                    fromBlock
+                )
+                events = await client.getFilterLogs({ filter })
+            }
+
+            if (events.length > 0) {
+                return events[0].transactionHash
+            }
+            await new Promise((resolve) => setTimeout(resolve, interval))
+        }
+        return null
     }
 
-    let chain: Chain
-    if (chainIdentifier instanceof Chain) {
-        return chainIdentifier
+    async addressIsContract(address: Address): Promise<boolean> {
+        return isContract(address, await this.getClient())
     }
-
-    if (typeof chainIdentifier === "number" || Number(chainIdentifier)) {
-        chain = new Chain({ chainId: chainIdentifier.toString() })
-    } else if (chainIdentifier.indexOf("http") + 1) {
-        chain = new Chain({ rpcUrl: chainIdentifier })
-    } else {
-        chain = new Chain({ chainName: chainIdentifier })
-    }
-    return chain
 }

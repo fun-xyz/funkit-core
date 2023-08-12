@@ -5,7 +5,7 @@ import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "vie
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
 import { EnvOption } from "../config"
-import { getChainFromData } from "../data"
+import { Chain } from "../data"
 
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
@@ -226,7 +226,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
     const wethAddr = await getTokenInfo("weth", chainId.toString())
     let swapTxData
     if (wethAddr === tokenOutAddress) {
-        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForETH", [
+        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionParams(router, "swapExactTokensForETH", [
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
@@ -235,7 +235,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
     } else {
-        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionData(router, "swapExactTokensForTokens", [
+        swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionParams(router, "swapExactTokensForTokens", [
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
@@ -248,7 +248,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
 
 const testIds = [36864, 31337]
 export async function oneInchAPIRequest(methodName: string, queryParams: any, options: EnvOption = (globalThis as any).globalEnvOption) {
-    const chain = await getChainFromData(options.chain)
-    const chainId = testIds.includes(Number(chain.id)) ? 1 : chain.id
+    const chain = await Chain.getChain({ chainIdentifier: options.chain })
+    const chainId = testIds.includes(Number(await chain.getChainId())) ? 1 : await chain.getChainId()
     return apiBaseUrl + chainId + methodName + "?" + new URLSearchParams(queryParams).toString()
 }
