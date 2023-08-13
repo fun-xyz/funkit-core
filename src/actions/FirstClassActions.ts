@@ -82,7 +82,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
-            transactionParams = erc721TransferTransactionParams(params)
+            transactionParams = await erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
             transactionParams = await erc20TransferTransactionParams(params)
         } else if (isNativeTransferParams(params)) {

@@ -23,13 +23,13 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
     return "amount" in obj && (!("token" in obj) || Token.isNative(obj.token))
 }
 
-export const erc721TransferTransactionParams = (params: ERC721TransferParams): TransactionParams => {
+export const erc721TransferTransactionParams = async (params: ERC721TransferParams): Promise<TransactionParams> => {
     const { to, tokenId, token, from } = params
     let tokenAddr
     if (isAddress(token)) {
         tokenAddr = token
     } else {
-        tokenAddr = NFT.getAddress(token)
+        tokenAddr = await NFT.getAddress(token)
     }
     return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, tokenId])
 }
