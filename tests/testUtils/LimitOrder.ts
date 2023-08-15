@@ -21,7 +21,7 @@ export interface LimitOrderConfig {
 export const LimitOrderTest = (config: LimitOrderConfig) => {
     const { prefund, prefundAmt } = config
 
-    describe.only("Limit Order Test - Store Limit Order and Execute later", async function () {
+    describe("Limit Order Test - Store Limit Order and Execute later", async function () {
         this.timeout(400_000)
         let auth: Auth
         let wallet: FunWallet
