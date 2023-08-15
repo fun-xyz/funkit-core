@@ -2,6 +2,7 @@ import { Address, pad } from "viem"
 import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
 import { createExecuteBatchTxParams } from "./BatchActions"
 import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
+import { LimitOrderTransactionParams } from "./LimitOrder"
 import {
     finishUnstakeTransactionParams,
     isFinishUnstakeParams,
@@ -28,6 +29,7 @@ import {
     ApproveParams,
     CreateGroupParams,
     FinishUnstakeParams,
+    LimitOrderParam,
     OneInchSwapParams,
     RemoveGroupParams,
     RemoveOwnerParams,
@@ -71,6 +73,16 @@ export abstract class FirstClassActions {
         } else {
             transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams)
         }
+        return await this.createOperation(auth, userId, transactionParams, txOption)
+    }
+
+    async limitOrder(
+        auth: Auth,
+        userId: string,
+        params: LimitOrderParam,
+        txOption: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        const transactionParams: TransactionParams = await LimitOrderTransactionParams(params, txOption.chain)
         return await this.createOperation(auth, userId, transactionParams, txOption)
     }
 

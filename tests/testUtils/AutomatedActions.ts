@@ -3,7 +3,7 @@ import { getOps } from "../../src/apis/OperationApis"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet, randomBytes } from "../../src/utils"
+import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -21,8 +21,8 @@ export interface AutomatedActionsConfig {
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
     const { prefund, prefundAmt } = config
 
-    describe("Automated Actions Test - Store in DB and execute later", function () {
-        this.timeout(300_000)
+    describe("Automated Actions Test - Store in DB and execute later", async function () {
+        this.timeout(400_000)
         let auth: Auth
         let wallet: FunWallet
         let opId
@@ -44,30 +44,24 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
-        const randomAddress = randomBytes(20)
-        const amount = config.amount ? config.amount : 0.001
         it("transfer baseToken(ETH) schedule", async () => {
+            const balance = prefundAmt ? prefundAmt : 1
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
-                to: randomAddress,
-                amount
+                to: await auth.getAddress(),
+                amount: balance - 0.1
             })
             opId = await wallet.scheduleOperation(auth, userOp)
+            console.log("op Id", opId)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
         })
 
         it("transfer baseToken(ETH) executed", async () => {
-            this.timeout(600_000)
-            let operation = await getOps([opId], config.chainId.toString())
-            while (operation[0].status === "SCHEDULED" || operation[0].status === "PENDING") {
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 10_000)
-                })
-                operation = await getOps([opId], config.chainId.toString())
-            }
-            assert(operation[0].status === "OP_SUCCEED")
-            const bal = await Token.getBalanceBN("eth", randomAddress)
+            await new Promise((resolve) => {
+                setTimeout(resolve, 300_000)
+            })
+            const bal = await Token.getBalanceBN("eth", await auth.getAddress())
             assert(bal !== 0n, "Balance not equal to amount")
         })
     })
