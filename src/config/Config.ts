@@ -1,5 +1,4 @@
 import { EnvOption, GlobalEnvOption } from "./types"
-import { getOrgInfo } from "../apis"
 import { Chain } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 
@@ -33,7 +32,6 @@ export async function configureEnvironment(option: GlobalEnvOption) {
         )
     }
 
-    globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
     if (globalEnvOption.gasSponsor) {
         globalEnvOption.gasSponsor.usePermit =
             globalEnvOption.gasSponsor.usePermit !== null || globalEnvOption.gasSponsor.usePermit !== undefined
