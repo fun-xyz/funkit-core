@@ -10,6 +10,7 @@ import {
 } from "./types"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { NFT, Token } from "../data"
+import { ErrorCode, InvalidParameterError } from "../errors"
 export const isERC721TransferParams = (obj: TransferParams): obj is ERC721TransferParams => {
     return "tokenId" in obj
 }
@@ -22,26 +23,32 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
     return "amount" in obj && (!("token" in obj) || Token.isNative(obj.token))
 }
 
-export const erc721TransferTransactionParams = (params: ERC721TransferParams): TransactionParams => {
+export const erc721TransferTransactionParams = async (params: ERC721TransferParams): Promise<TransactionParams> => {
     const { to, tokenId, token, from } = params
     let tokenAddr
     if (isAddress(token)) {
         tokenAddr = token
     } else {
-        tokenAddr = NFT.getAddress(token)
+        tokenAddr = await NFT.getAddress(token)
     }
     return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, tokenId])
 }
 
-export const erc20TransferTransactionParams = (params: ERC20TransferParams): TransactionParams => {
+export const erc20TransferTransactionParams = async (params: ERC20TransferParams): Promise<TransactionParams> => {
     const { to, amount, token } = params
-    let tokenAddr
-    if (isAddress(token)) {
-        tokenAddr = token
-    } else {
-        tokenAddr = Token.getAddress(token)
+    const tokenClass = new Token(token)
+    if (!tokenClass.address) {
+        throw new InvalidParameterError(
+            ErrorCode.TokenNotFound,
+            "Token address not found. Please check the token passed in.",
+            "wallet.transfer",
+            { params },
+            "Provide correct token.",
+            "https://docs.fun.xyz"
+        )
     }
-    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transfer", [to, amount])
+    const convertedAmount = BigInt(amount) * (await tokenClass.getDecimals())
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenClass.address, "transfer", [to, convertedAmount])
 }
 
 export const isERC20ApproveParams = (obj: ApproveParams): obj is ApproveERC20Params => {
