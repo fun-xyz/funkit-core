@@ -23,6 +23,11 @@ export class Operation {
     relatedOpIds?: Hex[]
     signatures?: Signature[]
     txid?: string
+    gasUsed?: string
+    gasUSD?: string
+    gasTotal?: string
+    executedBlockNumber?: number
+    blockTimeStamp?: number
 
     constructor(userOp: UserOperation, metadata: OperationMetadata) {
         this.userOp = userOp
@@ -42,6 +47,11 @@ export class Operation {
         this.relatedOpIds = metadata.relatedOpIds
         this.signatures = metadata.signatures
         this.txid = metadata.txid
+        this.gasUsed = metadata.gasUsed
+        this.gasUSD = metadata.gasUSD
+        this.gasTotal = metadata.gasTotal
+        this.executedBlockNumber = metadata.executedBlockNumber
+        this.blockTimeStamp = metadata.blockTimeStamp
     }
 
     static convertTypeToObject(op: Operation): Operation {
