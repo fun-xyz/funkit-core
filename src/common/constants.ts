@@ -74,8 +74,6 @@ export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
 export const AddressZero = padHex("0x", { size: 20 })
 export const HashZero = padHex("0x", { size: 32 })
 
-export const TEST_API_KEY = "localtest"
-
 // abis
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT["abi"]
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT["abi"]
