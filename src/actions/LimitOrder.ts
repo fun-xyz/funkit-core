@@ -15,6 +15,8 @@ export const LimitOrderTransactionParams = async (
     const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount, poolFee } = params
     const tokenInAddress = await new Token(tokenIn).getAddress()
     const tokenOutAddress = await new Token(tokenOut).getAddress()
+    const amountIn = await new Token(tokenIn).getDecimalAmount(tokenInAmount)
+    const amountOut = await new Token(tokenOut).getDecimalAmount(tokenOutAmount)
     const chain = await Chain.getChain({ chainIdentifier: chainId })
     const uniswapv3LimitOrderAddress = await chain.getAddress("uniswapv3LimitOrder")
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
@@ -25,7 +27,7 @@ export const LimitOrderTransactionParams = async (
                 components: [{ type: "uint24" }, { type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }]
             }
         ],
-        [[poolFee ?? 3000, tokenInAddress, tokenOutAddress, tokenInAmount, tokenOutAmount]]
+        [[poolFee ?? 3000, tokenInAddress, tokenOutAddress, amountIn, amountOut]]
     )
 
     const UniswapV3LimitOrderExecuteData = UNISWAP_V3_LIMIT_ORDER_CONTRACT_INTERFACE.encodeTransactionParams(

@@ -19,7 +19,7 @@ export interface LimitOrderConfig {
 }
 
 export const LimitOrderTest = (config: LimitOrderConfig) => {
-    const { prefund, prefundAmt } = config
+    const { prefundAmt } = config
 
     describe("Limit Order Test - Store Limit Order and Execute later", async function () {
         this.timeout(400_000)
@@ -41,7 +41,9 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
-            if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < 0.05) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+            }
         })
 
         it("swap baseToken(ETH) schedule", async () => {
