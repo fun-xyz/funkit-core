@@ -48,7 +48,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
 
         it("swap baseToken(ETH) schedule", async () => {
             console.log("Swap tokens", await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100)))
-            const userOp = await wallet.limitOrder(auth, await auth.getAddress(), {
+            const userOp = await wallet.limitSwapOrder(auth, await auth.getAddress(), {
                 tokenIn: config.baseToken,
                 tokenOut: config.outToken,
                 tokenInAmount: 100,

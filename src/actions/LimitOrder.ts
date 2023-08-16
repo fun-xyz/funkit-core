@@ -8,7 +8,7 @@ import {
 } from "../common"
 import { Chain, Token } from "../data"
 
-export const LimitOrderTransactionParams = async (
+export const limitSwapOrderTransactionParams = async (
     params: LimitOrderParam,
     chainId: string | Chain | number
 ): Promise<TransactionParams> => {
