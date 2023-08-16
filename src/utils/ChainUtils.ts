@@ -1,12 +1,10 @@
 import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
 import { sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
-import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
+import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
-
-const gasSpecificChain = { 137: 350_000_000_000 }
 
 export const isAddress = (address: string): boolean => {
     try {
@@ -28,7 +26,25 @@ export const fundWallet = async (
     const to = await wallet.getAddress()
     let txData
     if ((gasSpecificChain as any)[chainId]) {
-        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: (gasSpecificChain as any)[chainId] }
+        let maxPriorityFee, maxFee
+        try {
+            const {
+                standard: { maxPriorityFee: maxPriorityFee1, maxFee: maxFee1 }
+            } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+            maxPriorityFee = maxPriorityFee1
+            maxFee = maxFee1
+        } catch (e) {
+            maxPriorityFee = BigInt(gasSpecificChain[chainId].backupPriorityFee)
+            maxFee = BigInt(gasSpecificChain[chainId].backupFee)
+        }
+
+        txData = {
+            to,
+            data: "0x",
+            value: parseEther(`${value}`),
+            maxFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9)),
+            maxPriorityFeePerGas: BigInt(Math.floor(maxFee * 1e9))
+        }
     } else {
         txData = { to, data: "0x", value: parseEther(`${value}`) }
     }

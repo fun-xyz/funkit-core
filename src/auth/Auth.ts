@@ -181,10 +181,11 @@ export class Auth {
             })
         }
         let maxPriorityFee, maxFee
+
         if ((gasSpecificChain as any)[chainId]) {
             try {
                 const {
-                    standard: { maxPriorityFee1, maxFee1 }
+                    standard: { maxPriorityFee: maxPriorityFee1, maxFee: maxFee1 }
                 } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
                 maxPriorityFee = maxPriorityFee1
                 maxFee = maxFee1
