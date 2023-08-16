@@ -24,7 +24,7 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
 }
 
 export const erc721TransferTransactionParams = async (params: ERC721TransferParams): Promise<TransactionParams> => {
-    const { to, tokenId, token, from } = params
+    const { to, tokenId, collections: token, from } = params
     let tokenAddr
     if (isAddress(token)) {
         tokenAddr = token

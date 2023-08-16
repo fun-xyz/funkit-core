@@ -96,7 +96,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
                 amount: 1,
-                token: outTokenAddress
+                collections: outTokenAddress
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             const b3 = Token.getBalanceBN(outToken, await auth.getAddress())
