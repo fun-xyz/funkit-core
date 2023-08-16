@@ -88,6 +88,14 @@ export type SwapParam = {
     chainId: number
 }
 
+export type LimitOrderParam = {
+    tokenIn: string
+    tokenOut: string
+    tokenInAmount: number
+    tokenOutAmount: number
+    poolFee?: number
+}
+
 export interface OneInchSwapParams extends SwapParam {
     disableEstimate?: boolean
     allowPartialFill?: boolean

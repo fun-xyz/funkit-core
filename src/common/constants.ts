@@ -17,6 +17,7 @@ import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
 import TOKEN_PRICE_ORACLE_CONTRACT from "../abis/TokenPriceOracle.json"
 import UNISWAPV2FACTORY_CONTRACT from "../abis/UniswapV2Factory.json"
 import UNISWAPV2ROUTER02_CONTRACT from "../abis/UniswapV2Router02.json"
+import UNISWAP_V3_LIMIT_ORDER_CONTRACT from "../abis/UniswapV3LimitOrder.json"
 import UNIV3_FACTORY from "../abis/univ3factory.json"
 import UNIV3_QUOTER from "../abis/univ3quoter.json"
 import UNIV3_ROUTER from "../abis/univ3router.json"
@@ -86,6 +87,7 @@ export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT["abi"]
 export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT["abi"]
 export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
+export const UNISWAP_V3_LIMIT_ORDER_ABI = UNISWAP_V3_LIMIT_ORDER_CONTRACT["abi"]
 export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
 export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
 export const ROLE_BASED_ACCESS_CONTROL_ABI = ROLE_BASED_ACCESS_CONTROL_CONTRACT["abi"]
@@ -105,6 +107,7 @@ export const UNISWAPV2FACTORY_INTERFACE = new ContractInterface(UNISWAPV2FACTORY
 export const UNISWAPV2ROUTER02_INTERFACE = new ContractInterface(UNISWAPV2ROUTER02_ABI)
 export const RBAC_CONTRACT_INTERFACE = new ContractInterface(ROLE_BASED_ACCESS_CONTROL_ABI)
 export const USER_AUTHENTICATION_CONTRACT_INTERFACE = new ContractInterface(USER_AUTHENTICATION_ABI)
+export const UNISWAP_V3_LIMIT_ORDER_CONTRACT_INTERFACE = new ContractInterface(UNISWAP_V3_LIMIT_ORDER_ABI)
 
 export const CONTRACT_ADDRESSES = {
     approveAndExecAddress: APPROVE_AND_EXEC_CONTRACT["addresses"],
@@ -117,6 +120,7 @@ export const CONTRACT_ADDRESSES = {
     userAuthAddress: USER_AUTHENTICATION_CONTRACT["addresses"],
     rbacAddress: ROLE_BASED_ACCESS_CONTROL_CONTRACT["addresses"],
     feeOracle: FEE_PERCENT_ORACLE_CONTRACT["addresses"],
+    uniswapv3LimitOrder: UNISWAP_V3_LIMIT_ORDER_CONTRACT["addresses"],
     univ3factory: UNIV3_FACTORY["addresses"],
     univ3quoter: UNIV3_QUOTER["addresses"],
     univ3router: UNIV3_ROUTER["addresses"],
