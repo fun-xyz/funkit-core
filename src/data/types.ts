@@ -119,4 +119,9 @@ export type OperationMetadata = {
     relatedOpIds?: Hex[]
     signatures?: Signature[]
     txid?: string
+    gasUsed?: string
+    gasUSD?: string
+    gasTotal?: string
+    executedBlockNumber?: number
+    executedBlockTimeStamp?: number
 }
