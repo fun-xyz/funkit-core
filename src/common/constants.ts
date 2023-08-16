@@ -125,3 +125,11 @@ export const CONTRACT_ADDRESSES = {
     TestNFT: TEST_NFT_CONTRACT["addresses"],
     sponsorAddress: { "5": "0x175C5611402815Eba550Dad16abd2ac366a63329" }
 }
+
+export const gasSpecificChain = {
+    "137": {
+        gasStationUrl: "https://gasstation.polygon.technology/v2",
+        backupPriorityFee: "1000", // 1000 gwei
+        backupFee: "200" // 200 gwei
+    }
+}
