@@ -32,7 +32,7 @@ export class TokenSponsor extends Sponsor {
         if (!this.sponsorAddress) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             if (TOKEN_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
-                this.sponsorAddress = await chain.getAddress("sponsorAddress")
+                this.sponsorAddress = await chain.getAddress("funTokenSponsorAddress")
             } else {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,

@@ -49,7 +49,8 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         it("transfer baseToken(ETH) schedule", async () => {
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: randomAddress,
-                amount
+                amount,
+                token: "eth"
             })
             opId = await wallet.scheduleOperation(auth, userOp)
             const operation = await getOps([opId], config.chainId.toString())

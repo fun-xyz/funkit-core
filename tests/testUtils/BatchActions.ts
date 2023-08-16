@@ -61,11 +61,13 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
             const outTokenAddress = await Token.getAddress(outToken)
-            const txParams = randomAddresses.map((randomAddress) =>
-                erc20ApproveTransactionParams({
-                    spender: randomAddress,
-                    amount: approveAmount,
-                    token: outTokenAddress
+            const txParams = await Promise.all(
+                randomAddresses.map((randomAddress) => {
+                    return erc20ApproveTransactionParams({
+                        spender: randomAddress,
+                        amount: approveAmount,
+                        token: outTokenAddress
+                    })
                 })
             )
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), txParams)
@@ -88,11 +90,13 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const approveAmount = randInt(10000)
             const outTokenAddress = await Token.getAddress(outToken)
 
-            const txParams = randomAddresses.map((randomAddress) =>
-                erc20ApproveTransactionParams({
-                    spender: randomAddress,
-                    amount: approveAmount,
-                    token: outTokenAddress
+            const txParams = await Promise.all(
+                randomAddresses.map((randomAddress) => {
+                    return erc20ApproveTransactionParams({
+                        spender: randomAddress,
+                        amount: approveAmount,
+                        token: outTokenAddress
+                    })
                 })
             )
             try {
@@ -115,7 +119,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 chainId: config.chainId
             })
             const outTokenAddress = await Token.getAddress(outToken)
-            const approveParams = erc20ApproveTransactionParams({
+            const approveParams = await erc20ApproveTransactionParams({
                 spender: randomAddress,
                 amount: approveAmount,
                 token: outTokenAddress
@@ -276,13 +280,15 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
             const outTokenAddress = await Token.getAddress(outToken)
-            const txParams = randomAddresses.map((randomAddress) => {
-                return erc20ApproveTransactionParams({
-                    spender: randomAddress,
-                    amount: approveAmount,
-                    token: outTokenAddress
+            const txParams = await Promise.all(
+                randomAddresses.map((randomAddress) => {
+                    return erc20ApproveTransactionParams({
+                        spender: randomAddress,
+                        amount: approveAmount,
+                        token: outTokenAddress
+                    })
                 })
-            })
+            )
             const operation1 = await wallet.createBatchOperation(auth1, await groupId, txParams)
 
             const operation = await wallet.getOperation(operation1.opId!)

@@ -2,8 +2,7 @@ import { expect } from "chai"
 import { Hex } from "viem"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data"
-import { fundWallet, isContract, randomBytes } from "../../src/utils/ChainUtils"
+import { fundWallet, randomBytes } from "../../src/utils/ChainUtils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
@@ -54,14 +53,12 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         it("wallet.create should create a wallet", async () => {
             if (config.testCreate) {
                 const wallet1 = new FunWallet({ users: [{ userId: await auth.getAddress() }], uniqueId: randomBytes(32) })
-                const walletAddress = await wallet1.getAddress()
-                const chain = await Chain.getChain({ chainIdentifier: config.chainId })
-                let iscontract = await isContract(walletAddress, await chain.getClient())
-                expect(iscontract).to.be.false
+                let isContract = await wallet1.getDeploymentStatus()
+                expect(isContract).to.be.false
                 await fundWallet(auth, wallet1, config.prefundAmt ? config.prefundAmt : 0.5)
                 await wallet1.create(auth, await auth.getAddress())
-                iscontract = await isContract(walletAddress, await chain.getClient())
-                expect(iscontract).to.be.true
+                isContract = await wallet1.getDeploymentStatus()
+                expect(isContract).to.be.true
             }
         })
 

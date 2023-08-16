@@ -18,25 +18,20 @@ export interface ActionData {
     options: EnvOption
 }
 
-// Transfer Param types
-export type TransferParam = {
-    to: Address
-}
-
-export interface ERC721TransferParams extends TransferParam {
+export interface ERC721TransferParams {
     tokenId: number
     token: string
     from: Address
-}
-export interface NativeTransferParams extends TransferParam {
-    amount: number
+    to: Address
 }
 
-export interface ERC20TransferParams extends NativeTransferParams {
+export interface TokenTransferParams {
     token: string
+    amount: number
+    to: Address
 }
 
-export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
+export type TransferParams = TokenTransferParams | ERC721TransferParams
 
 // Approval Param types
 export type ApproveParam = {

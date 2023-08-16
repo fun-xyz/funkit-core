@@ -52,7 +52,7 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     return 18
 }
 
-export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
+export const oneInchTransactionParams = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
     const supportedChains = [1, 137, 31337, 36865]
     if (!supportedChains.includes(swapParams.chainId)) {
         throw new InvalidParameterError(

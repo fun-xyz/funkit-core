@@ -9,18 +9,16 @@ import {
     requestUnstakeTransactionParams,
     stakeTransactionParams
 } from "./Stake"
-import { OneInchTransactionParams, uniswapV2SwapTransactionParams, uniswapV3SwapTransactionParams } from "./Swap"
+import { oneInchTransactionParams, uniswapV2SwapTransactionParams, uniswapV3SwapTransactionParams } from "./Swap"
 import {
     erc20ApproveTransactionParams,
-    erc20TransferTransactionParams,
     erc721ApproveTransactionParams,
     erc721TransferTransactionParams,
-    ethTransferTransactionParams,
     isERC20ApproveParams,
-    isERC20TransferParams,
     isERC721ApproveParams,
     isERC721TransferParams,
-    isNativeTransferParams
+    isTokenTransferParams,
+    tokenTransferTransactionParams
 } from "./Token"
 import {
     AddOwnerParams,
@@ -65,7 +63,7 @@ export abstract class FirstClassActions {
         const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let transactionParams: TransactionParams
         if (oneInchSupported.includes(params.chainId)) {
-            transactionParams = await OneInchTransactionParams(params as OneInchSwapParams)
+            transactionParams = await oneInchTransactionParams(params as OneInchSwapParams)
         } else if (uniswapV3Supported.includes(params.chainId)) {
             transactionParams = await uniswapV3SwapTransactionParams(params as UniswapParams)
         } else {
@@ -83,10 +81,8 @@ export abstract class FirstClassActions {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
             transactionParams = await erc721TransferTransactionParams(params)
-        } else if (isERC20TransferParams(params)) {
-            transactionParams = await erc20TransferTransactionParams(params)
-        } else if (isNativeTransferParams(params)) {
-            transactionParams = ethTransferTransactionParams(params)
+        } else if (isTokenTransferParams(params)) {
+            transactionParams = await tokenTransferTransactionParams(params)
         } else {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,

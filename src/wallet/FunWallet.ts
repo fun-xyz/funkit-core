@@ -269,6 +269,11 @@ export class FunWallet extends FirstClassActions {
         return users
     }
 
+    async getDeploymentStatus(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        return await chain.addressIsContract(await this.getAddress())
+    }
+
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
@@ -615,7 +620,7 @@ export class FunWallet extends FirstClassActions {
         const rejectOperation = await this.transfer(
             auth,
             groupId,
-            { to: await this.getAddress(), amount: 0 },
+            { to: await this.getAddress(), amount: 0, token: "eth" },
             { ...txOptions, skipDBAction: true, nonce: BigInt(operation.userOp.nonce) }
         )
         if (rejectionMessage) rejectOperation.message = rejectionMessage

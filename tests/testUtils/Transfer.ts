@@ -55,7 +55,8 @@ export const TransferTest = (config: TransferTestConfig) => {
         after(async function () {
             await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: (Number(await Token.getBalance(baseToken, await wallet.getAddress())) * 4) / 5
+                amount: (Number(await Token.getBalance(baseToken, await wallet.getAddress())) * 4) / 5,
+                token: "eth"
             })
         })
 
@@ -67,7 +68,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b2 = Token.getBalance(baseToken, walletAddress)
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: randomAddress,
-                amount: (Number(await Token.getBalance(baseToken, walletAddress)) * 4) / 5
+                amount: (Number(await Token.getBalance(baseToken, walletAddress)) * 4) / 5,
+                token: "eth"
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             const b3 = Token.getBalance(baseToken, randomAddress)
@@ -133,7 +135,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001
+                        amount: config.amount ? config.amount : 0.001,
+                        token: "eth"
                     },
                     options
                 )
@@ -178,7 +181,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001
+                        amount: config.amount ? config.amount : 0.001,
+                        token: "eth"
                     },
                     options
                 )
@@ -223,7 +227,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001
+                        amount: config.amount ? config.amount : 0.001,
+                        token: "eth"
                     },
                     options
                 )
@@ -257,7 +262,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                     }
                 }
                 try {
-                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    await wallet.transfer(
+                        auth,
+                        await auth.getAddress(),
+                        { to: await wallet.getAddress(), amount: 0.001, token: "eth" },
+                        options
+                    )
                     expect.fail("Should throw error")
                 } catch (error: any) {
                     expect(error.message).to.include("EnvOption.fee.token or EnvOption.gasSponsor.token is required")
@@ -272,7 +282,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                     }
                 }
                 try {
-                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    await wallet.transfer(
+                        auth,
+                        await auth.getAddress(),
+                        { to: await wallet.getAddress(), amount: 0.001, token: "eth" },
+                        options
+                    )
                     expect.fail("Should throw error")
                 } catch (error: any) {
                     expect(error.message).to.include("EnvOption.fee.amount or EnvOption.fee.gasPercent is required")
@@ -288,7 +303,12 @@ export const TransferTest = (config: TransferTestConfig) => {
                     }
                 }
                 try {
-                    await wallet.transfer(auth, await auth.getAddress(), { to: await wallet.getAddress(), amount: 0.001 }, options)
+                    await wallet.transfer(
+                        auth,
+                        await auth.getAddress(),
+                        { to: await wallet.getAddress(), amount: 0.001, token: "eth" },
+                        options
+                    )
                     expect.fail("Should throw error")
                 } catch (error: any) {
                     expect(error.message).to.include("GasPercent is only valid for native tokens")
@@ -346,7 +366,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001
+                amount: config.amount ? config.amount : 0.001,
+                token: "eth"
             })
 
             // wait for DDB to replicate the operation data
@@ -380,7 +401,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001
+                amount: config.amount ? config.amount : 0.001,
+                token: "eth"
             })
 
             // auth1 executes it without auth2 signature
@@ -409,7 +431,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001
+                amount: config.amount ? config.amount : 0.001,
+                token: "eth"
             })
 
             // wait for DDB to replicate the operation data
@@ -458,7 +481,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001
+                amount: config.amount ? config.amount : 0.001,
+                token: "eth"
             })
 
             // wait for DDB to replicate the operation data
