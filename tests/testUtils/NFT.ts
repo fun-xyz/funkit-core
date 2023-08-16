@@ -23,7 +23,7 @@ export const NFTTest = (config: NFTTestConfig) => {
     const { prefund } = config
     let nftAddress: Address
 
-    describe("NFT Tests", function () {
+    describe.only("NFT Tests", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000_000)
         let auth: Auth
@@ -66,7 +66,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 try {
                     const userOp = await wallet1.transfer(auth, await auth.getAddress(), {
                         to: await wallet2.getAddress(),
-                        collections: nftAddress,
+                        collection: nftAddress,
                         tokenId: nftId,
                         from: await wallet1.getAddress()
                     })
@@ -85,7 +85,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 try {
                     const userOp = await wallet2.transfer(auth, await auth.getAddress(), {
                         to: await wallet1.getAddress(),
-                        collections: nftAddress,
+                        collection: nftAddress,
                         tokenId: nftId,
                         from: await wallet2.getAddress()
                     })
