@@ -96,7 +96,7 @@ export abstract class FirstClassActions {
         if (isERC721TransferParams(params)) {
             transactionParams = await erc721TransferTransactionParams(params)
         } else if (isERC20TransferParams(params)) {
-            transactionParams = await erc20TransferTransactionParams(params)
+            transactionParams = await erc20TransferTransactionParams(params, txOptions)
         } else if (isNativeTransferParams(params)) {
             transactionParams = ethTransferTransactionParams(params)
         } else {

@@ -9,6 +9,7 @@ import {
     TransferParams
 } from "./types"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
+import { EnvOption } from "../config"
 import { NFT, Token } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 export const isERC721TransferParams = (obj: TransferParams): obj is ERC721TransferParams => {
@@ -34,10 +35,14 @@ export const erc721TransferTransactionParams = async (params: ERC721TransferPara
     return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, tokenId])
 }
 
-export const erc20TransferTransactionParams = async (params: ERC20TransferParams): Promise<TransactionParams> => {
+export const erc20TransferTransactionParams = async (
+    params: ERC20TransferParams,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
     const { to, amount, token } = params
     const tokenClass = new Token(token)
-    if (!tokenClass.address) {
+    const addr = await tokenClass.getAddress(txOptions)
+    if (!addr) {
         throw new InvalidParameterError(
             ErrorCode.TokenNotFound,
             "Token address not found. Please check the token passed in.",
@@ -47,8 +52,8 @@ export const erc20TransferTransactionParams = async (params: ERC20TransferParams
             "https://docs.fun.xyz"
         )
     }
-    const convertedAmount = BigInt(amount) * (await tokenClass.getDecimals())
-    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenClass.address, "transfer", [to, convertedAmount])
+    const convertedAmount = await tokenClass.getDecimalAmount(amount, txOptions)
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(addr, "transfer", [to, convertedAmount])
 }
 
 export const isERC20ApproveParams = (obj: ApproveParams): obj is ApproveERC20Params => {

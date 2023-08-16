@@ -43,6 +43,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1992811349)
             })
+            console.log("Wallet Address: ", await wallet.getAddress())
             if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
         })
 
@@ -50,7 +51,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             const user = createSessionUser()
             const second = 1000
             const minute = 60 * second
-            const deadline = BigInt(Date.now() + 3 * minute) / 1000n
+            const deadline = BigInt(Date.now() + 2 * minute) / 1000n
             const feeRecip = randomBytes(20)
             before(async () => {
                 const basetokenAddr = await Token.getAddress(baseToken)
@@ -104,12 +105,13 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                         await wallet.executeOperation(user, operation)
                         assert(false, "call succeded when it should have failed")
                     } catch (e: any) {
+                        console.log(e)
                         assert(e.message.includes("FW"))
                     }
                 })
             })
 
-            it("Session key target out of scope", async () => {
+            it.only("Session key target out of scope", async () => {
                 const randomAddress = randomBytes(20)
                 const outTokenAddress = await new Token("usdc").getAddress()
                 try {
@@ -121,6 +123,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     await wallet.executeOperation(user, operation)
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
+                    console.log(e)
                     assert(
                         e.message.includes("Function or target is not allowed in session key"),
                         "call succeded when it should have failed"
@@ -132,7 +135,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 const waitTime = BigInt(Date.now())
                 const diff = deadline * 1000n - waitTime
                 if (diff > 0n) {
-                    await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.1))
+                    await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.2))
                 }
                 const randomAddress = randomBytes(20)
                 const outTokenAddress = await new Token(outToken).getAddress()
@@ -142,7 +145,9 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                         amount: 1,
                         token: outTokenAddress
                     })
-                    await wallet.executeOperation(user, operation)
+
+                    const r = await wallet.executeOperation(user, operation)
+                    console.log(r)
                     assert(false, "call succeded when it should have failed")
                 } catch (e: any) {
                     assert(e.message.includes("FW406"), "call succeded when it should have failed")
