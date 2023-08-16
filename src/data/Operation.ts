@@ -27,7 +27,7 @@ export class Operation {
     gasUSD?: string
     gasTotal?: string
     executedBlockNumber?: number
-    blockTimeStamp?: number
+    executedBlockTimeStamp?: number
 
     constructor(userOp: UserOperation, metadata: OperationMetadata) {
         this.userOp = userOp
@@ -51,7 +51,7 @@ export class Operation {
         this.gasUSD = metadata.gasUSD
         this.gasTotal = metadata.gasTotal
         this.executedBlockNumber = metadata.executedBlockNumber
-        this.blockTimeStamp = metadata.blockTimeStamp
+        this.executedBlockTimeStamp = metadata.executedBlockTimeStamp
     }
 
     static convertTypeToObject(op: Operation): Operation {

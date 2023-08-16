@@ -123,5 +123,5 @@ export type OperationMetadata = {
     gasUSD?: string
     gasTotal?: string
     executedBlockNumber?: number
-    blockTimeStamp?: number
+    executedBlockTimeStamp?: number
 }
