@@ -66,7 +66,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 try {
                     const userOp = await wallet1.transfer(auth, await auth.getAddress(), {
                         to: await wallet2.getAddress(),
-                        token: nftAddress,
+                        collection: nftAddress,
                         tokenId: nftId,
                         from: await wallet1.getAddress()
                     })
@@ -85,7 +85,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 try {
                     const userOp = await wallet2.transfer(auth, await auth.getAddress(), {
                         to: await wallet1.getAddress(),
-                        token: nftAddress,
+                        collection: nftAddress,
                         tokenId: nftId,
                         from: await wallet2.getAddress()
                     })

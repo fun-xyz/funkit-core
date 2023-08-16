@@ -24,12 +24,12 @@ export const isNativeTransferParams = (obj: TransferParams): obj is NativeTransf
 }
 
 export const erc721TransferTransactionParams = async (params: ERC721TransferParams): Promise<TransactionParams> => {
-    const { to, tokenId, token, from } = params
+    const { to, tokenId, collection, from } = params
     let tokenAddr
-    if (isAddress(token)) {
-        tokenAddr = token
+    if (isAddress(collection)) {
+        tokenAddr = collection
     } else {
-        tokenAddr = await NFT.getAddress(token)
+        tokenAddr = await NFT.getAddress(collection)
     }
     return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, tokenId])
 }

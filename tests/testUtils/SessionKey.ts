@@ -99,7 +99,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                         const operation = await wallet.transfer(user, await user.getAddress(), {
                             to: randomAddress,
                             amount: 1,
-                            token: outTokenAddress
+                            collection: outTokenAddress
                         })
                         await wallet.executeOperation(user, operation)
                         assert(false, "call succeded when it should have failed")
@@ -116,7 +116,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     const operation = await wallet.transfer(user, await user.getAddress(), {
                         to: randomAddress,
                         amount: 1,
-                        token: outTokenAddress
+                        collection: outTokenAddress
                     })
                     await wallet.executeOperation(user, operation)
                     assert(false, "call succeded when it should have failed")
