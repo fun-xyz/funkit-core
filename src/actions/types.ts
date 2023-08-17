@@ -20,7 +20,7 @@ export interface ActionData {
 
 export interface ERC721TransferParams {
     tokenId: number
-    token: string
+    collection: string
     from?: Address
     to: Address
 }
@@ -82,6 +82,14 @@ export type SwapParam = {
     slippage?: number
     returnAddress: Address
     chainId: number
+}
+
+export type LimitOrderParam = {
+    tokenIn: string
+    tokenOut: string
+    tokenInAmount: number
+    tokenOutAmount: number
+    poolFee?: number
 }
 
 export interface OneInchSwapParams extends SwapParam {

@@ -7,20 +7,21 @@ import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
-export interface AutomatedActionsConfig {
+export interface LimitOrderConfig {
     chainId: number
     outToken: string
     baseToken: string
+    prefund: boolean
     index?: number
     amount?: number
     prefundAmt?: number
     numRetry?: number
 }
 
-export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
-    const { prefundAmt, baseToken } = config
+export const LimitOrderTest = (config: LimitOrderConfig) => {
+    const { prefundAmt } = config
 
-    describe("Automated Actions Test - Store in DB and execute later", async function () {
+    describe("Limit Order Test - Store Limit Order and Execute later", async function () {
         this.timeout(400_000)
         let auth: Auth
         let wallet: FunWallet
@@ -40,21 +41,18 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
-
-            if (!(await wallet.getDeploymentStatus())) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
-            }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < 0.05) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
             }
         })
 
-        it("transfer baseToken(ETH) schedule", async () => {
-            const balance = prefundAmt ? prefundAmt : 1
-            const userOp = await wallet.transfer(auth, await auth.getAddress(), {
-                to: await auth.getAddress(),
-                amount: balance - 0.1,
-                token: "eth"
+        it("swap baseToken(ETH) schedule", async () => {
+            console.log("Swap tokens", await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100)))
+            const userOp = await wallet.limitSwapOrder(auth, await auth.getAddress(), {
+                tokenIn: config.baseToken,
+                tokenOut: config.outToken,
+                tokenInAmount: 100,
+                tokenOutAmount: 1
             })
             opId = await wallet.scheduleOperation(auth, userOp)
             console.log("op Id", opId)
@@ -64,11 +62,12 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         })
 
         it("transfer baseToken(ETH) executed", async () => {
+            const balBefore = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
             await new Promise((resolve) => {
                 setTimeout(resolve, 300_000)
             })
-            const bal = await Token.getBalanceBN("eth", await auth.getAddress())
-            assert(bal !== 0n, "Balance not equal to amount")
+            const balAfter = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
+            assert(balAfter > balBefore, "Swap did not execute: Out token balance should be greater than before")
         })
     })
 }
