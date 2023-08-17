@@ -38,24 +38,31 @@ export const BridgeTest = (config: BridgeTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
+                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1992811349)
             })
             if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < config.walletCreationCost) {
                 await fundWallet(auth, wallet, config.walletCreationCost)
             }
             console.log("Auth", await auth.getAddress())
-            await auth.sendTx(
-                await erc20TransferTransactionParams({
-                    to: await wallet.getAddress(),
-                    amount: 1,
-                    token: config.fromToken
-                })
-            )
+            if (Number(await new Token(config.fromToken).getBalance(await wallet.getAddress())) < config.amountToBridge) {
+                await auth.sendTx(
+                    await erc20TransferTransactionParams({
+                        to: await wallet.getAddress(),
+                        amount: config.amountToBridge,
+                        token: config.fromToken
+                    })
+                )
+            }
         })
 
-        it(`bridge usdc from ${(await Chain.getChain({ chainIdentifier: config.fromChainId })).getChainName()} to ${(
-            await Chain.getChain({ chainIdentifier: config.toChainId })
-        ).getChainName()}`, async () => {
+        after(async function () {
+            await wallet.transfer(auth, await auth.getAddress(), {
+                to: await auth.getAddress(),
+                amount: (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) * 4) / 5
+            })
+        })
+
+        it("bridge usdc source to destination chain", async () => {
             const userOp = await wallet.bridge(auth, await auth.getAddress(), {
                 fromChain: await Chain.getChain({ chainIdentifier: config.fromChainId }),
                 toChain: await Chain.getChain({ chainIdentifier: config.toChainId }),

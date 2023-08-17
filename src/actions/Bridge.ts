@@ -2,12 +2,15 @@ import fetch from "node-fetch"
 import { Address } from "viem"
 import { BridgeParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, TransactionParams } from "../common"
+import { Token } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
-const SOCKET_API_KEY = "04dd4572-e22b-4bd6-beb9-feb73d31d009" // SOCKET PUBLIC API KEY - can swap for our key in prod
+const SOCKET_API_KEY = "713e3474-9371-4515-a84e-08b99fd176f0" // SOCKET PUBLIC API KEY - can swap for our key in prod
 const SOCKET_BASE_API_URL = "https://api.socket.tech/v2/"
 
 export const bridgeTransactionParams = async (params: BridgeParams, walletAddress: Address): Promise<TransactionParams> => {
-    const { recipient, fromChain, toChain, fromToken, toToken, amount, sort } = params
+    const { recipient, fromChain, toChain, fromToken, toToken, sort } = params
+    const tokenObj = new Token(fromToken)
+    const amount = await tokenObj.getDecimalAmount(params.amount)
     if (!recipient) {
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
@@ -46,12 +49,12 @@ async function getRoute(
     toChain: string,
     fromToken: string,
     toToken: string,
-    amount: number,
+    amount: bigint,
     sort?: string
 ): Promise<JSON> {
     const SOCKET_API_ENDPOINT =
         `quote?fromChainId=${fromChain}&fromTokenAddress=${fromToken}&toChainId=${toChain}` +
-        `& toTokenAddress=${toToken}&fromAmount=${amount}&userAddress=${walletAddress}&` +
+        `&toTokenAddress=${toToken}&fromAmount=${amount}&userAddress=${walletAddress}&` +
         `uniqueRoutesPerBridge=${true}&sort=${sort ?? "output"}&singleTxOnly=${true}`
     const response = await fetch(SOCKET_BASE_API_URL + SOCKET_API_ENDPOINT, {
         method: "GET",
@@ -77,6 +80,7 @@ async function getRoute(
 }
 
 async function buildTx(route: any): Promise<any> {
+    console.log("Route: ", route)
     const API_ENDPOINT = "build-tx"
     const response = await fetch(SOCKET_BASE_API_URL + API_ENDPOINT, {
         method: "POST",
@@ -92,7 +96,7 @@ async function buildTx(route: any): Promise<any> {
 }
 
 async function checkAllowance(chainId: string, sender: Address, allowanceTarget: string, token: string): Promise<any> {
-    const API_ENDPOINT = `approval/check-allowance?chainID=${chainId}&owner=${sender}& allowanceTarget=${allowanceTarget}&tokenAddress=${token}`
+    const API_ENDPOINT = `approval/check-allowance?chainID=${chainId}&owner=${sender}&allowanceTarget=${allowanceTarget}&tokenAddress=${token}`
     const response = await fetch(SOCKET_BASE_API_URL + API_ENDPOINT, {
         method: "GET",
         headers: {
@@ -102,11 +106,21 @@ async function checkAllowance(chainId: string, sender: Address, allowanceTarget:
         }
     })
     const json = await response.json()
+    if (!json.result.value) {
+        throw new ResourceNotFoundError(
+            ErrorCode.BridgeAllowanceDataNotFound,
+            "Unable to get allowance data",
+            "wallet.bridge.checkAllowance",
+            { chainId, sender, allowanceTarget, token },
+            "Make sure the chainId, sender, allowanceTarget, and token are correct",
+            "https://docs.fun.xyz"
+        )
+    }
     return json
 }
 
-async function buildApproveTx(chainId: string, sender: Address, allowanceTarget: string, token: string, amount: number): Promise<any> {
-    const API_ENDPOINT = `build-tx?chainID=${chainId}&owner=${sender}&allowanceTarget=${allowanceTarget}&tokenAddress=${token}&amount=${amount}`
+async function buildApproveTx(chainId: string, sender: Address, allowanceTarget: string, token: string, amount: bigint): Promise<any> {
+    const API_ENDPOINT = `approval/build-tx?chainID=${chainId}&owner=${sender}&allowanceTarget=${allowanceTarget}&tokenAddress=${token}&amount=${amount}`
     const response = await fetch(SOCKET_BASE_API_URL + API_ENDPOINT, {
         method: "GET",
         headers: {

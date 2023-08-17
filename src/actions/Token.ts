@@ -47,7 +47,7 @@ export const erc20TransferTransactionParams = async (params: ERC20TransferParams
             "https://docs.fun.xyz"
         )
     }
-    const convertedAmount = BigInt(amount) * (await tokenClass.getDecimals())
+    const convertedAmount = await tokenClass.getDecimalAmount(amount)
     return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenClass.address, "transfer", [to, convertedAmount])
 }
 

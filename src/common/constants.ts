@@ -133,7 +133,7 @@ export const CONTRACT_ADDRESSES = {
 export const gasSpecificChain = {
     "137": {
         gasStationUrl: "https://gasstation.polygon.technology/v2",
-        backupPriorityFee: "1000", // 1000 gwei
+        backupPriorityFee: "1500", // 1000 gwei
         backupFee: "200" // 200 gwei
     }
 }

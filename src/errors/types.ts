@@ -54,5 +54,6 @@ export enum ErrorCode {
     Unauthorized = "Unauthorized",
     RequestLimitExceeded = "RequestLimitExceeded",
     BridgeRouteNotFound = "BridgeRouteNotFound",
-    BridgeApproveTxDataNotFound = "BridgeApproveTxDataNotFound"
+    BridgeApproveTxDataNotFound = "BridgeApproveTxDataNotFound",
+    BridgeAllowanceDataNotFound = "BridgeAllowanceDataNotFound"
 }
