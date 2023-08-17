@@ -11,7 +11,6 @@ import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
 import "../../fetch-polyfill"
-
 export interface GaslessSponsorTestConfig {
     chainId: number
     inToken: string

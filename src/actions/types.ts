@@ -187,3 +187,13 @@ export type RemoveGroupParams = {
     groupId: Hex
     chainId: number
 }
+
+export type BridgeParams = {
+    fromChain: Chain
+    toChain: Chain
+    fromToken: string
+    toToken: string
+    amount: number
+    sort?: "output" | "gas" | "time"
+    recipient?: Address
+}

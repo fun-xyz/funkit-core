@@ -52,5 +52,7 @@ export enum ErrorCode {
     ServerConnectionError = "ServerConnectionError",
     UserOpFailureError = "UserOpFailureError",
     Unauthorized = "Unauthorized",
-    RequestLimitExceeded = "RequestLimitExceeded"
+    RequestLimitExceeded = "RequestLimitExceeded",
+    BridgeRouteNotFound = "BridgeRouteNotFound",
+    BridgeApproveTxDataNotFound = "BridgeApproveTxDataNotFound"
 }
