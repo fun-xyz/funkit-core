@@ -93,9 +93,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
-            if (!params.from) {
-                params.from = await this.getAddress()
-            }
+            params.from = params.from ? params.from : await this.getAddress()
             transactionParams = await erc721TransferTransactionParams(params)
         } else if (isTokenTransferParams(params)) {
             if (params.from) {
@@ -124,7 +122,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams
         if (isERC20ApproveParams(params)) {
-            transactionParams = await erc20ApproveTransactionParams(params)
+            transactionParams = await erc20ApproveTransactionParams(params, txOptions)
         } else if (isERC721ApproveParams(params)) {
             transactionParams = await erc721ApproveTransactionParams(params)
         } else {
@@ -147,7 +145,6 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const transactionParams = await stakeTransactionParams(params)
-        this.getAddress()
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 

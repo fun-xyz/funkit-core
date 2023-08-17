@@ -68,7 +68,7 @@ export class FunWallet extends FirstClassActions {
         )
 
         if (uniqueId) {
-            this.walletUniqueId = uniqueId as Hex
+            this.walletUniqueId = uniqueId
         } else {
             this.address = walletAddr
         }

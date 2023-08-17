@@ -1,4 +1,4 @@
-import { Hex, isAddress, parseEther, parseUnits } from "viem"
+import { Hex, isAddress, parseEther } from "viem"
 import { ApproveERC20Params, ApproveERC721Params, ApproveParams, ERC721TransferParams, TokenTransferParams, TransferParams } from "./types"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -81,10 +81,13 @@ export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721P
     return "tokenId" in obj && "token" in obj
 }
 
-export const erc20ApproveTransactionParams = async (params: ApproveERC20Params): Promise<TransactionParams> => {
+export const erc20ApproveTransactionParams = async (
+    params: ApproveERC20Params,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
     const { spender, amount, token } = params
     const tokenObj = new Token(token)
-    const convertedAmount = parseUnits(`${amount}`, Number(await tokenObj.getDecimals()))
+    const convertedAmount = await tokenObj.getDecimalAmount(amount, txOptions)
     return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(token, "approve", [spender, convertedAmount])
 }
 
