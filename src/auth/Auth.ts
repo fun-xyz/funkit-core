@@ -81,7 +81,17 @@ export class Auth {
             this.client = convertProviderToClient({ provider: authInput.provider })
         } else if (authInput.signer) {
             this.client = convertSignerToClient({ signer: authInput.signer })
-        } else if (authInput.privateKey && isHex(authInput.privateKey)) {
+        } else if (authInput.privateKey) {
+            if (!isHex(authInput.privateKey)) {
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameter,
+                    "privateKey is not a valid hex string",
+                    "Auth.constructor",
+                    authInput.privateKey,
+                    "Provide valid hex string as privateKey",
+                    "https://docs.fun.xyz/how-to-guides/configure-account"
+                )
+            }
             this.signer = privateKeyToAccount(authInput.privateKey as Hex)
         } else {
             throw new InvalidParameterError(

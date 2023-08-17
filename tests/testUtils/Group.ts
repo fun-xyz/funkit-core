@@ -12,7 +12,7 @@ import "../../fetch-polyfill"
 export interface GroupTestConfig {
     chainId: number
     index?: number
-    prefundAmt?: number
+    prefundAmt: number
     baseToken: string
 }
 

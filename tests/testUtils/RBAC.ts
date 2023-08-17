@@ -11,7 +11,7 @@ import "../../fetch-polyfill"
 
 export interface RBACTestConfig {
     chainId: number
-    prefundAmt?: number
+    prefundAmt: number
     index?: number
     baseToken: string
 }

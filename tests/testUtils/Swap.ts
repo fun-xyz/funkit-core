@@ -18,7 +18,7 @@ export interface SwapTestConfig {
     baseToken: string
     amount?: number
     index?: number
-    prefundAmt?: number
+    prefundAmt: number
     mint?: boolean
     slippage?: number
     numRetry?: number

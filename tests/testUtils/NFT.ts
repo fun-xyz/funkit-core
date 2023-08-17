@@ -15,7 +15,7 @@ export interface NFTTestConfig {
     tokenId: number
     testNFTName: string
     testNFTAddress: string
-    prefundAmt?: number
+    prefundAmt: number
     numRetry?: number
 }
 export const NFTTest = (config: NFTTestConfig) => {

@@ -3,6 +3,7 @@ import { BatchActionsTest, BatchActionsTestConfig } from "../testUtils/BatchActi
 const config: BatchActionsTestConfig = {
     chainId: 5,
     outToken: "dai",
-    baseToken: "eth"
+    baseToken: "eth",
+    prefundAmt: 0.2
 }
 BatchActionsTest(config)

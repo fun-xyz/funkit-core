@@ -11,7 +11,7 @@ import "../../fetch-polyfill"
 export interface FactoryTestConfig {
     chainId: number
     testCreate?: boolean
-    prefundAmt?: number
+    prefundAmt: number
     numRetry?: number
 }
 

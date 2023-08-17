@@ -16,7 +16,7 @@ export interface TransferTestConfig {
     baseToken: string
     index?: number
     amount?: number
-    prefundAmt?: number
+    prefundAmt: number
     numRetry?: number
 }
 

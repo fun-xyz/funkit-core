@@ -11,10 +11,9 @@ export interface LimitOrderConfig {
     chainId: number
     outToken: string
     baseToken: string
-    prefund: boolean
     index?: number
     amount?: number
-    prefundAmt?: number
+    prefundAmt: number
     numRetry?: number
 }
 

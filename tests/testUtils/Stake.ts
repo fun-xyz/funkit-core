@@ -12,7 +12,7 @@ export interface StakeTestConfig {
     actualChainId: number
     baseToken: string
     steth: string
-    prefundAmt?: number
+    prefundAmt: number
     numRetry?: number
 }
 
