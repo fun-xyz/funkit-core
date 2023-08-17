@@ -3,7 +3,7 @@ import { Address } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { NFT } from "../../src/data/NFT"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -12,15 +12,14 @@ import "../../fetch-polyfill"
 export interface NFTTestConfig {
     chainId: number
     baseToken: string
-    prefund: boolean
     tokenId: number
     testNFTName: string
     testNFTAddress: string
-    amount?: number
+    prefundAmt?: number
     numRetry?: number
 }
 export const NFTTest = (config: NFTTestConfig) => {
-    const { prefund } = config
+    const { baseToken, prefundAmt } = config
     let nftAddress: Address
 
     describe("NFT Tests", function () {
@@ -48,9 +47,18 @@ export const NFTTest = (config: NFTTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(1792811341)
             })
-            if (prefund) {
-                await fundWallet(auth, wallet1, config.amount ? config.amount : 0.2)
-                await fundWallet(auth, wallet2, config.amount ? config.amount : 0.2)
+            if (!(await wallet1.getDeploymentStatus())) {
+                await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.2)
+            }
+            if (Number(await Token.getBalance(baseToken, await wallet1.getAddress())) < 0.01) {
+                await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.1)
+            }
+
+            if (!(await wallet2.getDeploymentStatus())) {
+                await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.2)
+            }
+            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < 0.01) {
+                await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             nftId = Math.floor(Math.random() * 10_000_000_000)

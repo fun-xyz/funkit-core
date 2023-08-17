@@ -18,6 +18,7 @@ export interface GaslessSponsorTestConfig {
     outToken: string
     stakeAmount: number
     prefund: boolean
+    baseToken: string
     amount?: number
     walletIndex?: number
     funderIndex?: number
@@ -63,8 +64,19 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             walletAddress1 = await wallet1.getAddress()
 
             if (config.prefund) {
-                await fundWallet(auth, wallet, config.stakeAmount / 8)
-                await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                if (!(await wallet.getDeploymentStatus())) {
+                    await fundWallet(auth, wallet, config.stakeAmount / 8)
+                }
+                if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < 0.01) {
+                    await fundWallet(auth, wallet, config.stakeAmount / 8)
+                }
+
+                if (!(await wallet1.getDeploymentStatus())) {
+                    await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                }
+                if (Number(await Token.getBalance(config.baseToken, await wallet1.getAddress())) < 0.01) {
+                    await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                }
             }
 
             funderAddress = await funder.getAddress()

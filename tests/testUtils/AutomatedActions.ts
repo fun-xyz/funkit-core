@@ -11,7 +11,6 @@ export interface AutomatedActionsConfig {
     chainId: number
     outToken: string
     baseToken: string
-    prefund: boolean
     index?: number
     amount?: number
     prefundAmt?: number
@@ -19,7 +18,7 @@ export interface AutomatedActionsConfig {
 }
 
 export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
-    const { prefund, prefundAmt } = config
+    const { prefundAmt, baseToken } = config
 
     describe("Automated Actions Test - Store in DB and execute later", function () {
         this.timeout(300_000)
@@ -41,7 +40,13 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
-            if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+
+            if (!(await wallet.getDeploymentStatus())) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
+            }
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
+            }
         })
 
         const randomAddress = randomBytes(20)

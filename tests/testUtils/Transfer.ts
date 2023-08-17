@@ -48,7 +48,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
             if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
 
@@ -83,18 +83,18 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("wallet should have lower balance of specified token", async () => {
+            const outTokenObj = new Token(outToken)
+            const outTokenAddress = await outTokenObj.getAddress()
             if (config.chainId === 5) {
-                const outTokenAddress = await Token.getAddress(outToken)
                 const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
                     await wallet.getAddress(),
-                    1000000000000000000000n
+                    await outTokenObj.getDecimalAmount(100)
                 ])
                 await auth.sendTx({ ...outTokenMint })
             }
 
             const b1 = Token.getBalanceBN(outToken, await auth.getAddress())
             const b2 = Token.getBalanceBN(outToken, await wallet.getAddress())
-            const outTokenAddress = await new Token(outToken).getAddress()
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
                 amount: 1,

@@ -10,7 +10,8 @@ const config: GaslessSponsorTestConfig = {
     prefund: true,
     amount: 0.00001,
     walletIndex: 0,
-    funderIndex: 1
+    funderIndex: 1,
+    baseToken: "eth"
 }
 
 GaslessSponsorTest(config)

@@ -18,6 +18,7 @@ import {
     isERC721ApproveParams,
     isERC721TransferParams,
     isTokenTransferParams,
+    tokenTransferFromTransactionParams,
     tokenTransferTransactionParams
 } from "./Token"
 import {
@@ -51,7 +52,7 @@ import { getAuthIdFromAddr, isAddress } from "../utils"
 export abstract class FirstClassActions {
     abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
 
-    abstract getAddress(options: EnvOption): Promise<Address>
+    abstract getAddress(): Promise<Address>
 
     async swap(
         auth: Auth,
@@ -80,9 +81,16 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
+            if (!params.from) {
+                params.from = await this.getAddress()
+            }
             transactionParams = await erc721TransferTransactionParams(params)
         } else if (isTokenTransferParams(params)) {
-            transactionParams = await tokenTransferTransactionParams(params)
+            if (params.from) {
+                transactionParams = await tokenTransferFromTransactionParams(params, txOptions)
+            } else {
+                transactionParams = await tokenTransferTransactionParams(params, txOptions)
+            }
         } else {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -127,6 +135,7 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const transactionParams = await stakeTransactionParams(params)
+        this.getAddress()
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
@@ -172,7 +181,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
             const authId = await getAuthIdFromAddr(params.ownerId as Address)
-            await addUserToWallet(authId, params.chainId.toString(), await this.getAddress(txOptions), [pad(params.ownerId, { size: 32 })])
+            await addUserToWallet(authId, params.chainId.toString(), await this.getAddress(), [pad(params.ownerId, { size: 32 })])
         }
 
         const txParams = await addOwnerTxParams(params)
@@ -187,12 +196,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
             const authId = await getAuthIdFromAddr(params.ownerId as Address)
-            await removeUserWalletIdentity(
-                authId,
-                params.chainId.toString(),
-                await this.getAddress(txOptions),
-                pad(params.ownerId, { size: 32 })
-            )
+            await removeUserWalletIdentity(authId, params.chainId.toString(), await this.getAddress(), pad(params.ownerId, { size: 32 }))
         }
         const txParams = await removeOwnerTxParams(params)
         return await this.createOperation(auth, userId, txParams, txOptions)
@@ -204,7 +208,7 @@ export abstract class FirstClassActions {
         params: CreateGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const walletAddr = await this.getAddress(txOptions)
+        const walletAddr = await this.getAddress()
         await createGroup(params.groupId, params.chainId.toString(), Number(params.group.threshold), walletAddr, params.group.userIds)
         params.group.userIds.forEach(async (userId) => {
             const authId = await getAuthIdFromAddr(userId as Address)
@@ -249,7 +253,7 @@ export abstract class FirstClassActions {
         }
 
         const authId = await getAuthIdFromAddr(params.userId as Address)
-        await addUserToGroup(authId, params.chainId.toString(), await this.getAddress(txOptions), params.groupId)
+        await addUserToGroup(authId, params.chainId.toString(), await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
@@ -299,7 +303,7 @@ export abstract class FirstClassActions {
         }
 
         const authId = await getAuthIdFromAddr(params.userId as Address)
-        await removeUserFromGroup(authId, params.chainId.toString(), await this.getAddress(txOptions), params.groupId)
+        await removeUserFromGroup(authId, params.chainId.toString(), await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
@@ -375,7 +379,7 @@ export abstract class FirstClassActions {
         params: TransactionParams[],
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const walletAddress = await this.getAddress(txOptions)
+        const walletAddress = await this.getAddress()
         const txParams = createExecuteBatchTxParams(params, walletAddress)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }

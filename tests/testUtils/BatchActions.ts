@@ -22,7 +22,6 @@ export interface BatchActionsTestConfig {
     chainId: number
     outToken: string
     baseToken: string
-    prefund: boolean
     index?: number
     amount?: number
     prefundAmt?: number
@@ -30,7 +29,7 @@ export interface BatchActionsTestConfig {
 }
 
 export const BatchActionsTest = (config: BatchActionsTestConfig) => {
-    const { outToken, prefund, prefundAmt } = config
+    const { outToken, prefundAmt, baseToken } = config
 
     describe("Single Auth BatchActions", function () {
         this.timeout(300_000)
@@ -53,7 +52,13 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811349)
             })
             chain = await Chain.getChain({ chainIdentifier: config.chainId })
-            if (prefund) await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+
+            if (!(await wallet.getDeploymentStatus())) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
+            }
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
+            }
         })
 
         it("Approve tokens", async () => {
@@ -79,8 +84,10 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     [walletAddress, randomAddr],
                     chain
                 )
-
-                assert(BigInt(approvedAmount) === BigInt(approveAmount), "BatchActions failed")
+                assert(
+                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress).getDecimalAmount(approveAmount)),
+                    "BatchActions failed"
+                )
             }
         })
 
@@ -133,7 +140,10 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 [walletAddress, randomAddress],
                 chain
             )
-            assert(BigInt(approvedAmount) === BigInt(approveAmount), "BatchActions failed")
+            assert(
+                BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress).getDecimalAmount(approveAmount)),
+                "BatchActions failed"
+            )
             const swappedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(outTokenAddress, "balanceOf", [randomAddress], chain)
             assert(BigInt(swappedAmount) > 0, "Swap unsuccesful")
         })
@@ -269,7 +279,12 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             })
             chain = await Chain.getChain({ chainIdentifier: config.chainId })
 
-            if (prefund) await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 1)
+            if (!(await wallet.getDeploymentStatus())) {
+                await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
+            }
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+                await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.1)
+            }
         })
 
         it("Approve tokens", async () => {
@@ -301,7 +316,10 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     [walletAddress, randomAddr],
                     chain
                 )
-                assert(BigInt(approvedAmount) === BigInt(approveAmount), "BatchActions failed")
+                assert(
+                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress).getDecimalAmount(approveAmount)),
+                    "BatchActions failed"
+                )
             }
         })
     })

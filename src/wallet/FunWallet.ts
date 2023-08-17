@@ -68,20 +68,19 @@ export class FunWallet extends FirstClassActions {
         )
 
         if (uniqueId) {
-            this.walletUniqueId = uniqueId
+            this.walletUniqueId = uniqueId as Hex
         } else {
             this.address = walletAddr
         }
     }
 
     /**
-     * TODO: update chainId to 1
      * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
      * @returns Address
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), this.walletUniqueId!)
         }
         return this.address!
     }
@@ -604,7 +603,6 @@ export class FunWallet extends FirstClassActions {
         return operation.opId
     }
 
-    // TODO, use auth to do authentication
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         await deleteOp(operationId, await chain.getChainId())

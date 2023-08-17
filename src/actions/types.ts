@@ -21,13 +21,14 @@ export interface ActionData {
 export interface ERC721TransferParams {
     tokenId: number
     token: string
-    from: Address
+    from?: Address
     to: Address
 }
 
 export interface TokenTransferParams {
     token: string
     amount: number
+    from?: Address
     to: Address
 }
 
