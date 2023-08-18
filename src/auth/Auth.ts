@@ -187,9 +187,11 @@ export class Auth {
                 const {
                     standard: { maxPriorityFee: maxPriorityFee1, maxFee: maxFee1 }
                 } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+                console.log("Estimate polygon gas", maxPriorityFee, maxFee)
                 maxPriorityFee = maxPriorityFee1
                 maxFee = maxFee1
             } catch (e) {
+                console.log("Error estimating polygon gas", e)
                 maxPriorityFee = BigInt(gasSpecificChain[chainId].backupPriorityFee)
                 maxFee = BigInt(gasSpecificChain[chainId].backupFee)
             }

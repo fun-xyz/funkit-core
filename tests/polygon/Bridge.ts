@@ -7,6 +7,6 @@ const config: BridgeTestConfig = {
     toToken: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83", // usdc on gnosis chain
     amountToBridge: 0.02,
     baseToken: "matic",
-    walletCreationCost: 1
+    walletCreationCost: 3
 }
 BridgeTest(config)
