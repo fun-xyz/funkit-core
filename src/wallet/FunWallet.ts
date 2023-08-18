@@ -1,5 +1,5 @@
-import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, keccak256, pad, toBytes } from "viem"
-import { User } from "./types"
+import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, isAddress, keccak256, pad, toBytes } from "viem"
+import { FunWalletParams, User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
@@ -29,12 +29,7 @@ import { ErrorCode, InternalFailureError, InvalidParameterError } from "../error
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
-
-export interface FunWalletParams {
-    users?: User[]
-    uniqueId?: Hex
-    walletAddr?: Address
-}
+import { isBytes32 } from "../utils/TypeUtils"
 
 export class FunWallet extends FirstClassActions {
     walletUniqueId?: Hex
@@ -44,33 +39,43 @@ export class FunWallet extends FirstClassActions {
     /**
      * Creates FunWallet object
      * @constructor
-     * @param {object} params - The parameters for the constructing fun wallet - users, uniqueId, walletAddr
+     * @param {object} params - The parameters for the constructing fun wallet - (users, uniqueId) or walletAddr
      */
-    constructor(params: FunWalletParams) {
+    constructor(params: FunWalletParams | string) {
         super()
-        const { users, uniqueId, walletAddr } = params
-
-        if (!(uniqueId && users && users.length > 0) && !walletAddr) {
-            throw new InvalidParameterError(
-                ErrorCode.MissingParameter,
-                "(uniqueId, users) or walletAddr is required",
-                "FunWallet.constructor",
-                params,
-                "Provide either (uniqueId, users) or walletAddr when constructing FunWallet",
-                "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
-            )
-        }
-
-        this.userInfo = new Map(
-            users?.map((user) => {
-                return [pad(user.userId, { size: 32 }), user] as [Hex, User]
-            })
-        )
-
-        if (uniqueId) {
-            this.walletUniqueId = uniqueId
+        if (params instanceof String) {
+            if (isAddress(params as string)) {
+                this.address = params as Address
+            } else {
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameter,
+                    "string input must be an address type",
+                    "FunWallet.constructor",
+                    params,
+                    "Provide either (uniqueId, users) or walletAddr when constructing FunWallet",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
+                )
+            }
         } else {
-            this.address = walletAddr
+            const { users, uniqueId } = params as FunWalletParams
+            if (!uniqueId || !isBytes32(uniqueId) || !users || users.length <= 0) {
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameter,
+                    "uniqueId must be bytes32 and users must be non-empty",
+                    "FunWallet.constructor",
+                    params,
+                    "Provide valid uniqueId and users when constructing FunWallet",
+                    "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
+                )
+            }
+
+            this.userInfo = new Map(
+                users?.map((user) => {
+                    return [pad(user.userId, { size: 32 }), user] as [Hex, User]
+                })
+            )
+
+            this.walletUniqueId = uniqueId as Hex
         }
     }
 

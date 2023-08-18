@@ -22,6 +22,7 @@ import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId, getGasStation } from "../utils"
+import { isBytes32 } from "../utils/TypeUtils"
 import { convertProviderToClient, convertSignerToClient } from "../viem"
 const gasSpecificChain = {
     "137": {
@@ -82,17 +83,22 @@ export class Auth {
         } else if (authInput.signer) {
             this.client = convertSignerToClient({ signer: authInput.signer })
         } else if (authInput.privateKey) {
-            if (!isHex(authInput.privateKey)) {
+            let privateKey: Hex
+            if (isBytes32(authInput.privateKey)) {
+                privateKey = authInput.privateKey as Hex
+            } else if (!isHex(authInput.privateKey) && authInput.privateKey.length === 64) {
+                privateKey = `0x${authInput.privateKey}`
+            } else {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameter,
-                    "privateKey is not a valid hex string",
+                    "privateKey is not a valid one",
                     "Auth.constructor",
                     authInput.privateKey,
-                    "Provide valid hex string as privateKey",
+                    "Provide valid privateKey string",
                     "https://docs.fun.xyz/how-to-guides/configure-account"
                 )
             }
-            this.signer = privateKeyToAccount(authInput.privateKey as Hex)
+            this.signer = privateKeyToAccount(privateKey)
         } else {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,

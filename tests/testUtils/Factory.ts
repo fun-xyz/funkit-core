@@ -85,9 +85,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
 
         it("initialize fun wallet with walletAddr should work", async () => {
             const walletAddress = await wallet.getAddress()
-            const wallet1 = new FunWallet({
-                walletAddr: walletAddress
-            })
+            const wallet1 = new FunWallet(walletAddress)
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.be.equal(wallet1Address)
         })
