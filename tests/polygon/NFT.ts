@@ -4,10 +4,9 @@ dotenv.config()
 
 const config: NFTTestConfig = {
     chainId: 137,
-    baseToken: "eth",
-    prefund: false,
+    baseToken: "matic",
     tokenId: 10,
-    amount: 2,
+    prefundAmt: 2,
     testNFTName: "Anatomy Science Ape Club",
     testNFTAddress: "0x96fc56721d2b79485692350014875b3b67cb00eb"
 }

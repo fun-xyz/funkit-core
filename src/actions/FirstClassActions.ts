@@ -10,18 +10,23 @@ import {
     requestUnstakeTransactionParams,
     stakeTransactionParams
 } from "./Stake"
-import { OneInchTransactionParams, uniswapV2SwapTransactionParams, uniswapV3SwapTransactionParams } from "./Swap"
+import {
+    oneInchSupported,
+    oneInchTransactionParams,
+    uniswapV2SwapTransactionParams,
+    uniswapV3Supported,
+    uniswapV3SwapTransactionParams
+} from "./Swap"
 import {
     erc20ApproveTransactionParams,
-    erc20TransferTransactionParams,
     erc721ApproveTransactionParams,
     erc721TransferTransactionParams,
-    ethTransferTransactionParams,
     isERC20ApproveParams,
-    isERC20TransferParams,
     isERC721ApproveParams,
     isERC721TransferParams,
-    isNativeTransferParams
+    isTokenTransferParams,
+    tokenTransferFromTransactionParams,
+    tokenTransferTransactionParams
 } from "./Token"
 import {
     AddOwnerParams,
@@ -48,42 +53,42 @@ import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletI
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
-import { Operation } from "../data"
+import { Chain, Operation } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
     abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
 
-    abstract getAddress(options: EnvOption): Promise<Address>
+    abstract getAddress(): Promise<Address>
 
     async swap(
         auth: Auth,
         userId: string,
         params: SwapParam,
-        txOption: EnvOption = (globalThis as any).globalEnvOption
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const oneInchSupported = [1, 56, 31337, 36864]
-        const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
         let transactionParams: TransactionParams
-        if (oneInchSupported.includes(params.chainId)) {
-            transactionParams = await OneInchTransactionParams(params as OneInchSwapParams)
-        } else if (uniswapV3Supported.includes(params.chainId)) {
-            transactionParams = await uniswapV3SwapTransactionParams(params as UniswapParams)
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chainId = Number(await chain.getChainId())
+        if (oneInchSupported.includes(chainId)) {
+            transactionParams = await oneInchTransactionParams(params as OneInchSwapParams, txOptions)
+        } else if (uniswapV3Supported.includes(chainId)) {
+            transactionParams = await uniswapV3SwapTransactionParams(params as UniswapParams, txOptions)
         } else {
-            transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams)
+            transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams, txOptions)
         }
-        return await this.createOperation(auth, userId, transactionParams, txOption)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async limitSwapOrder(
         auth: Auth,
         userId: string,
         params: LimitOrderParam,
-        txOption: EnvOption = (globalThis as any).globalEnvOption
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const transactionParams: TransactionParams = await limitSwapOrderTransactionParams(params, txOption.chain)
-        return await this.createOperation(auth, userId, transactionParams, txOption)
+        const transactionParams: TransactionParams = await limitSwapOrderTransactionParams(params, txOptions)
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     async transfer(
@@ -94,11 +99,14 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isERC721TransferParams(params)) {
+            params.from = params.from ? params.from : await this.getAddress()
             transactionParams = await erc721TransferTransactionParams(params)
-        } else if (isERC20TransferParams(params)) {
-            transactionParams = await erc20TransferTransactionParams(params)
-        } else if (isNativeTransferParams(params)) {
-            transactionParams = ethTransferTransactionParams(params)
+        } else if (isTokenTransferParams(params)) {
+            if (params.from) {
+                transactionParams = await tokenTransferFromTransactionParams(params, txOptions)
+            } else {
+                transactionParams = await tokenTransferTransactionParams(params, txOptions)
+            }
         } else {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -120,7 +128,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams
         if (isERC20ApproveParams(params)) {
-            transactionParams = await erc20ApproveTransactionParams(params)
+            transactionParams = await erc20ApproveTransactionParams(params, txOptions)
         } else if (isERC721ApproveParams(params)) {
             transactionParams = await erc721ApproveTransactionParams(params)
         } else {
@@ -142,7 +150,7 @@ export abstract class FirstClassActions {
         params: StakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const transactionParams = await stakeTransactionParams(params)
+        const transactionParams = await stakeTransactionParams(params, txOptions)
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
@@ -154,9 +162,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         if (isRequestUnstakeParams(params)) {
-            transactionParams = await requestUnstakeTransactionParams(params as RequestUnstakeParams)
+            transactionParams = await requestUnstakeTransactionParams(params as RequestUnstakeParams, txOptions)
         } else if (isFinishUnstakeParams(params)) {
-            transactionParams = await finishUnstakeTransactionParams(params as FinishUnstakeParams)
+            transactionParams = await finishUnstakeTransactionParams(params as FinishUnstakeParams, txOptions)
         } else {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -176,7 +184,7 @@ export abstract class FirstClassActions {
         params: SessionKeyParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const transactionParams = await createSessionKeyTransactionParams(params)
+        const transactionParams = await createSessionKeyTransactionParams(params, txOptions)
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
@@ -187,11 +195,12 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
+            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
             const authId = await getAuthIdFromAddr(params.ownerId as Address)
-            await addUserToWallet(authId, params.chainId.toString(), await this.getAddress(txOptions), [pad(params.ownerId, { size: 32 })])
+            await addUserToWallet(authId, await chain.getChainId(), await this.getAddress(), [pad(params.ownerId, { size: 32 })])
         }
 
-        const txParams = await addOwnerTxParams(params)
+        const txParams = await addOwnerTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -202,15 +211,11 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
+            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
             const authId = await getAuthIdFromAddr(params.ownerId as Address)
-            await removeUserWalletIdentity(
-                authId,
-                params.chainId.toString(),
-                await this.getAddress(txOptions),
-                pad(params.ownerId, { size: 32 })
-            )
+            await removeUserWalletIdentity(authId, await chain.getChainId(), await this.getAddress(), pad(params.ownerId, { size: 32 }))
         }
-        const txParams = await removeOwnerTxParams(params)
+        const txParams = await removeOwnerTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -220,13 +225,15 @@ export abstract class FirstClassActions {
         params: CreateGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const walletAddr = await this.getAddress(txOptions)
-        await createGroup(params.groupId, params.chainId.toString(), Number(params.group.threshold), walletAddr, params.group.userIds)
+        const walletAddr = await this.getAddress()
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chainId = await chain.getChainId()
+        await createGroup(params.groupId, chainId, Number(params.group.threshold), walletAddr, params.group.userIds)
         params.group.userIds.forEach(async (userId) => {
             const authId = await getAuthIdFromAddr(userId as Address)
-            await addUserToGroup(authId, params.chainId.toString(), walletAddr, params.groupId)
+            await addUserToGroup(authId, chainId, walletAddr, params.groupId)
         })
-        const txParams = await createGroupTxParams(params)
+        const txParams = await createGroupTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -238,7 +245,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         params.userId = pad(params.userId, { size: 32 })
         params.groupId = pad(params.groupId, { size: 32 })
-        const groups = await getGroups([params.groupId], params.chainId.toString())
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chainId = await chain.getChainId()
+        const groups = await getGroups([params.groupId], chainId)
         if (!groups || groups.length === 0) {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
@@ -265,18 +274,17 @@ export abstract class FirstClassActions {
         }
 
         const authId = await getAuthIdFromAddr(params.userId as Address)
-        await addUserToGroup(authId, params.chainId.toString(), await this.getAddress(txOptions), params.groupId)
+        await addUserToGroup(authId, chainId, await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
             group: {
                 userIds: Array.from(members),
                 threshold: groups[0].threshold
-            },
-            chainId: params.chainId
+            }
         }
 
-        const txParams = await updateGroupTxParams(updateGroupParams)
+        const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -288,7 +296,9 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         params.userId = pad(params.userId, { size: 32 })
         params.groupId = pad(params.groupId, { size: 32 })
-        const groups = await getGroups([params.groupId], params.chainId.toString())
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chainId = await chain.getChainId()
+        const groups = await getGroups([params.groupId], chainId)
         if (!groups || groups.length === 0) {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
@@ -315,17 +325,16 @@ export abstract class FirstClassActions {
         }
 
         const authId = await getAuthIdFromAddr(params.userId as Address)
-        await removeUserFromGroup(authId, params.chainId.toString(), await this.getAddress(txOptions), params.groupId)
+        await removeUserFromGroup(authId, chainId, await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
             group: {
                 userIds: Array.from(members),
                 threshold: groups[0].threshold
-            },
-            chainId: params.chainId
+            }
         }
-        const txParams = await updateGroupTxParams(updateGroupParams)
+        const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -336,7 +345,9 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         params.groupId = pad(params.groupId, { size: 32 })
-        const groups = await getGroups([params.groupId], params.chainId.toString())
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chainId = await chain.getChainId()
+        const groups = await getGroups([params.groupId], chainId)
         if (!groups || groups.length === 0) {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
@@ -359,17 +370,16 @@ export abstract class FirstClassActions {
             )
         }
 
-        await updateGroup(params.groupId, params.chainId.toString(), { threshold: Number(params.threshold) })
+        await updateGroup(params.groupId, chainId, { threshold: Number(params.threshold) })
 
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
             group: {
                 userIds: groups[0].memberIds,
                 threshold: params.threshold
-            },
-            chainId: params.chainId
+            }
         }
-        const txParams = await updateGroupTxParams(updateGroupParams)
+        const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -380,8 +390,9 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         params.groupId = pad(params.groupId, { size: 32 })
-        await deleteGroup(params.groupId, params.chainId.toString())
-        const txParams = await removeGroupTxParams(params)
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        await deleteGroup(params.groupId, await chain.getChainId())
+        const txParams = await removeGroupTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -391,7 +402,7 @@ export abstract class FirstClassActions {
         params: TransactionParams[],
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const walletAddress = await this.getAddress(txOptions)
+        const walletAddress = await this.getAddress()
         const txParams = createExecuteBatchTxParams(params, walletAddress)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
