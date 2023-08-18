@@ -181,21 +181,15 @@ export class Auth {
             })
         }
         let maxPriorityFee, maxFee
-
         if ((gasSpecificChain as any)[chainId]) {
             try {
-                const {
-                    standard: { maxPriorityFee: maxPriorityFee1, maxFee: maxFee1 }
-                } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
-                console.log("Estimate polygon gas", maxPriorityFee, maxFee)
-                maxPriorityFee = maxPriorityFee1
-                maxFee = maxFee1
+                const { standard } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+                maxPriorityFee = standard.maxPriorityFee
+                maxFee = standard.maxFee
             } catch (e) {
-                console.log("Error estimating polygon gas", e)
                 maxPriorityFee = BigInt(gasSpecificChain[chainId].backupPriorityFee)
                 maxFee = BigInt(gasSpecificChain[chainId].backupFee)
             }
-
             tx = {
                 to,
                 value: BigInt(value),

@@ -80,7 +80,6 @@ async function getRoute(
 }
 
 async function buildTx(route: any): Promise<any> {
-    console.log("Route: ", route)
     const API_ENDPOINT = "build-tx"
     const response = await fetch(SOCKET_BASE_API_URL + API_ENDPOINT, {
         method: "POST",
