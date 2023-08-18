@@ -75,13 +75,12 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
-     * TODO: update chainId to 1
      * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
      * @returns Address
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), this.walletUniqueId!)
         }
         return this.address!
     }
@@ -269,6 +268,11 @@ export class FunWallet extends FirstClassActions {
         return users
     }
 
+    async getDeploymentStatus(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        return await chain.addressIsContract(await this.getAddress())
+    }
+
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
@@ -307,7 +311,7 @@ export class FunWallet extends FirstClassActions {
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
-        if (txOptions.gasSponsor) {
+        if (txOptions.gasSponsor && Object.keys(txOptions.gasSponsor).length > 0) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
@@ -599,7 +603,6 @@ export class FunWallet extends FirstClassActions {
         return operation.opId
     }
 
-    // TODO, use auth to do authentication
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         await deleteOp(operationId, await chain.getChainId())
@@ -615,7 +618,7 @@ export class FunWallet extends FirstClassActions {
         const rejectOperation = await this.transfer(
             auth,
             groupId,
-            { to: await this.getAddress(), amount: 0 },
+            { to: await this.getAddress(), amount: 0, token: "eth" },
             { ...txOptions, skipDBAction: true, nonce: BigInt(operation.userOp.nonce) }
         )
         if (rejectionMessage) rejectOperation.message = rejectionMessage

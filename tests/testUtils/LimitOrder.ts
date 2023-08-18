@@ -11,10 +11,9 @@ export interface LimitOrderConfig {
     chainId: number
     outToken: string
     baseToken: string
-    prefund: boolean
     index?: number
     amount?: number
-    prefundAmt?: number
+    prefundAmt: number
     numRetry?: number
 }
 
@@ -33,7 +32,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -47,7 +46,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
         })
 
         it("swap baseToken(ETH) schedule", async () => {
-            console.log("Swap tokens", await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100)))
+            await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100))
             const userOp = await wallet.limitSwapOrder(auth, await auth.getAddress(), {
                 tokenIn: config.baseToken,
                 tokenOut: config.outToken,

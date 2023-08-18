@@ -69,6 +69,9 @@ export const BASE_WRAP_TOKEN_ADDR = {
     }
 }
 
+// When update this, also remember to update the address in api service
+export const FUN_GASLESS_SPONSOR_ADDRESS = "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
+
 export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5"]
 export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
 
@@ -127,7 +130,8 @@ export const CONTRACT_ADDRESSES = {
     UniswapV2Factory: UNISWAPV2FACTORY_CONTRACT["addresses"],
     UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
     TestNFT: TEST_NFT_CONTRACT["addresses"],
-    sponsorAddress: { "5": "0x175C5611402815Eba550Dad16abd2ac366a63329" }
+    funGaslessSponsorAddress: { "5": FUN_GASLESS_SPONSOR_ADDRESS },
+    funTokenSponsorAddress: {}
 }
 
 export const gasSpecificChain = {

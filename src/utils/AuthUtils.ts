@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid"
-import { Address, decodeAbiParameters, pad } from "viem"
+import { Address, Hex, decodeAbiParameters, pad } from "viem"
+import { generatePrivateKey as generateRandomPrivateKey } from "viem/accounts"
 import { createUser, getUserAuthIdByAddr, getUserUniqueId } from "../apis/UserApis"
 import { ResourceNotFoundError } from "../errors"
 
@@ -40,4 +41,8 @@ export const getAuthIdFromAddr = async (addr: Address) => {
         }
     }
     return authId
+}
+
+export const generatePrivateKey = (): Hex => {
+    return generateRandomPrivateKey()
 }

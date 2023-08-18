@@ -1,5 +1,5 @@
 import { expect } from "chai"
-import { erc20TransferTransactionParams } from "../../src/actions"
+import { tokenTransferTransactionParams } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
@@ -45,7 +45,7 @@ export const BridgeTest = (config: BridgeTestConfig) => {
             }
             if (Number(await new Token(config.fromToken).getBalance(await wallet.getAddress())) < config.amountToBridge) {
                 await auth.sendTx(
-                    await erc20TransferTransactionParams({
+                    await tokenTransferTransactionParams({
                         to: await wallet.getAddress(),
                         amount: config.amountToBridge,
                         token: config.fromToken
@@ -57,7 +57,8 @@ export const BridgeTest = (config: BridgeTestConfig) => {
         after(async function () {
             await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) * 4) / 5
+                amount: (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) * 4) / 5,
+                token: "eth"
             })
         })
 

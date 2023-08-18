@@ -6,18 +6,19 @@ import {
     TransactionParams,
     UNISWAP_V3_LIMIT_ORDER_CONTRACT_INTERFACE
 } from "../common"
+import { EnvOption } from "../config"
 import { Chain, Token } from "../data"
 
 export const limitSwapOrderTransactionParams = async (
     params: LimitOrderParam,
-    chainId: string | Chain | number
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
 ): Promise<TransactionParams> => {
     const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount, poolFee } = params
     const tokenInAddress = await new Token(tokenIn).getAddress()
     const tokenOutAddress = await new Token(tokenOut).getAddress()
     const amountIn = await new Token(tokenIn).getDecimalAmount(tokenInAmount)
     const amountOut = await new Token(tokenOut).getDecimalAmount(tokenOutAmount)
-    const chain = await Chain.getChain({ chainIdentifier: chainId })
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const uniswapv3LimitOrderAddress = await chain.getAddress("uniswapv3LimitOrder")
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     const data = encodeAbiParameters(

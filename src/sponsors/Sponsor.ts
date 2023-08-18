@@ -1,6 +1,5 @@
-import { Address, Hex } from "viem"
+import { Address } from "viem"
 import { PaymasterType } from "./types"
-import { ActionResult } from "../actions"
 import { addToList, batchOperation, removeFromList, updatePaymasterMode } from "../apis/PaymasterApis"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -37,21 +36,6 @@ export abstract class Sponsor {
             this.chainId = chainId
         }
         return this.paymasterAddress!
-    }
-
-    async encode(data: Hex, options: EnvOption = (globalThis as any).globalEnvOption, value?: bigint): Promise<ActionResult> {
-        const to = await this.getPaymasterAddress(options)
-        let chain: Chain
-        if (typeof options.chain === "string" || typeof options.chain === "number") {
-            chain = await Chain.getChain({ chainIdentifier: options.chain })
-        } else {
-            chain = options.chain
-        }
-        if (value) {
-            return { data: { to, value, data, chain: chain }, errorData: { location: "" } }
-        } else {
-            return { data: { to, data, chain: chain }, errorData: { location: "" } }
-        }
     }
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>

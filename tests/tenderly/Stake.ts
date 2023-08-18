@@ -4,7 +4,7 @@ const config: StakeTestConfig = {
     chainId: 36865,
     actualChainId: 1, //mainnet since we are using tenderly to fork mainnet
     baseToken: "eth",
-    prefund: true,
-    steth: "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
+    steth: "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+    prefundAmt: 0.2
 }
 StakeTest(config)

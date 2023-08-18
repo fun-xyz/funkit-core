@@ -17,6 +17,7 @@ export interface GaslessSponsorTestConfig {
     outToken: string
     stakeAmount: number
     prefund: boolean
+    baseToken: string
     amount?: number
     walletIndex?: number
     funderIndex?: number
@@ -62,15 +63,26 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             walletAddress1 = await wallet1.getAddress()
 
             if (config.prefund) {
-                await fundWallet(auth, wallet, config.stakeAmount / 8)
-                await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                if (!(await wallet.getDeploymentStatus())) {
+                    await fundWallet(auth, wallet, config.stakeAmount / 8)
+                }
+                if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < 0.01) {
+                    await fundWallet(auth, wallet, config.stakeAmount / 8)
+                }
+
+                if (!(await wallet1.getDeploymentStatus())) {
+                    await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                }
+                if (Number(await Token.getBalance(config.baseToken, await wallet1.getAddress())) < 0.01) {
+                    await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                }
             }
 
             funderAddress = await funder.getAddress()
 
             if (mint) {
                 const wethAddr = await Token.getAddress("weth", options)
-                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.001 })
+                const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.001, token: "eth" })
                 await wallet.executeOperation(auth, userOp)
                 const paymasterTokenAddress = await Token.getAddress(config.outToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
@@ -104,8 +116,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 in: config.inToken,
                 amount: config.amount ? config.amount : 0.0001,
                 out: config.outToken,
-                returnAddress: walletAddress,
-                chainId: config.chainId
+                returnAddress: walletAddress
             })
             await wallet.executeOperation(auth, operation)
 

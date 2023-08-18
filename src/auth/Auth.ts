@@ -8,6 +8,7 @@ import {
     createWalletClient,
     custom,
     http,
+    isHex,
     keccak256,
     pad,
     toBytes
@@ -48,7 +49,7 @@ chains["funtestnet"] = {
 export interface AuthInput {
     web2AuthId?: string
     client?: WalletClient
-    privateKey?: Hex
+    privateKey?: string
     windowEth?: any
     rpc?: string
     provider?: any
@@ -80,10 +81,27 @@ export class Auth {
             this.client = convertProviderToClient({ provider: authInput.provider })
         } else if (authInput.signer) {
             this.client = convertSignerToClient({ signer: authInput.signer })
-        }
-
-        if (authInput.privateKey) {
-            this.signer = privateKeyToAccount(authInput.privateKey)
+        } else if (authInput.privateKey) {
+            if (!isHex(authInput.privateKey)) {
+                throw new InvalidParameterError(
+                    ErrorCode.InvalidParameter,
+                    "privateKey is not a valid hex string",
+                    "Auth.constructor",
+                    authInput.privateKey,
+                    "Provide valid hex string as privateKey",
+                    "https://docs.fun.xyz/how-to-guides/configure-account"
+                )
+            }
+            this.signer = privateKeyToAccount(authInput.privateKey as Hex)
+        } else {
+            throw new InvalidParameterError(
+                ErrorCode.MissingParameter,
+                "valid authInput is required",
+                "Auth.constructor",
+                authInput,
+                "Provide viem client, privateKey, window eth (check viem.sh), rpc signer, provider, or signer when constructing Auth",
+                "https://docs.fun.xyz/how-to-guides/configure-account"
+            )
         }
     }
 
