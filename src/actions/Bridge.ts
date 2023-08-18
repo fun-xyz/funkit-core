@@ -4,7 +4,7 @@ import { BridgeParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, TransactionParams } from "../common"
 import { Token } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
-const SOCKET_API_KEY = "713e3474-9371-4515-a84e-08b99fd176f0" // SOCKET PUBLIC API KEY - can swap for our key in prod
+const SOCKET_API_KEY = "72a5b4b0-e727-48be-8aa1-5da9d62fe635" // SOCKET PUBLIC API KEY - can swap for our key in prod
 const SOCKET_BASE_API_URL = "https://api.socket.tech/v2/"
 
 export const bridgeTransactionParams = async (params: BridgeParams, walletAddress: Address): Promise<TransactionParams> => {
