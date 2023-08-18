@@ -141,3 +141,6 @@ export const gasSpecificChain = {
         backupFee: "200" // 200 gwei
     }
 }
+
+export const VALID_PRIVATE_KEY_LENGTH = 64
+export const BYTES32_LENGTH = 66

@@ -17,7 +17,7 @@ import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
-import { TransactionData, TransactionParams } from "../common"
+import { TransactionData, TransactionParams, VALID_PRIVATE_KEY_LENGTH } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
@@ -86,7 +86,7 @@ export class Auth {
             let privateKey: Hex
             if (isBytes32(authInput.privateKey)) {
                 privateKey = authInput.privateKey as Hex
-            } else if (!isHex(authInput.privateKey) && authInput.privateKey.length === 64) {
+            } else if (!isHex(authInput.privateKey) && authInput.privateKey.length === VALID_PRIVATE_KEY_LENGTH) {
                 privateKey = `0x${authInput.privateKey}`
             } else {
                 throw new InvalidParameterError(
