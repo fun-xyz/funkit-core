@@ -29,7 +29,8 @@ export const RBACTest = (config: RBACTestConfig) => {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,
-                apiKey: apiKey
+                apiKey: apiKey,
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -53,8 +54,7 @@ export const RBACTest = (config: RBACTestConfig) => {
 
         it("add owner", async () => {
             const operation = await wallet.addOwner(auth, await auth.getAddress(), {
-                ownerId: ownerId,
-                chainId: config.chainId
+                ownerId: ownerId
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
@@ -70,8 +70,7 @@ export const RBACTest = (config: RBACTestConfig) => {
 
         it("remove owner", async () => {
             const operation = await wallet.removeOwner(auth, await auth.getAddress(), {
-                ownerId: ownerId,
-                chainId: config.chainId
+                ownerId: ownerId
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw

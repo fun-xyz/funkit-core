@@ -28,7 +28,8 @@ export const StakeTest = (config: StakeTestConfig) => {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,
-                apiKey: apiKey
+                apiKey: apiKey,
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -48,7 +49,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalanceBN(baseToken, walletAddress)
-            const userOp = await wallet.stake(auth, await auth.getAddress(), { amount: 0.0001, chainId: config.actualChainId })
+            const userOp = await wallet.stake(auth, await auth.getAddress(), { amount: 0.0001 })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             await new Promise((resolve) => {
                 setTimeout(resolve, 5000)
@@ -60,8 +61,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("Should be able to start unstaking", async () => {
             const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                 amounts: [0.001],
-                recipient: await wallet.getAddress(),
-                chainId: config.actualChainId
+                recipient: await wallet.getAddress()
             })
             if (config.chainId === 36865) {
                 const receipt = await wallet.executeOperation(auth, userOp)
@@ -89,8 +89,7 @@ export const StakeTest = (config: StakeTestConfig) => {
                 const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
                 const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                     recipient: await wallet.getAddress(),
-                    walletAddress: await wallet.getAddress(),
-                    chainId: config.actualChainId
+                    walletAddress: await wallet.getAddress()
                 })
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
                 const balAfter = await Token.getBalance(baseToken, await wallet.getAddress())
@@ -99,8 +98,7 @@ export const StakeTest = (config: StakeTestConfig) => {
                 try {
                     const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                         recipient: await wallet.getAddress(),
-                        walletAddress: await wallet.getAddress(),
-                        chainId: config.actualChainId
+                        walletAddress: await wallet.getAddress()
                     })
                     expect(await wallet.executeOperation(auth, userOp)).to.not.throw
                     assert(false, "Did not throw error")

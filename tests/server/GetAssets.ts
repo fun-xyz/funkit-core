@@ -16,7 +16,7 @@ describe("GetAssets", function () {
         const options: GlobalEnvOption = {
             chain: chainId,
             apiKey: apiKey,
-            gasSponsor: undefined
+            gasSponsor: {}
         }
         await configureEnvironment(options)
         auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })

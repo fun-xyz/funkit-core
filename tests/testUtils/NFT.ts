@@ -34,7 +34,8 @@ export const NFTTest = (config: NFTTestConfig) => {
             apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,
-                apiKey: apiKey
+                apiKey: apiKey,
+                gasSponsor: {}
             }
             await configureEnvironment(options)
 
@@ -148,7 +149,8 @@ export const NFTTest = (config: NFTTestConfig) => {
             it("getName", async () => {
                 const options: GlobalEnvOption = {
                     chain: "1",
-                    apiKey: apiKey
+                    apiKey: apiKey,
+                    gasSponsor: {}
                 }
                 await configureEnvironment(options)
                 const nft = new NFT(config.testNFTAddress)
@@ -159,7 +161,8 @@ export const NFTTest = (config: NFTTestConfig) => {
             it("getAddress", async () => {
                 const options: GlobalEnvOption = {
                     chain: "1",
-                    apiKey: apiKey
+                    apiKey: apiKey,
+                    gasSponsor: {}
                 }
                 await configureEnvironment(options)
                 const nft = new NFT(config.testNFTName)

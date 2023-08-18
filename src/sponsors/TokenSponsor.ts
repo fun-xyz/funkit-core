@@ -1,7 +1,6 @@
 import { Address, concat, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
 import { AllTokenData, PaymasterType } from "./types"
-import { ActionData, ActionFunction } from "../actions"
 import { addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { TOKEN_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
@@ -230,7 +229,6 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
         const tokenObj = new Token(token)
-
         const tokenAddress = await tokenObj.getAddress(options)
         const amountdec = await tokenObj.getDecimalAmount(amount, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
@@ -455,27 +453,6 @@ export class TokenSponsor extends Sponsor {
         return this.batchTransaction(calldata)
     }
 
-    static approve(token: string, amount: number): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await Chain.getChain({ chainIdentifier: actionData.options.chain })
-            const gasSponsorAddress = await chain.getAddress(this.name)
-            addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                "0x",
-                {
-                    action: "approve",
-                    amount,
-                    from: await actionData.wallet.getAddress(),
-                    to: await this.getPaymasterAddress(actionData.options),
-                    token
-                },
-                PaymasterType.TokenSponsor,
-                await actionData.wallet.getAddress()
-            )
-            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
-        }
-    }
     static async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await chain.getAddress(this.name)

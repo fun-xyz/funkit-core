@@ -32,7 +32,8 @@ export const GroupTest = (config: GroupTestConfig) => {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,
-                apiKey: apiKey
+                apiKey: apiKey,
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -64,8 +65,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 group: {
                     userIds: memberIds,
                     threshold: threshold
-                },
-                chainId: config.chainId
+                }
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
@@ -96,8 +96,7 @@ export const GroupTest = (config: GroupTestConfig) => {
         it("add user to group", async () => {
             const operation = await wallet.addUserToGroup(auth, await auth.getAddress(), {
                 groupId: groupId,
-                userId: newUserId,
-                chainId: config.chainId
+                userId: newUserId
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
@@ -130,8 +129,7 @@ export const GroupTest = (config: GroupTestConfig) => {
         it("remove user from group", async () => {
             const operation = await wallet.removeUserFromGroup(auth, await auth.getAddress(), {
                 groupId: groupId,
-                userId: newUserId,
-                chainId: config.chainId
+                userId: newUserId
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
@@ -162,8 +160,7 @@ export const GroupTest = (config: GroupTestConfig) => {
         it("update group threshold", async () => {
             const operation = await wallet.updateThresholdOfGroup(auth, await auth.getAddress(), {
                 groupId: groupId,
-                threshold: 3,
-                chainId: config.chainId
+                threshold: 3
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
@@ -193,8 +190,7 @@ export const GroupTest = (config: GroupTestConfig) => {
 
         it("remove group", async () => {
             const operation = await wallet.removeGroup(auth, await auth.getAddress(), {
-                groupId: groupId,
-                chainId: config.chainId
+                groupId: groupId
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw

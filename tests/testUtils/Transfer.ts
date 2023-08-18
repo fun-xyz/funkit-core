@@ -34,7 +34,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -329,7 +329,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth1 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })

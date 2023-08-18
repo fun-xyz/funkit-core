@@ -13,7 +13,7 @@ describe("Get Operations", function () {
         const options: GlobalEnvOption = {
             chain: chainId,
             apiKey: apiKey,
-            gasSponsor: undefined
+            gasSponsor: {}
         }
         await configureEnvironment(options)
     })

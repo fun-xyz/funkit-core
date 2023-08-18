@@ -43,7 +43,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -122,8 +122,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 in: "eth",
                 out: outToken,
                 amount: 0.001,
-                returnAddress: randomAddress,
-                chainId: config.chainId
+                returnAddress: randomAddress
             })
             const outTokenAddress = await Token.getAddress(outToken)
             const approveParams = await erc20ApproveTransactionParams({
@@ -163,16 +162,14 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 group: {
                     userIds: memberIds,
                     threshold: threshold
-                },
-                chainId: config.chainId
+                }
             })
             const addUserToGroupParams = await updateGroupTxParams({
                 groupId: groupId,
                 group: {
                     userIds: memberIds.concat([newUserId]),
                     threshold: threshold
-                },
-                chainId: config.chainId
+                }
             })
 
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [createGroupParams, addUserToGroupParams])
@@ -205,16 +202,13 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const newOwnerId1 = randomBytes(20)
             const newOwnerId2 = randomBytes(20)
             const addOwner1Params = await addOwnerTxParams({
-                ownerId: newOwnerId1,
-                chainId: config.chainId
+                ownerId: newOwnerId1
             })
             const addOwner2Params = await addOwnerTxParams({
-                ownerId: newOwnerId2,
-                chainId: config.chainId
+                ownerId: newOwnerId2
             })
             const removeOwner1Params = await removeOwnerTxParams({
-                ownerId: newOwnerId1,
-                chainId: config.chainId
+                ownerId: newOwnerId1
             })
 
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [
@@ -260,7 +254,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth1 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })

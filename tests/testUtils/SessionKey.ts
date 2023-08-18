@@ -34,7 +34,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -70,8 +70,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     ],
                     feeTokenWhitelist: [AddressZero],
                     feeRecipientWhitelist: [feeRecip],
-                    deadline,
-                    chainId: config.chainId
+                    deadline
                 }
                 const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
                 await wallet.executeOperation(auth, operation)

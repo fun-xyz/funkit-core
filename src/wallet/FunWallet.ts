@@ -311,7 +311,7 @@ export class FunWallet extends FirstClassActions {
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
         let paymasterAndData = "0x"
-        if (txOptions.gasSponsor) {
+        if (txOptions.gasSponsor && Object.keys(txOptions.gasSponsor).length > 0) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()

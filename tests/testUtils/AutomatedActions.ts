@@ -32,7 +32,7 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey,
-                gasSponsor: undefined
+                gasSponsor: {}
             }
             await configureEnvironment(options)
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
@@ -57,7 +57,6 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
                 token: "eth"
             })
             opId = await wallet.scheduleOperation(auth, userOp)
-            console.log("op Id", opId)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
