@@ -11,6 +11,6 @@ export type User = {
 }
 
 export interface FunWalletParams {
-    users?: User[]
-    uniqueId?: string
+    users: User[]
+    uniqueId: string
 }
