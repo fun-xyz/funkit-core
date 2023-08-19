@@ -82,7 +82,7 @@ export type SessionKeyParams = {
     actionWhitelist: ActionWhitelistObject[]
     feeTokenWhitelist?: string[]
     feeRecipientWhitelist?: string[]
-    deadline: number
+    deadline: bigint
     actionValueLimit?: bigint
     feeValueLimit?: bigint
     user: SessionKeyAuth
@@ -94,7 +94,7 @@ export type ActionWhitelistObject = {
 }
 
 export type RuleStruct = {
-    deadline: number
+    deadline: bigint
     actionValueLimit: bigint
     targetSelectorMerkleRootHash: Hex
     feeValueLimit: bigint
