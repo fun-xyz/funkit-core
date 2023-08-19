@@ -55,7 +55,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             const user = createSessionUser()
             const second = 1000
             const minute = 60 * second
-            const deadline = BigInt(Date.now() + 2 * minute) / 1000n
+            const deadline = Date.now() + (2 * minute) / 1000
             const feeRecip = randomBytes(20)
             before(async () => {
                 const basetokenAddr = await Token.getAddress(baseToken)
@@ -133,8 +133,8 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             })
 
             it("Session key expires", async () => {
-                const waitTime = BigInt(Date.now())
-                const diff = deadline * 1000n - waitTime
+                const waitTime = Date.now()
+                const diff = deadline * 1000 - waitTime
                 if (diff > 0n) {
                     await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.2))
                 }

@@ -81,9 +81,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const requiredAmount =
                     (config.amount ? config.amount : 0.0001) * 10 ** Number(await Token.getDecimals(config.inToken, options))
                 const userOp = await wallet.swap(auth, await auth.getAddress(), {
-                    in: "eth",
+                    tokenIn: "eth",
                     amount: config.amount ? config.amount : 0.05,
-                    out: config.inToken,
+                    tokenOut: config.inToken,
                     returnAddress: walletAddress
                 })
                 await wallet.executeOperation(auth, userOp)
@@ -91,9 +91,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
-                    in: "eth",
+                    tokenIn: "eth",
                     amount: config.amount ? config.amount : 0.05,
-                    out: config.inToken,
+                    tokenOut: config.inToken,
                     returnAddress: walletAddress1
                 })
                 await wallet1.executeOperation(auth, userOp1)
@@ -145,9 +145,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 auth,
                 await auth.getAddress(),
                 {
-                    in: config.inToken,
+                    tokenIn: config.inToken,
                     amount: config.amount ? config.amount : 0.0001,
-                    out: config.outToken,
+                    tokenOut: config.outToken,
                     returnAddress: walletAddress
                 },
                 {
