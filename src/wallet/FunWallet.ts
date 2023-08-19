@@ -43,7 +43,7 @@ export class FunWallet extends FirstClassActions {
      */
     constructor(params: FunWalletParams | string) {
         super()
-        if (params instanceof String) {
+        if (typeof params === "string") {
             if (isAddress(params as string)) {
                 this.address = params as Address
             } else {
