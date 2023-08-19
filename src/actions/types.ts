@@ -67,6 +67,7 @@ export type SwapParams = {
     amount: number
     slippage?: number
     returnAddress?: Address
+    poolFee?: UniSwapPoolFeeOptions
 }
 
 export type LimitOrderParam = {

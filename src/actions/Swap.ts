@@ -132,7 +132,7 @@ export const uniswapV3SwapTransactionParams = async (
         returnAddress: params.returnAddress!,
         percentDecimal,
         slippage,
-        poolFee: UniSwapPoolFeeOptions.medium
+        poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
     }
 
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
@@ -179,7 +179,7 @@ export const uniswapV2SwapTransactionParams = async (
         returnAddress: params.returnAddress!,
         percentDecimal,
         slippage,
-        poolFee: UniSwapPoolFeeOptions.medium
+        poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
     }
     const chainId = Number(await chain.getChainId())
 
