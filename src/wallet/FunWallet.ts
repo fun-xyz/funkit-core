@@ -52,7 +52,7 @@ export class FunWallet extends FirstClassActions {
                     "string input must be an address type",
                     "FunWallet.constructor",
                     params,
-                    "Provide either (uniqueId, users) or walletAddr when constructing FunWallet",
+                    "Provide either (uniqueId, users) or walletAddr when constructing a FunWallet",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
                 )
             }
@@ -64,7 +64,7 @@ export class FunWallet extends FirstClassActions {
                     "uniqueId must be bytes32 and users must be non-empty",
                     "FunWallet.constructor",
                     params,
-                    "Provide valid uniqueId and users when constructing FunWallet",
+                    "The uniqueId field should be a 32 byte Hexstring and the users field should be an array of User objects",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
                 )
             }
