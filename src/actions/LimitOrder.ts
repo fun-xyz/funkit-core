@@ -1,3 +1,4 @@
+import { FeeAmount } from "@uniswap/v3-sdk"
 import { encodeAbiParameters } from "viem"
 import { LimitOrderParam } from "./types"
 import {
@@ -8,6 +9,13 @@ import {
 } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Token } from "../data"
+
+const fees = {
+    lowest: FeeAmount.LOWEST,
+    low: FeeAmount.LOW,
+    medium: FeeAmount.MEDIUM,
+    high: FeeAmount.HIGH
+}
 
 export const limitSwapOrderTransactionParams = async (
     params: LimitOrderParam,
@@ -21,6 +29,7 @@ export const limitSwapOrderTransactionParams = async (
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const uniswapv3LimitOrderAddress = await chain.getAddress("uniswapv3LimitOrder")
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    const _poolFee = poolFee ? fees[poolFee] : FeeAmount.MEDIUM
     const data = encodeAbiParameters(
         [
             {
@@ -28,7 +37,7 @@ export const limitSwapOrderTransactionParams = async (
                 components: [{ type: "uint24" }, { type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }]
             }
         ],
-        [[poolFee ?? 3000, tokenInAddress, tokenOutAddress, amountIn, amountOut]]
+        [[_poolFee, tokenInAddress, tokenOutAddress, amountIn, amountOut]]
     )
 
     const UniswapV3LimitOrderExecuteData = UNISWAP_V3_LIMIT_ORDER_CONTRACT_INTERFACE.encodeTransactionParams(

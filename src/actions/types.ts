@@ -58,6 +58,7 @@ export enum UniSwapPoolFeeOptions {
     medium = "medium",
     high = "high"
 }
+
 export type CreateParams = {
     to: Address
 }
@@ -75,7 +76,7 @@ export type LimitOrderParam = {
     tokenOut: string
     tokenInAmount: number
     tokenOutAmount: number
-    poolFee?: number
+    poolFee?: UniSwapPoolFeeOptions
 }
 
 export type SessionKeyParams = {
