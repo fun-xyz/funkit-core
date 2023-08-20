@@ -84,7 +84,7 @@ export type SessionKeyParams = {
     actionWhitelist: ActionWhitelistObject[]
     feeTokenWhitelist?: string[]
     feeRecipientWhitelist?: string[]
-    deadline: bigint
+    deadline: number
     actionValueLimit?: bigint
     feeValueLimit?: bigint
     user: SessionKeyAuth

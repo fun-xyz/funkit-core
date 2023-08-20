@@ -47,7 +47,7 @@ export const createSessionKeyTransactionParams = async (
     const targetSelectorMerkleRootHash = targetSelectorMerkleTree.getRoot()
     params.user.setTargetSelectorMerkleTree(targetSelectorMerkleTree)
     const ruleStruct: RuleStruct = {
-        deadline: params.deadline,
+        deadline: convertTimestampToBigInt(params.deadline),
         targetSelectorMerkleRootHash,
         feeRecipientTokenMerkleRootHash,
         actionValueLimit,
@@ -87,4 +87,14 @@ export const removeOwnerTxParams = async (
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "removeOwner", [pad(params.ownerId, { size: 32 })])
+}
+
+const convertTimestampToBigInt = (timestamp: number): bigint => {
+    if (Math.abs(Date.now() - timestamp) < Math.abs(Date.now() - timestamp * 1000)) {
+        // timestamp is in mills
+        return BigInt(Math.floor(timestamp)) / 1000n
+    } else {
+        // timestamp is seconds
+        return BigInt(Math.floor(timestamp))
+    }
 }
