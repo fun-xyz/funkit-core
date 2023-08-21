@@ -58,19 +58,23 @@ export const BASE_WRAP_TOKEN_ADDR = {
     "137": {
         wmatic: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
     },
+    "8453": {
+        weth: "0x4200000000000000000000000000000000000006"
+    },
     "36865": {
         weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     },
-    "43113": {
-        weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
-    },
     "42161": {
         weth: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    },
+    "43113": {
+        weth: "0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3"
     }
 }
 
 // When update this, also remember to update the address in api service
-export const FUN_GASLESS_SPONSOR_ADDRESS = "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
+export const FUN_GASLESS_SPONSOR_ADDRESS = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
+export const FUN_TOKEN_SPONSOR_ADDRESS = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
 
 export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5"]
 export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
@@ -131,7 +135,13 @@ export const CONTRACT_ADDRESSES = {
     UniswapV2Router02: UNISWAPV2ROUTER02_CONTRACT["addresses"],
     TestNFT: TEST_NFT_CONTRACT["addresses"],
     funGaslessSponsorAddress: { "5": FUN_GASLESS_SPONSOR_ADDRESS },
-    funTokenSponsorAddress: {}
+    funTokenSponsorAddress: {
+        "5": FUN_TOKEN_SPONSOR_ADDRESS,
+        "10": FUN_TOKEN_SPONSOR_ADDRESS,
+        "137": FUN_TOKEN_SPONSOR_ADDRESS,
+        "8453": FUN_TOKEN_SPONSOR_ADDRESS,
+        "42161": FUN_TOKEN_SPONSOR_ADDRESS
+    }
 }
 
 export const gasSpecificChain = {
