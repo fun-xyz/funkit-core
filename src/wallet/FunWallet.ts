@@ -80,8 +80,9 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
-     * Returns the wallet address. The address should be the same for all EVM chains so no input is needed
-     * @returns Address
+     * Retrieves the wallet address associated with this FunWallet. The address should be the same for all EVM chains so no input is needed
+     * If the address is not already cached, it fetches it using the wallet's unique ID and chain information.
+     * @returns {Promise<Address>} The wallet address.
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
@@ -90,11 +91,24 @@ export class FunWallet extends FirstClassActions {
         return this.address!
     }
 
+    /**
+     * Retrieves the wallet address associated with the provided unique ID using the given API key.
+     * @param {string} uniqueId - The unique ID of the wallet.
+     * @param {string} apiKey - The API key to access the required resources.
+     * @returns {Promise<Address>} The wallet address.
+     */
     static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 5 }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)))
     }
 
+    /**
+     * Retrieves the wallet address associated with the provided unique ID in an offline environment.
+     * @param {string} uniqueId - The unique ID of the wallet.
+     * @param {string} rpcUrl - The URL of the RPC endpoint for offline querying.
+     * @param {Address} factoryAddress - The address of the factory contract.
+     * @returns {Promise<Address>} The wallet address.
+     */
     static async getAddressOffline(uniqueId: string, rpcUrl: string, factoryAddress: Address) {
         const client = await createPublicClient({
             transport: http(rpcUrl)
@@ -107,15 +121,6 @@ export class FunWallet extends FirstClassActions {
      * @param {string} chainId string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
      * @param {string} onlyVerifiedTokens If true, only return alchemy tokens that are verified(filters spam) - defaults to false
      * @returns JSON
-     * {
-     *    "0xTokenAddress": {
-     *        "tokenBalance": "0x00001",
-     *        "symbol": "USDC",
-     *        "decimals": 6,
-     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-     *        "price": 1.0001,
-     *     }
-     * }
      */
     async getTokens(chainIdInput?: string, onlyVerifiedTokens = false) {
         let chainId
@@ -137,13 +142,6 @@ export class FunWallet extends FirstClassActions {
      * Given an address and a chain, returns all NFTs owned by that address
      * @param {string} chainId string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
      * @returns array
-     * [
-     *     {
-     *       "address": "string",
-     *       "token_id": "string",
-     *       "floor_price": "string",
-     *     }
-     *  ]
      */
     async getNFTs(chainIdInput?: string) {
         let chainId
@@ -167,17 +165,6 @@ export class FunWallet extends FirstClassActions {
      * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
      * @param {boolean} checkStatus true if you want to check if the address has any pending lido withdrawals
      * @returns JSON of all tokens owned by address
-     * {
-     *    1: {
-     *      "0xTokenAddress": {
-     *        "tokenBalance": "0x00001",
-     *        "symbol": "USDC",
-     *        "decimals": 6,
-     *        "logo": "https://static.alchemyapi.io/images/assets/3408.png",
-     *        "price": 1.0001,
-     *     }
-     *   }
-     * }
      */
     async getAssets(chainIdInput?: string, onlyVerifiedTokens = false, checkStatus = false) {
         let chainId
@@ -209,6 +196,14 @@ export class FunWallet extends FirstClassActions {
         return { ...lidoWithdrawals, ...tokens, ...nfts }
     }
 
+    /**
+     * Retrieves the nonce value for the specified sender address and nonce key.
+     * If the nonce is unavailable, a random nonce key is generated and returned as the nonce.
+     * @param {string} sender - The sender's address.
+     * @param {string} key - The nonce key (default: randomly generated).
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<bigint>} The nonce value.
+     */
     async getNonce(
         sender: string,
         key = generateRandomNonceKey(),
@@ -230,6 +225,12 @@ export class FunWallet extends FirstClassActions {
         }
     }
 
+    /**
+     * Retrieves a list of operations associated with the wallet.
+     * @param {OperationStatus} status - The status of operations to retrieve (default: OperationStatus.ALL).
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation[]>} A list of operations.
+     */
     async getOperations(
         status: OperationStatus = OperationStatus.ALL,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
@@ -238,11 +239,23 @@ export class FunWallet extends FirstClassActions {
         return await getOpsOfWallet(await this.getAddress(), await chain.getChainId(), status)
     }
 
+    /**
+     * Retrieves a specific operation by its ID.
+     * @param {Hex} opId - The ID of the operation to retrieve.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The requested operation.
+     */
     async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         return (await getOps([opId], await chain.getChainId()))[0]
     }
 
+    /**
+     * Retrieves a list of users associated with the wallet and their potential corresponding group information.
+     * @param {Auth} auth - The authentication instance for retrieving user information.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<User[]>} A list of users with their group information.
+     */
     async getUsers(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<User[]> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const storedUserIds = await auth.getUserIds(await this.getAddress(), await chain.getChainId())
@@ -273,11 +286,23 @@ export class FunWallet extends FirstClassActions {
         return users
     }
 
+    /**
+     * Checks the deployment status of the wallet's address to determine if it's a contract.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<boolean>} `true` if the address is a contract, `false` otherwise.
+     */
     async getDeploymentStatus(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         return await chain.addressIsContract(await this.getAddress())
     }
 
+    /**
+     * Creates the wallet.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<ExecutionReceipt>} The execution receipt of the created operation.
+     */
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
@@ -285,14 +310,32 @@ export class FunWallet extends FirstClassActions {
         return receipt
     }
 
+    /**
+     * Generates an on-ramp URL for the account address.
+     * @param {Address} address - The account address (optional, defaults to the wallet's address).
+     * @returns {Promise<string>} The on-ramp URL.
+     */
     async onRamp(address?: Address): Promise<string> {
         return await getOnRampUrl(address ? address : await this.getAddress())
     }
 
+    /**
+     * Generates an off-ramp URL for the account address.
+     * @param {Address} address - The account address (optional, defaults to the wallet's address).
+     * @returns {Promise<string>} The off-ramp URL.
+     */
     async offRamp(address?: Address): Promise<string> {
         return await getOffRampUrl(address ? address : await this.getAddress())
     }
 
+    /**
+     * Creates a new operation to be associated with the wallet and prepares it for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the operation.
+     * @param {TransactionParams} transactionParams - The parameters for the transaction.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The created and prepared operation.
+     */
     async createOperation(
         auth: Auth,
         userId: string,
@@ -314,7 +357,7 @@ export class FunWallet extends FirstClassActions {
 
         const sender = await this.getAddress()
         const maxFeePerGas = await chain.getFeeData()
-        const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this._getThisInitCode(chain)
+        const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this.getThisInitCode(chain)
         let paymasterAndData = "0x"
         if (txOptions.gasSponsor && Object.keys(txOptions.gasSponsor).length > 0) {
             if (txOptions.gasSponsor.token) {
@@ -327,7 +370,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         const partialOp = {
-            callData: await this._buildCalldata(auth, userId, transactionParams, txOptions),
+            callData: await this.buildCalldata(auth, userId, transactionParams, txOptions),
             paymasterAndData,
             sender,
             maxFeePerGas: maxFeePerGas!,
@@ -369,6 +412,13 @@ export class FunWallet extends FirstClassActions {
         return estimatedOperation
     }
 
+    /**
+     * Signs an operation using the provided authentication instance and returns the signed operation.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {Operation} operation - The operation to be signed.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The signed operation.
+     */
     async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         operation = Operation.convertTypeToObject(operation)
@@ -380,6 +430,13 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
+    /**
+     * Executes an operation and returns the execution receipt.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {Operation} operation - The operation to be executed.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<ExecutionReceipt>} The execution receipt of the operation.
+     */
     async executeOperation(
         auth: Auth,
         operation: Operation,
@@ -510,6 +567,13 @@ export class FunWallet extends FirstClassActions {
         return receipt
     }
 
+    /**
+     * Schedules an operation for execution and returns the scheduled operation's ID.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {Operation} operation - The operation to be scheduled.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Hex>} The ID of the scheduled operation.
+     */
     async scheduleOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Hex> {
         txOptions = parseOptions(txOptions)
         operation = Operation.convertTypeToObject(operation)
@@ -608,11 +672,27 @@ export class FunWallet extends FirstClassActions {
         return operation.opId
     }
 
+    /**
+     * Removes an operation from the system using its ID.
+     * @param {Auth} _ - The authentication instance (not used in this method).
+     * @param {Hex} operationId - The ID of the operation to be removed.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<void>} A promise that resolves after the operation is removed.
+     */
     async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         await deleteOp(operationId, await chain.getChainId())
     }
 
+    /**
+     * Creates and prepares a rejection operation for an existing operation.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} groupId - The ID of the group to which the operation belongs.
+     * @param {Operation} operation - The operation to be rejected.
+     * @param {string} rejectionMessage - Optional rejection message.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared rejection operation.
+     */
     async createRejectOperation(
         auth: Auth,
         groupId: string,
@@ -633,6 +713,14 @@ export class FunWallet extends FirstClassActions {
         return rejectOperation
     }
 
+    /**
+     * Estimates the gas cost for executing an operation and returns the updated operation with gas estimation details.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the operation.
+     * @param {Operation} operation - The operation for which to estimate gas.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The updated operation with gas estimation details.
+     */
     async estimateOperation(
         auth: Auth,
         userId: string,
@@ -650,7 +738,7 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
-    private async _getThisInitCode(chain: Chain) {
+    private async getThisInitCode(chain: Chain) {
         const owners: Hex[] = Array.from(this.userInfo!.keys())
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
@@ -680,10 +768,10 @@ export class FunWallet extends FirstClassActions {
             verificationData: [rbacInitData, userAuthInitData]
         }
 
-        return this._getInitCode(initCodeParams)
+        return this.getInitCode(initCodeParams)
     }
 
-    private _getInitCode(input: InitCodeParams) {
+    private getInitCode(input: InitCodeParams) {
         const encodedVerificationInitdata = encodeAbiParameters(
             [
                 {
@@ -712,7 +800,7 @@ export class FunWallet extends FirstClassActions {
      * @param options EnvOptions to read fee data from
      * @returns calldata to be passed into createUserOperation
      */
-    private async _buildCalldata(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
+    private async buildCalldata(auth: Auth, userId: string, params: TransactionParams, options: EnvOption): Promise<Hex> {
         if (!params.value) {
             params.value = 0n
         }
