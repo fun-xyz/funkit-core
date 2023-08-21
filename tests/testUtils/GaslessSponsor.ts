@@ -114,9 +114,9 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const tokenBalanceBefore = await Token.getBalanceBN(config.outToken, walletAddress)
 
             const operation = await wallet.swap(auth, await auth.getAddress(), {
-                in: config.inToken,
+                tokenIn: config.inToken,
                 amount: config.amount ? config.amount : 0.0001,
-                out: config.outToken,
+                tokenOut: config.outToken,
                 returnAddress: walletAddress
             })
             await wallet.executeOperation(auth, operation)

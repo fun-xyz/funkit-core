@@ -35,16 +35,14 @@ import {
     CreateGroupParams,
     FinishUnstakeParams,
     LimitOrderParam,
-    OneInchSwapParams,
     RemoveGroupParams,
     RemoveOwnerParams,
     RemoveUserFromGroupParams,
     RequestUnstakeParams,
     SessionKeyParams,
     StakeParams,
-    SwapParam,
+    SwapParams,
     TransferParams,
-    UniswapParams,
     UpdateGroupParams,
     UpdateThresholdOfGroupParams
 } from "./types"
@@ -65,18 +63,19 @@ export abstract class FirstClassActions {
     async swap(
         auth: Auth,
         userId: string,
-        params: SwapParam,
+        params: SwapParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         let transactionParams: TransactionParams
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = Number(await chain.getChainId())
+        params.returnAddress ??= await this.getAddress()
         if (oneInchSupported.includes(chainId)) {
-            transactionParams = await oneInchTransactionParams(params as OneInchSwapParams, txOptions)
+            transactionParams = await oneInchTransactionParams(params, await this.getAddress(), txOptions)
         } else if (uniswapV3Supported.includes(chainId)) {
-            transactionParams = await uniswapV3SwapTransactionParams(params as UniswapParams, txOptions)
+            transactionParams = await uniswapV3SwapTransactionParams(params, txOptions)
         } else {
-            transactionParams = await uniswapV2SwapTransactionParams(params as UniswapParams, txOptions)
+            transactionParams = await uniswapV2SwapTransactionParams(params, txOptions)
         }
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }

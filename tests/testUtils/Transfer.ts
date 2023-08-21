@@ -52,14 +52,6 @@ export const TransferTest = (config: TransferTestConfig) => {
             }
         })
 
-        after(async function () {
-            await wallet.transfer(auth, await auth.getAddress(), {
-                to: await auth.getAddress(),
-                amount: (Number(await Token.getBalance(baseToken, await wallet.getAddress())) * 4) / 5,
-                token: "eth"
-            })
-        })
-
         it("transfer baseToken directly", async () => {
             const randomAddress = await auth.getAddress()
             const walletAddress = await wallet.getAddress()

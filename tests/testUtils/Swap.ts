@@ -73,10 +73,9 @@ export const SwapTest = (config: SwapTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
-                in: baseToken,
+                tokenIn: baseToken,
                 amount: config.amount ? config.amount : 0.001,
-                out: inToken,
-                returnAddress: walletAddress
+                tokenOut: inToken
             })
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
@@ -88,11 +87,10 @@ export const SwapTest = (config: SwapTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
-                in: inToken,
+                tokenIn: inToken,
                 amount: 0.0001,
-                out: outToken,
-                slippage: config.slippage ? config.slippage : 0.5,
-                returnAddress: walletAddress
+                tokenOut: outToken,
+                slippage: config.slippage ? config.slippage : 0.5
             })
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
@@ -103,10 +101,9 @@ export const SwapTest = (config: SwapTestConfig) => {
             const walletAddress = await wallet.getAddress()
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
-                in: inToken,
+                tokenIn: inToken,
                 amount: 0.0001,
-                out: baseToken,
-                returnAddress: walletAddress
+                tokenOut: baseToken
             })
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
@@ -119,7 +116,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const second = 1000
                 const minute = 60 * second
                 const chain = await Chain.getChain({ chainIdentifier: config.chainId })
-                const deadline = BigInt(Date.now() + 2 * minute) / 1000n
+                const deadline = (Date.now() + 2 * minute) / 1000
                 const targetAddr = await chain.getAddress("tokenSwapAddress")
                 const sessionKeyParams: SessionKeyParams = {
                     user,
@@ -142,9 +139,9 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
 
                 const operation = await wallet.swap(user, await user.getAddress(), {
-                    in: baseToken,
+                    tokenIn: baseToken,
                     amount: config.amount ? config.amount : 0.001,
-                    out: inToken,
+                    tokenOut: inToken,
                     returnAddress: walletAddress
                 })
 
@@ -159,9 +156,9 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
 
                 const operation = await wallet.swap(user, await user.getAddress(), {
-                    in: inToken,
+                    tokenIn: inToken,
                     amount: 1,
-                    out: outToken,
+                    tokenOut: outToken,
                     slippage: config.slippage ? config.slippage : 0.5,
                     returnAddress: walletAddress
                 })
@@ -234,9 +231,9 @@ export const SwapTest = (config: SwapTestConfig) => {
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
-                in: baseToken,
+                tokenIn: baseToken,
                 amount: config.amount ? config.amount : 0.001,
-                out: inToken,
+                tokenOut: inToken,
                 returnAddress: walletAddress
             })
 
@@ -261,9 +258,9 @@ export const SwapTest = (config: SwapTestConfig) => {
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
-                in: baseToken,
+                tokenIn: baseToken,
                 amount: config.amount ? config.amount : 0.001,
-                out: inToken,
+                tokenOut: inToken,
                 returnAddress: walletAddress
             })
 
@@ -286,9 +283,9 @@ export const SwapTest = (config: SwapTestConfig) => {
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
-                in: baseToken,
+                tokenIn: baseToken,
                 amount: config.amount ? config.amount : 0.001,
-                out: inToken,
+                tokenOut: inToken,
                 returnAddress: walletAddress
             })
 
@@ -330,9 +327,9 @@ export const SwapTest = (config: SwapTestConfig) => {
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
-                in: baseToken,
+                tokenIn: baseToken,
                 amount: config.amount ? config.amount : 0.001,
-                out: inToken,
+                tokenOut: inToken,
                 returnAddress: walletAddress
             })
 

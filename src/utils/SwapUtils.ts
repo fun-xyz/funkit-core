@@ -2,6 +2,7 @@ import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
+import { UniSwapPoolFeeOptions } from "../actions"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
 import { EnvOption } from "../config"
@@ -174,10 +175,10 @@ class SwapToken {
 }
 
 const fees = {
-    lowest: 100,
-    low: 500,
-    medium: 3000,
-    high: 10000
+    lowest: FeeAmount.LOWEST,
+    low: FeeAmount.LOW,
+    medium: FeeAmount.MEDIUM,
+    high: FeeAmount.HIGH
 }
 
 type SwapParamsUtils = {
@@ -187,8 +188,9 @@ type SwapParamsUtils = {
     returnAddress: Address
     percentDecimal: number
     slippage: number
-    poolFee: string
+    poolFee: UniSwapPoolFeeOptions
 }
+
 export type UniswapV3Addrs = {
     univ3quoter: Address
     univ3factory: Address

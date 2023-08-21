@@ -58,15 +58,17 @@ export enum UniSwapPoolFeeOptions {
     medium = "medium",
     high = "high"
 }
+
 export type CreateParams = {
     to: Address
 }
-export type SwapParam = {
-    in: string
-    out: string
+export type SwapParams = {
+    tokenIn: string
+    tokenOut: string
     amount: number
     slippage?: number
-    returnAddress: Address
+    returnAddress?: Address
+    poolFee?: UniSwapPoolFeeOptions
 }
 
 export type LimitOrderParam = {
@@ -74,17 +76,7 @@ export type LimitOrderParam = {
     tokenOut: string
     tokenInAmount: number
     tokenOutAmount: number
-    poolFee?: number
-}
-
-export interface OneInchSwapParams extends SwapParam {
-    disableEstimate?: boolean
-    allowPartialFill?: boolean
-}
-
-export interface UniswapParams extends SwapParam {
     poolFee?: UniSwapPoolFeeOptions
-    percentDecimal?: number
 }
 
 export type SessionKeyParams = {
@@ -92,7 +84,7 @@ export type SessionKeyParams = {
     actionWhitelist: ActionWhitelistObject[]
     feeTokenWhitelist?: string[]
     feeRecipientWhitelist?: string[]
-    deadline: bigint
+    deadline: number
     actionValueLimit?: bigint
     feeValueLimit?: bigint
     user: SessionKeyAuth
