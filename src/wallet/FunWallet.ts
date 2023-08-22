@@ -301,13 +301,12 @@ export class FunWallet extends FirstClassActions {
      * @param {Auth} auth - The authentication instance for the user.
      * @param {string} userId - The ID of the user initiating the operation.
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
-     * @returns {Promise<ExecutionReceipt>} The execution receipt of the created operation.
+     * @returns {Promise<Operation>} The operation to create the wallet.
      */
-    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
-        const receipt = await this.executeOperation(auth, operation, txOptions)
-        return receipt
+        return operation
     }
 
     /**
@@ -424,7 +423,13 @@ export class FunWallet extends FirstClassActions {
         operation = Operation.convertTypeToObject(operation)
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
-            await signOp(operation.opId!, await chain.getChainId(), operation.userOp.signature as Hex, await auth.getAddress())
+            await signOp(
+                operation.opId!,
+                await chain.getChainId(),
+                operation.userOp.signature as Hex,
+                await auth.getAddress(),
+                this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold
+            )
         }
 
         return operation

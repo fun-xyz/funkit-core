@@ -1,4 +1,4 @@
-import { expect } from "chai"
+import { assert, expect } from "chai"
 import { Address, pad } from "viem"
 import { Auth } from "../../src/auth"
 import { HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
@@ -42,7 +42,13 @@ export const RBACTest = (config: RBACTestConfig) => {
             chain = await Chain.getChain({ chainIdentifier: chainId })
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
-                expect(await wallet.create(auth, await auth.getAddress())).to.not.throw
+                try {
+                    const op = await wallet.create(auth, await auth.getAddress())
+                    await wallet.executeOperation(auth, op)
+                } catch (e: any) {
+                    console.log(e)
+                    assert(false, "Failed to deploy wallet")
+                }
             }
             if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
