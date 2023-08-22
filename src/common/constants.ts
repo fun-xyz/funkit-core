@@ -10,7 +10,6 @@ import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
 import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
 import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
 import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
-import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
 import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
 import TEST_NFT_CONTRACT from "../abis/TestNFT.json"
 import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
@@ -86,7 +85,6 @@ export const ERC20_ABI = ERC20_CONTRACT["abi"]
 export const WALLET_ABI = FUN_WALLET_CONTRACT["abi"]
 export const FACTORY_ABI = FACTORY_CONTRACT["abi"]
 export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT["abi"]
-export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT["abi"]
 export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT["abi"]
 export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
