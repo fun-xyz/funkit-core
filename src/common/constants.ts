@@ -142,5 +142,7 @@ export const gasSpecificChain = {
     }
 }
 
+export const ETH_TRANSFER_SELECTOR = "0x00000000"
+
 export const VALID_PRIVATE_KEY_LENGTH = 64
 export const BYTES32_LENGTH = 66
