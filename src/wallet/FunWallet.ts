@@ -305,8 +305,7 @@ export class FunWallet extends FirstClassActions {
      */
     async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
-        const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
-        return operation
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     /**
