@@ -56,10 +56,31 @@ import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../erro
 import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
+    /**
+     * Creates a new operation to be associated with the wallet and prepares it for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the operation.
+     * @param {TransactionParams} transactionParams - The parameters for the transaction.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The created and prepared operation.
+     */
     abstract createOperation(auth: Auth, userId: string, transactionParams: TransactionParams, txOptions: EnvOption): Promise<Operation>
 
+    /**
+     * Retrieves the wallet address associated with this FunWallet. The address should be the same for all EVM chains so no input is needed
+     * If the address is not already cached, it fetches it using the wallet's unique ID and chain information.
+     * @returns {Promise<Address>} The wallet address.
+     */
     abstract getAddress(): Promise<Address>
 
+    /**
+     * Initiates a swap operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the swap.
+     * @param {SwapParams} params - The parameters for the swap operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared swap operation.
+     */
     async swap(
         auth: Auth,
         userId: string,
@@ -80,6 +101,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates a limit swap order operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the limit swap order.
+     * @param {LimitOrderParam} params - The parameters for the limit swap order.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared limit swap order operation.
+     */
     async limitSwapOrder(
         auth: Auth,
         userId: string,
@@ -90,6 +119,15 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates a transfer operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the transfer.
+     * @param {TransferParams} params - The parameters for the transfer.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared transfer operation.
+     * @throws {InvalidParameterError} When provided parameters are missing or incorrect.
+     */
     async transfer(
         auth: Auth,
         userId: string,
@@ -119,6 +157,15 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates a erc20/erc721 token approval operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the token approval.
+     * @param {ApproveParams} params - The parameters for the token approval.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared token approval operation.
+     * @throws {InvalidParameterError} When provided parameters are missing or incorrect.
+     */
     async tokenApprove(
         auth: Auth,
         userId: string,
@@ -143,6 +190,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates a stake operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the stake operation.
+     * @param {StakeParams} params - The parameters for the stake operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared stake operation.
+     */
     async stake(
         auth: Auth,
         userId: string,
@@ -153,6 +208,15 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates an unstake operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the unstake operation.
+     * @param {RequestUnstakeParams | FinishUnstakeParams} params - The parameters for the unstake operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared unstake operation.
+     * @throws {InvalidParameterError} When provided parameters are missing or incorrect.
+     */
     async unstake(
         auth: Auth,
         userId: string,
@@ -177,6 +241,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates a session key creation operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the session key creation.
+     * @param {SessionKeyParams} params - The parameters for the session key creation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared session key creation operation.
+     */
     async createSessionKey(
         auth: Auth,
         userId: string,
@@ -187,6 +259,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
+    /**
+     * Initiates an add owner operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the add owner operation.
+     * @param {AddOwnerParams} params - The parameters for the add owner operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared add owner operation.
+     */
     async addOwner(
         auth: Auth,
         userId: string,
@@ -203,6 +283,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates a remove owner operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the remove owner operation.
+     * @param {RemoveOwnerParams} params - The parameters for the remove owner operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared remove owner operation.
+     */
     async removeOwner(
         auth: Auth,
         userId: string,
@@ -218,6 +306,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates a create group operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the create group operation.
+     * @param {CreateGroupParams} params - The parameters for the create group operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared create group operation.
+     */
     async createGroup(
         auth: Auth,
         userId: string,
@@ -236,6 +332,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates an add user to group operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the add user to group operation.
+     * @param {AddUserToGroupParams} params - The parameters for the add user to group operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared add user to group operation.
+     */
     async addUserToGroup(
         auth: Auth,
         userId: string,
@@ -287,6 +391,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates a remove user from group operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the remove user from group operation.
+     * @param {RemoveUserFromGroupParams} params - The parameters for the remove user from group operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared remove user from group operation.
+     */
     async removeUserFromGroup(
         auth: Auth,
         userId: string,
@@ -337,6 +449,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates an update threshold of group operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the update threshold of group operation.
+     * @param {UpdateThresholdOfGroupParams} params - The parameters for the update threshold of group operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared update threshold of group operation.
+     */
     async updateThresholdOfGroup(
         auth: Auth,
         userId: string,
@@ -382,6 +502,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates a remove group operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the remove group operation.
+     * @param {RemoveGroupParams} params - The parameters for the remove group operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared remove group operation.
+     */
     async removeGroup(
         auth: Auth,
         userId: string,
@@ -395,6 +523,14 @@ export abstract class FirstClassActions {
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
+    /**
+     * Initiates a batch operation and returns the prepared operation for execution.
+     * @param {Auth} auth - The authentication instance for the user.
+     * @param {string} userId - The ID of the user initiating the batch operation.
+     * @param {TransactionParams[]} params - An array of transaction parameters for the batch operation.
+     * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
+     * @returns {Promise<Operation>} The prepared batch operation.
+     */
     async createBatchOperation(
         auth: Auth,
         userId: string,

@@ -34,8 +34,12 @@ export async function configureEnvironment(option: GlobalEnvOption) {
 
     if (option.gasSponsor !== null && option.gasSponsor !== undefined) {
         if (Object.keys(option.gasSponsor).length !== 0) {
-            const usePermit = option.gasSponsor.usePermit === false ? false : true
-            globalEnvOption.gasSponsor = { ...option.gasSponsor, usePermit }
+            if (option.gasSponsor.token) {
+                const usePermit = option.gasSponsor.usePermit === false ? false : true
+                globalEnvOption.gasSponsor = { ...option.gasSponsor, usePermit }
+            } else {
+                globalEnvOption.gasSponsor = { ...option.gasSponsor }
+            }
         } else {
             globalEnvOption.gasSponsor = {}
         }
