@@ -76,7 +76,7 @@ export const BASE_WRAP_TOKEN_ADDR = {
 export const FUN_GASLESS_SPONSOR_ADDRESS = "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
 export const FUN_TOKEN_SPONSOR_ADDRESS = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
 
-export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5"]
+export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5", "10", "137", "8453", "42161"]
 export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
 
 export const AddressZero = padHex("0x", { size: 20 })
