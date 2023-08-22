@@ -278,11 +278,10 @@ export class FunWallet extends FirstClassActions {
         return await chain.addressIsContract(await this.getAddress())
     }
 
-    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<ExecutionReceipt> {
+    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
         const operation: Operation = await this.createOperation(auth, userId, transactionParams, txOptions)
-        const receipt = await this.executeOperation(auth, operation, txOptions)
-        return receipt
+        return operation
     }
 
     async onRamp(address?: Address): Promise<string> {

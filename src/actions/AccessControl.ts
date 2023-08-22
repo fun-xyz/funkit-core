@@ -31,7 +31,13 @@ export const createSessionKeyTransactionParams = async (
     feeValueLimit ??= 0n
     const selectors: Hex[] = []
     params.actionWhitelist.forEach((actionWhitelistItem) => {
-        selectors.push(...actionWhitelistItem.functionWhitelist.map((functionName) => getSigHash(actionWhitelistItem.abi, functionName)))
+        if (typeof actionWhitelistItem === "string") {
+            selectors.push(actionWhitelistItem)
+        } else {
+            selectors.push(
+                ...actionWhitelistItem.functionWhitelist.map((functionName) => getSigHash(actionWhitelistItem.abi, functionName))
+            )
+        }
     })
     const targets = params.targetWhitelist.map((target) => getAddress(target))
 
