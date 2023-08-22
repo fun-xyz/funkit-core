@@ -1,1 +1,6 @@
-{"name":"SUKUToken","addresses":{"1":"0x0763fdCCF1aE541A5961815C0872A8c5Bc6DE4d7"}}
+{
+    "name": "SUKUToken",
+    "addresses": {
+        "1": "0x0763fdCCF1aE541A5961815C0872A8c5Bc6DE4d7"
+    }
+}
