@@ -231,7 +231,7 @@ export class Auth {
 
         const action = {
             ...tx,
-            account: this.account,
+            account: this.signer ?? this.account,
             chain: chains[preProcessesChains[await chain.getChainId()]]
         }
         const hash = await txClient.sendTransaction(action)

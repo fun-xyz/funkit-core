@@ -373,7 +373,13 @@ export class FunWallet extends FirstClassActions {
         operation = Operation.convertTypeToObject(operation)
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
-            await signOp(operation.opId!, await chain.getChainId(), operation.userOp.signature as Hex, await auth.getAddress())
+            await signOp(
+                operation.opId!,
+                await chain.getChainId(),
+                operation.userOp.signature as Hex,
+                await auth.getAddress(),
+                this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold
+            )
         }
 
         return operation

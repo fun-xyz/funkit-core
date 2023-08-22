@@ -245,8 +245,11 @@ export const SwapTest = (config: SwapTestConfig) => {
             // const operations = await wallet.getOperations(OperationStatus.PENDING)
             const operation = await wallet.getOperation(swapOp.opId!)
 
-            // auth2 sign and execute the operation
-            expect(await wallet.executeOperation(auth2, operation)).to.not.throw
+            // auth2 sign the operation
+            expect(await wallet.signOperation(auth2, operation)).to.not.throw
+
+            // auth1 execute the operation
+            expect(await wallet.executeOperation(auth1, operation)).to.not.throw
 
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
