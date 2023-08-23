@@ -45,6 +45,22 @@ chains["funtestnet"] = {
     rpcUrls: { default: { http: [Array] }, public: { http: [Array] } }
 }
 
+preProcessesChains["36865"] = "base"
+chains["base"] = {
+    id: 8453,
+    name: "Base",
+    network: "base",
+    nativeCurrency: { name: "ethereum", symbol: "ETH", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://soft-broken-arm.base-mainnet.quiknode.pro/57c67d9e841d721a3943054111f538c0cc343c89/"] },
+        public: { http: ["https://soft-broken-arm.base-mainnet.quiknode.pro/57c67d9e841d721a3943054111f538c0cc343c89/"] }
+    },
+    blockExplorers: {
+        etherscan: { name: "BaseScan", url: "https://basescan.org/" },
+        default: { name: "BaseScan", url: "https://basescan.org/" }
+    }
+}
+
 export interface AuthInput {
     web2AuthId?: string
     client?: WalletClient
