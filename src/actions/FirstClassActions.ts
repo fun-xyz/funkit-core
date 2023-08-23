@@ -87,6 +87,33 @@ export abstract class FirstClassActions {
         params: SwapParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        if (!params.tokenIn) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Missing tokenIn",
+                { params },
+                "Provide correct swap params.",
+                "https://docs.fun.xyz"
+            )
+        }
+        if (!params.tokenOut) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Missing tokenOut",
+                { params },
+                "Provide correct swap params.",
+                "https://docs.fun.xyz"
+            )
+        }
+        if (!params.inAmount) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Missing inAmount",
+                { params },
+                "Provide correct swap params.",
+                "https://docs.fun.xyz"
+            )
+        }
         let transactionParams: TransactionParams
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = Number(await chain.getChainId())
