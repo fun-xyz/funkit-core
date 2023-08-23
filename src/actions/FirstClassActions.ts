@@ -95,6 +95,15 @@ export abstract class FirstClassActions {
             transactionParams = await oneInchTransactionParams(params, await this.getAddress(), txOptions)
         } else if (uniswapV3Supported.includes(chainId)) {
             transactionParams = await uniswapV3SwapTransactionParams(params, txOptions)
+        } else if (chainId === 8453) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Swap is not supported on Base",
+                "wallet.swap",
+                { params },
+                "Use a different chain or a different first class method",
+                "https://docs.fun.xyz"
+            )
         } else {
             transactionParams = await uniswapV2SwapTransactionParams(params, txOptions)
         }
