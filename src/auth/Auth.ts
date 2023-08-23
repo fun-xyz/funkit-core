@@ -45,7 +45,7 @@ chains["funtestnet"] = {
     rpcUrls: { default: { http: [Array] }, public: { http: [Array] } }
 }
 
-preProcessesChains["36865"] = "base"
+preProcessesChains["8453"] = "base"
 chains["base"] = {
     id: 8453,
     name: "Base",
