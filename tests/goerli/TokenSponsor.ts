@@ -10,6 +10,6 @@ const config: TokenSponsorTestConfig = {
     prefund: false,
     swapAmount: 0.001,
     stake: false,
-    mint: true
+    mint: false
 }
 TokenSponsorTest(config)
