@@ -13,6 +13,7 @@ export interface StakeTestConfig {
     baseToken: string
     steth: string
     prefundAmt: number
+    stakeAmt: number
     numRetry?: number
 }
 
@@ -41,7 +42,7 @@ export const StakeTest = (config: StakeTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.002)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.0001) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < config.stakeAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.002)
             }
         })
@@ -49,7 +50,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
             const balBefore = await Token.getBalanceBN(baseToken, walletAddress)
-            const userOp = await wallet.stake(auth, await auth.getAddress(), { amount: 0.0001 })
+            const userOp = await wallet.stake(auth, await auth.getAddress(), { amount: config.stakeAmt })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             await new Promise((resolve) => {
                 setTimeout(resolve, 5000)
@@ -60,7 +61,7 @@ export const StakeTest = (config: StakeTestConfig) => {
 
         it("Should be able to start unstaking", async () => {
             const userOp = await wallet.unstake(auth, await auth.getAddress(), {
-                amounts: [0.001],
+                amounts: [config.stakeAmt],
                 recipient: await wallet.getAddress()
             })
             if (config.chainId === 36865) {

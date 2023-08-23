@@ -20,8 +20,6 @@ const paymasterConfig = async (chainId, privateKey, aggergator, oracle, tokenAdd
     const sponsor = new TokenSponsor()
 
     await eoa.sendTx(await sponsor.addUsableToken(oracle, tokenAddress, aggergator))
-
-    console.log(await sponsor.getTokenInfo(tokenAddress))
 }
 
 //ORACLE=Token oracle address

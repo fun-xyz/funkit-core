@@ -10,7 +10,6 @@ import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
 import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
 import GASLESS_PAYMASTER_CONTRACT from "../abis/GaslessPaymaster.json"
 import WITHDRAW_QUEUE_CONTRACT from "../abis/LidoWithdrawQueue.json"
-import OFF_CHAIN_ORACLE_CONTRACT from "../abis/OffChainOracle.json"
 import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
 import TEST_NFT_CONTRACT from "../abis/TestNFT.json"
 import TOKEN_PAYMASTER_CONTRACT from "../abis/TokenPaymaster.json"
@@ -76,7 +75,7 @@ export const BASE_WRAP_TOKEN_ADDR = {
 export const FUN_GASLESS_SPONSOR_ADDRESS = "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
 export const FUN_TOKEN_SPONSOR_ADDRESS = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
 
-export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["5", "10", "137", "8453", "42161"]
+export const TOKEN_SPONSOR_SUPPORT_CHAINS = ["1", "5", "10", "137", "8453", "42161"]
 export const GASLESS_SPONSOR_SUPPORT_CHAINS = ["5"]
 
 export const AddressZero = padHex("0x", { size: 20 })
@@ -90,7 +89,6 @@ export const ERC20_ABI = ERC20_CONTRACT["abi"]
 export const WALLET_ABI = FUN_WALLET_CONTRACT["abi"]
 export const FACTORY_ABI = FACTORY_CONTRACT["abi"]
 export const GASLESS_PAYMASTER_ABI = GASLESS_PAYMASTER_CONTRACT["abi"]
-export const OFF_CHAIN_ORACLE_ABI = OFF_CHAIN_ORACLE_CONTRACT["abi"]
 export const TOKEN_PAYMASTER_ABI = TOKEN_PAYMASTER_CONTRACT["abi"]
 export const WITHDRAW_QUEUE_ABI = WITHDRAW_QUEUE_CONTRACT["abi"]
 export const ERC_721_ABI = ERC_721_CONTRACT["abi"]
@@ -136,6 +134,7 @@ export const CONTRACT_ADDRESSES = {
     TestNFT: TEST_NFT_CONTRACT["addresses"],
     funGaslessSponsorAddress: { "5": FUN_GASLESS_SPONSOR_ADDRESS },
     funTokenSponsorAddress: {
+        "1": FUN_TOKEN_SPONSOR_ADDRESS,
         "5": FUN_TOKEN_SPONSOR_ADDRESS,
         "10": FUN_TOKEN_SPONSOR_ADDRESS,
         "137": FUN_TOKEN_SPONSOR_ADDRESS,
