@@ -1,4 +1,4 @@
 export * from "./BaseError"
-export * from "./ClientErrors/ClientError"
-export * from "./ServerErrors/ServerError"
+export * from "./ClientError"
+export * from "./ServerError"
 export * from "./types"

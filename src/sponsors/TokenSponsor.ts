@@ -18,7 +18,6 @@ export class TokenSponsor extends Sponsor {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
                 "token field is missing",
-                "TokenSponsor.constructor",
                 { gasSponsor: options.gasSponsor },
                 "Provide correct token name or address.",
                 "https://docs.fun.xyz"
@@ -36,7 +35,6 @@ export class TokenSponsor extends Sponsor {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,
                     "sponsorAddress is missing and the chain you are working with does not support default fun sponsor",
-                    "TokenSponsor.getSponsorAddress",
                     { tokenSponsorSupportChains: TOKEN_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
                     "Provide correct sponsorAddress.",
                     "https://docs.fun.xyz"

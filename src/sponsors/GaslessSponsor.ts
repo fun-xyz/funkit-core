@@ -20,7 +20,6 @@ export class GaslessSponsor extends Sponsor {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,
                     "sponsorAddress is missing and the chain you are working with does not support default fun sponsor",
-                    "GaslessSponsor.getSponsorAddress",
                     { gaslessSponsorSupportChains: GASLESS_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
                     "Provide correct sponsorAddress.",
                     "https://docs.fun.xyz"

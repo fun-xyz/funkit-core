@@ -21,7 +21,6 @@ export class Chain {
             throw new InvalidParameterError(
                 ErrorCode.InvalidChainIdentifier,
                 "valid chain identifier or rpcUrl is required, could be chainId, chainName, Fun Chain object, or rpcUrl",
-                "Chain.constructor",
                 { chainInput },
                 "Please provide valid chain identifier or rpcUrl",
                 "https://docs.fun.xyz"
@@ -48,6 +47,16 @@ export class Chain {
                 (await Chain.chain.getChainName()) !== chainInput.chainIdentifier?.toString() &&
                 (await Chain.chain.getRpcUrl()) !== chainInput.rpcUrl)
         ) {
+            if (typeof chainInput.chainIdentifier === "string") {
+                chainInput.chainIdentifier = chainInput.chainIdentifier.replace(/\s/g, "")
+            }
+            if (chainInput.chainIdentifier === "ethereum-goerli") {
+                chainInput.chainIdentifier = "goerli"
+            }
+            if (chainInput.chainIdentifier === "polygon") {
+                chainInput.chainIdentifier = "polygon-mainnet"
+            }
+
             Chain.chain = new Chain(chainInput)
         }
         return Chain.chain
@@ -119,7 +128,6 @@ export class Chain {
             throw new ResourceNotFoundError(
                 ErrorCode.AddressNotFound,
                 "address not found",
-                "chain.getAddress",
                 { name },
                 "Provide correct name to query address",
                 "https://docs.fun.xyz"
@@ -154,7 +162,6 @@ export class Chain {
             throw new InternalFailureError(
                 ErrorCode.AddressNotFound,
                 "entryPointAddress is required",
-                "chain.estimateOpGas",
                 { partialOp },
                 "This is an internal error, please contact support.",
                 "https://docs.fun.xyz"

@@ -36,7 +36,6 @@ export const requestUnstakeTransactionParams = async (
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
             "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
-            "wallet.unstake",
             { params },
             "Provide correct chainId.",
             "https://docs.fun.xyz"
@@ -74,7 +73,6 @@ export const finishUnstakeTransactionParams = async (
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
             "Not ready to withdraw requests",
-            "wallet.unstake",
             { params },
             "Please wait a bit.",
             "https://docs.fun.xyz"
@@ -93,7 +91,6 @@ export const finishUnstakeTransactionParams = async (
         throw new InternalFailureError(
             ErrorCode.CheckPointHintsNotFound,
             "lido checkpoint hints are not found when batching the withdrawal",
-            "wallet.unstake",
             { params, readyToWithdrawRequestIds, lastCheckpoint, hints },
             "Retry later.",
             "https://docs.fun.xyz"
@@ -148,7 +145,6 @@ const getWithdrawalQueue = (chainId: string): Address => {
             throw new InvalidParameterError(
                 ErrorCode.ChainNotSupported,
                 "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
-                "getWithdrawalQueue",
                 { chainId },
                 "Provide correct chainId.",
                 "https://docs.fun.xyz"
@@ -168,7 +164,6 @@ const getSteth = (chainId: string): Address => {
             throw new InvalidParameterError(
                 ErrorCode.ChainNotSupported,
                 "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
-                "getSteth",
                 { chainId },
                 "Provide correct chainId.",
                 "https://docs.fun.xyz"

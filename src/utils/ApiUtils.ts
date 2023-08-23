@@ -55,7 +55,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameter,
                     `bad request ${JSON.stringify(json)}`,
-                    `sendRequest.ApiUtils ${method} ${uri}`,
+
                     { body },
                     "check the api call parameters. its mostly because some call parameters are wrong",
                     "https://docs.fun.xyz"
@@ -63,17 +63,15 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
             } else if (response.status === 403) {
                 throw new AccessDeniedError(
                     ErrorCode.Unauthorized,
-                    `you are not authorized to access this resource ${JSON.stringify(json)}`,
-                    `sendRequest.ApiUtils ${method} ${uri}`,
-                    { body, apiKey },
-                    "check your api key and check with fun team if you believe something is off",
+                    "Invalid API key or insufficient access.",
+                    { apiKey },
+                    "Check your api key at https://app.fun.xyz and check with fun team if you believe something is off",
                     "https://docs.fun.xyz"
                 )
             } else if (response.status === 404) {
                 throw new ResourceNotFoundError(
                     ErrorCode.ServerMissingData,
-                    `data not found on api server ${JSON.stringify(json)}`,
-                    `sendRequest.ApiUtils ${method} ${uri}`,
+                    JSON.stringify(json),
                     { body },
                     "check the api call parameters. its mostly because some call parameters are wrong",
                     "https://docs.fun.xyz"
@@ -82,7 +80,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 throw new ThrottlingError(
                     ErrorCode.RequestLimitExceeded,
                     `too many requests ${JSON.stringify(json)}`,
-                    `sendRequest.ApiUtils ${method} ${uri}`,
+
                     { body },
                     "you are making too many requests. please slow down. Reach out to fun team if you need more quota",
                     "https://docs.fun.xyz"
@@ -91,8 +89,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 if (json.errorCode === ErrorCode.UserOpFailureError) {
                     throw new UserOpFailureError(
                         ErrorCode.UserOpFailureError,
-                        `user op failure ${JSON.stringify(json)}`,
-                        `sendRequest.ApiUtils ${method} ${uri}`,
+                        JSON.stringify(json),
                         { body },
                         "fix user op failure. Most of the time this is due to invalid parameters",
                         "https://docs.fun.xyz"
@@ -101,7 +98,6 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                     throw new InternalFailureError(
                         ErrorCode.ServerFailure,
                         `server failure ${JSON.stringify(json)}`,
-                        `sendRequest.ApiUtils ${method} ${uri}`,
                         { body },
                         "retry later. if it still fails, please contact us.",
                         "https://docs.fun.xyz"
@@ -111,7 +107,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                 throw new InternalFailureError(
                     ErrorCode.UnknownServerError,
                     `unknown server failure ${JSON.stringify(json)}`,
-                    `sendRequest.ApiUtils ${method} ${uri}`,
+
                     { body },
                     "retry later. if it still fails, please contact us.",
                     "https://docs.fun.xyz"
@@ -124,7 +120,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
         throw new InternalFailureError(
             ErrorCode.ServerConnectionError,
             `Cannot connect to Fun API Service ${err}`,
-            `sendRequest.ApiUtils ${method} ${uri}`,
+
             { body },
             "retry later. if it still fails, please contact us.",
             "https://docs.fun.xyz"

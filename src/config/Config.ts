@@ -25,7 +25,6 @@ export async function configureEnvironment(option: GlobalEnvOption) {
         throw new InvalidParameterError(
             ErrorCode.MissingParameter,
             "apiKey is required",
-            "configureEnvironment",
             { option },
             "Provide apiKey when configureEnvironment.",
             "https://docs.fun.xyz"

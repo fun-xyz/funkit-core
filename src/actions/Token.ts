@@ -37,7 +37,6 @@ export const tokenTransferTransactionParams = async (
             throw new InvalidParameterError(
                 ErrorCode.TokenNotFound,
                 "Token address not found. Please check the token passed in.",
-                "wallet.transfer",
                 { params },
                 "Provide correct token.",
                 "https://docs.fun.xyz"
@@ -62,7 +61,6 @@ export const tokenTransferFromTransactionParams = async (
             throw new InvalidParameterError(
                 ErrorCode.TokenNotFound,
                 "Token address not found. Please check the token passed in.",
-                "wallet.transfer",
                 { params },
                 "Provide correct token.",
                 "https://docs.fun.xyz"
