@@ -7,7 +7,7 @@ import { TOKEN_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
 import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
 import { Chain, Token, UserOperation } from "../data"
-import { ErrorCode, InvalidParameterError } from "../errors"
+import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getWalletPermitHash, getWalletPermitNonce } from "../utils"
 export class TokenSponsor extends Sponsor {
     token: string
@@ -27,18 +27,18 @@ export class TokenSponsor extends Sponsor {
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
-    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getFunSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.sponsorAddress) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             if (TOKEN_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
                 this.sponsorAddress = await chain.getAddress("funTokenSponsorAddress")
             } else {
-                throw new InvalidParameterError(
+                throw new ResourceNotFoundError(
                     ErrorCode.MissingParameter,
-                    "sponsorAddress is missing and the chain you are working with does not support default fun sponsor",
-                    "TokenSponsor.getSponsorAddress",
+                    "The network you are working with does not support token Fun Sponsor. You will need to run and manage your own token sponsor.",
+                    "TokenSponsor.getFunSponsorAddress",
                     { tokenSponsorSupportChains: TOKEN_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
-                    "Provide correct sponsorAddress.",
+                    "Manage your own token sponsor, or use a supported network",
                     "https://docs.fun.xyz"
                 )
             }
@@ -49,7 +49,7 @@ export class TokenSponsor extends Sponsor {
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const sponsor = await this.getSponsorAddress(options)
+        const sponsor = await this.getFunSponsorAddress(options)
         return concat([paymasterAddress, sponsor, tokenAddress])
     }
 
@@ -81,7 +81,7 @@ export class TokenSponsor extends Sponsor {
             [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
             [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
-        const sponsor = await this.getSponsorAddress(options)
+        const sponsor = await this.getFunSponsorAddress(options)
         const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])
         const encodedData = encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [encodedAddresses, encodedSig])
         return concat([paymasterAddress, encodedData])
@@ -146,8 +146,8 @@ export class TokenSponsor extends Sponsor {
         ])
     }
 
-    async getUnlockBlock(tokenAddr: string, sponsor: string): Promise<bigint> {
-        return (await this.getAllTokenData(tokenAddr, sponsor)).unlockBlock
+    async getUnlockBlock(tokenAddr: string, sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        return (await this.getAllTokenData(tokenAddr, sponsor, options)).unlockBlock
     }
 
     // false means unlocked, true means locked
