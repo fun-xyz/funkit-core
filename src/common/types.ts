@@ -22,8 +22,8 @@ export interface ExecutionReceipt {
     userOpHash: string
     txId?: Hex
     gasUsed?: string
-    gasUSD?: string
-    gasTotal?: string
+    opFeeUSD?: string
+    opFee?: string
 }
 
 export type EstimateGasResult = {
