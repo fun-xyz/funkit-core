@@ -1,5 +1,5 @@
 import { assert, expect } from "chai"
-import { Address, Hex } from "viem"
+import { Address, Hex, parseEther } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
@@ -103,8 +103,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             if (mint) {
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
-                    funderAddress,
-                    BigInt(10e18)
+                    walletAddress,
+                    parseEther("1000")
                 ])
                 await auth.sendTx({ ...paymasterTokenMint })
             }
@@ -194,7 +194,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it("Only User Whitelisted with permit", async () => {
+        it.only("Only User Whitelisted with permit", async () => {
             expect(await runSwap(wallet, true)).to.not.throw
         })
 

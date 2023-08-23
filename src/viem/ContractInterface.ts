@@ -26,7 +26,6 @@ export class ContractInterface {
         } catch (e) {
             throw new Error(`Error reading from chain: \n ${stringify(e)}`)
         }
-
     }
 
     async batchReadFromChain(address: Address, chainOrClient: Chain | PublicClient, calls: ChainReadCall[]): Promise<any[]> {

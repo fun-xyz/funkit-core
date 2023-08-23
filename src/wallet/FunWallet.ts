@@ -357,7 +357,7 @@ export class FunWallet extends FirstClassActions {
         const maxFeePerGas = await chain.getFeeData()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this.getThisInitCode(chain)
         let paymasterAndData = "0x"
-        
+
         const partialOp = {
             callData: await this.buildCalldata(auth, userId, transactionParams, txOptions),
             paymasterAndData,
