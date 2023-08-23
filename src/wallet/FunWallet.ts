@@ -384,7 +384,7 @@ export class FunWallet extends FirstClassActions {
         if (isGroupOp) {
             operation.groupId = pad(userId as Hex, { size: 32 })
         }
-        if (txOptions.gasSponsor) {
+        if (txOptions.gasSponsor && Object.keys(txOptions.gasSponsor).length > 0) {
             if (txOptions.gasSponsor.token) {
                 const sponsor = new TokenSponsor(txOptions)
                 if (txOptions.gasSponsor.usePermit) {
