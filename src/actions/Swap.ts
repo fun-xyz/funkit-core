@@ -1,4 +1,5 @@
-import { OneInchSwapParams, UniSwapPoolFeeOptions, UniswapParams } from "./types"
+import { Address } from "viem"
+import { SwapParams, UniSwapPoolFeeOptions } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
@@ -8,14 +9,14 @@ import { sendRequest } from "../utils"
 import { UniswapV2Addrs, UniswapV3Addrs, fromReadableAmount, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
 
+export const oneInchSupported: number[] = []
+export const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
 const DEFAULT_SLIPPAGE = 0.5 // .5%
-
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-
 const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
-const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption): Promise<TransactionData> => {
-    const inTokenDecimals = await _get1inchTokenDecimals(tokenAddress, options)
+const getOneInchApproveTx = async (tokenAddress: string, amt: number, options: EnvOption): Promise<TransactionData> => {
+    const inTokenDecimals = await get1inchTokenDecimals(tokenAddress, options)
     tokenAddress = await Token.getAddress(tokenAddress, options)
     const amount = fromReadableAmount(amt, Number(inTokenDecimals)).toString()
     const url = await oneInchAPIRequest("/approve/transaction", amount ? { tokenAddress, amount } : { tokenAddress })
@@ -23,10 +24,10 @@ const _getOneInchApproveTx = async (tokenAddress: string, amt: number, options: 
     return transaction as TransactionData
 }
 
-const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: string, options: EnvOption) => {
-    const inTokenDecimals = await _get1inchTokenDecimals(swapParams.in, options)
-    const fromTokenAddress = await Token.getAddress(swapParams.in, options)
-    const toTokenAddress = await Token.getAddress(swapParams.out, options)
+const getOneInchSwapTx = async (swapParams: SwapParams, fromAddress: string, options: EnvOption) => {
+    const inTokenDecimals = await get1inchTokenDecimals(swapParams.tokenIn, options)
+    const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, options)
+    const toTokenAddress = await Token.getAddress(swapParams.tokenOut, options)
     const amount = fromReadableAmount(swapParams.amount, Number(inTokenDecimals))
     const formattedSwap = {
         fromTokenAddress,
@@ -34,8 +35,8 @@ const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: str
         amount: amount,
         fromAddress,
         slippage: swapParams.slippage,
-        disableEstimate: swapParams.disableEstimate ? swapParams.disableEstimate : true,
-        allowPartialFill: swapParams.allowPartialFill ? swapParams.allowPartialFill : false,
+        disableEstimate: true,
+        allowPartialFill: false,
         destReceiver: swapParams.returnAddress ? swapParams.returnAddress : fromAddress
     }
 
@@ -44,7 +45,7 @@ const _getOneInchSwapTx = async (swapParams: OneInchSwapParams, fromAddress: str
     return res.tx
 }
 
-const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) => {
+const get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) => {
     if (tokenAddress !== eth1InchAddress) {
         const inToken = new Token(tokenAddress)
         return await inToken.getDecimals(options)
@@ -52,9 +53,13 @@ const _get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) 
     return 18
 }
 
-export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): Promise<TransactionParams> => {
-    const supportedChains = [1, 137, 31337, 36865]
-    if (!supportedChains.includes(swapParams.chainId)) {
+export const oneInchTransactionParams = async (
+    swapParams: SwapParams,
+    walletAddress: Address,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    if (!oneInchSupported.includes(Number(await chain.getChainId()))) {
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
             "Incorrect chainId, oneInch only available on Ethereum mainnet and polygon",
@@ -64,24 +69,22 @@ export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): P
             "https://docs.fun.xyz"
         )
     }
-    const chain = await Chain.getChain({ chainIdentifier: swapParams.chainId })
-    const options: EnvOption = { chain }
 
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     let approveTx: TransactionData | undefined
 
-    const inToken = new Token(swapParams.in)
-    const outToken = new Token(swapParams.out)
+    const inToken = new Token(swapParams.tokenIn)
+    const outToken = new Token(swapParams.tokenOut)
     if (outToken.isNative) {
-        swapParams.out = eth1InchAddress
+        swapParams.tokenOut = eth1InchAddress
     }
     if (inToken.isNative) {
-        swapParams.in = eth1InchAddress
-        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
+        swapParams.tokenIn = eth1InchAddress
+        const swapTx = await getOneInchSwapTx(swapParams, walletAddress, txOptions)
         return { to: approveAndExecAddress, value: swapParams.amount, data: swapTx.data }
     } else {
-        approveTx = await _getOneInchApproveTx(swapParams.in, swapParams.amount, options)
-        const swapTx = await _getOneInchSwapTx(swapParams, swapParams.returnAddress, options)
+        approveTx = await getOneInchApproveTx(swapParams.tokenIn, swapParams.amount, txOptions)
+        const swapTx = await getOneInchSwapTx(swapParams, walletAddress, txOptions)
         return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,
@@ -92,15 +95,18 @@ export const OneInchTransactionParams = async (swapParams: OneInchSwapParams): P
     }
 }
 
-export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
+export const uniswapV3SwapTransactionParams = async (
+    params: SwapParams,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
     const univ3quoter = await chain.getAddress("univ3quoter")
     const univ3factory = await chain.getAddress("univ3factory")
     const univ3router = await chain.getAddress("univ3router")
-    const tokenIn = new Token(params.in)
-    const tokenOut = new Token(params.out)
+    const tokenIn = new Token(params.tokenIn)
+    const tokenOut = new Token(params.tokenOut)
 
     const tokenInAddress = await tokenIn.getAddress()
     const tokenOutAddress = await tokenOut.getAddress()
@@ -123,13 +129,13 @@ export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Pro
         tokenOutAddress,
         amountIn: params.amount,
         // optional
-        returnAddress: params.returnAddress,
+        returnAddress: params.returnAddress!,
         percentDecimal,
         slippage,
-        poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
+        poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
     }
 
-    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, params.chainId)
+    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
     if (tokenIn.isNative) {
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [amount, data])
     } else {
@@ -137,15 +143,18 @@ export const uniswapV3SwapTransactionParams = async (params: UniswapParams): Pro
     }
 }
 
-export const uniswapV2SwapTransactionParams = async (params: UniswapParams): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
+export const uniswapV2SwapTransactionParams = async (
+    params: SwapParams,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
     const factory = await chain.getAddress("UniswapV2Factory")
     const router = await chain.getAddress("UniswapV2Router02")
 
-    const tokenIn = new Token(params.in)
-    const tokenOut = new Token(params.out)
+    const tokenIn = new Token(params.tokenIn)
+    const tokenOut = new Token(params.tokenOut)
 
     const tokenInAddress = await tokenIn.getAddress()
     const tokenOutAddress = await tokenOut.getAddress()
@@ -167,10 +176,10 @@ export const uniswapV2SwapTransactionParams = async (params: UniswapParams): Pro
         tokenOutAddress,
         amountIn: params.amount,
         // optional
-        returnAddress: params.returnAddress,
+        returnAddress: params.returnAddress!,
         percentDecimal,
         slippage,
-        poolFee: params.poolFee ? params.poolFee : UniSwapPoolFeeOptions.medium
+        poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
     }
     const chainId = Number(await chain.getChainId())
 

@@ -9,3 +9,8 @@ export type User = {
     userId: Hex
     groupInfo?: GroupInfo
 }
+
+export interface FunWalletParams {
+    users: User[]
+    uniqueId: string
+}

@@ -1,13 +1,19 @@
-import { randomBytes as randomBytesValue } from "crypto"
-import { Address, PublicClient, parseEther, toHex } from "viem"
+import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
+import { sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
-import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE } from "../common"
+import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
-import { sendRequest } from "."
 
-const gasSpecificChain = { 137: 350_000_000_000 }
+export const isAddress = (address: string): boolean => {
+    try {
+        const [decodedAddr] = decodeAbiParameters([{ type: "address" }], pad(address as Hex, { size: 32 }))
+        return isAddressViem(decodedAddr as string)
+    } catch (err) {
+        return false
+    }
+}
 
 export const fundWallet = async (
     auth: Auth,
@@ -20,7 +26,25 @@ export const fundWallet = async (
     const to = await wallet.getAddress()
     let txData
     if ((gasSpecificChain as any)[chainId]) {
-        txData = { to, data: "0x", value: parseEther(`${value}`), gasPrice: (gasSpecificChain as any)[chainId] }
+        let maxPriorityFee, maxFee
+        try {
+            const {
+                standard: { maxPriorityFee: maxPriorityFee1, maxFee: maxFee1 }
+            } = await getGasStation(gasSpecificChain[chainId].gasStationUrl)
+            maxPriorityFee = maxPriorityFee1
+            maxFee = maxFee1
+        } catch (e) {
+            maxPriorityFee = BigInt(gasSpecificChain[chainId].backupPriorityFee)
+            maxFee = BigInt(gasSpecificChain[chainId].backupFee)
+        }
+
+        txData = {
+            to,
+            data: "0x",
+            value: parseEther(`${value}`),
+            maxFeePerGas: BigInt(Math.floor(maxPriorityFee * 1e9)),
+            maxPriorityFeePerGas: BigInt(Math.floor(maxFee * 1e9))
+        }
     } else {
         txData = { to, data: "0x", value: parseEther(`${value}`) }
     }
@@ -38,7 +62,12 @@ export const isContract = async (address: Address, client: PublicClient): Promis
 }
 
 export const randomBytes = (length: number) => {
-    return toHex(randomBytesValue(length))
+    const bytes = new Uint8Array(length)
+    for (let i = 0; i < length; i++) {
+        bytes[i] = Math.floor(Math.random() * 256)
+    }
+
+    return toHex(bytes)
 }
 
 export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
@@ -66,6 +95,6 @@ export const getWalletPermitHash = async (
     )
 }
 
-export const getGasStation = async (gasStationUrl: string) => {
+export const getGasStation = async (gasStationUrl: string): Promise<any> => {
     return await sendRequest(gasStationUrl, "GET", "")
 }

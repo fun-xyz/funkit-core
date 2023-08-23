@@ -1,5 +1,4 @@
 import { EnvOption, GlobalEnvOption } from "./types"
-import { getOrgInfo } from "../apis"
 import { Chain } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 
@@ -33,17 +32,18 @@ export async function configureEnvironment(option: GlobalEnvOption) {
         )
     }
 
-    globalEnvOption.orgInfo = await getOrgInfo(globalEnvOption.apiKey!)
-    if (globalEnvOption.gasSponsor) {
-        globalEnvOption.gasSponsor.usePermit =
-            globalEnvOption.gasSponsor.usePermit !== null || globalEnvOption.gasSponsor.usePermit !== undefined
-                ? globalEnvOption.gasSponsor.usePermit
-                : true
+    if (option.gasSponsor !== null && option.gasSponsor !== undefined) {
+        if (Object.keys(option.gasSponsor).length !== 0) {
+            if (option.gasSponsor.token) {
+                const usePermit = option.gasSponsor.usePermit === false ? false : true
+                globalEnvOption.gasSponsor = { ...option.gasSponsor, usePermit }
+            } else {
+                globalEnvOption.gasSponsor = { ...option.gasSponsor }
+            }
+        } else {
+            globalEnvOption.gasSponsor = {}
+        }
     }
-    globalEnvOption.gasSponsor =
-        option.gasSponsor === null || option.gasSponsor === undefined
-            ? globalEnvOption.gasSponsor
-            : { usePermit: true, ...option.gasSponsor }
     globalEnvOption.fee = option.fee ? option.fee : globalEnvOption.fee
     globalEnvOption.skipDBAction =
         option.skipDBAction === null || option.skipDBAction === undefined ? globalEnvOption.skipDBAction : option.skipDBAction

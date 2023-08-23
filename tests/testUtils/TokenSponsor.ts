@@ -61,15 +61,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(
-                    config.chainId.toString(),
-                    config.walletIndex ? config.walletIndex : 1223452391856341
-                )
+                uniqueId: await auth.getWalletUniqueId(config.walletIndex ? config.walletIndex : 1823452391856349)
             })
 
             wallet1 = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.chainId.toString(), config.funderIndex ? config.funderIndex : 2345234)
+                uniqueId: await auth.getWalletUniqueId(config.funderIndex ? config.funderIndex : 5345234)
             })
 
             walletAddress = await wallet.getAddress()
@@ -84,22 +81,20 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const requiredAmount =
                     (config.amount ? config.amount : 0.0001) * 10 ** Number(await Token.getDecimals(config.inToken, options))
                 const userOp = await wallet.swap(auth, await auth.getAddress(), {
-                    in: "eth",
+                    tokenIn: "eth",
                     amount: config.amount ? config.amount : 0.05,
-                    out: config.inToken,
-                    returnAddress: walletAddress,
-                    chainId: config.chainId
+                    tokenOut: config.inToken,
+                    returnAddress: walletAddress
                 })
                 await wallet.executeOperation(auth, userOp)
                 const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
-                    in: "eth",
+                    tokenIn: "eth",
                     amount: config.amount ? config.amount : 0.05,
-                    out: config.inToken,
-                    returnAddress: walletAddress1,
-                    chainId: config.chainId
+                    tokenOut: config.inToken,
+                    returnAddress: walletAddress1
                 })
                 await wallet1.executeOperation(auth, userOp1)
                 const wallet1InTokenBalance = await Token.getBalance(config.inToken, walletAddress1)
@@ -108,7 +103,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             if (mint) {
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
                 const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
-                    walletAddress,
+                    funderAddress,
                     BigInt(10e18)
                 ])
                 await auth.sendTx({ ...paymasterTokenMint })
@@ -125,7 +120,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
                 const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
-
                 const depositInfoS = await sponsor.getTokenBalance(paymasterToken, walletAddress)
                 const depositInfo1S = await sponsor.getTokenBalance("eth", funderAddress)
 
@@ -138,7 +132,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
                 const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
                 const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
-
                 assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
                 assert(depositInfoE > depositInfoS, "Token Stake Failed")
                 await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))
@@ -152,11 +145,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 auth,
                 await auth.getAddress(),
                 {
-                    in: config.inToken,
+                    tokenIn: config.inToken,
                     amount: config.amount ? config.amount : 0.0001,
-                    out: config.outToken,
-                    returnAddress: walletAddress,
-                    chainId: config.chainId
+                    tokenOut: config.outToken,
+                    returnAddress: walletAddress
                 },
                 {
                     chain: config.chainId,
@@ -176,7 +168,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Only User Whitelisted", async () => {
             await funder.sendTx(await sponsor.lockDeposit())
-            if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
+            if (await sponsor.getTokenListMode((await sponsor.getFunSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode(funderAddress))
             }
             await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress))
@@ -188,10 +180,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
 
-            if (!(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!))) {
+            if (!(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getFunSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]))
             }
-            expect(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!)).to.be.true
+            expect(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getFunSponsorAddress())!)).to.be.true
 
             expect(await runSwap(wallet)).to.not.throw
             try {
@@ -208,7 +200,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Blacklist Mode Approved", async () => {
             const funder = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
+            if (!(await sponsor.getTokenListMode((await sponsor.getFunSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))
             }
             await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
@@ -221,7 +213,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(await sponsor.removeSpenderFromBlackList(config.chainId, funderAddress, walletAddress))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
-            expect(await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getSponsorAddress())!)).to.be.false
+            expect(await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getFunSponsorAddress())!)).to.be.false
 
             expect(await runSwap(wallet)).not.to.throw
             try {

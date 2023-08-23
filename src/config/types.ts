@@ -15,12 +15,9 @@ export interface EnvOption {
         recipient: Address
     }
     skipDBAction?: boolean
+    nonce?: bigint
 }
 
 export interface GlobalEnvOption extends EnvOption {
     apiKey?: string
-    orgInfo?: {
-        name?: string
-        id?: string
-    }
 }

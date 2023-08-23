@@ -4,10 +4,9 @@ import { API_URL } from "../common/constants"
 import { ResourceNotFoundError } from "../errors"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
-export async function createUser(authId: string, chainId: string, addr: string, method: string, userUniqueId: string): Promise<void> {
+export async function createUser(authId: string, addr: string, method: string, userUniqueId: string): Promise<void> {
     await sendPostRequest(API_URL, "user", {
         authId,
-        chainId,
         addr,
         method,
         userUniqueId
@@ -25,16 +24,17 @@ export async function getUserUniqueId(authId: string): Promise<string> {
     }
 }
 
-export async function getUserAddr(authId: string, chainId: string): Promise<string> {
-    return (await sendGetRequest(API_URL, `user/auth/${authId}/chain/${chainId}/addr`)).addr
+export async function getUserAddr(authId: string): Promise<string> {
+    return (await sendGetRequest(API_URL, `user/auth/${authId}/addr`)).addr
 }
 
-export async function getUserWalletsByAddr(addr: string, chainId: string): Promise<Wallet[]> {
-    return (await sendGetRequest(API_URL, `user/addr/${addr}/chain/${chainId}/wallets`)).wallets
+export async function getUserWalletsByAddr(addr: string, chainId?: string): Promise<Wallet[]> {
+    const endpoint = chainId ? `user/addr/${addr}/wallets?chainId=${chainId}` : `user/addr/${addr}/wallets`
+    return (await sendGetRequest(API_URL, endpoint)).wallets
 }
 
-export async function getUserAuthIdByAddr(addr: string, chainId: string): Promise<string> {
-    return (await sendGetRequest(API_URL, `user/addr/${addr}/chain/${chainId}/authId`)).authId
+export async function getUserAuthIdByAddr(addr: string): Promise<string> {
+    return (await sendGetRequest(API_URL, `user/addr/${addr}/authId`)).authId
 }
 
 export async function addUserToWallet(

@@ -4,6 +4,6 @@ const config: TransferTestConfig = {
     chainId: 137,
     outToken: "usdc",
     baseToken: "eth",
-    prefund: false
+    prefundAmt: 0.2
 }
 TransferTest(config)

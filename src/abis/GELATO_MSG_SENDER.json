@@ -1,12 +1,1 @@
-{
-    "name": "GELATO_MSG_SENDER",
-    "abi": [],
-    "addresses": {
-        "5": "0x99fda30f4abbf45b5a8603929cafe1106009661c",
-        "137": "0x99fda30f4abbf45b5a8603929cafe1106009661c",
-        "420": "0x99fda30f4abbf45b5a8603929cafe1106009661c",
-        "31337": "0x99fda30f4abbf45b5a8603929cafe1106009661c",
-        "36865": "0x99fda30f4abbf45b5a8603929cafe1106009661c",
-        "84531": "0x99fda30f4abbf45b5a8603929cafe1106009661c"
-    }
-}
+{"name":"GELATO_MSG_SENDER","abi":[],"addresses":{"5":"0x99fda30f4abbf45b5a8603929cafe1106009661c","137":"0x99fda30f4abbf45b5a8603929cafe1106009661c","420":"0x99fda30f4abbf45b5a8603929cafe1106009661c","36865":"0x99fda30f4abbf45b5a8603929cafe1106009661c","42161":"0x99fda30f4abbf45b5a8603929cafe1106009661c"}}

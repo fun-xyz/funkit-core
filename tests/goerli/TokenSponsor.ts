@@ -4,7 +4,7 @@ const config: TokenSponsorTestConfig = {
     chainId: 5,
     inToken: "usdc",
     outToken: "dai",
-    paymasterToken: "0x712110295e4eCc0F46dC06684AA21263613b08dd",
+    paymasterToken: "0x0a1F0598A561af6b84A726bE007f581E812C3CDD",
     baseTokenStakeAmt: 0.2,
     paymasterTokenStakeAmt: 100,
     prefund: true,

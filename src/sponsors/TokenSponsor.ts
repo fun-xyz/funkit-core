@@ -1,15 +1,15 @@
 import { Address, concat, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
 import { AllTokenData, PaymasterType } from "./types"
-import { ActionData, ActionFunction } from "../actions"
 import { addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { TOKEN_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
 import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE } from "../common/constants"
 import { EnvOption } from "../config"
-import { Chain, Operation, Token } from "../data"
-import { ErrorCode, InvalidParameterError } from "../errors"
+import { Chain, Operation,UserOperation, Token } from "../data"
+import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getWalletPermitHash, getWalletPermitNonce } from "../utils"
+
 export class TokenSponsor extends Sponsor {
     token: string
 
@@ -28,18 +28,18 @@ export class TokenSponsor extends Sponsor {
         this.token = options.gasSponsor!.token!.toLowerCase()
     }
 
-    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getFunSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.sponsorAddress) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             if (TOKEN_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
-                this.sponsorAddress = await chain.getAddress("sponsorAddress")
+                this.sponsorAddress = await chain.getAddress("funTokenSponsorAddress")
             } else {
-                throw new InvalidParameterError(
+                throw new ResourceNotFoundError(
                     ErrorCode.MissingParameter,
-                    "sponsorAddress is missing and the chain you are working with does not support default fun sponsor",
-                    "TokenSponsor.getSponsorAddress",
+                    "The network you are working with does not support token Fun Sponsor. You will need to run and manage your own token sponsor.",
+                    "TokenSponsor.getFunSponsorAddress",
                     { tokenSponsorSupportChains: TOKEN_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
-                    "Provide correct sponsorAddress.",
+                    "Manage your own token sponsor, or use a supported network",
                     "https://docs.fun.xyz"
                 )
             }
@@ -50,7 +50,7 @@ export class TokenSponsor extends Sponsor {
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const tokenAddress = await Token.getAddress(this.token, options)
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const sponsor = await this.getSponsorAddress(options)
+        const sponsor = await this.getFunSponsorAddress(options)
         return concat([paymasterAddress, sponsor, tokenAddress])
     }
 
@@ -85,7 +85,7 @@ export class TokenSponsor extends Sponsor {
             [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
             [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
-        const sponsor = await this.getSponsorAddress(options)
+        const sponsor = await this.getFunSponsorAddress(options)
         const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])
         const encodedData = encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [encodedAddresses, encodedSig])
         return concat([paymasterAddress, encodedData])
@@ -99,7 +99,6 @@ export class TokenSponsor extends Sponsor {
     ): Promise<TransactionParams> {
         const amountdec = await Token.getDecimalAmount("eth", amount, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
-
         await addTransaction(
             await chain.getChainId(),
             Date.now(),
@@ -151,8 +150,8 @@ export class TokenSponsor extends Sponsor {
         ])
     }
 
-    async getUnlockBlock(tokenAddr: string, sponsor: string): Promise<bigint> {
-        return (await this.getAllTokenData(tokenAddr, sponsor)).unlockBlock
+    async getUnlockBlock(tokenAddr: string, sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        return (await this.getAllTokenData(tokenAddr, sponsor, options)).unlockBlock
     }
 
     // false means unlocked, true means locked
@@ -234,7 +233,6 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
         const tokenObj = new Token(token)
-
         const tokenAddress = await tokenObj.getAddress(options)
         const amountdec = await tokenObj.getDecimalAmount(amount, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
@@ -382,10 +380,11 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const tokenAddress = await Token.getAddress(tokenAddr, options)
         return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getTokenWhitelisted",
-            [tokenAddr, sponsor],
+            [tokenAddress, sponsor],
             chain
         )
     }
@@ -458,27 +457,6 @@ export class TokenSponsor extends Sponsor {
         return this.batchTransaction(calldata)
     }
 
-    static approve(token: string, amount: number): ActionFunction {
-        return async (actionData: ActionData) => {
-            const chain = await Chain.getChain({ chainIdentifier: actionData.options.chain })
-            const gasSponsorAddress = await chain.getAddress(this.name)
-            addTransaction(
-                await chain.getChainId(),
-                Date.now(),
-                "0x",
-                {
-                    action: "approve",
-                    amount,
-                    from: await actionData.wallet.getAddress(),
-                    to: await this.getPaymasterAddress(actionData.options),
-                    token
-                },
-                PaymasterType.TokenSponsor,
-                await actionData.wallet.getAddress()
-            )
-            return { data: await Token.approve(token, gasSponsorAddress, amount), errorData: { location: "TokenSponsor approve" } }
-        }
-    }
     static async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await chain.getAddress(this.name)

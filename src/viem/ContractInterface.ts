@@ -1,6 +1,7 @@
 import { Address, Hex, PublicClient, encodeFunctionData } from "viem"
 import { TransactionParams } from "../common"
 import { Chain } from "../data"
+import { stringify } from "../utils"
 
 type ChainReadCall = {
     functionName: string
@@ -15,16 +16,17 @@ export class ContractInterface {
 
     async readFromChain(address: Address, functionName: string, args: any[], chainOrClient: Chain | PublicClient): Promise<any> {
         const client = await parseClient(chainOrClient)
-        return await client.readContract({
-            abi: this.abi,
-            address,
-            functionName,
-            args
-        })
-        // try {
-        // } catch (e) {
-        //     throw new Error(`Error reading from chain: \n ${JSON.stringify(e)}`)
-        // }
+        try {
+            return await client.readContract({
+                abi: this.abi,
+                address,
+                functionName,
+                args
+            })
+        } catch (e) {
+            throw new Error(`Error reading from chain: \n ${stringify(e)}`)
+        }
+
     }
 
     async batchReadFromChain(address: Address, chainOrClient: Chain | PublicClient, calls: ChainReadCall[]): Promise<any[]> {

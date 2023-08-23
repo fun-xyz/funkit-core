@@ -1,6 +1,6 @@
 {
     "name": "@fun-xyz/core",
-    "version": "0.3.7",
+    "version": "0.4.3",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -11,13 +11,15 @@
         "build": "rm -rf dist && tsc",
         "test": "ts-mocha --exit tests/tenderly/*.ts --exit",
         "test-tenderly": "ts-mocha --exit tests/tenderly/*.ts",
-        "test-aws": "env PREFUND=false ts-mocha",
-        "test-goerli": "env PREFUND=false ts-mocha --exit tests/goerli/*.ts",
+        "test-aws": "env ts-mocha",
+        "test-goerli": "env ts-mocha --exit tests/goerli/*.ts",
         "local-test-tenderly": "env NODE_ENV=local ts-mocha --exit tests/tenderly/*.ts",
-        "local-test-goerli": "env NODE_ENV=local PREFUND=false ts-mocha --exit tests/goerli/*.ts",
+        "local-test-goerli": "env NODE_ENV=local ts-mocha --exit tests/goerli/*.ts",
         "staging-test-tenderly": "env NODE_ENV=staging ts-mocha --exit tests/tenderly/*.ts",
-        "staging-test-goerli": "env NODE_ENV=staging PREFUND=false ts-mocha --exit tests/goerli/*.ts",
-        "staging-test-polygon": "env NODE_ENV=staging PREFUND=false ts-mocha --exit tests/polygon/*.ts",
+        "staging-test-goerli": "env NODE_ENV=staging ts-mocha --exit tests/goerli/*.ts",
+        "staging-test-arbitrum": "env NODE_ENV=staging ts-mocha --exit tests/arbitrum/*.ts",
+        "staging-test-optimism": "env NODE_ENV=staging ts-mocha --exit tests/optimism/*.ts",
+        "staging-test-polygon": "env NODE_ENV=staging ts-mocha --exit tests/polygon/*.ts",
         "load": "node test/loader.js",
         "format": "prettier --write .",
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
@@ -27,7 +29,7 @@
         "prepare": "husky install"
     },
     "author": "The Fun Group (https://fun.xyz/)",
-    "license": "ISC",
+    "license": "MIT",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.315.0",
         "@ethersproject/contracts": "^5.7.0",
@@ -81,7 +83,7 @@
         "dist/fetch-polyfill.js.map"
     ],
     "bugs": {
-        "url": "https://github.com/TheFunGroup/wallet-sdk-v1/issues"
+        "url": "https://github.com/TheFunGroup/fun-wallet-sdk/issues"
     },
-    "homepage": "https://github.com/TheFunGroup/wallet-sdk-v1#readme"
+    "homepage": "https://github.com/TheFunGroup/fun-wallet-sdk"
 }

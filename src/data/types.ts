@@ -99,7 +99,8 @@ export enum OperationStatus {
     APPROVED = "APPROVED",
     PENDING = "PENDING",
     OP_SUCCEED = "OP_SUCCEED",
-    OP_REVERTED = "OP_REVERTED"
+    OP_REVERTED = "OP_REVERTED",
+    SCHEDULED = "SCHEDULED"
 }
 
 export type OperationMetadata = {
@@ -118,4 +119,9 @@ export type OperationMetadata = {
     relatedOpIds?: Hex[]
     signatures?: Signature[]
     txid?: string
+    gasUsed?: string
+    gasUSD?: string
+    gasTotal?: string
+    executedBlockNumber?: number
+    executedBlockTimeStamp?: number
 }

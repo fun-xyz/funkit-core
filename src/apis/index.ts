@@ -1,6 +1,5 @@
 export * from "./AssetApis"
 export * from "./ContractApis"
-export * from "./DashboardApis"
 export * from "./GroupApis"
 export * from "./InfoApis"
 export * from "./NFTApis"

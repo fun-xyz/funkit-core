@@ -16,14 +16,14 @@ describe("GetAssets", function () {
         const options: GlobalEnvOption = {
             chain: chainId,
             apiKey: apiKey,
-            gasSponsor: undefined
+            gasSponsor: {}
         }
         await configureEnvironment(options)
         auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
 
         wallet = new FunWallet({
             users: [{ userId: await auth.getAddress() }],
-            uniqueId: await auth.getWalletUniqueId(chainId.toString(), 14142)
+            uniqueId: await auth.getWalletUniqueId(14142)
         })
     })
 

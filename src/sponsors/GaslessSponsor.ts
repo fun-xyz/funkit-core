@@ -5,24 +5,24 @@ import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_CONTRACT_INTERFACE, GASLESS_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Token } from "../data"
-import { ErrorCode, InvalidParameterError } from "../errors"
+import { ErrorCode, ResourceNotFoundError } from "../errors"
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
         super(options, GASLESS_PAYMASTER_CONTRACT_INTERFACE, "gaslessPaymasterAddress", PaymasterType.GaslessSponsor)
     }
 
-    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getFunSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.sponsorAddress) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             if (GASLESS_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
-                this.sponsorAddress = await chain.getAddress("sponsorAddress")
+                this.sponsorAddress = await chain.getAddress("funGaslessSponsorAddress")
             } else {
-                throw new InvalidParameterError(
+                throw new ResourceNotFoundError(
                     ErrorCode.MissingParameter,
-                    "sponsorAddress is missing and the chain you are working with does not support default fun sponsor",
-                    "GaslessSponsor.getSponsorAddress",
+                    "The network you are working with does not support gasless Fun Sponsor. You will need to run and manage your own gasless sponsor.",
+                    "GaslessSponsor.getFunSponsorAddress",
                     { gaslessSponsorSupportChains: GASLESS_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
-                    "Provide correct sponsorAddress.",
+                    "Manage your own gasless sponsor, or use a supported network.",
                     "https://docs.fun.xyz"
                 )
             }
@@ -32,7 +32,7 @@ export class GaslessSponsor extends Sponsor {
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const sponsor = await this.getSponsorAddress(options)
+        const sponsor = await this.getFunSponsorAddress(options)
         return concat([paymasterAddress, sponsor])
     }
 
