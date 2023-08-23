@@ -194,7 +194,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it.only("Only User Whitelisted with permit", async () => {
+        it("Only User Whitelisted with permit", async () => {
             expect(await runSwap(wallet, true)).to.not.throw
         })
 
