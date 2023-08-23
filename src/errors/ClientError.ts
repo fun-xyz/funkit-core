@@ -53,14 +53,12 @@ export class UserOpFailureError extends ClientError {
             super(ErrorType.UserOpFailureError, ErrorCode.WalletPrefundError, msg, { reqId }, fixSuggestion, docLink)
         } else if (msg.includes("AA33 reverted: FW332")) {
             const { reqId } = JSON.parse(msg)
-            console.log(paramsUsed.body.userOp.paymasterAndData.length)
-            console.log(globalThis.globalEnvOption.gasSponsor)
             msg =
                 ErrorCode.GasSponsorFundError +
                 ": " +
                 (paramsUsed.body.userOp.paymasterAndData.length > 122
                     ? "Your wallet does not have enough erc-20 tokens to pay for gas."
-                    : "Approve more tokens to TokenSponsor")
+                    : "Your FunWallet has not approved enough ERC-20s for the paymaster smart contract to pay for gas. Use the approve function in the TokenSponsor class.")
             fixSuggestion = `Wallet Address: ${paramsUsed.body.userOp.sender}`
             super(ErrorType.UserOpFailureError, ErrorCode.GasSponsorFundError, msg, { reqId }, fixSuggestion, docLink)
         } else {

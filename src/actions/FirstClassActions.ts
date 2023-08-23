@@ -90,27 +90,27 @@ export abstract class FirstClassActions {
         if (!params.tokenIn) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
-                "Missing tokenIn",
+                "Missing tokenIn parameter in the swap params object.",
                 { params },
-                "Provide correct swap params.",
+                "",
                 "https://docs.fun.xyz"
             )
         }
         if (!params.tokenOut) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
-                "Missing tokenOut",
+                "Missing tokenOut parameter in the swap params object.",
                 { params },
-                "Provide correct swap params.",
+                "",
                 "https://docs.fun.xyz"
             )
         }
         if (!params.inAmount) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
-                "Missing inAmount",
+                "Missing inAmount parameter in the swap params object.",
                 { params },
-                "Provide correct swap params.",
+                "",
                 "https://docs.fun.xyz"
             )
         }
