@@ -1,7 +1,20 @@
-import { Address, Hex, PublicClient, decodeAbiParameters, isAddress as isAddressViem, pad, parseEther, toHex } from "viem"
+import {
+    Address,
+    Hex,
+    PublicClient,
+    concat,
+    decodeAbiParameters,
+    encodeAbiParameters,
+    isAddress as isAddressViem,
+    keccak256,
+    pad,
+    parseEther,
+    toBytes,
+    toHex
+} from "viem"
 import { sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
-import { FACTORY_CONTRACT_INTERFACE, WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
+import { WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
@@ -73,26 +86,33 @@ export const randomBytes = (length: number) => {
 export const getWalletPermitNonce = async (walletAddr: Address, chain: Chain, nonceKey = 0) => {
     try {
         return await WALLET_CONTRACT_INTERFACE.readFromChain(walletAddr, "getNonce", [nonceKey], chain)
-    } catch {
+    } catch (e) {
         return 0
     }
 }
 
-export const getWalletPermitHash = async (
-    factoryAddress: Address,
-    chain: Chain,
-    tokenAddress: Address,
-    targetAddress: Address,
-    amount: bigint,
-    nonce: bigint
-) => {
-    const walletImpAddr = await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "funWalletImpAddress", [], chain)
-    return await WALLET_CONTRACT_INTERFACE.readFromChain(
-        walletImpAddr,
-        "getPermitHash",
-        [tokenAddress, targetAddress, amount, nonce],
-        chain
+export const getPermitHash = (token: Address, to: Address, amount: bigint, nonce: bigint, walletAddr: Address, chainId: bigint) => {
+    const salt = keccak256(toBytes("Create3Deployer.deployers()"))
+    const EIP712_DOMAIN = keccak256(
+        encodeAbiParameters(
+            [{ type: "string" }],
+            ["EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"]
+        )
     )
+    const PERMIT_TYPEHASH = "PermitTransferStruct(address token, address to, uint256 amount, uint256 nonce)"
+    const DOMAIN_SEPARATOR = keccak256(
+        encodeAbiParameters(
+            [{ type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }, { type: "uint256" }, { type: "address" }, { type: "bytes32" }],
+            [EIP712_DOMAIN, salt, keccak256(toBytes("1")), chainId, walletAddr, salt]
+        )
+    )
+    const PERMIT_HASH = keccak256(
+        encodeAbiParameters(
+            [{ type: "string" }, { type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }],
+            [PERMIT_TYPEHASH, token, to, amount, nonce]
+        )
+    )
+    return keccak256(concat([DOMAIN_SEPARATOR, PERMIT_HASH]))
 }
 
 export const getGasStation = async (gasStationUrl: string): Promise<any> => {

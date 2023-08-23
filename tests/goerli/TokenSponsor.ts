@@ -7,9 +7,9 @@ const config: TokenSponsorTestConfig = {
     paymasterToken: "0x0a1F0598A561af6b84A726bE007f581E812C3CDD",
     baseTokenStakeAmt: 0.2,
     paymasterTokenStakeAmt: 100,
-    prefund: true,
+    prefund: false,
     swapAmount: 0.001,
-    stake: true,
+    stake: false,
     mint: false
 }
 TokenSponsorTest(config)
