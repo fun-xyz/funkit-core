@@ -168,7 +168,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Only User Whitelisted", async () => {
             await funder.sendTx(await sponsor.lockDeposit())
-            if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
+            if (await sponsor.getTokenListMode((await sponsor.getFunSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode(funderAddress))
             }
             await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress))
@@ -180,10 +180,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
 
-            if (!(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!))) {
+            if (!(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getFunSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]))
             }
-            expect(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!)).to.be.true
+            expect(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getFunSponsorAddress())!)).to.be.true
 
             expect(await runSwap(wallet)).to.not.throw
             try {
@@ -200,7 +200,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Blacklist Mode Approved", async () => {
             const funder = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            if (!(await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!))) {
+            if (!(await sponsor.getTokenListMode((await sponsor.getFunSponsorAddress())!))) {
                 await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))
             }
             await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
@@ -213,7 +213,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await funder.sendTx(await sponsor.removeSpenderFromBlackList(config.chainId, funderAddress, walletAddress))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
-            expect(await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getSponsorAddress())!)).to.be.false
+            expect(await sponsor.getTokenBlacklisted(paymasterToken, (await sponsor.getFunSponsorAddress())!)).to.be.false
 
             expect(await runSwap(wallet)).not.to.throw
             try {
