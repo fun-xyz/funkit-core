@@ -128,17 +128,14 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const deposit1 = await sponsor.stakeToken(funderAddress, paymasterToken, walletAddress1, paymasterTokenStakeAmount)
                 const stakeData = await sponsor.stake(funderAddress, funderAddress, baseStakeAmount)
 
-                console.log("Funder txs", await funder.sendTxs([approve, deposit, deposit1, stakeData]))
+                await funder.sendTxs([approve, deposit, deposit1, stakeData])
 
                 const depositInfoE = await sponsor.getTokenBalance(paymasterToken, walletAddress)
                 const depositInfo1E = await sponsor.getTokenBalance("eth", funderAddress)
                 assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
                 assert(depositInfoE > depositInfoS, "Token Stake Failed")
-                console.log("Set token to blacklist", await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress)))
-                console.log(
-                    "batch blacklist",
-                    await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
-                )
+                await funder.sendTx(await sponsor.setTokenToBlackListMode(funderAddress))
+                await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
             }
         })
 
@@ -162,31 +159,25 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     }
                 }
             )
-            console.log("RunSwap", await wallet.executeOperation(auth, userOp))
+            await wallet.executeOperation(auth, userOp)
             await new Promise((f) => setTimeout(f, 2000))
 
             const tokenBalanceAfter = await Token.getBalance(config.outToken, walletAddress)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         }
 
-        it.only("Only User Whitelisted", async () => {
-            console.log("Lock deposit", await funder.sendTx(await sponsor.lockDeposit()))
+        it("Only User Whitelisted", async () => {
+            await funder.sendTx(await sponsor.lockDeposit())
             if (await sponsor.getTokenListMode((await sponsor.getSponsorAddress())!)) {
                 await funder.sendTx(await sponsor.setTokenToWhiteListMode(funderAddress))
             }
-            console.log("set to whitelistMode", await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress)))
+            await funder.sendTx(await sponsor.setToWhitelistMode(config.chainId, funderAddress))
             expect(await sponsor.getListMode(funderAddress)).to.be.false
 
-            console.log(
-                "add spender to whitelist",
-                await funder.sendTx(await sponsor.addSpenderToWhiteList(config.chainId, funderAddress, walletAddress))
-            )
+            await funder.sendTx(await sponsor.addSpenderToWhiteList(config.chainId, funderAddress, walletAddress))
             expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
 
-            console.log(
-                "Remove spender from whitelist",
-                await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
-            )
+            await funder.sendTx(await sponsor.removeSpenderFromWhiteList(config.chainId, funderAddress, walletAddress1))
             expect(await sponsor.getSpenderWhitelisted(walletAddress1, funderAddress)).to.be.false
 
             if (!(await sponsor.getTokenWhitelisted(paymasterToken, (await sponsor.getSponsorAddress())!))) {
