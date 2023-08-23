@@ -306,11 +306,6 @@ export class TokenSponsor extends Sponsor {
         ])
     }
 
-    async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getBalance", [sponsor], chain)
-    }
-
     async lockDeposit(): Promise<TransactionParams> {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "lockTokenDeposit", [AddressZero])
     }
