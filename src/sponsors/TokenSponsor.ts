@@ -146,8 +146,8 @@ export class TokenSponsor extends Sponsor {
         ])
     }
 
-    async getUnlockBlock(tokenAddr: string, sponsor: string): Promise<bigint> {
-        return (await this.getAllTokenData(tokenAddr, sponsor)).unlockBlock
+    async getUnlockBlock(tokenAddr: string, sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        return (await this.getAllTokenData(tokenAddr, sponsor, options)).unlockBlock
     }
 
     // false means unlocked, true means locked
