@@ -287,20 +287,24 @@ export class Auth {
     async sendTxs(txs: TransactionData[]): Promise<TransactionReceipt[]> {
         const receipts: TransactionReceipt[] = []
         for (const tx of txs) {
-            receipts.push(await this.sendTx(tx))
+            if (tx.chain) {
+                receipts.push(await this.sendTx(tx, { chain: tx.chain }))
+            } else {
+                receipts.push(await this.sendTx(tx))
+            }
         }
         return receipts
     }
 
     /**
      * Retrieves the user IDs of the current auth object associated with a wallet address on a specific chain.
-     * @param {Address} walletAddr - The wallet address for which to retrieve user IDs.
+     * @param {Address} wallet - The wallet address for which to retrieve user IDs.
      * @param {string} chainId - The chain identifier.
      * @returns {Promise<Hex[]>} An array of user IDs associated with the wallet address.
      */
-    async getUserIds(walletAddr: Address, chainId: string): Promise<Hex[]> {
+    async getUserIds(wallet: Address, chainId: string): Promise<Hex[]> {
         await this.init()
-        return await getUserWalletIdentities(this.authId!, chainId, walletAddr)
+        return await getUserWalletIdentities(this.authId!, chainId, wallet)
     }
 
     /**
