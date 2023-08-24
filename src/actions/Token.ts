@@ -78,7 +78,7 @@ export const isERC20ApproveParams = (obj: ApproveParams): obj is ApproveERC20Par
 }
 
 export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721Params => {
-    return "tokenId" in obj && "token" in obj
+    return "tokenId" in obj && "collection" in obj
 }
 
 export const erc20ApproveTransactionParams = async (
@@ -91,17 +91,13 @@ export const erc20ApproveTransactionParams = async (
     return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(txOptions), "approve", [spender, convertedAmount])
 }
 
-export const erc721ApproveTransactionParams = (params: ApproveERC721Params): TransactionParams => {
-    const { spender, tokenId, token } = params
-    if (!isAddress(token)) {
-        throw new InvalidParameterError(
-            ErrorCode.InvalidParameter,
-            "Invalid NFT address passed in. Make sure it is an address.",
-            "wallet.approve",
-            { params },
-            "Provide correct token.",
-            "https://docs.fun.xyz"
-        )
+export const erc721ApproveTransactionParams = async (params: ApproveERC721Params): Promise<TransactionParams> => {
+    const { spender, tokenId, collection } = params
+    let tokenAddr
+    if (isAddress(collection)) {
+        tokenAddr = collection
+    } else {
+        tokenAddr = await NFT.getAddress(collection)
     }
-    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "approve", [spender, tokenId])
+    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "approve", [spender, tokenId])
 }

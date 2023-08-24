@@ -24,18 +24,18 @@ export interface TokenTransferParams {
 export type TransferParams = TokenTransferParams | ERC721TransferParams
 
 // Approval Param types
-export type ApproveParam = {
-    spender: string
-    token: string
-}
 export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
-export interface ApproveERC20Params extends ApproveParam {
+export interface ApproveERC20Params {
+    spender: string
     amount: number
+    token: string
 }
 
-export interface ApproveERC721Params extends ApproveParam {
+export interface ApproveERC721Params {
+    spender: string
     tokenId: number
+    collection: string
 }
 
 export type StakeParams = {

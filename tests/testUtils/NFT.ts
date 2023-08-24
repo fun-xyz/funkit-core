@@ -115,7 +115,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 const nft = new NFT(nftAddress)
                 const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {
                     spender: await wallet2.getAddress(),
-                    token: nftAddress,
+                    collection: nftAddress,
                     tokenId: nftId
                 })
                 await wallet1.executeOperation(auth, userOp)
