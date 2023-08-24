@@ -24,8 +24,8 @@ export class Operation {
     signatures?: Signature[]
     txid?: string
     gasUsed?: string
-    gasUSD?: string
-    gasTotal?: string
+    opFeeUSD?: string
+    opFee?: string
     executedBlockNumber?: number
     executedBlockTimeStamp?: number
 
@@ -48,8 +48,8 @@ export class Operation {
         this.signatures = metadata.signatures
         this.txid = metadata.txid
         this.gasUsed = metadata.gasUsed
-        this.gasUSD = metadata.gasUSD
-        this.gasTotal = metadata.gasTotal
+        this.opFeeUSD = metadata.opFeeUSD
+        this.opFee = metadata.opFee
         this.executedBlockNumber = metadata.executedBlockNumber
         this.executedBlockTimeStamp = metadata.executedBlockTimeStamp
     }

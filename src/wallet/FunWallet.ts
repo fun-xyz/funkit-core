@@ -272,16 +272,18 @@ export class FunWallet extends FirstClassActions {
             }
         }
 
-        const groups: GroupMetadata[] = await getGroups(groupIds, await chain.getChainId())
-        groups.forEach((group) => {
-            users.push({
-                userId: group.groupId,
-                groupInfo: {
-                    threshold: group.threshold,
-                    memberIds: group.memberIds
-                }
+        if (groupIds && groupIds.length > 0) {
+            const groups: GroupMetadata[] = await getGroups(groupIds, await chain.getChainId())
+            groups.forEach((group) => {
+                users.push({
+                    userId: group.groupId,
+                    groupInfo: {
+                        threshold: group.threshold,
+                        memberIds: group.memberIds
+                    }
+                })
             })
-        })
+        }
 
         return users
     }

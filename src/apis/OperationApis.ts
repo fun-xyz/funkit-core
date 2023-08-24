@@ -68,8 +68,8 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
         result.receipt = {
             txId: "Failed to find.",
             gasUsed: "Failed to find.",
-            gasUSD: "Failed to find.",
-            gasTotal: "Failed to find."
+            opFeeUSD: "Failed to find.",
+            opFee: "Failed to find."
         }
     }
     return {
