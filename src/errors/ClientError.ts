@@ -17,7 +17,7 @@ export class ResourceNotFoundError extends ClientError {
     constructor(code: string, msg: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
         if (msg.includes("Chain name not found")) {
             const { reqId } = JSON.parse(msg)
-            msg = ErrorCode.ChainNotSupported + ": Chain name not found or not supported."
+            msg = ": Chain name not found or not supported."
             fixSuggestion = "Change your EnvOptions to the correct chain identifier."
             super(ErrorType.ResourceNotFound, ErrorCode.ChainNotSupported, msg, { reqId }, fixSuggestion, docLink)
         } else {
