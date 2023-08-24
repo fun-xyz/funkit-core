@@ -55,9 +55,10 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             const user = createSessionUser()
             const second = 1000
             const minute = 60 * second
-            const deadline = (Date.now() + 2 * minute) / 1000
+            let deadline
             const feeRecip = randomBytes(20)
             before(async () => {
+                deadline = (Date.now() + 3 * minute) / 1000
                 const basetokenAddr = await Token.getAddress(baseToken)
                 const sessionKeyParams: SessionKeyParams = {
                     user,
