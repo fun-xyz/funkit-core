@@ -273,24 +273,24 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await new Promise((f) => setTimeout(f, 5000))
 
             expect(await sponsor.getTokenBlacklisted(funderAddress, paymasterToken)).to.be.false
-            expect(await sponsor.getTokenBlacklisted(usdtAddr, funderAddress)).to.be.false
+            expect(await sponsor.getTokenBlacklisted(funderAddress, usdtAddr)).to.be.false
             await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken, usdtAddr], [true, true]))
             await new Promise((f) => setTimeout(f, 5000))
 
             expect(await sponsor.getTokenBlacklisted(funderAddress, paymasterToken)).to.be.true
-            expect(await sponsor.getTokenBlacklisted(usdtAddr, funderAddress)).to.be.true
+            expect(await sponsor.getTokenBlacklisted(funderAddress, usdtAddr)).to.be.true
 
             await funder.sendTx(await sponsor.setTokenToWhitelistMode(funderAddress))
             await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken, usdtAddr], [false, false]))
             await new Promise((f) => setTimeout(f, 5000))
 
             expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.false
-            expect(await sponsor.getTokenWhitelisted(usdtAddr, funderAddress)).to.be.false
+            expect(await sponsor.getTokenWhitelisted(funderAddress, usdtAddr)).to.be.false
             await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken, usdtAddr], [true, true]))
             await new Promise((f) => setTimeout(f, 5000))
 
             expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.true
-            expect(await sponsor.getTokenWhitelisted(usdtAddr, funderAddress)).to.be.true
+            expect(await sponsor.getTokenWhitelisted(funderAddress, usdtAddr)).to.be.true
         })
     })
 }
