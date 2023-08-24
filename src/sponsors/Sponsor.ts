@@ -48,7 +48,7 @@ export abstract class Sponsor {
 
     abstract unlockDepositAfter(blocksToWait: number): Promise<TransactionParams>
 
-    // True if the specified sponsor is in blacklist mode.
+    /** True if the specified sponsor is in blacklist mode. **/
     async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [sponsor], chain)
