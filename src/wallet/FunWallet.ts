@@ -259,7 +259,12 @@ export class FunWallet extends FirstClassActions {
     async getUsers(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<User[]> {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const storedUserIds = await auth.getUserIds(await this.getAddress(), await chain.getChainId())
-        const userIds = new Set([...storedUserIds, ...this.userInfo!.keys()])
+        const userIds = new Set([...storedUserIds])
+        if (this.userInfo) {
+            for (const userId of this.userInfo.keys()) {
+                userIds.add(userId)
+            }
+        }
 
         const users: User[] = []
         const groupIds: Hex[] = []
