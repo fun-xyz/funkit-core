@@ -87,6 +87,33 @@ export abstract class FirstClassActions {
         params: SwapParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        if (!params.tokenIn) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Missing tokenIn parameter in the swap params object.",
+                { params },
+                "",
+                "https://docs.fun.xyz"
+            )
+        }
+        if (!params.tokenOut) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Missing tokenOut parameter in the swap params object.",
+                { params },
+                "",
+                "https://docs.fun.xyz"
+            )
+        }
+        if (!params.inAmount) {
+            throw new InvalidParameterError(
+                ErrorCode.InvalidParameter,
+                "Missing inAmount parameter in the swap params object.",
+                { params },
+                "",
+                "https://docs.fun.xyz"
+            )
+        }
         let transactionParams: TransactionParams
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = Number(await chain.getChainId())
@@ -157,7 +184,6 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
                 "Params were missing or incorrect",
-                "wallet.transfer",
                 { params },
                 "Provide correct transfer params.",
                 "https://docs.fun.xyz"
@@ -190,7 +216,6 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
                 "Params were missing or incorrect",
-                "wallet.tokenApprove",
                 { params },
                 "Provide correct token approve params.",
                 "https://docs.fun.xyz"
@@ -241,7 +266,6 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
                 "Params were missing or incorrect",
-                "wallet.unstake",
                 { params },
                 "Provide correct unstake params.",
                 "https://docs.fun.xyz"
@@ -364,7 +388,6 @@ export abstract class FirstClassActions {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
                 "group is not found",
-                "wallet.addUserToGroup",
                 { params },
                 "Provide correct groupId and chainId.",
                 "https://docs.fun.xyz"
@@ -378,7 +401,6 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.UserAlreadyExists,
                 "user already exists in group",
-                "wallet.addUserToGroup",
                 { params, originalMembers, userId: params.userId },
                 "Catch this error and swallow it as the user is already added.",
                 "https://docs.fun.xyz"
@@ -423,7 +445,6 @@ export abstract class FirstClassActions {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
                 "group is not found",
-                "wallet.removeUserFromGroup",
                 { params },
                 "Provide correct groupId and chainId.",
                 "https://docs.fun.xyz"
@@ -437,7 +458,6 @@ export abstract class FirstClassActions {
             throw new ResourceNotFoundError(
                 ErrorCode.UserNotFound,
                 "user does not exist in group",
-                "wallet.removeUserFromGroup",
                 { params, originalMembers, userId: params.userId },
                 "Catch this error and swallow it as the user does not exist in the group.",
                 "https://docs.fun.xyz"
@@ -480,7 +500,6 @@ export abstract class FirstClassActions {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
                 "group is not found",
-                "wallet.updateThresholdOfGroup",
                 { params },
                 "Provide correct groupId and chainId.",
                 "https://docs.fun.xyz"
@@ -491,7 +510,6 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.InvalidThreshold,
                 "threshold can not be 0 or bigger than number of members in the group",
-                "wallet.updateThresholdOfGroup",
                 { params, memberIds: groups[0].memberIds },
                 "Provide proper threshold number.",
                 "https://docs.fun.xyz"

@@ -16,7 +16,6 @@ export async function createListener(walletAddresses: Address[], chains: string[
         throw new InternalFailureError(
             ErrorCode.UnknownServerError,
             "Listener call failed.",
-            "listenerApis.createListener",
             { walletAddresses, chains, webhookUrl },
             "This is an internal error, please contact support.",
             "https://docs.fun.xyz"
@@ -37,7 +36,6 @@ export async function deleteListener(walletAddress: Address, chain: string): Pro
         throw new InternalFailureError(
             ErrorCode.UnknownServerError,
             "Listener call failed.",
-            "listenerApis.createListener",
             { walletAddress, chain },
             "This is an internal error, please contact support.",
             "https://docs.fun.xyz"

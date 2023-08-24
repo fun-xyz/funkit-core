@@ -28,7 +28,7 @@ const getOneInchSwapTx = async (swapParams: SwapParams, fromAddress: string, opt
     const inTokenDecimals = await get1inchTokenDecimals(swapParams.tokenIn, options)
     const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, options)
     const toTokenAddress = await Token.getAddress(swapParams.tokenOut, options)
-    const amount = fromReadableAmount(swapParams.amount, Number(inTokenDecimals))
+    const amount = fromReadableAmount(swapParams.inAmount, Number(inTokenDecimals))
     const formattedSwap = {
         fromTokenAddress,
         toTokenAddress,
@@ -63,7 +63,6 @@ export const oneInchTransactionParams = async (
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
             "Incorrect chainId, oneInch only available on Ethereum mainnet and polygon",
-            "wallet.swap",
             { swapParams },
             "Provide correct chainId.",
             "https://docs.fun.xyz"
@@ -81,9 +80,9 @@ export const oneInchTransactionParams = async (
     if (inToken.isNative) {
         swapParams.tokenIn = eth1InchAddress
         const swapTx = await getOneInchSwapTx(swapParams, walletAddress, txOptions)
-        return { to: approveAndExecAddress, value: swapParams.amount, data: swapTx.data }
+        return { to: approveAndExecAddress, value: swapParams.inAmount, data: swapTx.data }
     } else {
-        approveTx = await getOneInchApproveTx(swapParams.tokenIn, swapParams.amount, txOptions)
+        approveTx = await getOneInchApproveTx(swapParams.tokenIn, swapParams.inAmount, txOptions)
         const swapTx = await getOneInchSwapTx(swapParams, walletAddress, txOptions)
         return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
@@ -127,7 +126,7 @@ export const uniswapV3SwapTransactionParams = async (
     const swapParams = {
         tokenInAddress,
         tokenOutAddress,
-        amountIn: params.amount,
+        amountIn: params.inAmount,
         // optional
         returnAddress: params.returnAddress!,
         percentDecimal,
@@ -174,7 +173,7 @@ export const uniswapV2SwapTransactionParams = async (
     const swapParams = {
         tokenInAddress,
         tokenOutAddress,
-        amountIn: params.amount,
+        amountIn: params.inAmount,
         // optional
         returnAddress: params.returnAddress!,
         percentDecimal,

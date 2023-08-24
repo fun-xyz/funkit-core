@@ -20,7 +20,6 @@ export const createSessionKeyTransactionParams = async (
         throw new InvalidParameterError(
             ErrorCode.MissingParameter,
             "targetWhitelist is required",
-            "createSessionKeyTransactionParams",
             { params },
             "Provide targetWhitelist when creating a session key.",
             "https://docs.fun.xyz"

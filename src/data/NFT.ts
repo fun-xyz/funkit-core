@@ -14,7 +14,6 @@ export class NFT {
             throw new InvalidParameterError(
                 ErrorCode.InvalidNFTIdentifier,
                 "valid NFT identifier is required, could be address or name",
-                "NFT.constructor",
                 { input },
                 "Please provide valid NFT identifier",
                 "https://docs.fun.xyz"
@@ -51,7 +50,6 @@ export class NFT {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidNFTIdentifier,
                     "valid NFT identifier is required, could be address or name",
-                    "NFT.getAddress",
                     {},
                     "Please provide valid NFT identifier",
                     "https://docs.fun.xyz"

@@ -65,7 +65,7 @@ export type CreateParams = {
 export type SwapParams = {
     tokenIn: string
     tokenOut: string
-    amount: number
+    inAmount: number
     slippage?: number
     returnAddress?: Address
     poolFee?: UniSwapPoolFeeOptions

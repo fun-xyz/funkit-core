@@ -22,7 +22,6 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
     throw new ResourceNotFoundError(
         ErrorCode.TokenNotFound,
         "token symbol does not exist on provided chain",
-        "infoApis.getTokenInfo",
         { symbol, chainId },
         "Provide correct symbol and chainId.",
         "https://docs.fun.xyz"

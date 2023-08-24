@@ -50,7 +50,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameter,
                     "string input must be an address type",
-                    "FunWallet.constructor",
                     params,
                     "Provide either (uniqueId, users) or walletAddr when constructing a FunWallet",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
@@ -62,7 +61,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameter,
                     "uniqueId must be bytes32 and users must be non-empty",
-                    "FunWallet.constructor",
                     params,
                     "The uniqueId field should be a 32 byte Hexstring and the users field should be an array of User objects",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
@@ -351,7 +349,6 @@ export class FunWallet extends FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
                 "userId is required",
-                "FunWallet.createOperation",
                 { userId: userId },
                 "Provide userId when createOperation",
                 "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -507,7 +504,6 @@ export class FunWallet extends FirstClassActions {
                     throw new InvalidParameterError(
                         ErrorCode.InsufficientSignatures,
                         "Signatures are not sufficient to execute the operation",
-                        "FunWallet.executeOperation",
                         { threshold, collectedSigCount, chainId },
                         "Only execute operation with enough signatures",
                         "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -517,7 +513,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.InsufficientSignatures,
                     "Signatures are not sufficient to execute the operation",
-                    "FunWallet.executeOperation",
                     { threshold, chainId, skipDBAction: txOptions.skipDBAction },
                     "Only execute operation with enough signatures",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -640,7 +635,6 @@ export class FunWallet extends FirstClassActions {
                     throw new InvalidParameterError(
                         ErrorCode.InsufficientSignatures,
                         "Signatures are not sufficient to execute the operation",
-                        "FunWallet.executeOperation",
                         { threshold, collectedSigCount, chainId },
                         "Only execute operation with enough signatures",
                         "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -650,7 +644,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.InsufficientSignatures,
                     "Signatures are not sufficient to execute the operation",
-                    "FunWallet.executeOperation",
                     { threshold, chainId, skipDBAction: txOptions.skipDBAction },
                     "Only execute operation with enough signatures",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -681,7 +674,6 @@ export class FunWallet extends FirstClassActions {
             throw new InternalFailureError(
                 ErrorCode.ServerFailure,
                 "Operation id is required",
-                "FunWallet.scheduleOperation",
                 operation,
                 "Make sure you are scheduling a valid operation",
                 "https://docs.fun.xyz/"
@@ -830,7 +822,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,
                     "EnvOption.fee.token or EnvOption.gasSponsor.token is required",
-                    "FunWallet.createOperation",
                     { options },
                     "Provide EnvOption.fee.token or EnvOption.gasSponsor.token when calling wallet.createOperation",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -840,7 +831,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,
                     "EnvOption.fee.recipient is required",
-                    "FunWallet.createOperation",
                     { options },
                     "Provide EnvOption.fee.recipient when calling wallet.createOperation",
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
@@ -851,7 +841,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameterCombination,
                     "GasPercent is only valid for native tokens",
-                    "FunWallet.createOperation",
                     { options },
                     "Use native token as the fee token if you want to charge fee based on percentage",
                     "https://docs.fun.xyz/how-to-guides/configure-environment/set-developer-fee"
@@ -886,7 +875,6 @@ export class FunWallet extends FirstClassActions {
                 throw new InvalidParameterError(
                     ErrorCode.MissingParameter,
                     "EnvOption.fee.amount or EnvOption.fee.gasPercent is required",
-                    "FunWallet.createOperation",
                     { options },
                     "Provide either EnvOption.fee.amount or EnvOption.fee.gasPercent when calling wallet.createOperation",
                     "https://docs.fun.xyz/how-to-guides/configure-environment/set-developer-fee"

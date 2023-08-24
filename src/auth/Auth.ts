@@ -108,7 +108,6 @@ export class Auth {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameter,
                     "privateKey is not a valid one",
-                    "Auth.constructor",
                     authInput.privateKey,
                     "Provide valid privateKey string",
                     "https://docs.fun.xyz/how-to-guides/configure-account"
@@ -119,7 +118,6 @@ export class Auth {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
                 "valid authInput is required",
-                "Auth.constructor",
                 authInput,
                 "Provide viem client, privateKey, window eth (check viem.sh), rpc signer, provider, or signer when constructing Auth",
                 "https://docs.fun.xyz/how-to-guides/configure-account"
@@ -242,7 +240,6 @@ export class Auth {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
                 "chain object is missing or incorrect",
-                "auth.sendTx",
                 { options, chainId },
                 "Provide proper chain information from options field",
                 "https://docs.fun.xyz"

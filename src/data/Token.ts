@@ -38,7 +38,6 @@ export class Token {
             throw new InternalFailureError(
                 ErrorCode.ServerMissingData,
                 "server missing token symbol and address info",
-                "Token.getAddress",
                 { symbol: this.symbol, address: this.address, isNative: this.isNative },
                 "Please check token symbol and address. If things look correct, contract fun support for help",
                 "https://docs.fun.xyz"
@@ -77,7 +76,6 @@ export class Token {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
                 "Native token can not approve",
-                "Token.getApproval",
                 { isNative: this.isNative },
                 "No need to approve native token",
                 "https://docs.fun.xyz"

@@ -8,7 +8,6 @@ export async function getOnRampUrl(walletAddr: string): Promise<string> {
         throw new InternalFailureError(
             ErrorCode.UnknownServerError,
             "No onramp url found.",
-            "FunWallet.onRamp",
             { walletAddr },
             "This is an internal error, please contact support.",
             "https://docs.fun.xyz"
@@ -23,7 +22,6 @@ export async function getOffRampUrl(walletAddr: string): Promise<string> {
         throw new InternalFailureError(
             ErrorCode.UnknownServerError,
             "No offramp url found.",
-            "FunWallet.offRamp",
             { walletAddr },
             "This is an internal error, please contact support.",
             "https://docs.fun.xyz"

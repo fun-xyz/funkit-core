@@ -82,7 +82,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     (config.amount ? config.amount : 0.0001) * 10 ** Number(await Token.getDecimals(config.inToken, options))
                 const userOp = await wallet.swap(auth, await auth.getAddress(), {
                     tokenIn: "eth",
-                    amount: config.amount ? config.amount : 0.05,
+                    inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
                     returnAddress: walletAddress
                 })
@@ -92,7 +92,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
                     tokenIn: "eth",
-                    amount: config.amount ? config.amount : 0.05,
+                    inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
                     returnAddress: walletAddress1
                 })
@@ -146,7 +146,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await auth.getAddress(),
                 {
                     tokenIn: config.inToken,
-                    amount: config.amount ? config.amount : 0.0001,
+                    inAmount: config.amount ? config.amount : 0.0001,
                     tokenOut: config.outToken,
                     returnAddress: walletAddress
                 },
