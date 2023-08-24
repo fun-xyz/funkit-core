@@ -1,4 +1,4 @@
-const discord = "FILL_IN"
+const discord = "https://discord.gg/7ZRAv4es"
 export class BaseError extends Error {
     timestamp: string
 
