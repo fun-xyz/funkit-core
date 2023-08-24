@@ -76,7 +76,7 @@ export const isERC20ApproveParams = (obj: ApproveParams): obj is ApproveERC20Par
 }
 
 export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721Params => {
-    return "tokenId" in obj && "token" in obj
+    return "tokenId" in obj && "collection" in obj
 }
 
 export const erc20ApproveTransactionParams = async (
@@ -86,10 +86,16 @@ export const erc20ApproveTransactionParams = async (
     const { spender, amount, token } = params
     const tokenObj = new Token(token)
     const convertedAmount = await tokenObj.getDecimalAmount(amount, txOptions)
-    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(token, "approve", [spender, convertedAmount])
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(txOptions), "approve", [spender, convertedAmount])
 }
 
-export const erc721ApproveTransactionParams = (params: ApproveERC721Params): TransactionParams => {
-    const { spender, tokenId, token } = params
-    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(token, "approve", [spender, tokenId])
+export const erc721ApproveTransactionParams = async (params: ApproveERC721Params): Promise<TransactionParams> => {
+    const { spender, tokenId, collection } = params
+    let tokenAddr
+    if (isAddress(collection)) {
+        tokenAddr = collection
+    } else {
+        tokenAddr = await NFT.getAddress(collection)
+    }
+    return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "approve", [spender, tokenId])
 }

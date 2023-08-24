@@ -90,8 +90,8 @@ export class TokenSponsor extends Sponsor {
     }
 
     async stake(
+        depositor: Address,
         sponsor: Address,
-        walletAddress: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
@@ -104,25 +104,25 @@ export class TokenSponsor extends Sponsor {
             {
                 action: "stake",
                 amount,
-                from: sponsor,
+                from: depositor,
                 to: await this.getPaymasterAddress(options),
                 token: "eth"
             },
             this.paymasterType,
-            walletAddress
+            sponsor
         )
 
         return this.contractInterface.encodeTransactionParams(
             await this.getPaymasterAddress(),
             "addEthDepositTo",
-            [walletAddress, amountdec],
+            [sponsor, amountdec],
             BigInt(amountdec)
         )
     }
 
     async unstake(
         sponsor: Address,
-        walletAddress: string,
+        receiver: Address,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
@@ -140,21 +140,22 @@ export class TokenSponsor extends Sponsor {
                 token: "eth"
             },
             this.paymasterType,
-            walletAddress
+            receiver
         )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawEthDepositTo", [
-            walletAddress,
+            receiver,
             amountdec
         ])
     }
 
-    async getUnlockBlock(tokenAddr: string, sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+    async getUnlockBlock(sponsor: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+        const tokenAddr = (await Token.isNative(token)) ? AddressZero : await Token.getAddress(token, options)
         return (await this.getAllTokenData(tokenAddr, sponsor, options)).unlockBlock
     }
 
     // false means unlocked, true means locked
-    async getLockState(token: string, sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
-        const tokenAddr = (await Token.isNative(token)) ? AddressZero : token
+    async getLockState(sponsor: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+        const tokenAddr = (await Token.isNative(token)) ? AddressZero : await Token.getAddress(token, options)
         const unlockBlock = await this.getUnlockBlock(tokenAddr, sponsor)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const provider = await chain.getClient()
@@ -169,11 +170,11 @@ export class TokenSponsor extends Sponsor {
     }
 
     async getAllTokenData(
-        tokenAddr: string,
-        spender: string,
+        spender: Address,
+        token: string,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<AllTokenData> {
-        const tokenAddress = await Token.getAddress(tokenAddr, options)
+        const tokenAddress = await Token.getAddress(token, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
 
         const data = await this.contractInterface.readFromChain(
@@ -188,7 +189,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    async getTokenBalance(token: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption) {
+    async getTokenBalance(spender: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigInt> {
         const tokenData = new Token(token)
         let tokenAddress
         if (tokenData.isNative) {
@@ -223,10 +224,10 @@ export class TokenSponsor extends Sponsor {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setTokenData", [data])
     }
 
-    async stakeToken(
-        sponsor: Address,
+    async depositToken(
+        depositor: Address,
         token: string,
-        walletAddress: string,
+        spender: Address,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
@@ -241,24 +242,24 @@ export class TokenSponsor extends Sponsor {
             {
                 action: "stakeToken",
                 amount,
-                from: sponsor,
+                from: depositor,
                 to: await this.getPaymasterAddress(options),
                 token
             },
             this.paymasterType,
-            walletAddress
+            spender
         )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "addTokenDepositTo", [
             tokenAddress,
-            walletAddress,
+            spender,
             amountdec
         ])
     }
 
-    async unstakeToken(
-        sponsor: Address,
+    async withdrawToken(
+        withdrawer: Address,
         token: string,
-        walletAddress: string,
+        receiver: Address,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
@@ -275,33 +276,33 @@ export class TokenSponsor extends Sponsor {
             {
                 action: "unstakeToken",
                 amount,
-                from: sponsor,
+                from: withdrawer,
                 to: await this.getPaymasterAddress(options),
                 token
             },
             this.paymasterType,
-            walletAddress
+            receiver
         )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawTokenDepositTo", [
             tokenAddress,
-            walletAddress,
+            receiver,
             amountdec
         ])
     }
 
-    async lockTokenDeposit(tokenData: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
-        const token = new Token(tokenData)
-        const tokenAddress = token.isNative ? AddressZero : await token.getAddress(options)
+    async lockTokenDeposit(token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+        const tokenData = new Token(token)
+        const tokenAddress = tokenData.isNative ? AddressZero : await tokenData.getAddress(options)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "lockTokenDeposit", [tokenAddress])
     }
 
     async unlockTokenDepositAfter(
-        tokenData: string,
+        token: string,
         blocksToWait: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
-        const token = new Token(tokenData)
-        const tokenAddress = token.isNative ? AddressZero : await token.getAddress(options)
+        const tokenData = new Token(token)
+        const tokenAddress = tokenData.isNative ? AddressZero : await tokenData.getAddress(options)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "unlockTokenDepositAfter", [
             tokenAddress,
             blocksToWait
@@ -320,7 +321,7 @@ export class TokenSponsor extends Sponsor {
     }
 
     async approve(
-        sponsor: Address,
+        approver: Address,
         token: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
@@ -334,19 +335,19 @@ export class TokenSponsor extends Sponsor {
             {
                 action: "approve",
                 amount,
-                from: sponsor,
+                from: approver,
                 to: await this.getPaymasterAddress(options),
                 token
             },
             this.paymasterType,
-            sponsor
+            approver
         )
         return Token.approve(token, gasSponsorAddress, amount)
     }
 
     async getSpenderBlacklisted(
-        spender: string,
-        sponsor: string,
+        spender: Address,
+        sponsor: Address,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
@@ -359,8 +360,8 @@ export class TokenSponsor extends Sponsor {
     }
 
     async getSpenderWhitelisted(
-        spender: string,
-        sponsor: string,
+        spender: Address,
+        sponsor: Address,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
@@ -372,13 +373,9 @@ export class TokenSponsor extends Sponsor {
         )
     }
 
-    async getTokenWhitelisted(
-        tokenAddr: string,
-        sponsor: string,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<boolean> {
+    async getTokenWhitelisted(sponsor: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        const tokenAddress = await Token.getAddress(tokenAddr, options)
+        const tokenAddress = await Token.getAddress(token, options)
         return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getTokenWhitelisted",
@@ -387,7 +384,7 @@ export class TokenSponsor extends Sponsor {
         )
     }
 
-    async setTokenToWhiteListMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+    async setTokenToWhitelistMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         await updatePaymasterMode(await chain.getChainId(), { tokenMode: "whitelist" }, this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setTokenListMode", [false])
@@ -414,21 +411,18 @@ export class TokenSponsor extends Sponsor {
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getTokenListMode", [sponsor], chain)
     }
 
-    async getTokenBlacklisted(
-        tokenAddr: string,
-        sponsor: string,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<boolean> {
+    async getTokenBlacklisted(sponsor: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+        const tokenAddress = await Token.getAddress(token, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(
             await this.getPaymasterAddress(options),
             "getTokenBlacklisted",
-            [tokenAddr, sponsor],
+            [tokenAddress, sponsor],
             chain
         )
     }
 
-    async setTokenToBlackListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+    async setTokenToBlacklistMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         await updatePaymasterMode(await chain.getChainId(), { tokenMode: "blacklist" }, this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setTokenListMode", [true])

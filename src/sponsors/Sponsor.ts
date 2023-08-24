@@ -40,27 +40,28 @@ export abstract class Sponsor {
 
     abstract getPaymasterAndData(options: EnvOption): Promise<string>
 
-    abstract stake(sponsor: Address, walletAddress: string, amount: number, options: EnvOption): Promise<TransactionParams>
+    abstract stake(depositor: Address, sponsor: string, amount: number, options: EnvOption): Promise<TransactionParams>
 
-    abstract unstake(sponsor: Address, walletAddress: string, amount: number, options: EnvOption): Promise<TransactionParams>
+    abstract unstake(sponsor: Address, receiver: string, amount: number, options: EnvOption): Promise<TransactionParams>
 
     abstract lockDeposit(): Promise<TransactionParams>
 
     abstract unlockDepositAfter(blocksToWait: number): Promise<TransactionParams>
 
+    /** True if the specified sponsor is in blacklist mode. **/
     async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [sponsor], chain)
     }
 
-    async setToBlacklistMode(chainId: number, sponsor: Address): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: chainId })
+    async setToBlacklistMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         await updatePaymasterMode(await chain.getChainId(), { mode: "blacklist" }, this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [true])
     }
 
-    async setToWhitelistMode(chainId: number, sponsor: Address): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: chainId })
+    async setToWhitelistMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         await updatePaymasterMode(await chain.getChainId(), { mode: "whitelist" }, this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setListMode", [false])
     }
@@ -71,49 +72,81 @@ export abstract class Sponsor {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [batchActionsData], value)
     }
 
-    async addSpenderToWhiteList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
-        await addToList(chainId.toString(), [spender], "walletsWhiteList", this.paymasterType, sponsor)
+    async addSpenderToWhitelist(
+        sponsor: Address,
+        spender: Address,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        await addToList(await chain.getChainId(), [spender], "walletsWhiteList", this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderWhitelistMode", [spender, true])
     }
 
-    async removeSpenderFromWhiteList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
-        await removeFromList(chainId.toString(), [spender], "walletsWhiteList", this.paymasterType, sponsor)
+    async removeSpenderFromWhitelist(
+        sponsor: Address,
+        spender: Address,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        await removeFromList(await chain.getChainId(), [spender], "walletsWhiteList", this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderWhitelistMode", [spender, false])
     }
 
-    async batchWhitelistUsers(chainId: number, sponsor: Address, users: string[], modes: boolean[]): Promise<TransactionParams> {
+    async batchWhitelistSpenders(
+        sponsor: Address,
+        spenders: Address[],
+        modes: boolean[],
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const calldata: TransactionParams[] = []
-        for (let i = 0; i < users.length; i++) {
+        for (let i = 0; i < spenders.length; i++) {
             if (modes[i]) {
-                calldata.push(await this.addSpenderToWhiteList(chainId, sponsor, users[i]))
+                calldata.push(await this.addSpenderToWhitelist(sponsor, spenders[i], options))
             } else {
-                calldata.push(await this.removeSpenderFromWhiteList(chainId, sponsor, users[i]))
+                calldata.push(await this.removeSpenderFromWhitelist(sponsor, spenders[i], options))
             }
         }
-        batchOperation(chainId.toString(), users, modes, "walletsWhiteList", this.paymasterType, sponsor)
+        batchOperation(await chain.getChainId(), spenders, modes, "walletsWhiteList", this.paymasterType, sponsor)
         return await this.batchTransaction(calldata)
     }
 
-    async addSpenderToBlackList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
-        await addToList(chainId.toString(), [spender], "walletsBlackList", this.paymasterType, sponsor)
+    async addSpenderToBlacklist(
+        sponsor: Address,
+        spender: Address,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        await addToList(await chain.getChainId(), [spender], "walletsBlackList", this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderBlacklistMode", [spender, true])
     }
 
-    async removeSpenderFromBlackList(chainId: number, sponsor: Address, spender: string): Promise<TransactionParams> {
-        await removeFromList(chainId.toString(), [spender], "walletsBlackList", this.paymasterType, sponsor)
+    async removeSpenderFromBlacklist(
+        sponsor: Address,
+        spender: Address,
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        await removeFromList(await chain.getChainId(), [spender], "walletsBlackList", this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setSpenderBlacklistMode", [spender, false])
     }
 
-    async batchBlacklistUsers(chainId: number, sponsor: Address, users: string[], modes: boolean[]): Promise<TransactionParams> {
+    async batchBlacklistSpenders(
+        sponsor: Address,
+        spenders: Address[],
+        modes: boolean[],
+        options: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<TransactionParams> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const calldata: TransactionParams[] = []
-        for (let i = 0; i < users.length; i++) {
+        for (let i = 0; i < spenders.length; i++) {
             if (modes[i]) {
-                calldata.push(await this.addSpenderToBlackList(chainId, sponsor, users[i]))
+                calldata.push(await this.addSpenderToBlacklist(sponsor, spenders[i], options))
             } else {
-                calldata.push(await this.removeSpenderFromBlackList(chainId, sponsor, users[i]))
+                calldata.push(await this.removeSpenderFromBlacklist(sponsor, spenders[i], options))
             }
         }
-        batchOperation(chainId.toString(), users, modes, "walletsBlackList", this.paymasterType, sponsor)
+        batchOperation(await chain.getChainId(), spenders, modes, "walletsBlackList", this.paymasterType, sponsor)
         return await this.batchTransaction(calldata)
     }
 }
