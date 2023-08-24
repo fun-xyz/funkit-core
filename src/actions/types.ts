@@ -26,7 +26,7 @@ export type TransferParams = TokenTransferParams | ERC721TransferParams
 // Approval Param types
 export type ApproveParam = {
     spender: string
-    token: Address
+    token: string
 }
 export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
@@ -48,7 +48,7 @@ export type RequestUnstakeParams = {
 }
 
 export type FinishUnstakeParams = {
-    recipient: string
+    recipient: Address
     walletAddress: string
 }
 
