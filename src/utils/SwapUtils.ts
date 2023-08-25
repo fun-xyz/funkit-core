@@ -6,8 +6,7 @@ import { UniSwapPoolFeeOptions } from "../actions"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
 import { EnvOption } from "../config"
-import { Chain } from "../data"
-
+import { Chain, Token as FunKitToken } from "../data"
 const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
 export function fromReadableAmount(amount: number, decimals: number) {
@@ -115,6 +114,7 @@ class SwapToken {
     }
 
     async getTokenDecimals(tokenAddr: Address) {
+        console.log(tokenAddr)
         return await ERC20_CONTRACT_INTERFACE.readFromChain(tokenAddr, "decimals", [], this.client)
     }
 
@@ -207,8 +207,21 @@ export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addr
     const _poolFee = fees[poolFee]
 
     const swapper = new SwapToken(client, 3, univ3quoter, univ3factory)
-    const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
-    const tokenOutDecimal = await swapper.getTokenDecimals(tokenOutAddress)
+    const funkitTokenIn = new FunKitToken(tokenInAddress)
+    const funkitTokenOut = new FunKitToken(tokenOutAddress)
+
+    let tokenInDecimal
+    let tokenOutDecimal
+    if (!funkitTokenIn.isNative) {
+        tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
+    } else {
+        tokenInDecimal = 18
+    }
+    if (!funkitTokenOut.isNative) {
+        tokenOutDecimal = await swapper.getTokenDecimals(tokenOutAddress)
+    } else {
+        tokenOutDecimal = 18
+    }
 
     const tokenIn = new Token(chainId, tokenInAddress, tokenInDecimal)
     const tokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimal)

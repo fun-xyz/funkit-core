@@ -62,6 +62,7 @@ export const RBACTest = (config: RBACTestConfig) => {
             const operation = await wallet.addOwner(auth, await auth.getAddress(), {
                 ownerId: ownerId
             })
+            console.log(operation)
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const storedOwnerRule = await WALLET_CONTRACT_INTERFACE.readFromChain(
@@ -78,6 +79,7 @@ export const RBACTest = (config: RBACTestConfig) => {
             const operation = await wallet.removeOwner(auth, await auth.getAddress(), {
                 ownerId: ownerId
             })
+            console.log(operation)
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const storedOwnerRule = await WALLET_CONTRACT_INTERFACE.readFromChain(
