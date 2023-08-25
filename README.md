@@ -4,6 +4,8 @@
 
 FunKit empowers you to create feature-rich and extensible smart wallets built on account abstraction. Leveraging the FunKit, you can customize gas behavior, adopt multi-sig and common authentication method, monetize your application, execute any transactions from smart wallets, and much more.
 
+This repo only covers FunKit Core SDK which does not provide any frontend specific optimizations. Check our [Web SDK](https://github.com/TheFunGroup/fun-wallet-react) if you want to further simplify your application with our react hooks.
+
 ## **Table of Contents**
 
 1. **[Installation](#installation)**
