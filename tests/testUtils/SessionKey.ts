@@ -87,7 +87,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     amount: randomApproveAmount,
                     token: outTokenAddress
                 })
-                await wallet.executeOperation(user, operation)
+                console.log(await wallet.executeOperation(user, operation))
                 await new Promise((resolve) => {
                     setTimeout(resolve, 5000)
                 })

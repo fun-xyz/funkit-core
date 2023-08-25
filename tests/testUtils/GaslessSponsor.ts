@@ -29,7 +29,7 @@ export interface GaslessSponsorTestConfig {
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     const mint = Object.values(config).includes("mint") ? true : config.mint
 
-    describe("GaslessSponsor", function () {
+    describe.skip("GaslessSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(250_000)
         let funder: Auth

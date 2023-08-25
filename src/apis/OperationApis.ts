@@ -84,7 +84,7 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             blockNum
         )
         const events = (await client.getFilterLogs({ filter })) as any
-        result.receipt.status = events[0].args.success ? "success" : "failed"
+        result.receipt.status = events[0]?.args.success ? "success" : "failed"
     }
 
     return {
