@@ -52,7 +52,7 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
             userAuthContractAddr = await chain.getAddress("userAuthAddress")
