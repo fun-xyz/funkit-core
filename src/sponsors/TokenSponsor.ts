@@ -60,12 +60,12 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<string> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        const { maxFeePerGas } = partialOp.userOp
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, partialOp)
         partialOp.userOp.signature = estimateGasSignature.toLowerCase()
         const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas(partialOp.userOp)
+        const maxFeePerGas = await chain.getFeeData()
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const requiredGas = (callGasLimit + (verificationGasLimit + 300_000n) * 3n + preVerificationGas) * maxFeePerGas * 25n
+        const requiredGas = (callGasLimit + (verificationGasLimit + 400_000n) * 3n + preVerificationGas) * maxFeePerGas
         const decAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
             paymasterAddress,
             "getTokenValueOfEth",
