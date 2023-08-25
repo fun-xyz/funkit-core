@@ -185,8 +185,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log(await wallet.executeOperation(auth, userOp))
-                // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
+                expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
@@ -232,8 +231,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
-                console.log(await wallet.executeOperation(auth, userOp))
+                expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)

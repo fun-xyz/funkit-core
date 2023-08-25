@@ -31,7 +31,7 @@ export interface BatchActionsTestConfig {
 export const BatchActionsTest = (config: BatchActionsTestConfig) => {
     const { outToken, prefundAmt, baseToken } = config
 
-    describe.skip("Single Auth BatchActions", function () {
+    describe("Single Auth BatchActions", function () {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet

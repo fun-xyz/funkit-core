@@ -105,8 +105,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 inAmount: 0.0001,
                 tokenOut: baseToken
             })
-            console.log(await wallet.executeOperation(auth, operation))
-            // expect(await wallet.executeOperation(auth, operation)).to.not.throw
+            await wallet.executeOperation(auth, operation)
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
             assert(tokenBalanceAfter < tokenBalanceBefore, `Swap did not execute ${tokenBalanceAfter} ${tokenBalanceBefore}`)
         })
@@ -146,7 +145,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                     returnAddress: walletAddress
                 })
 
-                console.log(await wallet.executeOperation(user, operation))
+                await wallet.executeOperation(user, operation)
 
                 const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
                 assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
@@ -164,7 +163,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                     returnAddress: walletAddress
                 })
 
-                console.log(await wallet.executeOperation(user, operation))
+                await wallet.executeOperation(user, operation)
                 const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
                 assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
             })

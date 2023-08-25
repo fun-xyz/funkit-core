@@ -106,7 +106,7 @@ describe("GetAssets", function () {
                 expect(res.nfts.length).to.equal(0)
             })
 
-            it.skip("Optimism, Uniswap Positions", async () => {
+            it("Optimism, Uniswap Positions", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "10",
@@ -117,7 +117,7 @@ describe("GetAssets", function () {
                 expect(res.nfts.length).to.equal(0)
             })
 
-            it.skip("Polygon, Uniswap Positions", async () => {
+            it("Polygon, Uniswap Positions", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "137",
@@ -128,7 +128,7 @@ describe("GetAssets", function () {
                 expect(res.nfts.length).to.equal(0)
             })
 
-            it.skip("Arbitrum, Arbitrum Odyssey", async () => {
+            it("Arbitrum, Arbitrum Odyssey", async () => {
                 const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "42161",
