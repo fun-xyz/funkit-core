@@ -73,7 +73,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
         })
 
-        it.only("transfer baseToken(ETH) executed", async () => {
+        it("transfer baseToken(ETH) executed", async () => {
             const balBefore = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
             await new Promise((resolve) => {
                 setTimeout(resolve, 300_000)

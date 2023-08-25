@@ -286,7 +286,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             }
         })
 
-        it.only("Approve tokens", async () => {
+        it("Approve tokens", async () => {
             const randomAddresses = new Array(5).fill(0).map(() => {
                 return randomBytes(20)
             })
