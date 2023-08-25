@@ -9,17 +9,16 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
         symbol,
         chain: chainId
     }
-    let address
-    if ((symbol === "weth" || symbol === "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
-        address = (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
+    if (symbol === "weth" && Object.keys(BASE_WRAP_TOKEN_ADDR).includes(chainId)) {
+        return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
+    } else if (symbol === "wmatic" && chainId === "137") {
+        return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
 
     const tokenInfo = await sendGetRequest(API_URL, `asset/erc20/${body.chain}/${body.symbol}`)
 
     if (tokenInfo.address) {
         return tokenInfo.address
-    } else if (address) {
-        return address
     }
     throw new ResourceNotFoundError(
         ErrorCode.TokenNotFound,
