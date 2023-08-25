@@ -36,7 +36,7 @@ import { FunWallet, configureEnvironment, Auth } from “@fun-xyz/core”
 Set your environment variables describing how your smart wallets interact with blockchains. This can include chain, apiKey, and optional gasSponsor.
 
 1. `chain` - Each FunWallet exists on an [EVM-compatible blockchain](https://ethereum.org/en/developers/docs/evm/).
-2. `apiKey` - You can get an API key by logging to our [dashboard] (https://app.fun.xyz/sign-in/request).
+2. `apiKey` - You can get an API key by logging to our [dashboard](https://app.fun.xyz/sign-in/request).
 3. `gasSponsor` - All wallets have to pay gas to execute transactions on a blockchain. You can pre-fund the wallet with native tokens or you can have third parties to pay for gas by specifying a [gasSponsor](https://docs.fun.xyz/api-reference/gas-sponsor).
 
 ```js
