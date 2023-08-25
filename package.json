@@ -1,6 +1,6 @@
 {
     "name": "@fun-xyz/core",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
