@@ -126,7 +126,6 @@ export abstract class FirstClassActions {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
                 "Swap is not supported on Base",
-                "wallet.swap",
                 { params },
                 "Use a different chain or a different first class method",
                 "https://docs.fun.xyz"

@@ -358,7 +358,6 @@ export class FunWallet extends FirstClassActions {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
-        const maxFeePerGas = await chain.getFeeData()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this.getThisInitCode(chain)
         let paymasterAndData = "0x"
 
@@ -366,8 +365,8 @@ export class FunWallet extends FirstClassActions {
             callData: await this.buildCalldata(auth, userId, transactionParams, txOptions),
             paymasterAndData,
             sender,
-            maxFeePerGas: maxFeePerGas!,
-            maxPriorityFeePerGas: maxFeePerGas!,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
             initCode,
             nonce: txOptions.nonce !== null && txOptions.nonce !== undefined ? txOptions.nonce : await this.getNonce(sender),
             preVerificationGas: 100_000n,
@@ -745,6 +744,9 @@ export class FunWallet extends FirstClassActions {
             ...operation.userOp,
             ...res
         }
+        const maxFeePerGas = await chain.getFeeData()
+        operation.userOp.maxFeePerGas = maxFeePerGas
+        operation.userOp.maxPriorityFeePerGas = maxFeePerGas
         return operation
     }
 
