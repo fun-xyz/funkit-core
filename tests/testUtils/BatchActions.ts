@@ -117,11 +117,11 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             }
         })
 
-        it.only("Swap, Approve", async () => {
+        it("Swap, Approve", async () => {
             const randomAddress = randomBytes(20)
             const approveAmount = randInt(10000)
             const swapParams = await uniswapV3SwapTransactionParams({
-                tokenIn: "eth",
+                tokenIn: config.baseToken,
                 tokenOut: outToken,
                 inAmount: 0.001,
                 returnAddress: randomAddress

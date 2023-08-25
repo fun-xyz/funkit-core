@@ -29,6 +29,7 @@ export class Token {
 
         if (this.isNative) {
             const nativeName = (wrappedNativeTokens as any)[this.symbol]
+            console.log(nativeName, chainId, wrappedNativeTokens, this.symbol)
             return await getTokenInfo(nativeName, chainId)
         } else if (this.address) {
             return this.address

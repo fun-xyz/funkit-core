@@ -133,8 +133,6 @@ export const uniswapV3SwapTransactionParams = async (
         slippage,
         poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
     }
-    console.log(swapParams)
-    console.log("tokenIn", tokenIn)
 
     if (tokenIn.isNative) {
         const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))

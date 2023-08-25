@@ -9,15 +9,17 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
         symbol,
         chain: chainId
     }
-
+    let address
     if ((symbol === "weth" || symbol === "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
-        return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
+        address = (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
 
     const tokenInfo = await sendGetRequest(API_URL, `asset/erc20/${body.chain}/${body.symbol}`)
 
     if (tokenInfo.address) {
         return tokenInfo.address
+    } else if (address) {
+        return address
     }
     throw new ResourceNotFoundError(
         ErrorCode.TokenNotFound,
