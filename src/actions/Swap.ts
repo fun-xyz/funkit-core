@@ -134,11 +134,10 @@ export const uniswapV3SwapTransactionParams = async (
         poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
     }
 
+    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
     if (tokenIn.isNative) {
-        const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [amount, data])
     } else {
-        const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
     }
 }
