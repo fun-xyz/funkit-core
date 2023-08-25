@@ -24,7 +24,7 @@ yarn add @fun-xyz/core
 
 ## <a id="quickstart"></a> **Quick Start**
 
-FunKit requires to be configured with api key. You can get the api key by logging to our [dashboard] (https://app.fun.xyz/sign-in/request).
+FunKit requires to be configured with api key. You can get the api key by logging to our [dashboard](https://app.fun.xyz/sign-in/request).
 
 ### 1. Import Required Class
 
@@ -56,7 +56,7 @@ await configureEnvironment({
 
 ### 3. Creating Auth
 
-Now that we have set up the environment, we need a way to sign transactions. All authentication in FunKit is handled with the Auth object. You can use privateKey, viem client, web3 provider, ethers.js signer, rpcProvider or windowEth (metamask) to build the auth.
+Now that we have set up the environment, we need a way to sign transactions. All authentication in FunKit is handled with the Auth object. You can use privateKey, viem client, web3 provider, ethers.js signer, rpcProvider or windowEth (metamask) to build the auth. Check more examples about how to create auth with different inputs [here](https://docs.fun.xyz/api-reference/auth)
 
 ```js
 const auth = new Auth({ privateKey: PRIVATE_KEY })
@@ -66,7 +66,7 @@ const auth = new Auth({ privateKey: PRIVATE_KEY })
 
 With the Auth instance that we created in the step before, we are now able to initialize your FunWallet. Here are the FunWallet constructor parameters
 
-1. `users` - This is an `User[]` that holds all `users` that can access your `FunWallet`. Since we’re only using 1 private key, our `User[]` only has 1 instance.
+1. `users` - This is an `User[]` that holds all `users` that can access your `FunWallet`. For simplicity, we’re only including 1 user here.
 2. `uniqueId` - This is a random seed that is generated from our `Auth` instance. The purpose of this seed is to generate the `address` of our `FunWallet`.
 
 ```js
@@ -94,7 +94,7 @@ console.log(receipt)
 
 ### **Testing on Goerli**
 
-You can test FunKit on ethereum goerli testnet with the following configuration. We have a gas sponsor that will cover your gas cost for the first 200 operations so you don't have to worry anything about smart wallet prefund or setting up the gas sponsor by yourselves.
+You can test FunKit on ethereum goerli testnet with the following configuration. We have a gas sponsor that will cover your gas cost for the first 200 operations so you don't have to worry anything about smart wallet prefund or setting up the gas sponsor by yourselves at the beginning.
 
 ```js
 await configureEnvironment({
