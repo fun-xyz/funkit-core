@@ -76,7 +76,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 })
             )
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), txParams)
-            console.log(operation)
             await wallet.executeOperation(auth, operation)
             for (const randomAddr of randomAddresses) {
                 const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
@@ -109,7 +108,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             )
             try {
                 const operation = await wallet.createBatchOperation(randAuth, await randAuth.getAddress(), txParams)
-                console.log(operation)
                 await wallet.executeOperation(randAuth, operation)
                 assert(false, "transaction passed")
             } catch (e: any) {
@@ -134,7 +132,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             })
             const walletAddress = await wallet.getAddress()
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [swapParams, approveParams])
-            console.log(operation)
             await wallet.executeOperation(auth, operation)
             const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
                 outTokenAddress,
@@ -176,7 +173,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             })
 
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [createGroupParams, addUserToGroupParams])
-            console.log(operation)
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
             const userAuthContractAddr = await chain.getAddress("userAuthAddress")
@@ -220,7 +216,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 addOwner2Params,
                 removeOwner1Params
             ])
-            console.log(operation)
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
             const rbacContractAddr = await chain.getAddress("rbacAddress")
@@ -306,7 +301,6 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const operation1 = await wallet.createBatchOperation(auth1, await groupId, txParams)
 
             const operation = await wallet.getOperation(operation1.opId!)
-            console.log(operation)
             await wallet.executeOperation(auth2, operation)
             await new Promise((r) => setTimeout(r, 4000))
             for (const randomAddr of randomAddresses) {

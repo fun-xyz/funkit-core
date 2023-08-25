@@ -97,10 +97,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     tokenOut: config.inToken,
                     returnAddress: walletAddress1
                 })
-                console.log(userOp1)
                 await wallet1.executeOperation(auth, userOp1)
                 const wallet1InTokenBalance = await Token.getBalance(config.inToken, walletAddress1)
-                console.log(Number(wallet1InTokenBalance), requiredAmount, walletAddress1)
                 assert(Number(wallet1InTokenBalance) > requiredAmount, "wallet1 does have enough inToken balance")
             }
             if (mint) {
@@ -162,7 +160,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     }
                 }
             )
-            console.log(userOp)
             await wallet.executeOperation(auth, userOp)
             await new Promise((f) => setTimeout(f, 2000))
 

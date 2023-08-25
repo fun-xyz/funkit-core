@@ -114,7 +114,6 @@ class SwapToken {
     }
 
     async getTokenDecimals(tokenAddr: Address) {
-        console.log(tokenAddr)
         return await ERC20_CONTRACT_INTERFACE.readFromChain(tokenAddr, "decimals", [], this.client)
     }
 
@@ -202,7 +201,6 @@ export type UniswapV2Addrs = {
 }
 export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addrs, swapParams: SwapParamsUtils, chainId: number) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
-    console.log(swapParams)
 
     const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
     const _poolFee = fees[poolFee]
