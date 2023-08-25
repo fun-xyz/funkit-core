@@ -67,11 +67,18 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
 
+            await new Promise((r) => setTimeout(r, 2000))
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
 
-            assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
-            assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+            assert(
+                randomTokenBalanceAfter > randomTokenBalanceBefore,
+                `Transfer failed, ${randomTokenBalanceAfter}, ${randomTokenBalanceBefore}`
+            )
+            assert(
+                walletTokenBalanceBefore > walletTokenBalanceAfter,
+                `Transfer failed, ${walletTokenBalanceBefore}, ${walletTokenBalanceAfter}`
+            )
         })
 
         it("wallet should have lower balance of specified token", async () => {

@@ -105,9 +105,9 @@ export const SwapTest = (config: SwapTestConfig) => {
                 inAmount: 0.0001,
                 tokenOut: baseToken
             })
-            expect(await wallet.executeOperation(auth, operation)).to.not.throw
+            await wallet.executeOperation(auth, operation)
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
-            assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
+            assert(tokenBalanceAfter < tokenBalanceBefore, `Swap did not execute ${tokenBalanceAfter} ${tokenBalanceBefore}`)
         })
 
         describe("With Session Key", () => {

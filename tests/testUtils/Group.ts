@@ -100,6 +100,7 @@ export const GroupTest = (config: GroupTestConfig) => {
             })
 
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
+            await new Promise((r) => setTimeout(r, 2000))
             const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
 
             const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
