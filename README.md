@@ -90,7 +90,7 @@ const receipt = await funWallet.executeOperation(auth, transferOp)
 console.log(receipt)
 ```
 
-## <a id="Testing"></a> **Testing**
+## <a id="testing"></a> **Testing**
 
 ### **Testing on Goerli**
 
