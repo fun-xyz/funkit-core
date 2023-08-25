@@ -52,7 +52,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.01)
             }
             if (mint) {
@@ -88,7 +88,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 tokenIn: inToken,
-                inAmount: 0.0001,
+                inAmount: 0.000001,
                 tokenOut: outToken,
                 slippage: config.slippage ? config.slippage : 0.5
             })
@@ -102,7 +102,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 tokenIn: inToken,
-                inAmount: 0.0001,
+                inAmount: 0.000001,
                 tokenOut: baseToken
             })
             await wallet.executeOperation(auth, operation)
@@ -157,7 +157,7 @@ export const SwapTest = (config: SwapTestConfig) => {
 
                 const operation = await wallet.swap(user, await user.getAddress(), {
                     tokenIn: inToken,
-                    inAmount: 1,
+                    inAmount: 0.00001,
                     tokenOut: outToken,
                     slippage: config.slippage ? config.slippage : 0.5,
                     returnAddress: walletAddress

@@ -46,7 +46,6 @@ export const RBACTest = (config: RBACTestConfig) => {
                     const op = await wallet.create(auth, await auth.getAddress())
                     await wallet.executeOperation(auth, op)
                 } catch (e: any) {
-                    console.log(e)
                     assert(false, "Failed to deploy wallet")
                 }
             }

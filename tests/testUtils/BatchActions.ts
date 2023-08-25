@@ -56,7 +56,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -119,7 +119,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const randomAddress = randomBytes(20)
             const approveAmount = randInt(10000)
             const swapParams = await uniswapV3SwapTransactionParams({
-                tokenIn: "eth",
+                tokenIn: config.baseToken,
                 tokenOut: outToken,
                 inAmount: 0.001,
                 returnAddress: randomAddress
@@ -276,7 +276,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })

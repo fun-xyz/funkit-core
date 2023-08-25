@@ -29,6 +29,7 @@ export interface TokenSponsorTestConfig {
     mint?: boolean
     batchTokenAddress?: string
     numRetry?: number
+    baseToken: string
 }
 
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
@@ -81,17 +82,17 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const requiredAmount =
                     (config.amount ? config.amount : 0.0001) * 10 ** Number(await Token.getDecimals(config.inToken, options))
                 const userOp = await wallet.swap(auth, await auth.getAddress(), {
-                    tokenIn: "eth",
+                    tokenIn: config.baseToken,
                     inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
                     returnAddress: walletAddress
                 })
                 await wallet.executeOperation(auth, userOp)
-                const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
+                const walletInTokenBalance = await Token.getBalanceBN(config.inToken, walletAddress)
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
-                    tokenIn: "eth",
+                    tokenIn: config.baseToken,
                     inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
                     returnAddress: walletAddress1

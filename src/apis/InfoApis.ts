@@ -9,8 +9,9 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
         symbol,
         chain: chainId
     }
-
-    if ((symbol === "weth" || symbol === "wmatic") && (BASE_WRAP_TOKEN_ADDR as any)[chainId]) {
+    if (symbol === "weth" && Object.keys(BASE_WRAP_TOKEN_ADDR).includes(chainId)) {
+        return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
+    } else if (symbol === "wmatic" && chainId === "137") {
         return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
 

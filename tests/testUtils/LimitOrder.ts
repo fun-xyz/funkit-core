@@ -15,6 +15,8 @@ export interface LimitOrderConfig {
     amount?: number
     prefundAmt: number
     numRetry?: number
+    tokenInAmount: number
+    tokenOutAmount: number
 }
 
 export const LimitOrderTest = (config: LimitOrderConfig) => {
@@ -35,24 +37,30 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
                 gasSponsor: {}
             }
             await configureEnvironment(options)
+
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
-            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < 0.05) {
+
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
             }
         })
 
         it("swap baseToken(ETH) schedule", async () => {
-            await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100))
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < config.tokenInAmount) {
+                await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100))
+            }
+
             const userOp = await wallet.limitSwapOrder(auth, await auth.getAddress(), {
                 tokenIn: config.baseToken,
                 tokenOut: config.outToken,
-                tokenInAmount: 100,
-                tokenOutAmount: 1
+                tokenInAmount: config.tokenInAmount,
+                tokenOutAmount: config.tokenOutAmount
             })
+
             opId = await wallet.scheduleOperation(auth, userOp)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)

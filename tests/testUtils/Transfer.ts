@@ -18,10 +18,11 @@ export interface TransferTestConfig {
     amount?: number
     prefundAmt: number
     numRetry?: number
+    outTokenPrefund?: number
 }
 
 export const TransferTest = (config: TransferTestConfig) => {
-    const { outToken, baseToken, prefundAmt } = config
+    const { outToken, baseToken, prefundAmt, amount, outTokenPrefund } = config
 
     describe("Single Auth Transfer", function () {
         this.timeout(300_000)
@@ -47,8 +48,12 @@ export const TransferTest = (config: TransferTestConfig) => {
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
+            }
+            const outTokenPrefundAmount = outTokenPrefund ? outTokenPrefund : 0.01
+            if (Number(await Token.getBalance(outToken, await wallet.getAddress())) < outTokenPrefundAmount) {
+                await auth.sendTx(await new Token(outToken).transfer(await wallet.getAddress(), outTokenPrefundAmount))
             }
         })
 
@@ -60,7 +65,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b2 = Token.getBalance(baseToken, walletAddress)
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: randomAddress,
-                amount: (Number(await Token.getBalance(baseToken, walletAddress)) * 4) / 5,
+                amount: amount ? amount : 0.00001,
                 token: "eth"
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
@@ -96,7 +101,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b2 = Token.getBalanceBN(outToken, await wallet.getAddress())
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: 1,
+                amount: outTokenPrefund ? outTokenPrefund : 0.00001,
                 token: outTokenAddress
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
@@ -119,7 +124,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const b1 = Token.getBalance(baseToken, randomAddress)
                 const b2 = Token.getBalance(baseToken, walletAddress)
                 const b5 = Token.getBalance(baseToken, feeRecipientAddress)
-                const fee = 0.001
+                const fee = outTokenPrefund ? outTokenPrefund / 10 : 0.00001
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
@@ -134,7 +139,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001,
+                        amount: amount ? amount : 0.00001,
                         token: "eth"
                     },
                     options
@@ -165,7 +170,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const b1 = Token.getBalance(baseToken, randomAddress)
                 const b2 = Token.getBalance(baseToken, walletAddress)
                 const b5 = Token.getBalance(outToken, feeRecipientAddress)
-                const fee = 0.001
+                const fee = 0.00001
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
@@ -180,7 +185,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001,
+                        amount: amount ? amount : 0.00001,
                         token: "eth"
                     },
                     options
@@ -226,7 +231,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     await auth.getAddress(),
                     {
                         to: randomAddress,
-                        amount: config.amount ? config.amount : 0.001,
+                        amount: amount ? amount : 0.00001,
                         token: "eth"
                     },
                     options
@@ -350,7 +355,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.01)
             }
         })
@@ -365,7 +370,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001,
+                amount: amount ? amount : 0.00001,
                 token: "eth"
             })
 
@@ -400,7 +405,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001,
+                amount: amount ? amount : 0.00001,
                 token: "eth"
             })
 
@@ -430,7 +435,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001,
+                amount: amount ? amount : 0.00001,
                 token: "eth"
             })
 
@@ -480,7 +485,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
                 to: randomAddress,
-                amount: config.amount ? config.amount : 0.001,
+                amount: amount ? amount : 0.00001,
                 token: "eth"
             })
 

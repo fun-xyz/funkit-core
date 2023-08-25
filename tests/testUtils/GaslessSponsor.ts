@@ -28,6 +28,7 @@ export interface GaslessSponsorTestConfig {
 
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     const mint = Object.values(config).includes("mint") ? true : config.mint
+    const { stakeAmount } = config
 
     describe("GaslessSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
@@ -65,17 +66,17 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
             if (config.prefund) {
                 if (!(await wallet.getDeploymentStatus())) {
-                    await fundWallet(auth, wallet, config.stakeAmount / 8)
+                    await fundWallet(auth, wallet, stakeAmount / 8)
                 }
-                if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < 0.01) {
-                    await fundWallet(auth, wallet, config.stakeAmount / 8)
+                if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < stakeAmount) {
+                    await fundWallet(auth, wallet, stakeAmount / 8)
                 }
 
                 if (!(await wallet1.getDeploymentStatus())) {
-                    await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                    await fundWallet(auth, wallet1, stakeAmount / 8)
                 }
                 if (Number(await Token.getBalance(config.baseToken, await wallet1.getAddress())) < 0.01) {
-                    await fundWallet(auth, wallet1, config.stakeAmount / 8)
+                    await fundWallet(auth, wallet1, stakeAmount / 8)
                 }
             }
 
@@ -102,7 +103,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             sponsor = new GaslessSponsor()
 
             const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, funderAddress, config.stakeAmount / 2)
+            const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
             await funder.sendTx(stake)
             const depositInfo1E = await sponsor.getBalance(funderAddress)
 

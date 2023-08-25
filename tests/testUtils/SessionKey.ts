@@ -46,7 +46,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
         })
@@ -60,9 +60,10 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             before(async () => {
                 deadline = (Date.now() + 3 * minute) / 1000
                 const basetokenAddr = await Token.getAddress(baseToken)
+                const outtokenAddr = await Token.getAddress(outToken)
                 const sessionKeyParams: SessionKeyParams = {
                     user,
-                    targetWhitelist: [outToken, basetokenAddr],
+                    targetWhitelist: [outtokenAddr, basetokenAddr],
                     actionWhitelist: [
                         {
                             abi: ERC20_ABI,

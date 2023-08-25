@@ -47,7 +47,7 @@ export const limitSwapOrderTransactionParams = async (
     ).data
     const approveData = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenInAddress, "approve", [
         uniswapv3LimitOrderAddress,
-        tokenInAmount
+        amountIn
     ]).data
     const approveAndExecData = APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         uniswapv3LimitOrderAddress,
