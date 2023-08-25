@@ -58,7 +58,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             if (!(await wallet2.getDeploymentStatus())) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < 1) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
@@ -69,6 +69,27 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
+            it("approve", async () => {
+                const nft = new NFT(nftAddress)
+                const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {
+                    spender: await wallet2.getAddress(),
+                    collection: nftAddress,
+                    tokenId: nftId
+                })
+                await wallet1.executeOperation(auth, userOp)
+
+                const data = await nft.getApproved(nftId.toString())
+                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
+            })
+
+            it("getApproval", async () => {
+                const nft = new NFT(nftAddress)
+                const tokenId = nftId.toString()
+                const approved = await nft.getApproved(tokenId)
+                const owner = await wallet2.getAddress()
+                assert(approved === owner, "Owner is not correct")
+            })
+
             it("transfer", async () => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
@@ -98,7 +119,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                         tokenId: nftId,
                         from: await wallet2.getAddress()
                     })
-                    await wallet2.executeOperation(auth, userOp)
+                    console.log("Transfer2", await wallet2.executeOperation(auth, userOp))
                 } catch (error) {
                     assert(
                         false,
@@ -109,19 +130,6 @@ export const NFTTest = (config: NFTTestConfig) => {
                 }
                 const bal2 = await nft.getBalance(await wallet1.getAddress())
                 assert(bal2 > bal1, "Second nft transfer did not succeed")
-            })
-
-            it("approve", async () => {
-                const nft = new NFT(nftAddress)
-                const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {
-                    spender: await wallet2.getAddress(),
-                    collection: nftAddress,
-                    tokenId: nftId
-                })
-                await wallet1.executeOperation(auth, userOp)
-
-                const data = await nft.getApproved(nftId.toString())
-                assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
         })
 
@@ -136,14 +144,6 @@ export const NFTTest = (config: NFTTestConfig) => {
                 const nft = new NFT(nftAddress)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 assert(bal.toString() >= "1", "Balance is not correct")
-            })
-
-            it("getApproval", async () => {
-                const nft = new NFT(nftAddress)
-                const tokenId = nftId.toString()
-                const approved = await nft.getApproved(tokenId)
-                const owner = await wallet2.getAddress()
-                assert(approved === owner, "Owner is not correct")
             })
 
             it("getName", async () => {
