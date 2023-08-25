@@ -119,7 +119,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                         tokenId: nftId,
                         from: await wallet2.getAddress()
                     })
-                    console.log("Transfer2", await wallet2.executeOperation(auth, userOp))
+                    await wallet2.executeOperation(auth, userOp)
                 } catch (error) {
                     assert(
                         false,

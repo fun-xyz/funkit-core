@@ -144,7 +144,6 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log("userOp", userOp)
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
@@ -191,7 +190,6 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log("userOp", userOp)
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
@@ -238,7 +236,6 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log("userOp", userOp)
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
@@ -384,7 +381,6 @@ export const TransferTest = (config: TransferTestConfig) => {
             // We use getOperation here to specifically get the operation, but in production custoemr would choose one
             // const operations = await wallet.getOperations(OperationStatus.PENDING)
             const operation = await wallet.getOperation(transferOp.opId!)
-            console.log("operation", operation)
 
             // auth2 sign and execute the operation
             expect(await wallet.executeOperation(auth2, operation)).to.not.throw
