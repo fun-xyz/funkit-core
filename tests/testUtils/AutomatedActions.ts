@@ -44,16 +44,15 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
 
         it("transfer baseToken(ETH) schedule", async () => {
-            const balance = prefundAmt ? prefundAmt : 1
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: balance - 0.1,
+                amount: 0.0001,
                 token: "eth"
             })
             opId = await wallet.scheduleOperation(auth, userOp)

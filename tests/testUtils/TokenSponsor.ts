@@ -29,6 +29,7 @@ export interface TokenSponsorTestConfig {
     mint?: boolean
     batchTokenAddress?: string
     numRetry?: number
+    baseToken: string
 }
 
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
@@ -81,23 +82,25 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 const requiredAmount =
                     (config.amount ? config.amount : 0.0001) * 10 ** Number(await Token.getDecimals(config.inToken, options))
                 const userOp = await wallet.swap(auth, await auth.getAddress(), {
-                    tokenIn: "eth",
+                    tokenIn: config.baseToken,
                     inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
                     returnAddress: walletAddress
                 })
                 await wallet.executeOperation(auth, userOp)
-                const walletInTokenBalance = await Token.getBalance(config.inToken, walletAddress)
+                const walletInTokenBalance = await Token.getBalanceBN(config.inToken, walletAddress)
                 assert(Number(walletInTokenBalance) > requiredAmount, "wallet does have enough inToken balance")
 
                 const userOp1 = await wallet1.swap(auth, await auth.getAddress(), {
-                    tokenIn: "eth",
+                    tokenIn: config.baseToken,
                     inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
                     returnAddress: walletAddress1
                 })
+                console.log(userOp1)
                 await wallet1.executeOperation(auth, userOp1)
                 const wallet1InTokenBalance = await Token.getBalance(config.inToken, walletAddress1)
+                console.log(Number(wallet1InTokenBalance), requiredAmount, walletAddress1)
                 assert(Number(wallet1InTokenBalance) > requiredAmount, "wallet1 does have enough inToken balance")
             }
             if (mint) {
@@ -159,6 +162,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     }
                 }
             )
+            console.log(userOp)
             await wallet.executeOperation(auth, userOp)
             await new Promise((f) => setTimeout(f, 2000))
 

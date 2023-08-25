@@ -5,6 +5,7 @@ const config: TokenSponsorTestConfig = {
     inToken: "usdc",
     outToken: "dai",
     paymasterToken: "usdc",
+    baseToken: "eth",
     baseTokenStakeAmt: 0.006,
     paymasterTokenStakeAmt: 100,
     prefund: true,
