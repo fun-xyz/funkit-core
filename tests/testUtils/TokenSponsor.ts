@@ -85,7 +85,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     tokenIn: config.baseToken,
                     inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
-                    returnAddress: walletAddress
+                    recipient: walletAddress
                 })
                 await wallet.executeOperation(auth, userOp)
                 const walletInTokenBalance = await Token.getBalanceBN(config.inToken, walletAddress)
@@ -95,7 +95,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     tokenIn: config.baseToken,
                     inAmount: config.amount ? config.amount : 0.05,
                     tokenOut: config.inToken,
-                    returnAddress: walletAddress1
+                    recipient: walletAddress1
                 })
                 await wallet1.executeOperation(auth, userOp1)
                 const wallet1InTokenBalance = await Token.getBalance(config.inToken, walletAddress1)
@@ -149,7 +149,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     tokenIn: config.inToken,
                     inAmount: config.amount ? config.amount : 0.0001,
                     tokenOut: config.outToken,
-                    returnAddress: walletAddress
+                    recipient: walletAddress
                 },
                 {
                     chain: config.chainId,

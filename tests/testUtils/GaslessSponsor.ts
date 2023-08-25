@@ -118,7 +118,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 tokenIn: config.inToken,
                 inAmount: config.amount ? config.amount : 0.0001,
                 tokenOut: config.outToken,
-                returnAddress: walletAddress
+                recipient: walletAddress
             })
             await wallet.executeOperation(auth, operation)
 

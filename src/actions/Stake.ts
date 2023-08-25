@@ -1,4 +1,4 @@
-import { Address, parseEther } from "viem"
+import { Address, isAddress, parseEther } from "viem"
 import { FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, TransactionParams, WITHDRAW_QUEUE_ABI } from "../common"
 import { EnvOption } from "../config"
@@ -27,6 +27,15 @@ export const requestUnstakeTransactionParams = async (
     params: RequestUnstakeParams,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ): Promise<TransactionParams> => {
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "",
+            "https://docs.fun.xyz"
+        )
+    }
     // Approve steth
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const chainId = await chain.getChainId()
@@ -66,6 +75,15 @@ export const finishUnstakeTransactionParams = async (
     params: FinishUnstakeParams,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ): Promise<TransactionParams> => {
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "",
+            "https://docs.fun.xyz"
+        )
+    }
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const withdrawQueueAddress = getWithdrawalQueue(await chain.getChainId())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params, txOptions)).slice(0, 5)
@@ -104,6 +122,15 @@ export const finishUnstakeTransactionParams = async (
 }
 
 const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions: EnvOption) => {
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "",
+            "https://docs.fun.xyz"
+        )
+    }
     // check withdrawal requests
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const withdrawalQueueAddr: Address = getWithdrawalQueue(await chain.getChainId())

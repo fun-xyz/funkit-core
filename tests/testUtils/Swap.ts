@@ -142,7 +142,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                     tokenIn: baseToken,
                     inAmount: config.amount ? config.amount : 0.001,
                     tokenOut: inToken,
-                    returnAddress: walletAddress
+                    recipient: walletAddress
                 })
 
                 await wallet.executeOperation(user, operation)
@@ -160,7 +160,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                     inAmount: 0.00001,
                     tokenOut: outToken,
                     slippage: config.slippage ? config.slippage : 0.5,
-                    returnAddress: walletAddress
+                    recipient: walletAddress
                 })
 
                 await wallet.executeOperation(user, operation)
@@ -234,7 +234,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 tokenIn: baseToken,
                 inAmount: config.amount ? config.amount : 0.001,
                 tokenOut: inToken,
-                returnAddress: walletAddress
+                recipient: walletAddress
             })
 
             // wait for DDB to replicate the operation data
@@ -264,7 +264,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 tokenIn: baseToken,
                 inAmount: config.amount ? config.amount : 0.001,
                 tokenOut: inToken,
-                returnAddress: walletAddress
+                recipient: walletAddress
             })
 
             // auth1 executes it without auth2 signature
@@ -289,7 +289,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 tokenIn: baseToken,
                 inAmount: config.amount ? config.amount : 0.001,
                 tokenOut: inToken,
-                returnAddress: walletAddress
+                recipient: walletAddress
             })
 
             // wait for DDB to replicate the operation data
@@ -333,7 +333,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 tokenIn: baseToken,
                 inAmount: config.amount ? config.amount : 0.001,
                 tokenOut: inToken,
-                returnAddress: walletAddress
+                recipient: walletAddress
             })
 
             // wait for DDB to replicate the operation data

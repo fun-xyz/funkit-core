@@ -117,7 +117,7 @@ export abstract class FirstClassActions {
         let transactionParams: TransactionParams
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = Number(await chain.getChainId())
-        params.returnAddress ??= await this.getAddress()
+        params.recipient ??= await this.getAddress()
         if (oneInchSupported.includes(chainId)) {
             transactionParams = await oneInchTransactionParams(params, await this.getAddress(), txOptions)
         } else if (uniswapV3Supported.includes(chainId)) {

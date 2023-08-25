@@ -185,7 +185,7 @@ type SwapParamsUtils = {
     tokenInAddress: Address
     tokenOutAddress: Address
     amountIn: number
-    returnAddress: Address
+    recipient: Address
     percentDecimal: number
     slippage: number
     poolFee: UniSwapPoolFeeOptions
@@ -203,7 +203,7 @@ export type UniswapV2Addrs = {
 export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addrs, swapParams: SwapParamsUtils, chainId: number) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
 
-    const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
+    const { tokenInAddress, tokenOutAddress, amountIn, recipient, percentDecimal, slippage, poolFee } = swapParams
     const _poolFee = fees[poolFee]
 
     const swapper = new SwapToken(client, 3, univ3quoter, univ3factory)
@@ -214,14 +214,14 @@ export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addr
     const tokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimal)
 
     const { uncheckedTrade, tokenInAmount } = await swapper.createTrade(amountIn, tokenIn, tokenOut, _poolFee)
-    const data = swapper.executeTrade(uncheckedTrade, univ3router, returnAddress, slippage, percentDecimal)
+    const data = swapper.executeTrade(uncheckedTrade, univ3router, recipient, slippage, percentDecimal)
     return { ...data, amount: tokenInAmount }
 }
 
 export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Addrs, swapParams: SwapParamsUtils, chainId: number) {
     const { router, factory } = uniswapAddrs
 
-    const { tokenInAddress, tokenOutAddress, amountIn, returnAddress } = swapParams
+    const { tokenInAddress, tokenOutAddress, amountIn, recipient } = swapParams
 
     const swapper = new SwapToken(client, 2, undefined, undefined, router, factory)
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
@@ -232,7 +232,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
-            returnAddress,
+            recipient,
             Date.now() + 180000 // Long enough to rarely fail
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
@@ -241,7 +241,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
-            returnAddress,
+            recipient,
             Date.now() + 180000 // Long enough to rarely fail
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
