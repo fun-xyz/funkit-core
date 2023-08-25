@@ -51,14 +51,14 @@ export const NFTTest = (config: NFTTestConfig) => {
             if (!(await wallet1.getDeploymentStatus())) {
                 await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet1.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet1.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.1)
             }
 
             if (!(await wallet2.getDeploymentStatus())) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < 1) {
+            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
             const chain = await Chain.getChain({ chainIdentifier: options.chain })

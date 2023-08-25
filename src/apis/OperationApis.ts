@@ -63,7 +63,6 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
 
         await new Promise((resolve) => setTimeout(resolve, 2500))
     }
-    console.log(result)
     if (!result.receipt) {
         result.receipt = {
             txId: "Failed to find.",
@@ -88,7 +87,6 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
         result.receipt.status = events[0]?.args.success ? "success" : "failed"
         result.receipt.txId = await chain.getTxId(userOpHash)
     }
-    console.log(result.receipt)
 
     return {
         ...result.receipt
