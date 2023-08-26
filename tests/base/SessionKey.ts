@@ -1,9 +1,9 @@
 import { SessionKeyTest, SessionKeyTestConfig } from "../testUtils/SessionKey"
 
 const config: SessionKeyTestConfig = {
-    chainId: 10,
+    chainId: 8453,
     outToken: "dai",
     baseToken: "eth",
-    prefundAmt: 0.005
+    prefundAmt: 0.003
 }
 SessionKeyTest(config)

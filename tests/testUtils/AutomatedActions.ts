@@ -9,7 +9,6 @@ import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
 export interface AutomatedActionsConfig {
     chainId: number
-    outToken: string
     baseToken: string
     index?: number
     amount?: number
