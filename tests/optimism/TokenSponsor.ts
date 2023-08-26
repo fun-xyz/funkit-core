@@ -9,6 +9,7 @@ const config: TokenSponsorTestConfig = {
     paymasterTokenStakeAmt: 0.8,
     baseToken: "eth",
     prefund: true,
+    prefundAmt: 0.005,
     swapAmount: 0.001,
     stake: true,
     mint: false

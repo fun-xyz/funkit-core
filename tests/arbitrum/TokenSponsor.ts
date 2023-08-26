@@ -11,7 +11,7 @@ const config: TokenSponsorTestConfig = {
     prefund: true,
     swapAmount: 0.00001,
     amount: 0.000001,
-    prefundAmt: 0.001,
+    prefundAmt: 0.005,
     stake: true,
     walletIndex: 0,
     funderIndex: 1
