@@ -32,7 +32,7 @@ export const requestUnstakeTransactionParams = async (
             ErrorCode.InvalidParameter,
             "Recipient address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -80,7 +80,7 @@ export const finishUnstakeTransactionParams = async (
             ErrorCode.InvalidParameter,
             "Recipient address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -127,7 +127,7 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions
             ErrorCode.InvalidParameter,
             "Recipient address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }

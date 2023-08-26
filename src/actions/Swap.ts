@@ -71,9 +71,9 @@ export const oneInchTransactionParams = async (
     if (!isAddress(params.recipient ?? "")) {
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
-            "Return address is not a valid address, please make sure it is a valid checksum address.",
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -136,7 +136,7 @@ export const uniswapV3SwapTransactionParams = async (
             ErrorCode.InvalidParameter,
             "Recipient address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }

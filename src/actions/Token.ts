@@ -19,7 +19,7 @@ export const erc721TransferTransactionParams = async (params: ERC721TransferPara
             ErrorCode.InvalidParameter,
             "To/from address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -42,7 +42,7 @@ export const tokenTransferTransactionParams = async (
             ErrorCode.InvalidParameter,
             "To address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -75,7 +75,7 @@ export const tokenTransferFromTransactionParams = async (
             ErrorCode.InvalidParameter,
             "To/from address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -116,7 +116,7 @@ export const erc20ApproveTransactionParams = async (
             ErrorCode.InvalidParameter,
             "Spender address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -132,7 +132,7 @@ export const erc721ApproveTransactionParams = async (params: ApproveERC721Params
             ErrorCode.InvalidParameter,
             "Spender address is not a valid address, please make sure it is a valid checksum address.",
             { params },
-            "",
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }

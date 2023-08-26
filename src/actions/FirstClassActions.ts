@@ -256,6 +256,7 @@ export abstract class FirstClassActions {
         params: RequestUnstakeParams | FinishUnstakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        params.recipient ??= await this.getAddress()
         let transactionParams: TransactionParams
         if (isRequestUnstakeParams(params)) {
             transactionParams = await requestUnstakeTransactionParams(params as RequestUnstakeParams, txOptions)
