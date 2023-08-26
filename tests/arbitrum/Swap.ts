@@ -6,7 +6,7 @@ const config: SwapTestConfig = {
     outToken: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
     baseToken: "eth",
     amount: 0.00001,
-    prefundAmt: 0.002,
+    prefundAmt: 0.001,
     index: 0
 }
 
