@@ -301,7 +301,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const operation1 = await wallet.createBatchOperation(auth1, await groupId, txParams)
 
             const operation = await wallet.getOperation(operation1.opId!)
-            console.log(await wallet.executeOperation(auth2, operation))
+            await wallet.executeOperation(auth2, operation)
             await new Promise((r) => setTimeout(r, 4000))
             for (const randomAddr of randomAddresses) {
                 const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
