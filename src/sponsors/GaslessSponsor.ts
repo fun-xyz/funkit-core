@@ -101,8 +101,6 @@ export class GaslessSponsor extends Sponsor {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const client = await chain.getClient()
         const currentBlock = await client.getBlockNumber()
-        console.log(currentBlock, unlockBlock)
-        console.log(unlockBlock === 0, unlockBlock > currentBlock)
         return unlockBlock === 0 || unlockBlock > currentBlock
     }
 

@@ -101,7 +101,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 }
             })
             sponsor = new GaslessSponsor()
-            console.log(await sponsor.getBalance(funderAddress))
             if ((await sponsor.getBalance(funderAddress)) < 0.01) {
                 const depositInfo1S = await sponsor.getBalance(funderAddress)
                 const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
@@ -121,7 +120,6 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 tokenOut: config.outToken,
                 returnAddress: walletAddress
             })
-            console.log(operation)
             await wallet.executeOperation(auth, operation)
 
             await new Promise((f) => setTimeout(f, 5000))
