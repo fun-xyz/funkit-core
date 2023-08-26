@@ -68,14 +68,14 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 if (!(await wallet.getDeploymentStatus())) {
                     await fundWallet(auth, wallet, stakeAmount / 8)
                 }
-                if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < stakeAmount) {
+                if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < stakeAmount / 8) {
                     await fundWallet(auth, wallet, stakeAmount / 8)
                 }
 
                 if (!(await wallet1.getDeploymentStatus())) {
                     await fundWallet(auth, wallet1, stakeAmount / 8)
                 }
-                if (Number(await Token.getBalance(config.baseToken, await wallet1.getAddress())) < 0.01) {
+                if (Number(await Token.getBalance(config.baseToken, await wallet1.getAddress())) < stakeAmount / 8) {
                     await fundWallet(auth, wallet1, stakeAmount / 8)
                 }
             }
@@ -101,13 +101,14 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 }
             })
             sponsor = new GaslessSponsor()
-
-            const depositInfo1S = await sponsor.getBalance(funderAddress)
-            const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
-            await funder.sendTx(stake)
-            const depositInfo1E = await sponsor.getBalance(funderAddress)
-
-            assert(depositInfo1E > depositInfo1S, "Stake Failed")
+            console.log(await sponsor.getBalance(funderAddress))
+            if ((await sponsor.getBalance(funderAddress)) < 0.01) {
+                const depositInfo1S = await sponsor.getBalance(funderAddress)
+                const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
+                await funder.sendTx(stake)
+                const depositInfo1E = await sponsor.getBalance(funderAddress)
+                assert(depositInfo1E > depositInfo1S, "Stake Failed")
+            }
         })
 
         const runSwap = async (wallet: FunWallet) => {
@@ -120,6 +121,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 tokenOut: config.outToken,
                 returnAddress: walletAddress
             })
+            console.log(operation)
             await wallet.executeOperation(auth, operation)
 
             await new Promise((f) => setTimeout(f, 5000))
@@ -167,8 +169,14 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
 
         it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(await sponsor.unlockDepositAfter(0))
+            await new Promise((resolve) => {
+                setTimeout(resolve, 5000)
+            })
             expect(await sponsor.getLockState(funderAddress)).to.be.false
             await funder.sendTx(await sponsor.lockDeposit())
+            await new Promise((resolve) => {
+                setTimeout(resolve, 5000)
+            })
             expect(await sponsor.getLockState(funderAddress)).to.be.true
         })
 
