@@ -122,7 +122,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 tokenIn: config.baseToken,
                 tokenOut: outToken,
                 inAmount: 0.001,
-                returnAddress: randomAddress
+                recipient: randomAddress
             })
             const outTokenAddress = await Token.getAddress(outToken)
             const approveParams = await erc20ApproveTransactionParams({

@@ -117,7 +117,7 @@ export abstract class FirstClassActions {
         let transactionParams: TransactionParams
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = Number(await chain.getChainId())
-        params.returnAddress ??= await this.getAddress()
+        params.recipient ??= await this.getAddress()
         if (oneInchSupported.includes(chainId)) {
             transactionParams = await oneInchTransactionParams(params, await this.getAddress(), txOptions)
         } else if (uniswapV3Supported.includes(chainId)) {
@@ -256,6 +256,7 @@ export abstract class FirstClassActions {
         params: RequestUnstakeParams | FinishUnstakeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        params.recipient ??= await this.getAddress()
         let transactionParams: TransactionParams
         if (isRequestUnstakeParams(params)) {
             transactionParams = await requestUnstakeTransactionParams(params as RequestUnstakeParams, txOptions)

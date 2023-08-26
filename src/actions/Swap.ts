@@ -1,4 +1,4 @@
-import { Address } from "viem"
+import { Address, isAddress } from "viem"
 import { SwapParams, UniSwapPoolFeeOptions } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionData, TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -37,7 +37,7 @@ const getOneInchSwapTx = async (swapParams: SwapParams, fromAddress: string, opt
         slippage: swapParams.slippage,
         disableEstimate: true,
         allowPartialFill: false,
-        destReceiver: swapParams.returnAddress ? swapParams.returnAddress : fromAddress
+        destReceiver: swapParams.recipient ? swapParams.recipient : fromAddress
     }
 
     const url = await oneInchAPIRequest("/swap", formattedSwap)
@@ -54,7 +54,7 @@ const get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) =
 }
 
 export const oneInchTransactionParams = async (
-    swapParams: SwapParams,
+    params: SwapParams,
     walletAddress: Address,
     txOptions: EnvOption = (globalThis as any).globalEnvOption
 ): Promise<TransactionParams> => {
@@ -63,8 +63,17 @@ export const oneInchTransactionParams = async (
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
             "Incorrect chainId, oneInch only available on Ethereum mainnet and polygon",
-            { swapParams },
+            { params },
             "Provide correct chainId.",
+            "https://docs.fun.xyz"
+        )
+    }
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "Please make sure it is a valid checksum address",
             "https://docs.fun.xyz"
         )
     }
@@ -72,18 +81,18 @@ export const oneInchTransactionParams = async (
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     let approveTx: TransactionData | undefined
 
-    const inToken = new Token(swapParams.tokenIn)
-    const outToken = new Token(swapParams.tokenOut)
+    const inToken = new Token(params.tokenIn)
+    const outToken = new Token(params.tokenOut)
     if (outToken.isNative) {
-        swapParams.tokenOut = eth1InchAddress
+        params.tokenOut = eth1InchAddress
     }
     if (inToken.isNative) {
-        swapParams.tokenIn = eth1InchAddress
-        const swapTx = await getOneInchSwapTx(swapParams, walletAddress, txOptions)
-        return { to: approveAndExecAddress, value: swapParams.inAmount, data: swapTx.data }
+        params.tokenIn = eth1InchAddress
+        const swapTx = await getOneInchSwapTx(params, walletAddress, txOptions)
+        return { to: approveAndExecAddress, value: params.inAmount, data: swapTx.data }
     } else {
-        approveTx = await getOneInchApproveTx(swapParams.tokenIn, swapParams.inAmount, txOptions)
-        const swapTx = await getOneInchSwapTx(swapParams, walletAddress, txOptions)
+        approveTx = await getOneInchApproveTx(params.tokenIn, params.inAmount, txOptions)
+        const swapTx = await getOneInchSwapTx(params, walletAddress, txOptions)
         return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,
@@ -122,13 +131,22 @@ export const uniswapV3SwapTransactionParams = async (
         percentDecimal *= 10
         slippage *= 10
     }
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "Please make sure it is a valid checksum address",
+            "https://docs.fun.xyz"
+        )
+    }
 
     const swapParams = {
         tokenInAddress,
         tokenOutAddress,
         amountIn: params.inAmount,
         // optional
-        returnAddress: params.returnAddress!,
+        recipient: params.recipient! as Address,
         percentDecimal,
         slippage,
         poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
@@ -175,7 +193,7 @@ export const uniswapV2SwapTransactionParams = async (
         tokenOutAddress,
         amountIn: params.inAmount,
         // optional
-        returnAddress: params.returnAddress!,
+        recipient: params.recipient! as Address,
         percentDecimal,
         slippage,
         poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium

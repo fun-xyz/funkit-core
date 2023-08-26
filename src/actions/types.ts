@@ -1,4 +1,4 @@
-import { Address, Hex } from "viem"
+import { Hex } from "viem"
 import { SessionKeyAuth } from "../auth"
 import { TransactionParams } from "../common"
 
@@ -10,15 +10,15 @@ export interface ApproveAndExecParams {
 export interface ERC721TransferParams {
     tokenId: number
     collection: string
-    from?: Address
-    to: Address
+    from?: string
+    to: string
 }
 
 export interface TokenTransferParams {
     token: string
     amount: number
-    from?: Address
-    to: Address
+    from?: string
+    to: string
 }
 
 export type TransferParams = TokenTransferParams | ERC721TransferParams
@@ -48,7 +48,7 @@ export type RequestUnstakeParams = {
 }
 
 export type FinishUnstakeParams = {
-    recipient: Address
+    recipient: string
     walletAddress: string
 }
 
@@ -59,15 +59,12 @@ export enum UniSwapPoolFeeOptions {
     high = "high"
 }
 
-export type CreateParams = {
-    to: Address
-}
 export type SwapParams = {
     tokenIn: string
     tokenOut: string
     inAmount: number
     slippage?: number
-    returnAddress?: Address
+    recipient?: string
     poolFee?: UniSwapPoolFeeOptions
 }
 
