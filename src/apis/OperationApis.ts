@@ -1,8 +1,8 @@
 import { Address, Hex } from "viem"
 import { EstimateOpInput, EstimatedGas, ExecuteOpInput, ScheduleOpInput } from "./types"
-import { API_URL, ENTRYPOINT_CONTRACT_INTERFACE } from "../common/constants"
+import { API_URL } from "../common/constants"
 import { ExecutionReceipt } from "../common/types"
-import { Chain, Operation, OperationStatus } from "../data"
+import { Operation, OperationStatus } from "../data"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createOp(op: Operation): Promise<string> {
@@ -70,22 +70,6 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             opFeeUSD: "Failed to find.",
             opFee: "Failed to find."
         }
-    } else {
-        const chain = await Chain.getChain({ chainIdentifier: chainId })
-        const client = await chain.getClient()
-        const tx = await client.getTransaction({ hash: result.receipt.txId })
-        const blockNum = tx.blockNumber!
-        const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const filter = await ENTRYPOINT_CONTRACT_INTERFACE.createFilter(
-            entryPointAddress,
-            "UserOperationEvent",
-            [userOpHash],
-            client,
-            blockNum
-        )
-        const events = (await client.getFilterLogs({ filter })) as any
-        result.receipt.status = events[0]?.args.success ? "success" : "failed"
-        result.receipt.txId = await chain.getTxId(userOpHash)
     }
 
     return {

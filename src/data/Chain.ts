@@ -167,7 +167,6 @@ export class Chain {
                 "https://docs.fun.xyz"
             )
         }
-        console.log(partialOp)
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
             chainId: this.id!,
             entryPointAddress: this.addresses.entryPointAddress,

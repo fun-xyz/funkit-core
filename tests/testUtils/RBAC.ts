@@ -46,10 +46,10 @@ export const RBACTest = (config: RBACTestConfig) => {
                     const op = await wallet.create(auth, await auth.getAddress())
                     await wallet.executeOperation(auth, op)
                 } catch (e: any) {
-                    assert(false, "Failed to deploy wallet")
+                    assert(false, `Failed to deploy wallet ${e}`)
                 }
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.01) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
 

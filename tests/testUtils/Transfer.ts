@@ -57,7 +57,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             }
         })
 
-        it.only("transfer baseToken directly", async () => {
+        it("transfer baseToken directly", async () => {
             const randomAddress = await auth.getAddress()
             const walletAddress = await wallet.getAddress()
 
@@ -162,6 +162,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
                 assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 9, "Transfer failed")
             })
+
             it("pay a fixed amount of fees in tokens", async function () {
                 const randomAddress = randomBytes(20)
                 const feeRecipientAddress = randomBytes(20)
@@ -205,7 +206,10 @@ export const TransferTest = (config: TransferTestConfig) => {
                     feeRecipientBalanceAfter
                 ] = await Promise.all([b1, b2, b3, b4, b5, b6])
 
-                assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
+                assert(
+                    randomTokenBalanceAfter > randomTokenBalanceBefore,
+                    `Transfer failed, ${randomTokenBalanceBefore}, ${randomTokenBalanceAfter}`
+                )
                 assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
                 assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 9, "Transfer failed")
             })

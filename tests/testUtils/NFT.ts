@@ -61,9 +61,6 @@ export const NFTTest = (config: NFTTestConfig) => {
             if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
-            console.log("Wallet 1 address: ", await wallet1.getAddress())
-            console.log("Wallet 2 address: ", await wallet2.getAddress())
-            console.log("Auth address: ", await auth.getAddress())
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             nftId = Math.floor(Math.random() * 10_000_000_000)
             nftAddress = await chain.getAddress("TestNFT")

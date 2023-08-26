@@ -117,7 +117,12 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
 
             it("Session key target out of scope", async () => {
                 const randomAddress = randomBytes(20)
-                const outTokenAddress = await new Token("usdc").getAddress()
+                let outTokenAddress: string
+                if (config.chainId !== 8453) {
+                    outTokenAddress = await new Token("usdc").getAddress()
+                } else {
+                    outTokenAddress = "0x434769c82fB928150B87C4Ae6320Bf71F92dCCa5"
+                }
                 try {
                     const operation = await wallet.transfer(user, await user.getAddress(), {
                         to: randomAddress,

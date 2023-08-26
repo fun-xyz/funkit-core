@@ -363,10 +363,13 @@ export class FunWallet extends FirstClassActions {
 
         let maxFeePerGas, maxPriorityFeePerGas
         const chainId = await chain.getChainId()
-        const OPStackChains = ["10", "8453"]
+        const OPStackChains = ["10"]
         if (OPStackChains.includes(chainId)) {
             maxFeePerGas = 10n ** 8n
             maxPriorityFeePerGas = 10n ** 8n
+        } else if (chainId === "8453") {
+            maxFeePerGas = 10n ** 9n
+            maxPriorityFeePerGas = 10n ** 9n
         } else {
             maxFeePerGas = 1n
             maxPriorityFeePerGas = 1n
