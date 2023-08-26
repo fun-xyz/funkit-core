@@ -2,7 +2,7 @@ import { Address, Hex } from "viem"
 import { EstimateOpInput, EstimatedGas, ExecuteOpInput, ScheduleOpInput } from "./types"
 import { API_URL } from "../common/constants"
 import { ExecutionReceipt } from "../common/types"
-import { Operation, OperationStatus } from "../data"
+import { Chain, Operation, OperationStatus } from "../data"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createOp(op: Operation): Promise<string> {
@@ -70,6 +70,9 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             opFeeUSD: "Failed to find.",
             opFee: "Failed to find."
         }
+    } else {
+        const chain = await Chain.getChain({ chainIdentifier: chainId })
+        result.receipt.txId = await chain.getTxId(userOpHash)
     }
 
     return {
