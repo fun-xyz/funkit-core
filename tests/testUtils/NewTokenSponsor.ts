@@ -121,17 +121,93 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await runActionWithTokenSponsor()
         })
 
-        // it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster", async () => {})
+        it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster", async () => {
+            // Allow the sponsor to whitelist tokens that are acceptable for use
+            if (!(await sponsor.getTokenListMode(funderAddress))) {
+                await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress))
+            }
+            expect(await sponsor.getTokenListMode(funderAddress)).to.be.true
 
-        // it("Lock and Unlock tokens from the token paymaster", async () => {})
+            // Allow the sponsor to allow all users to use the paymaster except for blacklisted users
+            if (await sponsor.getListMode(funderAddress)) {
+                await funder.sendTx(await sponsor.setToBlacklistMode(funderAddress))
+            }
+            expect(await sponsor.getListMode(funderAddress)).to.be.true
 
-        // it("Lock and Unlock the native gas token from the token paymaster", async () => {})
+            await runActionWithTokenSponsor()
+        })
 
-        // it("Batch Blacklist and whitelist users", async () => {})
+        it("Lock and Unlock tokens from the token paymaster", async () => {
+            await funder.sendTx(await sponsor.unlockTokenDepositAfter(paymasterToken, 0))
+            await new Promise((f) => setTimeout(f, 5000))
+            expect(await sponsor.getLockState(funderAddress, paymasterToken)).to.be.false
+            await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken))
+            await new Promise((f) => setTimeout(f, 5000))
+            expect(await sponsor.getLockState(funderAddress, paymasterToken)).to.be.true
+        })
 
-        // it("Batch Blacklist and whitelist tokens", async () => {})
+        it("Lock and Unlock the native gas token from the token paymaster", async () => {
+            await funder.sendTx(await sponsor.unlockDepositAfter(0))
+            await new Promise((f) => setTimeout(f, 2000))
+            expect(await sponsor.getLockState(funderAddress, "eth")).to.be.false
+            await funder.sendTx(await sponsor.lockDeposit())
+            expect(await sponsor.getLockState(funderAddress, "eth")).to.be.true
+        })
 
-        // it("Use the fun owned token paymaster", async () => {})
+        it("Batch Blacklist and whitelist users", async () => {
+            // blacklist spenders
+            await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [false]))
+            await new Promise((f) => setTimeout(f, 2000))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
+
+            // remove spender from blacklist
+            await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [true]))
+            await new Promise((f) => setTimeout(f, 2000))
+            expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.true
+
+            // whitelist spender
+            await funder.sendTx(await sponsor.batchWhitelistSpenders(funderAddress, [walletAddress], [false]))
+            await new Promise((f) => setTimeout(f, 2000))
+            expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.false
+
+            // remove spender from whitelist
+            await funder.sendTx(await sponsor.batchWhitelistSpenders(funderAddress, [walletAddress], [true]))
+            await new Promise((f) => setTimeout(f, 2000))
+            expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
+        })
+
+        it("Batch Blacklist and whitelist tokens", async () => {
+            // blacklist tokens
+            await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
+            await new Promise((f) => setTimeout(f, 5000))
+            expect(await sponsor.getTokenBlacklisted(funderAddress, paymasterToken)).to.be.false
+
+            // remove token from paymaster blacklist to allow users to pay for transactions using this sponsor
+            await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
+            await new Promise((f) => setTimeout(f, 5000))
+            expect(await sponsor.getTokenBlacklisted(funderAddress, paymasterToken)).to.be.false
+
+            // whitelist tokens
+            await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [false]))
+            await new Promise((f) => setTimeout(f, 5000))
+            expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.false
+
+            // whitelist tokens
+            await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]))
+            await new Promise((f) => setTimeout(f, 5000))
+            expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.true
+        })
+
+        it("Use the fun owned token paymaster", async () => {
+            const funOwnedTokenSponsor = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
+            options.gasSponsor = {
+                sponsorAddress: funOwnedTokenSponsor,
+                token: paymasterToken,
+                usePermit: true
+            }
+            await configureEnvironment(options)
+            await runActionWithTokenSponsor()
+        })
 
         /**
          * This function is used to test the token paymaster. This makes sure the wallet has no gas tokens in it that could
