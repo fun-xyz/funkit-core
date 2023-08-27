@@ -69,7 +69,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             if ((await sponsor.getBalance(funderAddress)) < parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)) {
                 const depositInfo1S = await sponsor.getBalance(funderAddress)
                 const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
-                console.log(await funder.sendTx(stake))
+                await funder.sendTx(stake)
                 const depositInfo1E = await sponsor.getBalance(funderAddress)
                 assert(depositInfo1E > depositInfo1S, "Stake Failed")
             }
