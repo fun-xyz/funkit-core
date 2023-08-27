@@ -2,10 +2,7 @@ import { GaslessSponsorTest, GaslessSponsorTestConfig } from "../testUtils/Gasle
 
 const config: GaslessSponsorTestConfig = {
     chainId: 137,
-    inToken: "matic",
-    outToken: "usdc",
     stakeAmount: 1,
-    prefund: true,
     baseToken: "matic"
 }
 GaslessSponsorTest(config)
