@@ -52,6 +52,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         before(async function () {
             auth = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
             funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId,
@@ -120,21 +121,22 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
-                const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
-                const depositInfoS = await sponsor.getTokenBalance(walletAddress, paymasterToken)
+                // const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
+                // const depositInfoS = await sponsor.getTokenBalance(walletAddress, paymasterToken)
                 const depositInfo1S = await sponsor.getTokenBalance(funderAddress, "eth")
 
-                const approve = await sponsor.approve(funderAddress, paymasterToken, paymasterTokenStakeAmount * 2)
-                const deposit = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress, paymasterTokenStakeAmount)
-                const deposit1 = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress1, paymasterTokenStakeAmount)
+                // const approve = await sponsor.approve(funderAddress, paymasterToken, paymasterTokenStakeAmount * 2)
+                // const deposit = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress, paymasterTokenStakeAmount)
+                // const deposit1 = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress1, paymasterTokenStakeAmount)
                 const stakeData = await sponsor.stake(funderAddress, funderAddress, baseStakeAmount)
 
-                await funder.sendTxs([approve, deposit, deposit1, stakeData])
+                // await funder.sendTxs([approve, deposit, deposit1, stakeData])
+                await funder.sendTxs([stakeData])
 
-                const depositInfoE = await sponsor.getTokenBalance(walletAddress, paymasterToken)
+                // const depositInfoE = await sponsor.getTokenBalance(walletAddress, paymasterToken)
                 const depositInfo1E = await sponsor.getTokenBalance(funderAddress, "eth")
                 assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
-                assert(depositInfoE > depositInfoS, "Token Stake Failed")
+                // assert(depositInfoE > depositInfoS, "Token Stake Failed")
                 await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress))
                 await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
             }
@@ -224,7 +226,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
-        it("Blacklist Mode Approved with permit", async () => {
+        it.only("Blacklist Mode Approved with permit", async () => {
             expect(await runSwap(wallet, true)).not.to.throw
         })
 

@@ -27,7 +27,7 @@ import {
 } from "../data"
 import { ErrorCode, InternalFailureError, InvalidParameterError } from "../errors"
 import { GaslessSponsor, TokenSponsor } from "../sponsors"
-import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
+import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp, stringify } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 import { isBytes32 } from "../utils/TypeUtils"
 
@@ -417,6 +417,7 @@ export class FunWallet extends FirstClassActions {
             }
         }
         operation.userOp.paymasterAndData = paymasterAndData
+        console.log(stringify(operation.userOp))
 
         const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
 
@@ -533,6 +534,7 @@ export class FunWallet extends FirstClassActions {
             }
         }
 
+        console.log(operation.userOp)
         let receipt: ExecutionReceipt
         if (isGroupOperation(operation)) {
             receipt = await executeOp({

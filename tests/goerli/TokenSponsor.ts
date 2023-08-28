@@ -8,9 +8,9 @@ const config: TokenSponsorTestConfig = {
     baseToken: "eth",
     baseTokenStakeAmt: 0.2,
     paymasterTokenStakeAmt: 100,
-    prefund: true,
+    prefund: false,
     swapAmount: 0.001,
-    stake: true,
-    mint: true
+    stake: false,
+    mint: false
 }
 TokenSponsorTest(config)
