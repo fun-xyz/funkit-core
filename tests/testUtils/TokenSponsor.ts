@@ -132,7 +132,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await runActionWithTokenSponsorPermit(wallet)
             await runActionWithTokenSponsorApprove(approveWallet)
-            await runActionWithTokenSponsorPermit(unpermittedWallet)
+            await runActionWithTokenSponsorPermitFail(unpermittedWallet)
         })
 
         it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster", async () => {
@@ -150,7 +150,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             await runActionWithTokenSponsorPermit(wallet)
             await runActionWithTokenSponsorApprove(approveWallet)
-            await runActionWithTokenSponsorPermit(unpermittedWallet)
+            await runActionWithTokenSponsorPermitFail(unpermittedWallet)
         })
 
         it("Lock and Unlock tokens from the token paymaster", async () => {
@@ -242,6 +242,25 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())
+        }
+
+        /**
+         * This function is used to test the token paymaster. This makes sure the wallet has no gas tokens in it that could
+         * be used to pay for gas, then it mints a new NFT and checks that the wallet is the owner of the NFT using the
+         * token paymaster
+         */
+        const runActionWithTokenSponsorPermitFail = async (wallet: FunWallet) => {
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
+            const nftAddress = await chain.getAddress("TestNFT")
+            const nftId = Math.floor(Math.random() * 10_000_000_000)
+            const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
+            expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
+            const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
+            try {
+                await wallet.executeOperation(funder, mintOperation)
+            } catch (e) {
+                assert(true)
+            }
         }
 
         /**
