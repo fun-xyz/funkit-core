@@ -1,4 +1,4 @@
-import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, isAddress, keccak256, pad, toBytes } from "viem"
+import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, isAddress, isHex, keccak256, pad, toBytes } from "viem"
 import { FunWalletParams, User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
@@ -69,6 +69,31 @@ export class FunWallet extends FirstClassActions {
 
             this.userInfo = new Map(
                 users?.map((user) => {
+                    if (!user.userId || !isHex(user.userId)) {
+                        throw new InvalidParameterError(
+                            ErrorCode.InvalidParameter,
+                            "userId is required and must be  ex string",
+                            users,
+                            "Provide hex string userId when creating a FunWallet",
+                            "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
+                        )
+                    }
+
+                    if (
+                        user.groupInfo &&
+                        (!Number.isInteger(user.groupInfo.threshold) ||
+                            !Array.isArray(user.groupInfo.memberIds) ||
+                            !user.groupInfo.memberIds.every((memberId) => isHex(memberId)))
+                    ) {
+                        throw new InvalidParameterError(
+                            ErrorCode.InvalidParameter,
+                            "groupInfo must be an object with threshold as integer and memberIds as array of hex strings",
+                            users,
+                            "Provide valid groupInfo when creating a FunWallet",
+                            "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
+                        )
+                    }
+
                     return [pad(user.userId, { size: 32 }), user] as [Hex, User]
                 })
             )
