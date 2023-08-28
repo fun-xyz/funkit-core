@@ -226,7 +226,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
             }
         })
-        it.only("Blacklist Mode Approved with permit", async () => {
+        it("Blacklist Mode Approved with permit", async () => {
             expect(await runSwap(wallet, true)).not.to.throw
         })
 

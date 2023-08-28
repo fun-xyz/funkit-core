@@ -4,13 +4,13 @@ const config: TokenSponsorTestConfig = {
     chainId: 5,
     inToken: "usdc",
     outToken: "dai",
-    paymasterToken: "0x0a1F0598A561af6b84A726bE007f581E812C3CDD",
+    paymasterToken: "0x4dF8d8AA018cABB7c1194E6Df064961ea3572c48",
     baseToken: "eth",
     baseTokenStakeAmt: 0.2,
     paymasterTokenStakeAmt: 100,
-    prefund: false,
+    prefund: true,
     swapAmount: 0.001,
-    stake: false,
-    mint: false
+    stake: true,
+    mint: true
 }
 TokenSponsorTest(config)
