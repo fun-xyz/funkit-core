@@ -50,8 +50,14 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
         })
 
         it("swap baseToken(ETH) schedule", async () => {
-            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < config.tokenInAmount) {
-                await auth.sendTx(await Token.transfer(config.baseToken, await wallet.getAddress(), 100))
+            const WETH_ADDR = await Token.getAddress(config.baseToken)
+            if (Number(await Token.getBalance(WETH_ADDR, await wallet.getAddress())) < config.tokenInAmount) {
+                const mintWETHUserOp = await wallet.transfer(auth, await auth.getAddress(), {
+                    token: "eth",
+                    amount: config.tokenInAmount,
+                    to: WETH_ADDR
+                })
+                await wallet.executeOperation(auth, mintWETHUserOp)
             }
 
             const userOp = await wallet.limitSwapOrder(auth, await auth.getAddress(), {
@@ -62,7 +68,6 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             })
 
             opId = await wallet.scheduleOperation(auth, userOp)
-            console.log("limit order opId", opId)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
