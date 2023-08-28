@@ -72,7 +72,7 @@ export class FunWallet extends FirstClassActions {
                     if (!user.userId || !isHex(user.userId)) {
                         throw new InvalidParameterError(
                             ErrorCode.InvalidParameter,
-                            "userId is required and must be  ex string",
+                            "userId is required and must be a hex string",
                             users,
                             "Provide hex string userId when creating a FunWallet",
                             "https://docs.fun.xyz/how-to-guides/execute-transactions/create-funwallet#create-funwallet-manual-funwallet-creation"
