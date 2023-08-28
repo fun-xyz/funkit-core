@@ -1,9 +1,9 @@
 import { LimitOrderConfig, LimitOrderTest } from "../testUtils/LimitOrder"
 
 const config: LimitOrderConfig = {
-    chainId: 5,
+    chainId: 137,
     outToken: "dai",
-    baseToken: "eth",
+    baseToken: "matic",
     tokenInAmount: 0.001,
     tokenOutAmount: 0.00001,
     prefundAmt: 1
