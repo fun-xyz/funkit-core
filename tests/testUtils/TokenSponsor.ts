@@ -121,22 +121,21 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
             if (config.stake) {
                 const baseStakeAmount = config.baseTokenStakeAmt
-                // const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
-                // const depositInfoS = await sponsor.getTokenBalance(walletAddress, paymasterToken)
+                const paymasterTokenStakeAmount = config.paymasterTokenStakeAmt
+                const depositInfoS = await sponsor.getTokenBalance(walletAddress, paymasterToken)
                 const depositInfo1S = await sponsor.getTokenBalance(funderAddress, "eth")
 
-                // const approve = await sponsor.approve(funderAddress, paymasterToken, paymasterTokenStakeAmount * 2)
-                // const deposit = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress, paymasterTokenStakeAmount)
-                // const deposit1 = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress1, paymasterTokenStakeAmount)
+                const approve = await sponsor.approve(funderAddress, paymasterToken, paymasterTokenStakeAmount * 2)
+                const deposit = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress, paymasterTokenStakeAmount)
+                const deposit1 = await sponsor.depositToken(funderAddress, paymasterToken, walletAddress1, paymasterTokenStakeAmount)
                 const stakeData = await sponsor.stake(funderAddress, funderAddress, baseStakeAmount)
 
-                // await funder.sendTxs([approve, deposit, deposit1, stakeData])
-                await funder.sendTxs([stakeData])
+                await funder.sendTxs([approve, deposit, deposit1, stakeData])
 
-                // const depositInfoE = await sponsor.getTokenBalance(walletAddress, paymasterToken)
+                const depositInfoE = await sponsor.getTokenBalance(walletAddress, paymasterToken)
                 const depositInfo1E = await sponsor.getTokenBalance(funderAddress, "eth")
                 assert(depositInfo1E > depositInfo1S, "Base Stake Failed")
-                // assert(depositInfoE > depositInfoS, "Token Stake Failed")
+                assert(depositInfoE > depositInfoS, "Token Stake Failed")
                 await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress))
                 await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
             }
