@@ -7,6 +7,7 @@ const config: TokenSponsorTestConfig = {
     baseTokenStakeAmt: 1,
     mintPaymasterToken: true,
     numRetry: 0,
-    paymasterTokensRequired: 1000
+    paymasterTokensRequired: 1000,
+    prefundAmt: 0.005
 }
 TokenSponsorTest(config)

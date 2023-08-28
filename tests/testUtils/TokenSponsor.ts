@@ -6,6 +6,7 @@ import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE } from "../../src/c
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, NFT, Token } from "../../src/data"
 import { TokenSponsor } from "../../src/sponsors"
+import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 
@@ -19,6 +20,7 @@ export interface TokenSponsorTestConfig {
     mintPaymasterToken: boolean
     numRetry: number
     paymasterTokensRequired: number // needed
+    prefundAmt: number
     walletIndex?: number
 }
 
@@ -30,6 +32,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         this.timeout(300_000)
         let funder: Auth
         let wallet: FunWallet
+        let unpermittedWallet: FunWallet
+        let approveWallet: FunWallet
         let funderAddress: Address
         let walletAddress: Address
         let sponsor: TokenSponsor
@@ -47,6 +51,14 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             wallet = new FunWallet({
                 users: [{ userId: await funder.getAddress() }],
                 uniqueId: await funder.getWalletUniqueId(config.walletIndex ? config.walletIndex : 1823452391856349)
+            })
+            unpermittedWallet = new FunWallet({
+                users: [{ userId: await funder.getAddress() }],
+                uniqueId: await funder.getWalletUniqueId(18234526349)
+            })
+            approveWallet = new FunWallet({
+                users: [{ userId: await funder.getAddress() }],
+                uniqueId: await funder.getWalletUniqueId(182134526349)
             })
 
             walletAddress = await wallet.getAddress()
@@ -118,7 +130,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
             expect(await sponsor.getTokenWhitelisted((await sponsor.getFunSponsorAddress())!, paymasterToken)).to.be.true
 
-            await runActionWithTokenSponsor()
+            await runActionWithTokenSponsorPermit(wallet)
+            await runActionWithTokenSponsorApprove(approveWallet)
+            await runActionWithTokenSponsorPermit(unpermittedWallet)
         })
 
         it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster", async () => {
@@ -134,7 +148,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
-            await runActionWithTokenSponsor()
+            await runActionWithTokenSponsorPermit(wallet)
+            await runActionWithTokenSponsorApprove(approveWallet)
+            await runActionWithTokenSponsorPermit(unpermittedWallet)
         })
 
         it("Lock and Unlock tokens from the token paymaster", async () => {
@@ -206,7 +222,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 usePermit: true
             }
             await configureEnvironment(options)
-            await runActionWithTokenSponsor()
+            await runActionWithTokenSponsorApprove(approveWallet)
+            await runActionWithTokenSponsorPermit(wallet)
         })
 
         /**
@@ -214,13 +231,46 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * be used to pay for gas, then it mints a new NFT and checks that the wallet is the owner of the NFT using the
          * token paymaster
          */
-        const runActionWithTokenSponsor = async () => {
+        const runActionWithTokenSponsorPermit = async (wallet: FunWallet) => {
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, walletAddress)).to.be.equal("0")
+            expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
+            await wallet.executeOperation(funder, mintOperation)
+            const nft = new NFT(nftAddress)
+            const owner = await nft.ownerOf(nftId)
+            expect(owner).to.equal(await wallet.getAddress())
+        }
+
+        /**
+         * This function is used to test the token paymaster. This makes sure the wallet has no gas tokens in it that could
+         * be used to pay for gas, then it mints a new NFT and checks that the wallet is the owner of the NFT using the
+         * token paymaster
+         */
+        const runActionWithTokenSponsorApprove = async (wallet: FunWallet) => {
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
+            const nftAddress = await chain.getAddress("TestNFT")
+            const nftId = Math.floor(Math.random() * 10_000_000_000)
+            const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < config.prefundAmt) {
+                await fundWallet(funder, wallet, config.prefundAmt)
+            }
+
+            if (Number(await Token.getBalance(config.paymasterToken, await wallet.getAddress())) < config.paymasterTokensRequired) {
+                await funder.sendTx(
+                    await new Token(config.paymasterToken).transfer(await wallet.getAddress(), config.paymasterTokensRequired)
+                )
+            }
+
+            const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams, {
+                ...options,
+                gasSponsor: {
+                    ...options.gasSponsor,
+                    usePermit: false
+                }
+            })
             await wallet.executeOperation(funder, mintOperation)
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
