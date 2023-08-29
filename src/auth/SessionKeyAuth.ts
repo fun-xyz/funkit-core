@@ -1,6 +1,6 @@
 import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
-import { Auth } from "./Auth"
-import { EoaAuthInput, WalletCallData } from "./types"
+import { Auth, AuthInput } from "./Auth"
+import { WalletCallData } from "./types"
 import { ETH_TRANSFER_SELECTOR, WALLET_ABI } from "../common"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { randomBytes } from "../utils"
@@ -18,7 +18,7 @@ export class SessionKeyAuth extends Auth {
     targetSelectorMerkleTree?: MerkleTree
     feeRecipientMerkleTree?: MerkleTree
 
-    constructor(authInput: EoaAuthInput) {
+    constructor(authInput: AuthInput) {
         super(authInput)
         this.ruleId = randomBytes(32)
         this.roleId = randomBytes(32)

@@ -30,7 +30,7 @@ FunKit needs to be configured with an API key. Get a key by logging to our [dash
 Import all required classes.
 
 ```js
-import { FunWallet, configureEnvironment, Auth } from “@fun-xyz/core”
+import { FunWallet, configureEnvironment, Auth } from "@fun-xyz/core"
 ```
 
 ### 2. Configure wallet environment
@@ -95,9 +95,9 @@ You can test FunKit on Ethereum goerli testnet with the following configuration.
 
 ```js
 await configureEnvironment({
-    chain: “goerli”,
+    chain: "goerli",
     gasSponsor: {
-        sponsorAddress: “0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad”
+        sponsorAddress: "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
     },
     apiKey: API_KEY
 })

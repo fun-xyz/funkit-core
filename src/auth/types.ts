@@ -1,18 +1,4 @@
-import { Address, Hex, WalletClient } from "viem"
-
-export interface EoaAuthInput {
-    client?: WalletClient
-    privateKey?: Hex
-    windowEth?: any
-    rpc?: string
-    provider?: any
-}
-
-export interface GroupAuthInput {
-    uniqueId?: string
-    userIds?: string[]
-    requiredSignatures?: number
-}
+import { Address, Hex } from "viem"
 
 export type WalletCallData = {
     target: Address

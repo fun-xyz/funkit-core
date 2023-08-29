@@ -4,6 +4,6 @@ const config: SessionKeyTestConfig = {
     chainId: 8453,
     outToken: "dai",
     baseToken: "eth",
-    prefundAmt: 0.003
+    prefundAmt: 0.008
 }
 SessionKeyTest(config)
