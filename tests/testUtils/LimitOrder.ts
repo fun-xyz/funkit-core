@@ -1,8 +1,9 @@
 import { assert, expect } from "chai"
+import { parseEther } from "viem"
 import { getOps } from "../../src/apis/OperationApis"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -44,8 +45,11 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
 
-            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < prefundAmt) {
-                await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 1)
+            const chain = await Chain.getChain({ chainIdentifier: config.chainId.toString() })
+            const client = await chain.getClient()
+            const balance = await client.getBalance({ address: await wallet.getAddress() })
+            if (balance < parseEther(`${prefundAmt}`)) {
+                await fundWallet(auth, wallet, prefundAmt)
             }
         })
 
@@ -68,6 +72,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             })
 
             opId = await wallet.scheduleOperation(auth, userOp)
+            console.log("limitOrder opId: ", opId)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
