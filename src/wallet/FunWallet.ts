@@ -783,6 +783,7 @@ export class FunWallet extends FirstClassActions {
             ...operation.userOp,
             ...res
         }
+
         const maxFeePerGas = await chain.getFeeData()
         operation.userOp.maxFeePerGas = maxFeePerGas
         operation.userOp.maxPriorityFeePerGas = maxFeePerGas

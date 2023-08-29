@@ -71,7 +71,7 @@ export class Token {
         return amount
     }
 
-    async getApproval(owner: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigInt> {
+    async getApproval(owner: string, spender: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         if (this.isNative) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -117,7 +117,7 @@ export class Token {
         return await token.getBalance(address, options)
     }
 
-    static async getBalanceBN(data: string, address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigInt> {
+    static async getBalanceBN(data: string, address: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const token = new Token(data)
         return await token.getBalanceBN(address, options)
     }
@@ -127,7 +127,7 @@ export class Token {
         owner: string,
         spender: string,
         options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<BigInt> {
+    ): Promise<bigint> {
         const token = new Token(data)
         return await token.getApproval(owner, spender, options)
     }
