@@ -330,7 +330,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0x149b4d0ada7707782e74fef64f083cda823f45213f99ff177d3327e9761a245a" // generateRandomGroupId()
+        const groupId: Hex = "0x149b4d0ada7707782e74fef64f083cda823f45213f99ff177d3327e9761a245b" // generateRandomGroupId()
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()

@@ -176,7 +176,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
-        const groupId: Hex = "0xbaec3e7f11004e16972a0392ad0d114b7c6378b7b47b6cddd802ba44c3f56bb7" // generateRandomGroupId()
+        const groupId: Hex = "0xbaec3e7f11004e16972a0392ad0d114b7c6378b7b47b6cddd802ba44c3f56bb8" // generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
