@@ -101,7 +101,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const b2 = Token.getBalanceBN(outToken, await wallet.getAddress())
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: outTokenPrefund ? outTokenPrefund : 0.00001,
+                amount: outTokenPrefund ? outTokenPrefund / 2 : 0.00001,
                 token: outTokenAddress
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
@@ -171,7 +171,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const b1 = Token.getBalance(baseToken, randomAddress)
                 const b2 = Token.getBalance(baseToken, walletAddress)
                 const b5 = Token.getBalance(outToken, feeRecipientAddress)
-                const fee = 0.00001
+                const fee = outTokenPrefund ? outTokenPrefund / 2 : 0.00001
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
