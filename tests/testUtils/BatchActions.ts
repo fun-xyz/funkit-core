@@ -248,7 +248,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         let auth2: Auth
         let wallet: FunWallet
         let chain: Chain
-        const groupId: Hex = "0x2a9ac7208e6c38cb5fc71b3b0dedb4892c002bdd9757e2951604f77ebffc26e9" // generateRandomGroupId()
+        const groupId: Hex = "0x2a9ac7208e6c38cb5fc71b3b0dedb4892c002bdd9757e2951604f77ebffc26ee" // generateRandomGroupId()
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -271,7 +271,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 1661167)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 16611867)
             })
             chain = await Chain.getChain({ chainIdentifier: config.chainId })
 
