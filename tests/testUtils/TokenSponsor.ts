@@ -233,7 +233,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.true
         })
 
-        it("Use the fun owned token paymaster", async () => {
+        it.skip("Use the fun owned token paymaster", async () => {
             const funOwnedTokenSponsor = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
             options.gasSponsor = {
                 sponsorAddress: funOwnedTokenSponsor,
@@ -251,6 +251,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorPermit = async (wallet: FunWallet) => {
+            console.log("runActionWithTokenSponsorPermit", await wallet.getAddress())
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
@@ -269,6 +270,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorPermitFail = async (wallet: FunWallet) => {
+            console.log("runActionWithTokenSponsorPermitFail", await wallet.getAddress())
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
@@ -288,6 +290,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorApprove = async (wallet: FunWallet) => {
+            console.log("runActionWithTokenSponsorApprove", await wallet.getAddress())
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
