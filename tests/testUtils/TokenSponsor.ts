@@ -283,6 +283,13 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 )
             }
 
+            const approveTokenToPaymaster = await wallet.tokenApprove(funder, await funder.getUserId(), {
+                token: config.paymasterToken,
+                spender: await sponsor.getPaymasterAddress(),
+                amount: config.paymasterTokensRequired
+            })
+            await wallet.executeOperation(funder, approveTokenToPaymaster)
+
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams, {
                 ...options,
                 gasSponsor: {
