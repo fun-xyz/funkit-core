@@ -1,4 +1,4 @@
-![backdrop](https://user-images.githubusercontent.com/5194671/219986266-bfbf6143-dfdf-4154-8afc-156d19d9603e.png)
+![backdrop](./backdrop.png)
 
 # **FunKit**
 
@@ -30,7 +30,7 @@ FunKit needs to be configured with an API key. Get a key by logging to our [dash
 Import all required classes.
 
 ```js
-import { FunWallet, configureEnvironment, Auth } from “@fun-xyz/core”
+import { FunWallet, configureEnvironment, Auth } from "@fun-xyz/core"
 ```
 
 ### 2. Configure wallet environment
@@ -95,9 +95,9 @@ You can test FunKit on Ethereum goerli testnet with the following configuration.
 
 ```js
 await configureEnvironment({
-    chain: “goerli”,
+    chain: "goerli",
     gasSponsor: {
-        sponsorAddress: “0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad”
+        sponsorAddress: "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
     },
     apiKey: API_KEY
 })
@@ -105,8 +105,6 @@ await configureEnvironment({
 
 ## <a id="moreresources"></a> **More Resources**
 
-For more detailed information on how to use the FunKit, please refer to the [FunKit Documentation](http://docs.fun.xyz).
-
-Find a live demo [here](https://demo.fun.xyz)
-
-[Fun Team Discord](https://discord.gg/7ZRAv4es)
+- [Documentation](http://docs.fun.xyz) - Complete how-to guides and API reference docs.
+- [Demo](https://demo.fun.xyz) - Try it out.
+- [Discord](https://discord.gg/7ZRAv4es) - Say hi!

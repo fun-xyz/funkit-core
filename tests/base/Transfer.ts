@@ -6,7 +6,7 @@ const config: TransferTestConfig = {
     baseToken: "eth",
     index: 0,
     amount: 0.000001,
-    prefundAmt: 0.005,
+    prefundAmt: 0.02,
     outTokenPrefund: 0.0001
 }
 

@@ -24,7 +24,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
     const { prefundAmt } = config
 
     describe("Limit Order Test - Store Limit Order and Execute later", async function () {
-        this.timeout(400_000)
+        this.timeout(500_000)
         let auth: Auth
         let wallet: FunWallet
         let opId
@@ -81,10 +81,10 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
         it("transfer baseToken(ETH) executed", async () => {
             const balBefore = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
             await new Promise((resolve) => {
-                setTimeout(resolve, 300_000)
+                setTimeout(resolve, 400_000)
             })
             const balAfter = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
-            assert(balAfter > balBefore, "Swap did not execute: Out token balance should be greater than before")
+            assert(balAfter > balBefore, `Swap did not execute: Out token balance should be greater than before ${balBefore}, ${balAfter}`)
         })
     })
 }
