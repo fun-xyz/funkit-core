@@ -368,8 +368,8 @@ export class FunWallet extends FirstClassActions {
             maxFeePerGas = 10n ** 8n
             maxPriorityFeePerGas = 10n ** 8n
         } else if (chainId === "8453") {
-            maxFeePerGas = 10n ** 6n
-            maxPriorityFeePerGas = 10n ** 6n
+            maxFeePerGas = 10n ** 9n / 1_000000_000n
+            maxPriorityFeePerGas = 10n ** 9n / 1_000000_000n
         } else {
             maxFeePerGas = 1n
             maxPriorityFeePerGas = 1n
@@ -753,11 +753,13 @@ export class FunWallet extends FirstClassActions {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
+        console.log("userOp", operation.userOp)
         const res = await chain.estimateOpGas(operation.userOp)
         operation.userOp = {
             ...operation.userOp,
             ...res
         }
+
         const maxFeePerGas = await chain.getFeeData()
         operation.userOp.maxFeePerGas = maxFeePerGas
         operation.userOp.maxPriorityFeePerGas = maxFeePerGas

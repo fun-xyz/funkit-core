@@ -67,7 +67,15 @@ export class TokenSponsor extends Sponsor {
             ...partialOp.userOp,
             paymasterAndData: estimationPaymasterAddress
         })
-        console.log("estimation", callGasLimit, verificationGasLimit, preVerificationGas)
+        console.log(
+            "estimation",
+            "preverificationGas",
+            preVerificationGas,
+            "callgaslimit",
+            callGasLimit,
+            "verificationGasLimit",
+            verificationGasLimit
+        )
         const maxFeePerGas = await chain.getFeeData()
         console.log("maxFeePerGas", maxFeePerGas)
         const paymasterAddress = await this.getPaymasterAddress(options)
@@ -92,8 +100,11 @@ export class TokenSponsor extends Sponsor {
             [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
         const sponsor = await this.getFunSponsorAddress(options)
+        console.log("Sponsor address", sponsor)
         const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])
+        console.log("encodedAddresses", encodedAddresses)
         const encodedData = encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [encodedAddresses, encodedSig])
+        console.log("encodedData", encodedData)
         return concat([paymasterAddress, encodedData])
     }
 
