@@ -1,222 +1,110 @@
-![backdrop](https://user-images.githubusercontent.com/5194671/219986266-bfbf6143-dfdf-4154-8afc-156d19d9603e.png)
+![backdrop](./backdrop.png)
 
-# **Overview**
+# **FunKit Core**
 
-The FunWallet SDK empowers developers to access all of web3's features while working within web2 frameworks. Leveraging the FunWallet SDK, developers can create, deploy and interact with smart contract wallets through customized, modular access control.
+FunKit empowers you to create feature-rich and extensible smart wallets built on account abstraction. Leveraging the FunKit, you can customize gas behavior, adopt multi-sig and common authentication method, monetize your application, execute any transactions from smart wallets, and much more.
 
-## **Features**
-
--   💰 Automate Defi Actions for an EOA
--   ⛽ Sponsor/Gasless Transactions
--   🔄 Swap tokens with Uniswap
+This repo only covers FunKit Core SDK which does not provide any frontend specific optimizations. Check our [Web SDK](https://github.com/fun-xyz/funkit-react) if you want to further simplify your application with our react hooks.
 
 ## **Table of Contents**
 
-1. **[Install packages](#installation)**
+1. **[Installation](#installation)**
+2. **[Quick Start](#quickstart)**
+3. **[Testing](#testing)**
+4. **[More Resources](#moreresources)**
 
-2. **[Add Imports](#imports)**
+## <a id="installation"></a> **Installation**
 
-3. **[Create EOA Instance](#createeoa)**
+```
+npm i @funkit/core --save
+# or
+yarn add @funkit/core
+```
 
-4. **[Create a FunWallet](#createwallet)**
+## <a id="quickstart"></a> **Quick Start**
 
-5. **[Add Module](#addmmodule)**
+FunKit needs to be configured with an API key. Get a key by logging to our [dashboard](https://app.fun.xyz/sign-in/request).
 
-6. **[Deploy FunWallet](#deploywallet)**
+### 1. Import
 
-7. **[Create Token Transfer & Deploy Onchain](#createtransfer)**
-
-## **Quickstart**
-
-FunWallet is the simplest way to create a wallet in your React.js web application. It comes with sensible defaults out of the box so you can focus on building.
-
-Find a live demo [here](http://demo.fun.xyz).
-
-## 1. Install
-
-Download our package. If necessary, also download [ethers.js](https://docs.ethers.org/v5/getting-started/#installing).
-
-`npm install @fun-wallet/sdk ethers@5.7.2`
-
-<Alert tone="info">
-
-If you do not have an API Key, request to join our [private beta](https://app.fun.xyz/sign-in/request). If you have an API Key, go to the [API Dashboard](http://app.fun.xyz/api-key) to view your API Key.
-
-</Alert>
-
-## 2. Create Wallet
-
-First, set your environment variables for how your FunWallet will interact with blockchains. This information includes your API_KEY.
+Import all required classes.
 
 ```js
-const options = {
+import { FunWallet, configureEnvironment, Auth } from "@funkit/core"
+```
+
+### 2. Configure wallet environment
+
+Set your environment variables describing how your smart wallets interact with blockchains. This can include chain, apiKey, and optional gasSponsor.
+
+1. `chain` - Each FunWallet exists on an [EVM-compatible blockchain](https://ethereum.org/en/developers/docs/evm/).
+2. `apiKey` - You can get an API key by logging to our [dashboard](https://app.fun.xyz/sign-in/request).
+3. `gasSponsor` - All wallets have to pay gas to execute transactions on a blockchain. You can pre-fund the wallet with native tokens or you can have third parties to pay for gas by specifying a [gasSponsor](https://docs.fun.xyz/api-reference/gas-sponsor).
+
+```js
+await configureEnvironment({
     chain: CHAIN_ID,
     apiKey: API_KEY,
     gasSponsor: {
-        sponsorAddress: SPONSOR_ADDRESS,
-        token: "USDC"
+        sponsorAddress: SPONSOR_ADDRESS
     }
-}
+})
 ```
 
-```js
-import { ethers } from "ethers"
-import { FunWallet, TokenSponsor, configureEnvironment } from "@fun-wallet/sdk"
-import { Eoa } from "@fun-wallet/sdk/auth"
+### 3. Set up authentication
 
-// Configure gas mechanics to pay gas in USDC
-const options = {
-    chain: CHAIN_ID,
-    apiKey: API_KEY,
+Next, you need a way to sign transactions. All authentication in FunKit is handled with the Auth object. You can use privateKey, viem client, web3 provider, ethers.js signer, rpcProvider or windowEth (MetaMask) to build the Auth. Check more examples about how to create auth with different inputs [here](https://docs.fun.xyz/api-reference/auth)
+
+```js
+const auth = new Auth({ privateKey: PRIVATE_KEY })
+```
+
+### 4. Initialize the FunWallet
+
+With the Auth instance that you just created, you can now initialize your FunWallet. Here are the FunWallet constructor parameters:
+
+1. `users` - This is a `User[]` that holds all `users` that can access your `FunWallet`. For simplicity, we’re only including 1 user here.
+2. `uniqueId` - This is a random seed that is generated from our `Auth` instance. The purpose of this seed is to generate the `address` of our `FunWallet`.
+
+```js
+const wallet = new FunWallet({
+    users: [{ userId: auth.getAddress() }],
+    uniqueId: auth.getWalletUniqueId()
+})
+```
+
+### 5. Initiate a Transfer
+
+Now we have the wallet object, we will show how to transfer some basic ERC-20 tokens to other addresses. Note that the smart wallet will only be created on the blockchain after executeOperation is finished.
+
+```js
+const transferOp = await wallet.transfer(auth, await auth.getUserId(), {
+    to: RECIPIENT_ADDRESS,
+    amount: AMOUNT,
+    token: TOKEN_TO_SEND
+})
+const receipt = await funWallet.executeOperation(auth, transferOp)
+console.log(receipt)
+```
+
+## <a id="testing"></a> **Testing**
+
+### **Testing on Goerli**
+
+You can test FunKit on Ethereum goerli testnet with the following configuration. We have a gas sponsor that will cover your gas cost for the first 200 operations so you don’t have to worry about pre-funding the wallet or setting up the gas sponsor to start.
+
+```js
+await configureEnvironment({
+    chain: "goerli",
     gasSponsor: {
-        sponsorAddress: SPONSOR_ADDRESS,
-        token: "USDC"
-    }
-}
-await configureEnvironment(options)
-
-/*
-Get the user's EOA. This is used to:
-- Fund the FunWallet with ETH
-- Stake USDC in the Paymaster on behalf of the FunWallet
-*/
-const provider = new ethers.providers.Web3Provider(window.ethereum, "any")
-await provider.send("eth_requestAccounts", [])
-const eoa = provider.getSigner()
-const auth = new Eoa({ signer: eoa })
-
-// Get FunWallet associated with EOA
-const uniqueId = await auth.getUniqueId()
-const wallet = new FunWallet({ uniqueId })
+        sponsorAddress: "0xCB5D0b4569A39C217c243a436AC3feEe5dFeb9Ad"
+    },
+    apiKey: API_KEY
+})
 ```
 
-## 3. Run Transactions
+## <a id="moreresources"></a> **More Resources**
 
-Execute transactions or swaps in one line of code.
-
-```js
-// Transfer 5 USDC to TO_ADDR.
-const transferReceipt = await wallet.transfer(auth, TO_ADDR, 5, "USDC")
-// Swap 5 USDC for ETH
-const swapReceipt = await wallet.swap(auth, "ETH", "USDC", 5, swapOptions)
-```
-
-```js
-import { ethers } from "ethers"
-import { FunWallet, TokenSponsor, configureEnvironment } from "@fun-wallet/sdk"
-import { Eoa } from "@fun-wallet/sdk/auth"
-
-// Configure gas mechanics to pay gas in USDC
-const options = {
-  chain: CHAIN_ID,
-  apiKey: API_KEY,
-  gasSponsor: {
-    sponsorAddress: SPONSOR_ADDRESS,
-    token: "USDC"
-  }
-}
-await configureEnvironment(options)
-
-/*
-Get the user's EOA. This is used to:
-- Fund the FunWallet with ETH
-- Stake USDC in the Paymaster on behalf of the FunWallet
-*/
-const provider = new ethers.providers.Web3Provider(window.ethereum, "any")
-await provider.send('eth_requestAccounts', [])
-const eoa = provider.getSigner()
-const auth = new Eoa({ signer: eoa })
-
-// Get FunWallet associated with EOA
-const uniqueId = await auth.getUniqueId()
-const wallet = new FunWallet({ uniqueId })
-
-// Generate & deploy/execute Transactions that approve & send USDC & ETH from eoa to the Paymaster contract,
-// enabling wallet to transact by draining this staked USDC
-const sponsor = new TokenSponsor()
-const sponsorStakeTx = await sponsor.stake(auth.getUniqueId(), 2)
-const approveTx = await sponsor.approve("USDC", 10)
-const stakeTx = await sponsor.stakeToken("USDC", await wallet.getAddress(), 10)
-await auth.sendTxs([sponsorStakeTx, approveTx, stakeTx])
-await configureEnvironment({gasSponsor: {sponsorAddress: auth.getUniqueId()}})
-
-// Send 0.1 ETH from the EOA to
-// Perform a transfer of 0.1 ETH from wallet to TO_ADDR
-// This logs the difference between the amount of staked USDC in the Paymaster before & after a FunWallet transaction
-await fundWallet(eoa, wallet, 0.1)
-console.log(sponsor.getTokenBalance("USDC", wallet.getAddress()))
-wallet.transfer(auth, { TO_ADDR, 0.1, "ETH" } )
-console.log(sponsor.getTokenBalance("USDC", wallet.getAddress()))
-```
-
-# **Testing With a Fork Environment**
-
-## <a id="testwithremotebundler"></a> **1. [Easy] Testing with remote bundler**
-
-You can run any file inside of the test/fork folder and see the result. By default, the tests will run with Fun managed bundler and on the Fun testnet, which is a fork from ethereum mainnet.
-
-Starting point: `/fun-wallet-sdk`
-
-```
-npm run test-funtestnet
-```
-
-or
-
-```
-env REMOTE_TEST=true npx mocha test/fork/Swap.js
-```
-
-## <a id="testwithlocalbundler"></a> **2. [Pro] Testing with local bundler**
-
-You need to spin up a bundler and local fork at your local environment and then run tests. Please follow the following steps.
-
-### <a id="testwithlocalbundler"></a> **1. Clone the Bundler Repo**
-
-Starting point: `~/{HOME_DIR}`
-
-```
-git clone https://github.com/TheFunGroup/bundler.git
-```
-
-### <a id="testwithlocalbundler"></a> **2. Set Up the Fork and Bundler Locally**
-
-Once the bundler is cloned, follow the instructions in https://github.com/TheFunGroup/bundler/blob/main/README.md before moving onto the following steps
-
-### <a id="testwithlocalbundler"></a> **3. Run Test**
-
-Now the local fork is setup, you can run any file inside of the test folder and see the result.
-
-Starting point: `/fun-wallet-sdk`
-
-```
-npm run test-localfork
-```
-
-or
-
-```
-env REMOTE_TEST=false npx mocha test/fork/Swap.js
-```
-
-# **Testing With a Goerli Environment**
-
-You can run any file inside of the test/goerli folder and see the result.
-
-Starting point: `/fun-wallet-sdk`
-
-```
-npm run test-goerli
-```
-
-or
-
-```
-npx mocha test/goerli/Factory.js
-```
-
-## More Documentation
-
-For more detailed information on how to use the FunWallet SDK, please refer to the [FunWallet Documentation](http://docs.fun.xyz).
-
-[Fun Team Twitter](http://twitter.com/fun)
+-   [Documentation](http://docs.fun.xyz) - Complete how-to guides and API reference docs.
+-   [Demo](https://demo.fun.xyz) - Try FunKit Core in action.
+-   [Discord](https://discord.gg/7ZRAv4es) - Ask us a question, or just say hi!

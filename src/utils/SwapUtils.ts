@@ -2,6 +2,7 @@ import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
+import { UniSwapPoolFeeOptions } from "../actions"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
 import { EnvOption } from "../config"
@@ -174,21 +175,22 @@ class SwapToken {
 }
 
 const fees = {
-    lowest: 100,
-    low: 500,
-    medium: 3000,
-    high: 10000
+    lowest: FeeAmount.LOWEST,
+    low: FeeAmount.LOW,
+    medium: FeeAmount.MEDIUM,
+    high: FeeAmount.HIGH
 }
 
 type SwapParamsUtils = {
     tokenInAddress: Address
     tokenOutAddress: Address
     amountIn: number
-    returnAddress: Address
+    recipient: Address
     percentDecimal: number
     slippage: number
-    poolFee: string
+    poolFee: UniSwapPoolFeeOptions
 }
+
 export type UniswapV3Addrs = {
     univ3quoter: Address
     univ3factory: Address
@@ -201,7 +203,7 @@ export type UniswapV2Addrs = {
 export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addrs, swapParams: SwapParamsUtils, chainId: number) {
     const { univ3quoter, univ3factory, univ3router } = uniswapAddrs
 
-    const { tokenInAddress, tokenOutAddress, amountIn, returnAddress, percentDecimal, slippage, poolFee } = swapParams
+    const { tokenInAddress, tokenOutAddress, amountIn, recipient, percentDecimal, slippage, poolFee } = swapParams
     const _poolFee = fees[poolFee]
 
     const swapper = new SwapToken(client, 3, univ3quoter, univ3factory)
@@ -212,14 +214,14 @@ export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addr
     const tokenOut = new Token(chainId, tokenOutAddress, tokenOutDecimal)
 
     const { uncheckedTrade, tokenInAmount } = await swapper.createTrade(amountIn, tokenIn, tokenOut, _poolFee)
-    const data = swapper.executeTrade(uncheckedTrade, univ3router, returnAddress, slippage, percentDecimal)
+    const data = swapper.executeTrade(uncheckedTrade, univ3router, recipient, slippage, percentDecimal)
     return { ...data, amount: tokenInAmount }
 }
 
 export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Addrs, swapParams: SwapParamsUtils, chainId: number) {
     const { router, factory } = uniswapAddrs
 
-    const { tokenInAddress, tokenOutAddress, amountIn, returnAddress } = swapParams
+    const { tokenInAddress, tokenOutAddress, amountIn, recipient } = swapParams
 
     const swapper = new SwapToken(client, 2, undefined, undefined, router, factory)
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
@@ -230,7 +232,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
-            returnAddress,
+            recipient,
             Date.now() + 180000 // Long enough to rarely fail
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
@@ -239,7 +241,7 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
             fromReadableAmount(amountIn, tokenInDecimal).toString(),
             0,
             [tokenInAddress, tokenOutAddress],
-            returnAddress,
+            recipient,
             Date.now() + 180000 // Long enough to rarely fail
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }

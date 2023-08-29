@@ -1,72 +1,54 @@
-import { Address, Hex } from "viem"
-import { Auth, SessionKeyAuth } from "../auth"
-import { TransactionData, TransactionParams } from "../common"
-import { EnvOption } from "../config"
-import { Chain } from "../data"
-import { ErrorData } from "../errors/"
-import { FunWallet } from "../wallet"
+import { Hex } from "viem"
+import { SessionKeyAuth } from "../auth"
+import { TransactionParams } from "../common"
 
 export interface ApproveAndExecParams {
     approve: ApproveERC20Params
     exec: TransactionParams
-    chainId: number
 }
 
-export interface ActionData {
-    wallet: FunWallet | Auth
-    chain: Chain
-    options: EnvOption
-}
-
-// Transfer Param types
-export type TransferParam = {
-    to: Address
-}
-
-export interface ERC721TransferParams extends TransferParam {
+export interface ERC721TransferParams {
     tokenId: number
-    token: string
-    from: Address
+    collection: string
+    from?: string
+    to: string
 }
-export interface NativeTransferParams extends TransferParam {
+
+export interface TokenTransferParams {
+    token: string
     amount: number
+    from?: string
+    to: string
 }
 
-export interface ERC20TransferParams extends NativeTransferParams {
-    token: string
-}
-
-export type TransferParams = ERC20TransferParams | ERC721TransferParams | NativeTransferParams
+export type TransferParams = TokenTransferParams | ERC721TransferParams
 
 // Approval Param types
-export type ApproveParam = {
-    spender: string
-    token: Address
-}
 export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 
-export interface ApproveERC20Params extends ApproveParam {
+export interface ApproveERC20Params {
+    spender: string
     amount: number
+    token: string
 }
 
-export interface ApproveERC721Params extends ApproveParam {
+export interface ApproveERC721Params {
+    spender: string
     tokenId: number
+    collection: string
 }
 
 export type StakeParams = {
     amount: number // denominated in ETH
-    chainId: number
 }
 
 export type RequestUnstakeParams = {
     amounts: number[] // denominated in ETH
     recipient: string
-    chainId: number
 }
 
 export type FinishUnstakeParams = {
     recipient: string
-    chainId: number
     walletAddress: string
 }
 
@@ -76,45 +58,33 @@ export enum UniSwapPoolFeeOptions {
     medium = "medium",
     high = "high"
 }
-export type CreateParams = {
-    to: Address
-}
-export type SwapParam = {
-    in: string
-    out: string
-    amount: number
+
+export type SwapParams = {
+    tokenIn: string
+    tokenOut: string
+    inAmount: number
     slippage?: number
-    returnAddress: Address
-    chainId: number
-}
-
-export interface OneInchSwapParams extends SwapParam {
-    disableEstimate?: boolean
-    allowPartialFill?: boolean
-}
-
-export interface UniswapParams extends SwapParam {
+    recipient?: string
     poolFee?: UniSwapPoolFeeOptions
-    percentDecimal?: number
 }
 
-export type ActionResult = {
-    data: TransactionData
-    errorData: ErrorData
+export type LimitOrderParam = {
+    tokenIn: string
+    tokenOut: string
+    tokenInAmount: number
+    tokenOutAmount: number
+    poolFee?: UniSwapPoolFeeOptions
 }
-
-export type ActionFunction = (obj: ActionData) => Promise<ActionResult>
 
 export type SessionKeyParams = {
     targetWhitelist: string[]
     actionWhitelist: ActionWhitelistObject[]
     feeTokenWhitelist?: string[]
     feeRecipientWhitelist?: string[]
-    deadline: bigint
+    deadline: number
     actionValueLimit?: bigint
     feeValueLimit?: bigint
     user: SessionKeyAuth
-    chainId: number
 }
 
 export type ActionWhitelistObject = {
@@ -137,45 +107,37 @@ export type Group = {
 
 export type AddOwnerParams = {
     ownerId: Hex
-    chainId: number
 }
 
 export type RemoveOwnerParams = {
     ownerId: Hex
-    chainId: number
 }
 
 export type CreateGroupParams = {
     groupId: Hex
     group: Group
-    chainId: number
 }
 
 export type AddUserToGroupParams = {
     groupId: Hex
     userId: Hex
-    chainId: number
 }
 
 export type RemoveUserFromGroupParams = {
     groupId: Hex
     userId: Hex
-    chainId: number
 }
 
 export type UpdateThresholdOfGroupParams = {
     groupId: Hex
     threshold: number
-    chainId: number
 }
 
 export type UpdateGroupParams = {
     groupId: Hex
     group: Group
-    chainId: number
 }
 
 export type RemoveGroupParams = {
     groupId: Hex
-    chainId: number
 }

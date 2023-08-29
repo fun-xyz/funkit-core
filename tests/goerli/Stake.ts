@@ -4,7 +4,8 @@ const config: StakeTestConfig = {
     chainId: 5,
     actualChainId: 5,
     baseToken: "eth",
-    prefund: true,
-    steth: "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F"
+    prefundAmt: 0.2,
+    steth: "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F",
+    stakeAmt: 0.0001
 }
 StakeTest(config)

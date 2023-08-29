@@ -1,6 +1,7 @@
-import { Address, parseEther } from "viem"
+import { Address, isAddress, parseEther } from "viem"
 import { FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, TransactionParams, WITHDRAW_QUEUE_ABI } from "../common"
+import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { ErrorCode, InternalFailureError, InvalidParameterError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
@@ -13,20 +14,37 @@ export const isRequestUnstakeParams = (input: any) => {
 export const isFinishUnstakeParams = (input: any) => {
     return input.recipient !== undefined
 }
-export const stakeTransactionParams = async (params: StakeParams): Promise<TransactionParams> => {
-    const lidoAddress = getSteth(params.chainId.toString())
+export const stakeTransactionParams = async (
+    params: StakeParams,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const lidoAddress = getSteth(await chain.getChainId())
     return { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
 }
 
-export const requestUnstakeTransactionParams = async (params: RequestUnstakeParams): Promise<TransactionParams> => {
+export const requestUnstakeTransactionParams = async (
+    params: RequestUnstakeParams,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "Please make sure it is a valid checksum address",
+            "https://docs.fun.xyz"
+        )
+    }
     // Approve steth
-    const steth = getSteth(params.chainId.toString())
-    const withdrawalQueue: Address = getWithdrawalQueue(params.chainId.toString())
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chainId = await chain.getChainId()
+    const steth = getSteth(chainId)
+    const withdrawalQueue: Address = getWithdrawalQueue(chainId)
     if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
             "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
-            "wallet.unstake",
             { params },
             "Provide correct chainId.",
             "https://docs.fun.xyz"
@@ -43,7 +61,6 @@ export const requestUnstakeTransactionParams = async (params: RequestUnstakePara
         params.amounts.map((amount) => parseEther(`${amount}`)),
         params.recipient
     ])
-    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
@@ -54,15 +71,26 @@ export const requestUnstakeTransactionParams = async (params: RequestUnstakePara
     ])
 }
 
-export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: params.chainId })
-    const withdrawQueueAddress = getWithdrawalQueue(params.chainId.toString())
-    const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params)).slice(0, 5)
+export const finishUnstakeTransactionParams = async (
+    params: FinishUnstakeParams,
+    txOptions: EnvOption = (globalThis as any).globalEnvOption
+): Promise<TransactionParams> => {
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "Please make sure it is a valid checksum address",
+            "https://docs.fun.xyz"
+        )
+    }
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const withdrawQueueAddress = getWithdrawalQueue(await chain.getChainId())
+    const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params, txOptions)).slice(0, 5)
     if (readyToWithdrawRequestIds.length === 0) {
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
             "Not ready to withdraw requests",
-            "wallet.unstake",
             { params },
             "Please wait a bit.",
             "https://docs.fun.xyz"
@@ -81,7 +109,6 @@ export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams
         throw new InternalFailureError(
             ErrorCode.CheckPointHintsNotFound,
             "lido checkpoint hints are not found when batching the withdrawal",
-            "wallet.unstake",
             { params, readyToWithdrawRequestIds, lastCheckpoint, hints },
             "Retry later.",
             "https://docs.fun.xyz"
@@ -94,22 +121,32 @@ export const finishUnstakeTransactionParams = async (params: FinishUnstakeParams
     ])
 }
 
-const getReadyToWithdrawRequests = async (params: FinishUnstakeParams) => {
+const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions: EnvOption) => {
+    if (!isAddress(params.recipient ?? "")) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "Recipient address is not a valid address, please make sure it is a valid checksum address.",
+            { params },
+            "Please make sure it is a valid checksum address",
+            "https://docs.fun.xyz"
+        )
+    }
     // check withdrawal requests
-    const withdrawalQueueAddr: Address = getWithdrawalQueue(params.chainId.toString())
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const withdrawalQueueAddr: Address = getWithdrawalQueue(await chain.getChainId())
 
     const withdrawalRequests: bigint[] = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,
         "getWithdrawalRequests",
         [params.walletAddress],
-        await Chain.getChain({ chainIdentifier: params.chainId })
+        chain
     )
     // get the state of a particular nft
     const withdrawalStatusTx = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,
         "getWithdrawalStatus",
         [withdrawalRequests],
-        await Chain.getChain({ chainIdentifier: params.chainId })
+        chain
     )
     const readyToWithdraw: bigint[] = []
     for (let i = 0; i < withdrawalStatusTx.length; i++) {
@@ -135,7 +172,6 @@ const getWithdrawalQueue = (chainId: string): Address => {
             throw new InvalidParameterError(
                 ErrorCode.ChainNotSupported,
                 "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
-                "getWithdrawalQueue",
                 { chainId },
                 "Provide correct chainId.",
                 "https://docs.fun.xyz"
@@ -155,7 +191,6 @@ const getSteth = (chainId: string): Address => {
             throw new InvalidParameterError(
                 ErrorCode.ChainNotSupported,
                 "Incorrect chainId, staking only available on Ethereum mainnet and Goerli",
-                "getSteth",
                 { chainId },
                 "Provide correct chainId.",
                 "https://docs.fun.xyz"

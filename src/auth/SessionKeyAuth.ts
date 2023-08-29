@@ -1,7 +1,7 @@
 import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
 import { Auth } from "./Auth"
-import { EoaAuthInput, WalletCallData } from "./types"
-import { WALLET_ABI } from "../common"
+import { AuthInput, WalletCallData } from "./types"
+import { ETH_TRANSFER_SELECTOR, WALLET_ABI } from "../common"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
@@ -18,7 +18,7 @@ export class SessionKeyAuth extends Auth {
     targetSelectorMerkleTree?: MerkleTree
     feeRecipientMerkleTree?: MerkleTree
 
-    constructor(authInput: EoaAuthInput) {
+    constructor(authInput: AuthInput) {
         super(authInput)
         this.ruleId = randomBytes(32)
         this.roleId = randomBytes(32)
@@ -61,7 +61,6 @@ export class SessionKeyAuth extends Auth {
         await this.init()
         const target = getTargetFromCall(operation.userOp.callData as Hex)
         const selector = getSelectorFromCall(operation.userOp.callData as Hex)
-
         try {
             const walletSignature: WalletSignature = {
                 userId: pad(userId as Hex, { size: 32 }),
@@ -92,7 +91,8 @@ export const getTargetFromCall = (callData: Hex) => {
     return decodeCalldata(callData).target
 }
 export const getSelectorFromCall = (callData: Hex) => {
-    return decodeCalldata(callData).calldata.slice(0, SELECTOR_LENGTH) as Hex
+    const out = decodeCalldata(callData).calldata.slice(0, SELECTOR_LENGTH) as Hex
+    return out === "0x" ? ETH_TRANSFER_SELECTOR : out
 }
 
 export const decodeCalldata = (callData: Hex): WalletCallData => {

@@ -20,8 +20,4 @@ export interface EnvOption {
 
 export interface GlobalEnvOption extends EnvOption {
     apiKey?: string
-    orgInfo?: {
-        name?: string
-        id?: string
-    }
 }

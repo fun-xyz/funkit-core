@@ -52,5 +52,7 @@ export enum ErrorCode {
     ServerConnectionError = "ServerConnectionError",
     UserOpFailureError = "UserOpFailureError",
     Unauthorized = "Unauthorized",
-    RequestLimitExceeded = "RequestLimitExceeded"
+    RequestLimitExceeded = "RequestLimitExceeded",
+    WalletPrefundError = "PrefundError",
+    GasSponsorFundError = "GasSponsorFundError"
 }

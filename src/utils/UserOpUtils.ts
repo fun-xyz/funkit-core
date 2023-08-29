@@ -51,16 +51,16 @@ export const getPromiseFromOp = async (op: UserOperation) => {
 }
 
 export async function gasCalculation(txid: string, chain: Chain) {
-    if (!txid || txid === "0x") return { gasUsed: "-1", gasUSD: "-1" }
+    if (!txid || txid === "0x") return { gasUsed: "-1", opFee: "-1", opFeeUSD: "-1" }
     const provider = await chain.getClient()
     const txReceipt = await provider.waitForTransactionReceipt({ hash: txid as Hex })
     const gasUsed = txReceipt.gasUsed
     const gasPrice = txReceipt.effectiveGasPrice
-    const gasTotal = gasUsed * gasPrice
+    const opFee = gasUsed * gasPrice
     const chainPrice = BigInt(Math.ceil((await getPriceData(await chain.getCurrency())) * 100))
-    const gasUSD = gasTotal * BigInt(chainPrice)
+    const opFeeUSD = opFee * BigInt(chainPrice)
 
-    return { gasUsed: gasUsed.toString(), gasTotal: formatUnits(gasTotal, 18).toString(), gasUSD: formatUnits(gasUSD, 20).toString() }
+    return { gasUsed: gasUsed.toString(), opFee: formatUnits(opFee, 18).toString(), opFeeUSD: formatUnits(opFeeUSD, 20).toString() }
 }
 
 const PRICE_URL = "https://min-api.cryptocompare.com/data/price"

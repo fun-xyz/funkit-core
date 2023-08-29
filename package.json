@@ -1,7 +1,7 @@
 {
-    "name": "@fun-xyz/core",
-    "version": "0.3.9",
-    "description": "Fun Wallet provides modular access control functionality by leveraging account abstraction",
+    "name": "@funkit/core",
+    "version": "0.8.0",
+    "description": "Funkit core SDK provides feature-rich and extensible smart wallets built on account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "publishConfig": {
@@ -28,8 +28,8 @@
         "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
         "prepare": "husky install"
     },
-    "author": "The Fun Group (https://fun.xyz/)",
-    "license": "ISC",
+    "author": "https://fun.xyz/",
+    "license": "MIT",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.315.0",
         "@ethersproject/contracts": "^5.7.0",
@@ -65,7 +65,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/TheFunGroup/fun-wallet-sdk.git"
+        "url": "git+https://github.com/fun-xyz/funkit-core.git"
     },
     "keywords": [
         "Fun Wallet",
@@ -83,7 +83,7 @@
         "dist/fetch-polyfill.js.map"
     ],
     "bugs": {
-        "url": "https://github.com/TheFunGroup/wallet-sdk-v1/issues"
+        "url": "https://github.com/fun-xyz/funkit-core/issues"
     },
-    "homepage": "https://github.com/TheFunGroup/wallet-sdk-v1#readme"
+    "homepage": "https://github.com/fun-xyz/funkit-core"
 }

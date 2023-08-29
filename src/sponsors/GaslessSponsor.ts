@@ -5,24 +5,23 @@ import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_CONTRACT_INTERFACE, GASLESS_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Token } from "../data"
-import { ErrorCode, InvalidParameterError } from "../errors"
+import { ErrorCode, ResourceNotFoundError } from "../errors"
 export class GaslessSponsor extends Sponsor {
     constructor(options: EnvOption = (globalThis as any).globalEnvOption) {
         super(options, GASLESS_PAYMASTER_CONTRACT_INTERFACE, "gaslessPaymasterAddress", PaymasterType.GaslessSponsor)
     }
 
-    async getSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
+    async getFunSponsorAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
         if (!this.sponsorAddress) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain })
             if (GASLESS_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
-                this.sponsorAddress = await chain.getAddress("sponsorAddress")
+                this.sponsorAddress = await chain.getAddress("funGaslessSponsorAddress")
             } else {
-                throw new InvalidParameterError(
+                throw new ResourceNotFoundError(
                     ErrorCode.MissingParameter,
-                    "sponsorAddress is missing and the chain you are working with does not support default fun sponsor",
-                    "GaslessSponsor.getSponsorAddress",
+                    "The network you are working with does not support gasless Fun Sponsor. You will need to run and manage your own gasless sponsor.",
                     { gaslessSponsorSupportChains: GASLESS_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
-                    "Provide correct sponsorAddress.",
+                    "Manage your own gasless sponsor, or use a supported network.",
                     "https://docs.fun.xyz"
                 )
             }
@@ -32,13 +31,13 @@ export class GaslessSponsor extends Sponsor {
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         const paymasterAddress = await this.getPaymasterAddress(options)
-        const sponsor = await this.getSponsorAddress(options)
+        const sponsor = await this.getFunSponsorAddress(options)
         return concat([paymasterAddress, sponsor])
     }
 
     async stake(
+        depositor: Address,
         sponsor: Address,
-        walletAddress: string,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
@@ -51,24 +50,24 @@ export class GaslessSponsor extends Sponsor {
             {
                 action: "stake",
                 amount,
-                from: sponsor,
+                from: depositor,
                 to: await this.getPaymasterAddress(options),
                 token: "eth"
             },
             this.paymasterType,
-            walletAddress
+            sponsor
         )
         return this.contractInterface.encodeTransactionParams(
             await this.getPaymasterAddress(),
             "addDepositTo",
-            [walletAddress, amountdec],
+            [sponsor, amountdec],
             BigInt(amountdec)
         )
     }
 
     async unstake(
         sponsor: Address,
-        walletAddress: string,
+        receiver: Address,
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
@@ -87,20 +86,17 @@ export class GaslessSponsor extends Sponsor {
                 token: "eth"
             },
             this.paymasterType,
-            walletAddress
+            receiver
         )
-        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawDepositTo", [
-            walletAddress,
-            amountdec
-        ])
+        return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawDepositTo", [receiver, amountdec])
     }
 
-    async getUnlockBlock(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<number> {
+    async getUnlockBlock(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<number> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getUnlockBlock", [sponsor], chain)
     }
 
-    async getLockState(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
+    async getLockState(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
         const unlockBlock = Number(await this.getUnlockBlock(sponsor, options))
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const client = await chain.getClient()
@@ -108,7 +104,7 @@ export class GaslessSponsor extends Sponsor {
         return unlockBlock === 0 || unlockBlock > currentBlock
     }
 
-    async getBalance(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
+    async getBalance(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getBalance", [sponsor], chain)
     }
@@ -122,8 +118,8 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async getSpenderBlacklistMode(
-        spender: string,
-        sponsor: string,
+        spender: Address,
+        sponsor: Address,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
@@ -136,8 +132,8 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async getSpenderWhitelistMode(
-        spender: string,
-        sponsor: string,
+        spender: Address,
+        sponsor: Address,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<boolean> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
