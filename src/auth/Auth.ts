@@ -15,6 +15,7 @@ import {
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
+import { AuthInput } from "./types"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams, VALID_PRIVATE_KEY_LENGTH } from "../common"
@@ -61,16 +62,6 @@ chains["base"] = {
         etherscan: { name: "BaseScan", url: "https://basescan.org/" },
         default: { name: "BaseScan", url: "https://basescan.org/" }
     }
-}
-
-export interface AuthInput {
-    web2AuthId?: string
-    client?: WalletClient
-    privateKey?: string
-    windowEth?: any
-    rpc?: string
-    provider?: any
-    signer?: any
 }
 
 export class Auth {

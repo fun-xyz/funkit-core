@@ -1,6 +1,6 @@
 import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
-import { Auth, AuthInput } from "./Auth"
-import { WalletCallData } from "./types"
+import { Auth } from "./Auth"
+import { AuthInput, WalletCallData } from "./types"
 import { ETH_TRANSFER_SELECTOR, WALLET_ABI } from "../common"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { randomBytes } from "../utils"
