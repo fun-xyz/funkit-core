@@ -40,7 +40,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         before(async function () {
             funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            console.log(await funder.getAddress())
+            console.log("Funder Address", await funder.getAddress())
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId,
