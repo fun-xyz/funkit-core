@@ -2,7 +2,7 @@ import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSpon
 
 const config: TokenSponsorTestConfig = {
     chainId: 42161,
-    paymasterToken: "usdc",
+    paymasterToken: "usdt",
     baseToken: "eth",
     baseTokenStakeAmt: 0.004,
     mintPaymasterToken: false,
