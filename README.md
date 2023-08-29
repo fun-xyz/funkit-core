@@ -106,5 +106,5 @@ await configureEnvironment({
 ## <a id="moreresources"></a> **More Resources**
 
 -   [Documentation](http://docs.fun.xyz) - Complete how-to guides and API reference docs.
--   [Demo](https://demo.fun.xyz) - Try it out.
--   [Discord](https://discord.gg/7ZRAv4es) - Say hi!
+-   [Demo](https://demo.fun.xyz) - Try FunKit Core in action.
+-   [Discord](https://discord.gg/7ZRAv4es) - Ask us a question, or just say hi!
