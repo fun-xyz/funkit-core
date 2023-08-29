@@ -126,6 +126,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await funder.sendTx(await sponsor.addSpenderToWhitelist(funderAddress, await approveWallet.getAddress()))
             }
             expect(await sponsor.getSpenderWhitelisted(await approveWallet.getAddress(), funderAddress)).to.be.true
+            if (!(await sponsor.getSpenderWhitelisted(await unpermittedWallet.getAddress(), funderAddress))) {
+                await funder.sendTx(await sponsor.removeSpenderFromWhitelist(funderAddress, await unpermittedWallet.getAddress()))
+            }
+            expect(await sponsor.getSpenderWhitelisted(await unpermittedWallet.getAddress(), funderAddress)).to.be.false
 
             // Whitelist the token that the funwallet wants to use to pay for gas
             if (!(await sponsor.getTokenWhitelisted((await sponsor.getFunSponsorAddress())!, paymasterToken))) {
@@ -163,6 +167,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [false]))
             }
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
+
+            // Make sure the funwallet is not blacklisted
+            if (!(await sponsor.getSpenderBlacklisted(await unpermittedWallet.getAddress(), funderAddress))) {
+                await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [await unpermittedWallet.getAddress()], [true]))
+            }
+            expect(await sponsor.getSpenderBlacklisted(await unpermittedWallet.getAddress(), funderAddress)).to.be.true
 
             await runActionWithTokenSponsorPermit(wallet)
             await runActionWithTokenSponsorApprove(approveWallet)
