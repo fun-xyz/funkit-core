@@ -1,6 +1,6 @@
 ![backdrop](./backdrop.png)
 
-# **FunKit**
+# **FunKit Core**
 
 FunKit empowers you to create feature-rich and extensible smart wallets built on account abstraction. Leveraging the FunKit, you can customize gas behavior, adopt multi-sig and common authentication method, monetize your application, execute any transactions from smart wallets, and much more.
 
@@ -16,9 +16,9 @@ This repo only covers FunKit Core SDK which does not provide any frontend specif
 ## <a id="installation"></a> **Installation**
 
 ```
-npm i @fun-xyz/core --save
+npm i @funkit/core --save
 # or
-yarn add @fun-xyz/core
+yarn add @funkit/core
 ```
 
 ## <a id="quickstart"></a> **Quick Start**
@@ -30,7 +30,7 @@ FunKit needs to be configured with an API key. Get a key by logging to our [dash
 Import all required classes.
 
 ```js
-import { FunWallet, configureEnvironment, Auth } from "@fun-xyz/core"
+import { FunWallet, configureEnvironment, Auth } from "@funkit/core"
 ```
 
 ### 2. Configure wallet environment
