@@ -5,9 +5,9 @@ const config: TokenSponsorTestConfig = {
     paymasterToken: "usdc",
     baseToken: "eth",
     baseTokenStakeAmt: 0.01,
-    mintPaymasterToken: true,
+    mintPaymasterToken: false,
     numRetry: 0,
     paymasterTokensRequired: 3,
-    prefundAmt: 0.005
+    prefundAmt: 0.01
 }
 TokenSponsorTest(config)
