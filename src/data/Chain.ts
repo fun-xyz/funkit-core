@@ -177,7 +177,10 @@ export class Chain {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }
         callGasLimit = BigInt(callGasLimit) * 2n
+        console.log(Date.now())
+        console.log(preVerificationGas, "pre")
         preVerificationGas = BigInt(preVerificationGas) * 2n
+        console.log(preVerificationGas, "post")
         verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }

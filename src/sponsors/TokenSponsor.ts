@@ -67,16 +67,20 @@ export class TokenSponsor extends Sponsor {
             ...partialOp.userOp,
             paymasterAndData: estimationPaymasterAddress
         })
+        console.log("estimation", callGasLimit, verificationGasLimit, preVerificationGas)
         const maxFeePerGas = await chain.getFeeData()
+        console.log("maxFeePerGas", maxFeePerGas)
         const paymasterAddress = await this.getPaymasterAddress(options)
         const requiredGas = (callGasLimit + (verificationGasLimit + 400_000n) * 3n + preVerificationGas) * maxFeePerGas
         const tokenAddress = await Token.getAddress(this.token, options)
+        console.log("required gas", requiredGas)
         const decAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
             paymasterAddress,
             "getTokenValueOfEth",
             [tokenAddress, requiredGas],
             chain
         )
+        console.log("dai amount to pay", decAmount)
 
         const nonce = await getWalletPermitNonce(walletAddr, chain)
         const client = await chain.getClient()

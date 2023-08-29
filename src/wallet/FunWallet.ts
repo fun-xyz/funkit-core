@@ -368,8 +368,8 @@ export class FunWallet extends FirstClassActions {
             maxFeePerGas = 10n ** 8n
             maxPriorityFeePerGas = 10n ** 8n
         } else if (chainId === "8453") {
-            maxFeePerGas = 10n ** 9n
-            maxPriorityFeePerGas = 10n ** 9n
+            maxFeePerGas = 10n ** 6n
+            maxPriorityFeePerGas = 10n ** 6n
         } else {
             maxFeePerGas = 1n
             maxPriorityFeePerGas = 1n
