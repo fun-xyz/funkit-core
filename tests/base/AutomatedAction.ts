@@ -1,8 +1,8 @@
 import { AutomatedActionsConfig, AutomatedActionsTest } from "../testUtils/AutomatedActions"
 
 const config: AutomatedActionsConfig = {
-    chainId: 5,
+    chainId: 8453,
     baseToken: "eth",
-    prefundAmt: 0.2
+    prefundAmt: 0.025
 }
 AutomatedActionsTest(config)

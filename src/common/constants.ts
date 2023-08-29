@@ -5,6 +5,7 @@ import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
 import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
 import ERC20_CONTRACT from "../abis/ERC20.json"
 import ERC_721_CONTRACT from "../abis/ERC721.json"
+import ESTIMATION_PAYMASTER_CONTRACT from "../abis/EstimationPaymaster.json"
 import FEE_PERCENT_ORACLE_CONTRACT from "../abis/FeePercentOracle.json"
 import FUN_WALLET_CONTRACT from "../abis/FunWallet.json"
 import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
@@ -97,6 +98,7 @@ export const UNISWAPV2FACTORY_ABI = UNISWAPV2FACTORY_CONTRACT["abi"]
 export const UNISWAPV2ROUTER02_ABI = UNISWAPV2ROUTER02_CONTRACT["abi"]
 export const ROLE_BASED_ACCESS_CONTROL_ABI = ROLE_BASED_ACCESS_CONTROL_CONTRACT["abi"]
 export const USER_AUTHENTICATION_ABI = USER_AUTHENTICATION_CONTRACT["abi"]
+export const ESTIMATION_PAYMASTER_ABI = ESTIMATION_PAYMASTER_CONTRACT["abi"]
 
 // contract interface
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
@@ -120,6 +122,7 @@ export const CONTRACT_ADDRESSES = {
     entryPointAddress: ENTRYPOINT_CONTRACT["addresses"],
     factoryAddress: FACTORY_CONTRACT["addresses"],
     gaslessPaymasterAddress: GASLESS_PAYMASTER_CONTRACT["addresses"],
+    estimationPaymasterAddress: ESTIMATION_PAYMASTER_CONTRACT["addresses"],
     tokenPaymasterAddress: TOKEN_PAYMASTER_CONTRACT["addresses"],
     oracle: TOKEN_PRICE_ORACLE_CONTRACT["addresses"],
     userAuthAddress: USER_AUTHENTICATION_CONTRACT["addresses"],
