@@ -67,29 +67,16 @@ export class TokenSponsor extends Sponsor {
             ...partialOp.userOp,
             paymasterAndData: estimationPaymasterAddress
         })
-        console.log(
-            "estimation",
-            "preverificationGas",
-            preVerificationGas,
-            "callgaslimit",
-            callGasLimit,
-            "verificationGasLimit",
-            verificationGasLimit
-        )
         const maxFeePerGas = await chain.getFeeData()
-        console.log("maxFeePerGas", maxFeePerGas)
         const paymasterAddress = await this.getPaymasterAddress(options)
         const requiredGas = (callGasLimit + (verificationGasLimit + 400_000n) * 3n + preVerificationGas) * maxFeePerGas
         const tokenAddress = await Token.getAddress(this.token, options)
-        console.log("required gas", requiredGas)
         const decAmount = await TOKEN_PAYMASTER_CONTRACT_INTERFACE.readFromChain(
             paymasterAddress,
             "getTokenValueOfEth",
             [tokenAddress, requiredGas],
             chain
         )
-        console.log("dai amount to pay", decAmount)
-
         const nonce = await getWalletPermitNonce(walletAddr, chain)
         const client = await chain.getClient()
         const chainId = await client.getChainId()
@@ -100,11 +87,8 @@ export class TokenSponsor extends Sponsor {
             [tokenAddress, paymasterAddress, decAmount, nonce, sig]
         )
         const sponsor = await this.getFunSponsorAddress(options)
-        console.log("Sponsor address", sponsor)
         const encodedAddresses = encodeAbiParameters([{ type: "address" }, { type: "address" }], [sponsor, tokenAddress])
-        console.log("encodedAddresses", encodedAddresses)
         const encodedData = encodeAbiParameters([{ type: "bytes" }, { type: "bytes" }], [encodedAddresses, encodedSig])
-        console.log("encodedData", encodedData)
         return concat([paymasterAddress, encodedData])
     }
 

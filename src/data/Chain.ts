@@ -176,15 +176,6 @@ export class Chain {
         if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }
-        console.log(
-            "Pimlico estimations",
-            "Preverification gas",
-            BigInt(preVerificationGas),
-            "callGasLimit",
-            BigInt(callGasLimit),
-            "verificationGasLimit",
-            BigInt(verificationGasLimit)
-        )
         callGasLimit = BigInt(callGasLimit) * 2n
         preVerificationGas = BigInt(preVerificationGas) * 2n
         verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
