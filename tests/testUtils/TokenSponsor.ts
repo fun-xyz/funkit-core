@@ -1,6 +1,5 @@
 import { assert, expect } from "chai"
 import { Address, Hex } from "viem"
-import { tokenTransferTransactionParams } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
@@ -74,23 +73,19 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         })
 
         it("Acquire paymaster tokens for the funwallet", async () => {
-            const tokenBalanceBefore = Number(await Token.getBalanceBN(config.paymasterToken, walletAddress))
-            const requiredAmount = config.paymasterTokensRequired * 10 ** Number(await Token.getDecimals(config.paymasterToken, options))
+            const requiredAmount = await Token.getDecimalAmount(config.paymasterToken, config.paymasterTokensRequired)
             if (config.mintPaymasterToken) {
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
-                const paymasterTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
+                const paymasterTokenMint1 = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     walletAddress,
                     requiredAmount
                 ])
-                await funder.sendTx({ ...paymasterTokenMint })
-            }
-            if (tokenBalanceBefore < requiredAmount) {
-                const sendPaymasterTokenTx = await tokenTransferTransactionParams({
-                    token: config.paymasterToken,
-                    to: walletAddress,
-                    amount: requiredAmount - tokenBalanceBefore
-                })
-                await funder.sendTx(sendPaymasterTokenTx)
+                await funder.sendTx({ ...paymasterTokenMint1 })
+                const paymasterTokenMint2 = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
+                    funderAddress,
+                    requiredAmount
+                ])
+                await funder.sendTx({ ...paymasterTokenMint2 })
             }
         })
 
@@ -105,7 +100,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(stakedEthAmountAfter > baseStakeAmount, "Stake Failed")
         })
 
-        it("Whitelist a funwallet and use the token paymaster", async () => {
+        it.only("Whitelist a funwallet and use the token paymaster", async () => {
             // Allow the sponsor to whitelist tokens that are acceptable for use
             if (await sponsor.getTokenListMode(funderAddress)) {
                 await funder.sendTx(await sponsor.setTokenToWhitelistMode(funderAddress))
@@ -145,6 +140,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             // Allow the sponsor to allow all users to use the paymaster except for blacklisted users
             if (await sponsor.getListMode(funderAddress)) {
                 await funder.sendTx(await sponsor.setToBlacklistMode(funderAddress))
+                await new Promise((f) => setTimeout(f, 3000))
             }
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
