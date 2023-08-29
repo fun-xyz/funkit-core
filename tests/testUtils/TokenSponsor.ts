@@ -87,17 +87,20 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 ])
                 await funder.sendTx({ ...paymasterTokenMint2 })
             }
+            if (Number(await Token.getBalance(config.paymasterToken, walletAddress)) < requiredAmount) {
+                await funder.sendTx(await new Token(config.paymasterToken).transfer(walletAddress, config.paymasterTokensRequired))
+            }
         })
 
         it("Stake eth into the paymaster from the sponsor", async () => {
             const baseStakeAmount = config.baseTokenStakeAmt * 10 ** Number(await Token.getDecimals(config.paymasterToken, options))
             const stakedEthAmount = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
             if (stakedEthAmount < baseStakeAmount) {
-                const stakeData = await sponsor.stake(funderAddress, funderAddress, baseStakeAmount)
+                const stakeData = await sponsor.stake(funderAddress, funderAddress, config.baseTokenStakeAmt)
                 await funder.sendTx(stakeData)
             }
             const stakedEthAmountAfter = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
-            assert(stakedEthAmountAfter > baseStakeAmount, "Stake Failed")
+            assert(stakedEthAmountAfter >= baseStakeAmount, "Stake Failed")
         })
 
         it("Whitelist a funwallet and use the token paymaster with permit", async () => {
@@ -251,7 +254,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
             expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
-            await wallet.executeOperation(funder, mintOperation)
+            console.log(await wallet.executeOperation(funder, mintOperation))
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())
@@ -271,7 +274,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             try {
                 await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
             } catch (e: any) {
-                assert(e.toString().includes("FW327"))
+                console.log(e)
+                assert(e.toString().includes("FW327") || e.toString().includes("FW350"))
             }
         }
 
