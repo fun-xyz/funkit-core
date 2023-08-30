@@ -544,7 +544,6 @@ export class FunWallet extends FirstClassActions {
                 groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
             })
         } else {
-            console.log("userOp", operation.userOp)
             receipt = await executeOp({
                 opId: operation.opId!,
                 chainId,

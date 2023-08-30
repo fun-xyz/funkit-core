@@ -40,6 +40,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         before(async function () {
             funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
+            console.log(await funder.getAddress())
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId,
@@ -72,7 +73,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             sponsor = new TokenSponsor()
         })
 
-        it("Acquire paymaster tokens for the funwallet", async () => {
+        it.only("Acquire paymaster tokens for the funwallet", async () => {
             const requiredAmount = await Token.getDecimalAmount(config.paymasterToken, config.paymasterTokensRequired)
             if (config.mintPaymasterToken) {
                 const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
@@ -92,7 +93,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it("Stake eth into the paymaster from the sponsor", async () => {
+        it.only("Stake eth into the paymaster from the sponsor", async () => {
             const baseStakeAmount = config.baseTokenStakeAmt * 10 ** 18 // account for eth decimals
             // const stakedEthAmount = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
             // if (stakedEthAmount < baseStakeAmount) {
@@ -142,7 +143,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await runActionWithTokenSponsorPermitFail(unpermittedWallet)
         })
 
-        it.skip("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster with permit", async () => {
+        it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster with permit", async () => {
             // Allow the sponsor to blacklist tokens that are acceptable for use
             if (!(await sponsor.getTokenListMode(funderAddress))) {
                 await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress))
@@ -240,7 +241,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.true
         })
 
-        it.skip("Use the fun owned token paymaster", async () => {
+        it.only("Use the fun owned token paymaster", async () => {
             const funOwnedTokenSponsor = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
             options.gasSponsor = {
                 sponsorAddress: funOwnedTokenSponsor,
@@ -248,8 +249,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 usePermit: true
             }
             await configureEnvironment(options)
-            await runActionWithTokenSponsorApprove(approveWallet)
             await runActionWithTokenSponsorPermit(wallet)
+            await runActionWithTokenSponsorApprove(approveWallet)
         })
 
         /**

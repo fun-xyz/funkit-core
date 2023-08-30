@@ -167,10 +167,12 @@ export class Chain {
                 "https://docs.fun.xyz"
             )
         }
-        const estimationUserOp = {
-            ...partialOp,
-            paymasterAndData:
+        const estimationUserOp = partialOp
+        if (this.id === "8453") {
+            estimationUserOp.paymasterAndData =
                 "0xa880eae8900eb59bf7dad9bdb741a086238adca900000000000000000000000000000000000000000000000000000101010101010000000000000000000000000000000000000000000000000000000000000000cd91f19f0f19ce862d7bec7b7d9b95457145afc6f639c28fd0360f488937bfa41e6eedcd3a46054fd95fcd0e3ef6b0bc0a615c4d975eef55c8a3517257904d5b1c"
+        } else if (this.id === "10") {
+            estimationUserOp.paymasterAndData = ""
         }
 
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
@@ -182,7 +184,7 @@ export class Chain {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }
         callGasLimit = BigInt(callGasLimit) * 2n
-        preVerificationGas = BigInt(preVerificationGas) * 2n
+        preVerificationGas = BigInt(preVerificationGas)
         verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
