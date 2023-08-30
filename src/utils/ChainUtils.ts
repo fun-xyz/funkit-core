@@ -12,9 +12,10 @@ import {
     toBytes,
     toHex
 } from "viem"
-import { sendGetRequest, sendRequest } from "./ApiUtils"
+import { sendRequest } from "./ApiUtils"
+import { sendAsset } from "../apis/FaucetApis"
 import { Auth } from "../auth"
-import { FUN_FAUCET_URL, WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
+import { WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
@@ -133,9 +134,9 @@ export const useFaucet = async (chainIdentifier: Chain | number | string, wallet
         )
     }
     const walletAddress = await wallet.getAddress()
-    const ethRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=eth&testnet=${chainName}&addr=${walletAddress}`)
-    const usdcRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=usdc&testnet=${chainName}&addr=${walletAddress}`)
-    const usdtRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=usdt&testnet=${chainName}&addr=${walletAddress}`)
-    const daiRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=dai&testnet=${chainName}&addr=${walletAddress}`)
+    const ethRequest = await sendAsset("eth", chainName, walletAddress)
+    const usdcRequest = await sendAsset("usdc", chainName, walletAddress)
+    const usdtRequest = await sendAsset("usdt", chainName, walletAddress)
+    const daiRequest = await sendAsset("dai", chainName, walletAddress)
     return [ethRequest, usdcRequest, usdtRequest, daiRequest]
 }
