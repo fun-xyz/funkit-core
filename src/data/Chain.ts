@@ -1,7 +1,13 @@
 import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
-import { CONTRACT_ADDRESSES, ENTRYPOINT_CONTRACT_INTERFACE, EstimateGasResult } from "../common"
+import {
+    BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION,
+    CONTRACT_ADDRESSES,
+    ENTRYPOINT_CONTRACT_INTERFACE,
+    EstimateGasResult,
+    OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
+} from "../common"
 import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { isContract } from "../utils"
 
@@ -170,11 +176,9 @@ export class Chain {
         // clone partialOp and replace paymasterAndData with a workaround for pimlico since they overestimate gas limits for simulation
         const estimationUserOp = Object.assign({}, partialOp)
         if (this.id === "8453") {
-            estimationUserOp.paymasterAndData =
-                "0xa880eae8900eb59bf7dad9bdb741a086238adca900000000000000000000000000000000000000000000000000000101010101010000000000000000000000000000000000000000000000000000000000000000cd91f19f0f19ce862d7bec7b7d9b95457145afc6f639c28fd0360f488937bfa41e6eedcd3a46054fd95fcd0e3ef6b0bc0a615c4d975eef55c8a3517257904d5b1c"
+            estimationUserOp.paymasterAndData = BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         } else if (this.id === "10") {
-            estimationUserOp.paymasterAndData =
-                "0x4Df91e173A6CdC74EfeF6fC72bb5Df1E8A8d758200000000000000000000000000000000000000000000000000000101010101010000000000000000000000000000000000000000000000000000000000000000cd91f19f0f19ce862d7bec7b7d9b95457145afc6f639c28fd0360f488937bfa41e6eedcd3a46054fd95fcd0e3ef6b0bc0a615c4d975eef55c8a3517257904d5b1c"
+            estimationUserOp.paymasterAndData = OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         }
 
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
