@@ -493,6 +493,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
+
         if (threshold <= 1) {
             if (!operation.userOp.signature || operation.userOp.signature === "0x") {
                 operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))

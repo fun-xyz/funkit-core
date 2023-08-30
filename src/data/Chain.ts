@@ -167,7 +167,8 @@ export class Chain {
                 "https://docs.fun.xyz"
             )
         }
-        const estimationUserOp = Object.assign({}, partialOp) // clone partialOp and replace paymasterAndData
+        // clone partialOp and replace paymasterAndData with a workaround for pimlico since they overestimate gas limits for simulation
+        const estimationUserOp = Object.assign({}, partialOp)
         if (this.id === "8453") {
             estimationUserOp.paymasterAndData =
                 "0xa880eae8900eb59bf7dad9bdb741a086238adca900000000000000000000000000000000000000000000000000000101010101010000000000000000000000000000000000000000000000000000000000000000cd91f19f0f19ce862d7bec7b7d9b95457145afc6f639c28fd0360f488937bfa41e6eedcd3a46054fd95fcd0e3ef6b0bc0a615c4d975eef55c8a3517257904d5b1c"

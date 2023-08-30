@@ -94,11 +94,11 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Stake eth into the paymaster from the sponsor", async () => {
             const baseStakeAmount = config.baseTokenStakeAmt * 10 ** 18 // account for eth decimals
-            // const stakedEthAmount = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
-            // if (stakedEthAmount < baseStakeAmount) {
-            const stakeData = await sponsor.stake(funderAddress, funderAddress, config.baseTokenStakeAmt)
-            await funder.sendTx(stakeData)
-            // }
+            const stakedEthAmount = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
+            if (stakedEthAmount < baseStakeAmount) {
+                const stakeData = await sponsor.stake(funderAddress, funderAddress, config.baseTokenStakeAmt)
+                await funder.sendTx(stakeData)
+            }
             const stakedEthAmountAfter = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
             assert(stakedEthAmountAfter >= baseStakeAmount, "Stake Failed")
         })
