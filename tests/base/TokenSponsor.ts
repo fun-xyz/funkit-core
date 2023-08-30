@@ -4,9 +4,9 @@ const config: TokenSponsorTestConfig = {
     chainId: 8453,
     paymasterToken: "dai",
     baseToken: "eth",
-    baseTokenStakeAmt: 0.05,
+    baseTokenStakeAmt: 0.005,
     mintPaymasterToken: false,
-    prefundAmt: 0.055,
+    prefundAmt: 0.0055,
     numRetry: 0,
     paymasterTokensRequired: 6
 }
