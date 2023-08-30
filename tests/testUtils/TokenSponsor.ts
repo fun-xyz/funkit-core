@@ -40,7 +40,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         before(async function () {
             funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
-            console.log(await funder.getAddress())
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId,
@@ -189,7 +188,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             expect(await sponsor.getLockState(funderAddress, paymasterToken)).to.be.true
         })
 
-        it.only("Lock and Unlock the native gas token from the token paymaster", async () => {
+        it("Lock and Unlock the native gas token from the token paymaster", async () => {
             await funder.sendTx(await sponsor.unlockDepositAfter(0))
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, "eth")).to.be.false
@@ -266,7 +265,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
             expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
-            console.log("in test operation", await wallet.executeOperation(funder, mintOperation))
+            await wallet.executeOperation(funder, mintOperation)
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())
@@ -315,7 +314,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 spender: await sponsor.getPaymasterAddress(),
                 amount: config.paymasterTokensRequired
             })
-            console.log("in test operation", await wallet.executeOperation(funder, approveTokenToPaymaster))
+            await wallet.executeOperation(funder, approveTokenToPaymaster)
 
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams, {
                 ...options,

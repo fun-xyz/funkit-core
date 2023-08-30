@@ -67,7 +67,6 @@ export class TokenSponsor extends Sponsor {
             ...partialOp.userOp,
             paymasterAndData: estimationPaymasterAddress
         })
-        console.log("callGasLimit, verificationGasLimit, preVerificationGas", callGasLimit, verificationGasLimit, preVerificationGas)
         const maxFeePerGas = await chain.getFeeData()
         const paymasterAddress = await this.getPaymasterAddress(options)
         const requiredGas = (callGasLimit + (verificationGasLimit + 400_000n) * 3n + preVerificationGas) * maxFeePerGas

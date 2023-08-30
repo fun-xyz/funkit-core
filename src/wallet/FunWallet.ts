@@ -416,9 +416,7 @@ export class FunWallet extends FirstClassActions {
                 paymasterAndData = (await sponsor.getPaymasterAndData(txOptions)).toLowerCase()
             }
         }
-        console.log("InCreate", operation.userOp)
         operation.userOp.paymasterAndData = paymasterAndData
-        console.log("InCreate", operation.userOp)
 
         const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
 
@@ -476,7 +474,6 @@ export class FunWallet extends FirstClassActions {
         operation = Operation.convertTypeToObject(operation)
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const chainId = await chain.getChainId()
-        console.log("userOp", operation.userOp)
 
         if (txOptions.skipDBAction !== true) {
             // cache group info
@@ -496,7 +493,6 @@ export class FunWallet extends FirstClassActions {
         }
 
         const threshold: number = this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold ?? 1
-        console.log("userOp", operation.userOp)
         if (threshold <= 1) {
             if (!operation.userOp.signature || operation.userOp.signature === "0x") {
                 operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
@@ -547,7 +543,6 @@ export class FunWallet extends FirstClassActions {
                 groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
             })
         } else {
-            console.log("userOp", operation.userOp)
             receipt = await executeOp({
                 opId: operation.opId!,
                 chainId,
@@ -757,13 +752,11 @@ export class FunWallet extends FirstClassActions {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
-        console.log("estimateOperation", operation.userOp)
         const res = await chain.estimateOpGas(operation.userOp)
         operation.userOp = {
             ...operation.userOp,
             ...res
         }
-        console.log("estimateOperation", operation.userOp)
 
         const maxFeePerGas = await chain.getFeeData()
         operation.userOp.maxFeePerGas = maxFeePerGas
