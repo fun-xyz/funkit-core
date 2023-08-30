@@ -13,10 +13,12 @@ import {
     toHex
 } from "viem"
 import { sendRequest } from "./ApiUtils"
+import { sendAsset } from "../apis/FaucetApis"
 import { Auth } from "../auth"
 import { WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
+import { ErrorCode, InvalidParameterError } from "../errors"
 import { FunWallet } from "../wallet"
 
 export const isAddress = (address: string): boolean => {
@@ -117,4 +119,24 @@ export const getPermitHash = (token: Address, to: Address, amount: bigint, nonce
 
 export const getGasStation = async (gasStationUrl: string): Promise<any> => {
     return await sendRequest(gasStationUrl, "GET", "")
+}
+
+export const useFaucet = async (chainIdentifier: Chain | number | string, wallet: FunWallet) => {
+    const chain = await Chain.getChain({ chainIdentifier: chainIdentifier })
+    const chainName = await chain.getChainName()
+    if (chainName !== "goerli") {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidChainIdentifier,
+            "Only Goerli is supported",
+            chainIdentifier,
+            "Provide the goerli chain, 5, or goerli as the chain identifier",
+            "https://docs.fun.xyz/"
+        )
+    }
+    const walletAddress = await wallet.getAddress()
+    const ethRequest = await sendAsset("eth", chainName, walletAddress)
+    const usdcRequest = await sendAsset("usdc", chainName, walletAddress)
+    const usdtRequest = await sendAsset("usdt", chainName, walletAddress)
+    const daiRequest = await sendAsset("dai", chainName, walletAddress)
+    return [ethRequest, usdcRequest, usdtRequest, daiRequest]
 }
