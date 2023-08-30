@@ -12,9 +12,9 @@ import {
     toBytes,
     toHex
 } from "viem"
-import { sendRequest } from "./ApiUtils"
+import { sendGetRequest, sendRequest } from "./ApiUtils"
 import { Auth } from "../auth"
-import { WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
+import { FUN_FAUCET_URL, WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { FunWallet } from "../wallet"
@@ -117,4 +117,14 @@ export const getPermitHash = (token: Address, to: Address, amount: bigint, nonce
 
 export const getGasStation = async (gasStationUrl: string): Promise<any> => {
     return await sendRequest(gasStationUrl, "GET", "")
+}
+
+export const useFaucet = async (chain: Chain, wallet: FunWallet) => {
+    const chainName = await chain.getChainName()
+    const walletAddress = await wallet.getAddress()
+    const ethRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=eth&testnet=${chainName}&addr=${walletAddress}`)
+    const usdcRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=usdc&testnet=${chainName}&addr=${walletAddress}`)
+    const usdtRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=usdt&testnet=${chainName}&addr=${walletAddress}`)
+    const daiRequest = await sendGetRequest(FUN_FAUCET_URL, `get-faucet?token=dai&testnet=${chainName}&addr=${walletAddress}`)
+    return [ethRequest, usdcRequest, usdtRequest, daiRequest]
 }

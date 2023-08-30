@@ -154,6 +154,8 @@ export const gasSpecificChain = {
     }
 }
 
+export const FUN_FAUCET_URL = "https://api.fun.xyz/demo-faucet"
+
 export const ETH_TRANSFER_SELECTOR = "0x00000000"
 
 export const VALID_PRIVATE_KEY_LENGTH = 64
