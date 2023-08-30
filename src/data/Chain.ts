@@ -1,7 +1,13 @@
 import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
 import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
-import { CONTRACT_ADDRESSES, ENTRYPOINT_CONTRACT_INTERFACE, EstimateGasResult } from "../common"
+import {
+    BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION,
+    CONTRACT_ADDRESSES,
+    ENTRYPOINT_CONTRACT_INTERFACE,
+    EstimateGasResult,
+    OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
+} from "../common"
 import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { isContract } from "../utils"
 
@@ -167,17 +173,24 @@ export class Chain {
                 "https://docs.fun.xyz"
             )
         }
+        // clone partialOp and replace paymasterAndData with a workaround for pimlico since they overestimate gas limits for simulation
+        const estimationUserOp = Object.assign({}, partialOp)
+        if (this.id === "8453") {
+            estimationUserOp.paymasterAndData = BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
+        } else if (this.id === "10") {
+            estimationUserOp.paymasterAndData = OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
+        }
 
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
             chainId: this.id!,
             entryPointAddress: this.addresses.entryPointAddress,
-            userOp: partialOp
+            userOp: estimationUserOp
         })
         if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }
         callGasLimit = BigInt(callGasLimit) * 2n
-        preVerificationGas = BigInt(preVerificationGas) * 2n
+        preVerificationGas = BigInt(preVerificationGas)
         verificationGasLimit = BigInt(verificationGasLimit!) + 200_000n
         return { preVerificationGas, verificationGasLimit, callGasLimit }
     }
