@@ -40,13 +40,21 @@ export const FaucetTest = (config: FaucetTestConfig) => {
             const daiBalBefore = Number(await Token.getBalance("dai", await wallet.getAddress()))
             const usdcBalBefore = Number(await Token.getBalance("usdc", await wallet.getAddress()))
             const usdtBalBefore = Number(await Token.getBalance("usdt", await wallet.getAddress()))
+            await useFaucet(chain, wallet)
+            const ethBalAfter = Number(await Token.getBalance("eth", await wallet.getAddress()))
+            const daiBalAfter = Number(await Token.getBalance("dai", await wallet.getAddress()))
+            const usdcBalAfter = Number(await Token.getBalance("usdc", await wallet.getAddress()))
+            const usdtBalAfter = Number(await Token.getBalance("usdt", await wallet.getAddress()))
+            expect(ethBalAfter).to.be.greaterThan(ethBalBefore)
+            expect(daiBalAfter).to.be.greaterThan(daiBalBefore)
+            expect(usdcBalAfter).to.be.greaterThan(usdcBalBefore)
+            expect(usdtBalAfter).to.be.greaterThan(usdtBalBefore)
 
-            console.log(await useFaucet(chain, wallet))
-            await new Promise((r) => setTimeout(r, 30_000))
-            expect(Number(await Token.getBalance("eth", await wallet.getAddress()))).to.be.greaterThan(ethBalBefore)
-            expect(Number(await Token.getBalance("dai", await wallet.getAddress()))).to.be.greaterThan(daiBalBefore)
-            expect(Number(await Token.getBalance("usdc", await wallet.getAddress()))).to.be.greaterThan(usdcBalBefore)
-            expect(Number(await Token.getBalance("usdt", await wallet.getAddress()))).to.be.greaterThan(usdtBalBefore)
+            await wallet.transfer(auth, await auth.getUserId(), {
+                token: "eth",
+                amount: 0.1,
+                to: "0x74208cB89aEC8B44522c747CA30Ed1dc5FeA461a"
+            })
         })
     })
 }
