@@ -66,6 +66,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 }
             })
             sponsor = new GaslessSponsor()
+            await sponsor.getBalance(funderAddress), parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)
             if ((await sponsor.getBalance(funderAddress)) < parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)) {
                 const depositInfo1S = await sponsor.getBalance(funderAddress)
                 const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
@@ -125,12 +126,12 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         it("Lock/Unlock Base Tokens", async () => {
             await funder.sendTx(await sponsor.unlockDepositAfter(0))
             await new Promise((resolve) => {
-                setTimeout(resolve, 5000)
+                setTimeout(resolve, 10_000)
             })
             expect(await sponsor.getLockState(funderAddress)).to.be.false
             await funder.sendTx(await sponsor.lockDeposit())
             await new Promise((resolve) => {
-                setTimeout(resolve, 5000)
+                setTimeout(resolve, 10_000)
             })
             expect(await sponsor.getLockState(funderAddress)).to.be.true
         })

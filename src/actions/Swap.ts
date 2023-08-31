@@ -24,7 +24,7 @@ const getOneInchApproveTx = async (tokenAddress: string, amt: number, options: E
     return transaction as TransactionData
 }
 
-const getOneInchSwapTx = async (swapParams: SwapParams, fromAddress: string, options: EnvOption) => {
+const getOneInchSwapTx = async (swapParams: SwapParams, fromAddress: string, options: EnvOption): Promise<any> => {
     const inTokenDecimals = await get1inchTokenDecimals(swapParams.tokenIn, options)
     const fromTokenAddress = await Token.getAddress(swapParams.tokenIn, options)
     const toTokenAddress = await Token.getAddress(swapParams.tokenOut, options)
@@ -45,12 +45,12 @@ const getOneInchSwapTx = async (swapParams: SwapParams, fromAddress: string, opt
     return res.tx
 }
 
-const get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption) => {
+const get1inchTokenDecimals = async (tokenAddress: string, options: EnvOption): Promise<bigint> => {
     if (tokenAddress !== eth1InchAddress) {
         const inToken = new Token(tokenAddress)
         return await inToken.getDecimals(options)
     }
-    return 18
+    return 18n
 }
 
 export const oneInchTransactionParams = async (

@@ -48,11 +48,13 @@ export enum ErrorCode {
     ChainNotSupported = "ChainNotSupported",
     ServerMissingData = "ServerMissingData",
     ServerFailure = "ServerFailure",
+    ServerTimeout = "ServerTimeout",
     UnknownServerError = "UnknownServerError",
     ServerConnectionError = "ServerConnectionError",
     UserOpFailureError = "UserOpFailureError",
     Unauthorized = "Unauthorized",
     RequestLimitExceeded = "RequestLimitExceeded",
     WalletPrefundError = "PrefundError",
-    GasSponsorFundError = "GasSponsorFundError"
+    GasSponsorFundError = "GasSponsorFundError",
+    FunWalletErrorCode = "FunWalletErrorCode"
 }

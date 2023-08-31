@@ -28,7 +28,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
     describe("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
-        this.timeout(300_000)
+        this.timeout(500_000)
         let funder: Auth
         let wallet: FunWallet
         let unpermittedWallet: FunWallet
@@ -190,9 +190,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
         it("Lock and Unlock the native gas token from the token paymaster", async () => {
             await funder.sendTx(await sponsor.unlockDepositAfter(0))
-            await new Promise((f) => setTimeout(f, 2000))
+            await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, "eth")).to.be.false
             await funder.sendTx(await sponsor.lockDeposit())
+            await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, "eth")).to.be.true
         })
 
@@ -248,8 +249,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 usePermit: true
             }
             await configureEnvironment(options)
-            await runActionWithTokenSponsorApprove(approveWallet)
             await runActionWithTokenSponsorPermit(wallet)
+            await runActionWithTokenSponsorApprove(approveWallet)
         })
 
         /**

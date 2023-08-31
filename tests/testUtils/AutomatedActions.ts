@@ -61,11 +61,12 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         })
 
         it("transfer baseToken(ETH) executed", async () => {
+            const balBefore = await Token.getBalanceBN("eth", await auth.getAddress())
             await new Promise((resolve) => {
                 setTimeout(resolve, 300_000)
             })
-            const bal = await Token.getBalanceBN("eth", await auth.getAddress())
-            assert(bal !== 0n, "Balance not equal to amount")
+            const balAfter = await Token.getBalanceBN("eth", await auth.getAddress())
+            assert(balAfter > balBefore, `Balance not equal to amount ${balAfter} ${balBefore}`)
         })
     })
 }

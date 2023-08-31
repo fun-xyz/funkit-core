@@ -20,7 +20,7 @@ export class Token {
             this.isNative = true
         }
 
-        this.symbol = input
+        this.symbol = input.toLowerCase()
     }
 
     async getAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {

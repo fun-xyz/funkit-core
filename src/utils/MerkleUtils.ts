@@ -39,7 +39,7 @@ export const getHash = (list: Hex[], i: number): Hex => {
     return list[i]
 }
 
-export const getHashPair = (left: Hex, right: Hex) => {
+export const getHashPair = (left: Hex, right: Hex): Hex => {
     if (BigInt(left) < BigInt(right)) {
         return keccak256(concat([left, right]))
     }
