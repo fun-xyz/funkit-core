@@ -1,6 +1,6 @@
 import { BaseError } from "./BaseError"
+import FWErrors from "./errors.json"
 import { ErrorBaseType, ErrorCode, ErrorType } from "./types"
-import FWErrors from "../abis/errors.json"
 export class ClientError extends BaseError {
     constructor(type: string, code: string, msg: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
         super(ErrorBaseType.ClientError, type, code, msg, paramsUsed, fixSuggestion, docLink, false)
@@ -47,22 +47,7 @@ export class AccessDeniedError extends ClientError {
 export class UserOpFailureError extends ClientError {
     constructor(code: string, msg: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
         const FWCode = findFWContractError(msg)
-        if (msg.includes("AA21")) {
-            const { reqId } = JSON.parse(msg)
-            msg = ErrorCode.WalletPrefundError + ": Your wallet lacks funds for this transaction."
-            fixSuggestion = `Wallet Address: ${paramsUsed.body.userOp.sender}`
-            super(ErrorType.UserOpFailureError, ErrorCode.WalletPrefundError, msg, { reqId }, fixSuggestion, docLink)
-        } else if (msg.includes("AA33 reverted: FW332")) {
-            const { reqId } = JSON.parse(msg)
-            msg =
-                ErrorCode.GasSponsorFundError +
-                ": " +
-                (paramsUsed.body.userOp.paymasterAndData.length > 122
-                    ? "Your wallet does not have enough erc-20 tokens to pay for gas."
-                    : "Your FunWallet has not approved enough ERC-20s for the paymaster smart contract to pay for gas. Use the approve function in the TokenSponsor class.")
-            fixSuggestion = `Wallet Address: ${paramsUsed.body.userOp.sender}`
-            super(ErrorType.UserOpFailureError, ErrorCode.GasSponsorFundError, msg, { reqId }, fixSuggestion, docLink)
-        } else if (FWCode) {
+        if (FWCode) {
             const { reqId } = JSON.parse(msg)
             msg = FWErrors[FWCode].info
             fixSuggestion = FWErrors[FWCode].suggestion

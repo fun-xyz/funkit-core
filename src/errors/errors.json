@@ -1,4 +1,8 @@
 {
+  "AA21": {
+    "info": " Your wallet lacks funds for this transaction.",
+    "suggestion": "To fix this error, make sure you have enough funds in your wallet to cover the transaction fee."
+  },
   "FW000": {
     "info": " Create3Deployer.requireDeployerOnly() - Signatures were not sorted before being passed in",
     "suggestion": "To fix this error, make sure to short sigs before passing them into `requireDeployerOnly`. You can do this by calling `sigs.sort()` before passing them in. It is also possible to run into this error if the hash that was signed was not the correct hash."
