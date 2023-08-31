@@ -5,6 +5,7 @@ import {
     BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION,
     CONTRACT_ADDRESSES,
     ENTRYPOINT_CONTRACT_INTERFACE,
+    ETHEREUM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION,
     EstimateGasResult,
     OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
 } from "../common"
@@ -179,6 +180,8 @@ export class Chain {
             estimationUserOp.paymasterAndData = BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         } else if (this.id === "10") {
             estimationUserOp.paymasterAndData = OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
+        } else if (this.id === "1") {
+            estimationUserOp.paymasterAndData = ETHEREUM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         }
 
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({

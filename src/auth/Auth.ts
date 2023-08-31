@@ -279,7 +279,24 @@ export class Auth {
             chain: chains[preProcessesChains[await chain.getChainId()]]
         }
         const hash = await txClient.sendTransaction(action)
-        const receipt = await client.waitForTransactionReceipt({ hash, timeout: 300_000 })
+
+        let receipt
+        if (chainId !== "1") {
+            receipt = await client.waitForTransactionReceipt({ hash, timeout: 30_000 })
+        } else {
+            // ethereum mainnet is crazy slow and viem will throw out error
+            const maxRetry = 10
+            let retryCount = 0
+            while (retryCount < maxRetry) {
+                try {
+                    receipt = await client.waitForTransactionReceipt({ hash, timeout: 30_000 })
+                    break
+                } catch (e) {
+                    retryCount++
+                    await new Promise((r) => setTimeout(r, 5000))
+                }
+            }
+        }
         return receipt
     }
 
