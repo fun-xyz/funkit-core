@@ -51,7 +51,7 @@ class SwapToken {
         }
     }
 
-    async getOutputQuote(route: Route<Currency, Currency>, token0: Token, amountIn: number): Promise<BigInt> {
+    async getOutputQuote(route: Route<Currency, Currency>, token0: Token, amountIn: number): Promise<bigint> {
         const { calldata } = await SwapQuoter.quoteCallParameters(
             route,
             CurrencyAmount.fromRawAmount(token0, fromReadableAmount(amountIn, token0.decimals).toString()),

@@ -87,10 +87,10 @@ export class SessionKeyAuth extends Auth {
     }
 }
 
-export const getTargetFromCall = (callData: Hex) => {
+export const getTargetFromCall = (callData: Hex): Hex => {
     return decodeCalldata(callData).target
 }
-export const getSelectorFromCall = (callData: Hex) => {
+export const getSelectorFromCall = (callData: Hex): Hex => {
     const out = decodeCalldata(callData).calldata.slice(0, SELECTOR_LENGTH) as Hex
     return out === "0x" ? ETH_TRANSFER_SELECTOR : out
 }
