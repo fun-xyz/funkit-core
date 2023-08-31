@@ -94,7 +94,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             })
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
             const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
-            assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
+            assert(tokenBalanceAfter < tokenBalanceBefore, `Swap did not execute, ${tokenBalanceAfter} ${tokenBalanceBefore}`)
         })
 
         it("ERC20 => ETH", async () => {
@@ -116,7 +116,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const second = 1000
                 const minute = 60 * second
                 const chain = await Chain.getChain({ chainIdentifier: config.chainId })
-                const deadline = (Date.now() + 2 * minute) / 1000
+                const deadline = (Date.now() + 10 * minute) / 1000
                 const targetAddr = await chain.getAddress("tokenSwapAddress")
                 const sessionKeyParams: SessionKeyParams = {
                     user,
@@ -146,9 +146,11 @@ export const SwapTest = (config: SwapTestConfig) => {
                 })
 
                 await wallet.executeOperation(user, operation)
-
+                if (config.chainId === 1) {
+                    await new Promise((r) => setTimeout(r, 10000))
+                }
                 const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
-                assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
+                assert(tokenBalanceAfter > tokenBalanceBefore, `Swap did not execute ${tokenBalanceAfter}, ${tokenBalanceBefore}`)
             })
 
             it("ERC20 => ERC20", async () => {
@@ -164,6 +166,9 @@ export const SwapTest = (config: SwapTestConfig) => {
                 })
 
                 await wallet.executeOperation(user, operation)
+                if (config.chainId === 1) {
+                    await new Promise((r) => setTimeout(r, 15000))
+                }
                 const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
                 assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
             })

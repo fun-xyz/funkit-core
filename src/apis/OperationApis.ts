@@ -49,8 +49,9 @@ export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void
 }
 
 export const getFullReceipt = async (opId, chainId, userOpHash): Promise<ExecutionReceipt> => {
-    const retries = 12
+    const retries = 60
     let result: any
+    console.log(Date.now())
     for (let i = 0; i < retries; i++) {
         try {
             result = await sendGetRequest(API_URL, `operation/${opId}/chain/${chainId}/receipt?userOpHash=${userOpHash}`)
@@ -71,7 +72,7 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             opFee: "Failed to find."
         }
     }
-
+    console.log(result.receipt)
     return {
         ...result.receipt
     }

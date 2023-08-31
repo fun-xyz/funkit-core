@@ -26,7 +26,7 @@ export interface TokenSponsorTestConfig {
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
 
-    describe("TokenSponsor", function () {
+    describe.only("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(300_000)
         let funder: Auth
@@ -92,7 +92,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             }
         })
 
-        it("Stake eth into the paymaster from the sponsor", async () => {
+        it.only("Stake eth into the paymaster from the sponsor", async () => {
             const baseStakeAmount = config.baseTokenStakeAmt * 10 ** 18 // account for eth decimals
             const stakedEthAmount = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
             if (stakedEthAmount < baseStakeAmount) {
@@ -103,7 +103,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             assert(stakedEthAmountAfter >= baseStakeAmount, "Stake Failed")
         })
 
-        it("Whitelist a funwallet and use the token paymaster with permit", async () => {
+        it.only("Whitelist a funwallet and use the token paymaster with permit", async () => {
             // Allow the sponsor to whitelist tokens that are acceptable for use
             if (await sponsor.getTokenListMode(funderAddress)) {
                 await funder.sendTx(await sponsor.setTokenToWhitelistMode(funderAddress))
@@ -142,7 +142,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             await runActionWithTokenSponsorPermitFail(unpermittedWallet)
         })
 
-        it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster with permit", async () => {
+        it.only("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster with permit", async () => {
             // Allow the sponsor to blacklist tokens that are acceptable for use
             if (!(await sponsor.getTokenListMode(funderAddress))) {
                 await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress))

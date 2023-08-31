@@ -107,4 +107,4 @@ await configureEnvironment({
 
 -   [Documentation](http://docs.fun.xyz) - Complete how-to guides and API reference docs.
 -   [Demo](https://demo.fun.xyz) - Try FunKit Core in action.
--   [Discord](https://discord.gg/7ZRAv4es) - Ask us a question, or just say hi!
+-   [Discord](https://discord.com/invite/KhJVrDy3) - Ask us a question, or just say hi!
