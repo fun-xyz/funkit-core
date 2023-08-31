@@ -192,7 +192,7 @@ export class TokenSponsor extends Sponsor {
         }
     }
 
-    async getTokenBalance(spender: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<BigInt> {
+    async getTokenBalance(spender: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         const tokenData = new Token(token)
         let tokenAddress
         if (tokenData.isNative) {

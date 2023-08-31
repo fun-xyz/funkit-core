@@ -3,7 +3,7 @@ import { sendRequest } from "./ApiUtils"
 import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common"
 import { Chain, UserOperation } from "../data"
 
-export const calcPreVerificationGas = (userOp: UserOperation) => {
+export const calcPreVerificationGas = (userOp: UserOperation): bigint => {
     const ov = DefaultGasOverheads
     const p = Object.assign(
         {

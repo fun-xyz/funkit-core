@@ -65,7 +65,7 @@ export class Operation {
         return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [this.userOp], chain)
     }
 
-    getMaxTxCost() {
+    getMaxTxCost(): bigint {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.userOp
         const mul: number = this.userOp.paymasterAndData !== "0x" ? 3 : 1
         const requiredGas = callGasLimit + verificationGasLimit * BigInt(mul) + preVerificationGas! ? preVerificationGas : 0n
