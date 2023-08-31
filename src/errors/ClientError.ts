@@ -1,6 +1,6 @@
 import { BaseError } from "./BaseError"
 import { ErrorBaseType, ErrorCode, ErrorType } from "./types"
-
+import FWErrors from "../abis/errors.json"
 export class ClientError extends BaseError {
     constructor(type: string, code: string, msg: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
         super(ErrorBaseType.ClientError, type, code, msg, paramsUsed, fixSuggestion, docLink, false)
@@ -46,6 +46,7 @@ export class AccessDeniedError extends ClientError {
 
 export class UserOpFailureError extends ClientError {
     constructor(code: string, msg: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
+        const FWCode = findFWContractError(msg)
         if (msg.includes("AA21")) {
             const { reqId } = JSON.parse(msg)
             msg = ErrorCode.WalletPrefundError + ": Your wallet lacks funds for this transaction."
@@ -61,8 +62,18 @@ export class UserOpFailureError extends ClientError {
                     : "Your FunWallet has not approved enough ERC-20s for the paymaster smart contract to pay for gas. Use the approve function in the TokenSponsor class.")
             fixSuggestion = `Wallet Address: ${paramsUsed.body.userOp.sender}`
             super(ErrorType.UserOpFailureError, ErrorCode.GasSponsorFundError, msg, { reqId }, fixSuggestion, docLink)
+        } else if (FWCode) {
+            const { reqId } = JSON.parse(msg)
+            msg = FWErrors[FWCode].info
+            fixSuggestion = FWErrors[FWCode].suggestion
+            super(ErrorType.UserOpFailureError, ErrorCode.FunWalletErrorCode, msg, { reqId }, fixSuggestion, docLink)
         } else {
             super(ErrorType.UserOpFailureError, code, msg, paramsUsed, fixSuggestion, docLink)
         }
     }
+}
+
+const findFWContractError = (msg: string) => {
+    const match = msg.match(/FW\d{3}/)
+    return match?.[0]
 }

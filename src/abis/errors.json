@@ -1,0 +1,622 @@
+{
+  "FW000": {
+    "info": " Create3Deployer.requireDeployerOnly() - Signatures were not sorted before being passed in",
+    "suggestion": "To fix this error, make sure to short sigs before passing them into `requireDeployerOnly`. You can do this by calling `sigs.sort()` before passing them in. It is also possible to run into this error if the hash that was signed was not the correct hash."
+  },
+  "FW001": {
+    "info": " Create3Deployer.requireDeployerOnly() - Signature failed to be recovered. ercrecover returned the zero address",
+    "suggestion": "To fix this error, make sure to pass in enough valid signatures that sign the `hash` in the `sigs` array"
+  },
+  "FW002": {
+    "info": " Create3Deployer.addDeployer() - Invalid Hash",
+    "suggestion": "To fix this error, make sure `hash` is equal to `hashAddDeployer()`"
+  },
+  "FW003": {
+    "info": " Create3Deployer.removeDeployer() - Invalid Hash",
+    "suggestion": "To fix this error, make sure `hash` is equal to `hashRemoveDeployer()`"
+  },
+  "FW004": {
+    "info": " Create3Deployer.setThreshold() - Threshold must be greater than 1",
+    "suggestion": "To fix this error, `threshold` is greater than 1"
+  },
+  "FW005": {
+    "info": " Create3Deployer.setThreshold() - Invalid Hash",
+    "suggestion": "To fix this error, make sure `hash` is equal to `keccak256(abi.encodePacked(_threshold))`"
+  },
+  "FW006": {
+    "info": " Create3Deployer.callChild() - Invalid Hash",
+    "suggestion": "To fix this error, make sure `hash` is equal to `keccak256(abi.encodePacked(child, data, _nonce, block.chainid))`"
+  },
+  "FW007": {
+    "info": " Create3Deployer.callChild() - Invalid Nonce, nonce must be 1 greater than the current nonce",
+    "suggestion": "To fix this error, make sure `_nonce` is equal to the current nonce + 1"
+  },
+  "FW008": {
+    "info": " Create3Deployer.callChild() - call to child failed",
+    "suggestion": "To fix this error, check to see what is making the call to the child fail"
+  },
+  "FW009": {
+    "info": " Create3Deployer.deploy() - Invalid Hash",
+    "suggestion": "To fix this error, make sure `hash` is equal to `keccak256(abi.encodePacked(_salt, _creationCode))`"
+  },
+  "FW010": {
+    "info": " FunWalletFactory.constructor() - Invalid Address, cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_deployer` is not equal to the zero address"
+  },
+  "FW011": {
+    "info": " FunWalletFactory.constructor() - Invalid Address, cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_funWalletImpAddress` is not equal to the zero address"
+  },
+  "FW012": {
+    "info": " FunWalletFactory.constructor() - Invalid Address, cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_feeOracle` is not equal to the zero address"
+  },
+  "FW013": {
+    "info": " FunWalletFactory.constructor() - Invalid Address, cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_walletInit` is not equal to the zero address"
+  },
+  "FW014": {
+    "info": " FunWalletFactory.constructor() - Unable to generate the address from this deployerSalt",
+    "suggestion": "To fix this error, make sure `FunWalletFactoryV1` has not already been deployed from the given create3deployer contract. If it has been, change `FunWalletFactoryV1` to `FunWalletFactoryV2` or another version."
+  },
+  "FW015": {
+    "info": " FunWalletFactory.constructor() - Generated the wrong address from this deployerSalt",
+    "suggestion": "To fix this error, make sure `FunWalletFactoryV1` has not already been deployed from the given create3deployer contract. If it has been, change `FunWalletFactoryV1` to `FunWalletFactoryV2` or another version."
+  },
+  "FW016": {
+    "info": " FunWalletFactory.createAccount() - Call to initialize failed on the deployed proxy",
+    "suggestion": "To fix this error, make sure the `initializerCallData` is formatted correctly"
+  },
+  "FW017": {
+    "info": " FunWalletFactory - Caller must be deployer",
+    "suggestion": "To fix this error, make sure to call the function from the deployer address"
+  },
+  "FW018": {
+    "info": " WalletInit.commit() - The previous commit has not expired",
+    "suggestion": "To fix this error, wait for the previous commit with this `commitKey` to expire. This should take at most 10 minutes."
+  },
+  "FW019": {
+    "info": " WalletInit.validateSalt() - The hash at the commitKey does not match `keccak256(abi.encode(seed, owner, initializerCallData))`",
+    "suggestion": "To fix this error, make sure the seed, owner, and initializerCallData are hashed and stored in commits at the corresponding `commitKey`"
+  },
+  "FW020": {
+    "info": " WalletInit.validateSalt() - The new owner of the funwallet must match data.newFunWalletOwner from loginData",
+    "suggestion": "To fix this error, make sure the owner set in `loginData` matches the owner address returned from the tweet."
+  },
+  "FW021": {
+    "info": " WalletInit.setOracle() - The address of the new `_oracle` must not be the zero address",
+    "suggestion": "To fix this error, make sure `_oracle` is not the zero address"
+  },
+  "FW022": {
+    "info": " Create3Deployer.deployFromChild() - Invalid Child Address",
+    "suggestion": "To fix this error, make sure the caller is a contract deployed from the Create3Deployer"
+  },
+  "FW023": {
+    "info": " ImplementationRegistry.verifyIsValidContractAndImplementation() - Invalid Target Code Hash",
+    "suggestion": "To fix this error, make sure the caller is a contract targeted is a ERC1967ProxyData contract"
+  },
+  "FW024": {
+    "info": " ImplementationRegistry.verifyIsValidContractAndImplementation() - Invalid Contract Implementation Address",
+    "suggestion": "To fix this error, make sure you have the minimun threshold amount of valid signatures."
+  },
+  "FW025": {
+    "info": " ImplementationRegistry.addImplementation() - Invalid Signature Amount",
+    "suggestion": "To fix this error, make sure you have the minimun threshold amount of valid signatures."
+  },
+  "FW026": {
+    "info": " ImplementationRegistry.removeImplementation() - Invalid Signature Amount",
+    "suggestion": "To fix this error, make sure you have the minimun threshold amount of valid signatures."
+  },
+  "FW027": {
+    "info": " WalletInit.commit() - Unable to commit with a previously used commit hash",
+    "suggestion": "To fix this error, make sure you are not reusing someone else's commit hash. If there are conflicts, just regenerate the seed randomly"
+  },
+  "FW028": {
+    "info": " MultiSigDeployer.constructor() - Threshold can't be greater than deployers length",
+    "suggestion": "To fix this error, make sure the threshold value is not 0"
+  },
+  "FW029": {
+    "info": " WalletInit.invalidateUsedSeed() - msg.sender must equal funwalletfactory",
+    "suggestion": "To fix this error, make sure you are calling this function from the FunWalletFactory contract"
+  },
+  "FW030": {
+    "info": " WalletInit.setFunWalletFactory() - funwalletfactory address cannot be set to 0",
+    "suggestion": "To fix this error, make sure you are passing in the valid funwalletfactory address"
+  },
+  "FW031": {
+    "info": " WalletInit.validateSalt() - seed has already been used",
+    "suggestion": "To fix this error, make sure you are not using an existing salt"
+  },
+  "FW032": {
+    "info": " FunWalletFactory.setFeeOracle() - Cannot set the fee oracle address to 0",
+    "suggestion": "To fix this error, make sure you are using the correct address of the fee oracle"
+  },
+  "FW033": {
+    "info": " FunWalletFactory.constructor() - Invalid Address, cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_entryPoint` is not equal to the zero address"
+  },
+  "FW034": {
+    "info": " Create3Deployer.callChild() - Value not equal to msg.value",
+    "suggestion": "To fix this error, make sure `msg.value` is equal to the `value` parameter."
+  },
+  "FW100": {
+    "info": " Module.execute() - execute() needs to be overriden",
+    "suggestion": "To fix this error, make sure you are overriding the execute method in your module"
+  },
+  "FW101": {
+    "info": " ApproveAndExec.approveAndExecute() - the approveData's first four bytes must be the approve() function selector",
+    "suggestion": "To fix this error, change `approveData` such that the first four bytes are `bytes4(keccak256('approve(address,uint256)'))`"
+  },
+  "FW102": {
+    "info": " ApproveAndSwap.constructor() - `_wethAddr` cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_wethAddr` is not set to the zero address"
+  },
+  "FW103": {
+    "info": " ApproveAndSwap.constructor() - `_router` cannot be the zero address",
+    "suggestion": "To fix this error, make sure `_router` is not set to the zero address"
+  },
+  "FW104": {
+    "info": " ApproveAndSwap.executeSwapEth() - msg.sender does not have enough weth",
+    "suggestion": "To fix this error, make sure msg.sender has a weth balance >= `amount`"
+  },
+  "FW105": {
+    "info": " ApproveAndSwap.\\_internalSwap() - Approve failed",
+    "suggestion": "To fix this error, make sure you have formatted approve correctly"
+  },
+  "FW106": {
+    "info": " AaveWithdraw.execute() - Withdrawing a zero balance",
+    "suggestion": "You are trying to withdraw from aave but don't have a balance"
+  },
+  "FW107": {
+    "info": " ApproveAndExec.approveAndExecute() - Approve failed",
+    "suggestion": "The token you tried to approve failed"
+  },
+  "FW108": {
+    "info": " UniswapV3LimitOrder.execute() - Approval Failed",
+    "suggestion": "You are trying to withdraw from aave but don't have a balance"
+  },
+  "FW109": {
+    "info": " UniswapV3LimitOrder.constructor() - Router cannot be address zero",
+    "suggestion": "Make sure you are not passing in the zero address when initializing the module"
+  },
+  "FW110": {
+    "info": " UniswapV3LimitOrder.constructor() - Quoter cannot be zero address",
+    "suggestion": "Make sure you are not passing in the zero address when initializing the module"
+  },
+  "FW200": {
+    "info": " FeePercentOracle.setValues() - feepercent must be less than or equals to 100%",
+    "suggestion": "To fix this error, `_feepercent` must be less than or equals to `10 ** _decimals`"
+  },
+  "FW201": {
+    "info": " FeePercentOracle.withdrawEth() - eth transfer failed",
+    "suggestion": "To fix this error, investigate why the eth withdrawal failed. This is likely because `amount` was greater than the eth balance in the FeePercentOracle"
+  },
+  "FW202": {
+    "info": " TokenPriceOracle.getTokenValueOfEth() - chainlink aggregator price must be greater than 0",
+    "suggestion": "To fix this error, retry the call and make sure price is greater than 0"
+  },
+  "FW203": {
+    "info": " TokenPriceOracle.getTokenValueOfEth() - chainlink aggregator updatedAt must be greater than 0",
+    "suggestion": "To fix this error, retry the call and make sure updatedAt is greater than 0"
+  },
+  "FW204": {
+    "info": " TokenPriceOracle.getTokenValueOfEth() - chainlink aggregator answeredInRound must be greater than or equal to roundId",
+    "suggestion": "To fix this error, retry the call and make sure answeredInRound must be greater than or equal to roundId"
+  },
+  "FW205": {
+    "info": " TwitterOracle.batchSetTweet() - socialHandles, loginTypes, seeds, owners length must match in length",
+    "suggestion": "To fix this error, make sure all arrays passed into this function are the same length."
+  },
+  "FW206": {
+    "info": " TwitterOracle.setTweet() - the seed from twitter cannot be empty",
+    "suggestion": "To fix this error, make sure the seed you post on twitter is not empty {}"
+  },
+  "FW207": {
+    "info": " TwitterOracle.setTweet() - the address from twitter cannot be 0",
+    "suggestion": "To fix this error, make sure the address you post on twitter for the new owner is not the zero address, otherwise you would be unable to claim ownership of the funwallet"
+  },
+  "FW208": {
+    "info": " TwitterOracle.batchSetTweet() - the seed from twitter cannot be empty",
+    "suggestion": "To fix this error, make sure the seed you post on twitter is not empty {}"
+  },
+  "FW209": {
+    "info": " TwitterOracle.batchSetTweet() - the address from twitter cannot be 0",
+    "suggestion": "To fix this error, make sure the address you post on twitter for the new owner is not the zero address, otherwise you would be unable to claim ownership of the funwallet"
+  },
+  "FW210": {
+    "info": " TwitterOracle.fetchTweet() - the seed from twitter cannot be empty",
+    "suggestion": "To fix this error, make sure the seed you post on twitter is not empty {}"
+  },
+  "FW211": {
+    "info": " TwitterOracle.fetchTweet() - the address from twitter cannot be 0",
+    "suggestion": "To fix this error, make sure the address you post on twitter for the new owner is not the zero address, otherwise you would be unable to claim ownership of the funwallet"
+  },
+  "FW300": {
+    "info": " BasePaymaster.constructor() - entrypoint address cannot be the zero address",
+    "suggestion": "To fix this error, make sure entrypoint address is not the zero address"
+  },
+  "FW301": {
+    "info": " BasePaymaster.\\_requireFromEntryPoint() - the msg.sender must be from the entrypoint",
+    "suggestion": "To fix this error, make sure the msg.sender must be from the entrypoint"
+  },
+  "FW302": {
+    "info": " GaslessPaymaster.batchActions() - the ith delegate call failed",
+    "suggestion": "To fix this error, make sure the calldata for `data[i]` is a valid call"
+  },
+  "FW303": {
+    "info": " GaslessPaymaster.batchActions() - batchActions consumed more eth than `msg.value` allocated",
+    "suggestion": "To fix this error, increase the amount of msg.value you are passing to this function"
+  },
+  "FW304": {
+    "info": " GaslessPaymaster.\\_withdrawDepositTo() - the withdrawal has not been unlocked",
+    "suggestion": "To fix this error, wait till block.number is greater than the unlockBlock for the sender and make sure `unlockBlock[sender]` is nonzero"
+  },
+  "FW305": {
+    "info": " GaslessPaymaster.\\_withdrawDepositTo() - the balances of the sender must be greater than the withdrawal amount",
+    "suggestion": "To fix this error, decrease the amount you are trying to withdraw"
+  },
+  "FW306": {
+    "info": " GaslessPaymaster.\\_validatePaymasterUserOp() - the userOp.paymasterAndData must have a length of 40",
+    "suggestion": "To fix this error, change the `paymasterAndData` field in the `userOp` such that the length is 40"
+  },
+  "FW307": {
+    "info": " GaslessPaymaster.\\_validatePaymasterUserOp() - the verificationGasLimit must be greater than the `COST_OF_POST` variable in GaslessPaymaster",
+    "suggestion": "To fix this error, increase the `verificationGasLimit` in the `userOp`"
+  },
+  "FW308": {
+    "info": " GaslessPaymaster.\\_validatePaymasterUserOp() - the sponsor's eth is not locked for use",
+    "suggestion": "To fix this error, make sure the sponsor's eth is locked using `lockDeposit()`"
+  },
+  "FW309": {
+    "info": " GaslessPaymaster.\\_validatePaymasterUserOp() - The sponsor needs to approve the spender",
+    "suggestion": "To fix this error, make sure to approve the spender using `setSpenderWhitelistMode()` or `setSpenderBlacklistMode()` and the sponsor's list mode is set to whitelist mode or blacklist mode using `setListMode()"
+  },
+  "FW310": {
+    "info": " GaslessPaymaster.\\_validatePaymasterUserOp() - The sponsor does not have sufficient eth in the paymaster to cover this operation",
+    "suggestion": "To fix this error, make sure to stake enough eth from the sponsor's address using `addDepositTo()`"
+  },
+  "FW311": {
+    "info": " GaslessPaymaster.addDepositTo() - `msg.value` must be greater than or equal to amount",
+    "suggestion": "To fix this error, make sure `msg.value` must be greater than or equal to amount"
+  },
+  "FW312": {
+    "info": " TokenPaymaster.batchActions() - the ith delegate call failed",
+    "suggestion": "To fix this error, make sure the calldata for `data[i]` is a valid call"
+  },
+  "FW313": {
+    "info": " TokenPaymaster.batchActions() - batchActions consumed more eth than `msg.value` allocated",
+    "suggestion": "To fix this error, increase the amount of msg.value you are passing to this function"
+  },
+  "FW314": {
+    "info": " TokenPaymaster.\\_addTokenDepositTo() - token decimals must be greater than 0",
+    "suggestion": "To fix this error, change the decimals in token using `setTokenData()`"
+  },
+  "FW315": {
+    "info": " TokenPaymaster.\\_withdrawTokenDepositTo() - token is not unlocked for withdrawal",
+    "suggestion": "To fix this error, call `unlockTokenDepositAfter()`"
+  },
+  "FW316": {
+    "info": " TokenPaymaster.\\_withdrawTokenDepositTo() - you are withdrawing more tokens that you have in balance",
+    "suggestion": "To fix this error, call `getTokenBalance()` to check how many tokens you have and make sure `amount` is less than that"
+  },
+  "FW317": {
+    "info": " TokenPaymaster.\\_withdrawEthDepositTo() - token is not unlocked for withdrawal",
+    "suggestion": "To fix this error, call `unlockTokenDepositAfter()` with `ETH` as the token"
+  },
+  "FW318": {
+    "info": " TokenPaymaster.\\_withdrawEthDepositTo() - you are withdrawing more ether that you have in balance",
+    "suggestion": "To fix this error, call `getTokenBalance()` with `ETH` as the token to check how many tokens you have and make sure `amount` is less than that"
+  },
+  "FW319": {
+    "info": " TokenPaymaster.\\_getTokenValueOfEth() - call to token oracle failed",
+    "suggestion": "To fix this error, check the token oracle and call `setTokenData()` to change the oracle if it is broken"
+  },
+  "FW320": {
+    "info": " TokenPaymaster.\\_reimbursePaymaster() - failed to reimbursePaymaster with tokens via `permitTransfer()`",
+    "suggestion": "To fix this **error**, make sure you have permitted the paymaster to spend your tokens"
+  },
+  "FW321": {
+    "info": " TokenPaymaster.\\_reimbursePaymaster() - spender doesn't have enough tokens",
+    "suggestion": "To fix this error, make sure to add more tokens to the token paymaster via `addTokenDepositTo()`"
+  },
+  "FW322": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - `paymasterAndData` length must be 60",
+    "suggestion": "To fix this error, make sure to set `paymasterAndData` length to be 60"
+  },
+  "FW323": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - `verificationGasLimit` must be greater than `COST_OF_POST`",
+    "suggestion": "To fix this error, make sure to set the userOp's `verificationGasLimit` to be greater than `COST_OF_POST`"
+  },
+  "FW324": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the sponsor must lock their ETH",
+    "suggestion": "To fix this error, make sure the sponsor has locked their eth by calling `lockTokenDeposit()` from the sponsor address"
+  },
+  "FW325": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the account must lock their tokens",
+    "suggestion": "To fix this error, make sure the user of the token paymaster has locked their tokens by calling `lockTokenDeposit()` from their address"
+  },
+  "FW326": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the sponsor eth balance must be greater than maxCost",
+    "suggestion": "To fix this error, make sure the sponsor eth balance is greater than maxCost"
+  },
+  "FW327": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the sponsor must approve the spender",
+    "suggestion": "To fix this error, make sure the sponsor has approved the spender by calling `setSpenderWhitelistMode()` or `setSpenderBlacklistMode()` and the sponsor's list mode is set to whitelist mode or blacklist mode using `setListMode()`"
+  },
+  "FW328": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the sponsor must have approved the token to the paymaster",
+    "suggestion": "To fix this error, make sure the sponsor has approved the spender by calling `setTokenWhitelistMode()` or `setTokenBlacklistMode()` and the sponsor's list mode is set to whitelist mode or blacklist mode using `setTokenListMode()`"
+  },
+  "FW329": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the permitted token must be equal to the token you are trying to pay with if using permit",
+    "suggestion": "To fix this error, make sure the permitted token is equal to the token you are trying to pay with if using permit"
+  },
+  "FW330": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the permitted transfer recipient must be the token paymaster",
+    "suggestion": "To fix this error, make sure to permit the token paymaster to spend your tokens"
+  },
+  "FW331": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - the permitted transfer amount must be greater than or equal to the maxTokenCost",
+    "suggestion": "To fix this error, make sure the permitted transfer amount is greater than or equal to the maxTokenCost"
+  },
+  "FW332": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - if permit was not used, make sure the tokenPaymaster was approved to spend tokens by the sponsor or enough tokens were deposited into the TokenPaymaster",
+    "suggestion": "To fix this error, make sure the tokenPaymaster was approved(`approve()`) to spend tokens by the sponsor or enough tokens were deposited into the TokenPaymaster via `addTokenDepositTo()`"
+  },
+  "FW333": {
+    "info": " TokenPaymaster.addEthDepositTo() - make sure msg.value is greater than or equal to amount",
+    "suggestion": "To fix this error, make sure that the msg.value is greater than or equal to amount"
+  },
+  "FW334": {
+    "info": " TokenPaymaster.addTokenDepositTo() - sponsor cannot be the zero address",
+    "suggestion": "To fix this error, make sure the sponsor is not the zero address"
+  },
+  "FW335": {
+    "info": " TokenPaymaster.addTokenDepositTo() - target cannot be the zero address",
+    "suggestion": "To fix this error, make sure the target is not the zero address"
+  },
+  "FW336": {
+    "info": " TokenPaymaster.addTokenDepositTo() - token address cannot be the zero address",
+    "suggestion": "To fix this error, make sure the token address is not the zero address"
+  },
+  "FW337": {
+    "info": " TokenPaymaster.addTokenDepositTo() - spender address cannot be the zero address",
+    "suggestion": "To fix this error, make sure the spender address is not the zero address"
+  },
+  "FW338": {
+    "info": " TokenPaymaster.addTokenDepositTo() - the token oracle cannot be the zero address",
+    "suggestion": "To fix this error, make sure the token oracle is not the zero address"
+  },
+  "FW339": {
+    "info": " TokenPaymaster.addTokenDepositTo() - the tokenAddress cannot be the zero address",
+    "suggestion": "To fix this error, make sure the tokenAddress is not the zero address"
+  },
+  "FW340": {
+    "info": " TokenPaymaster.addTokenDepositTo() - the token decimals must be greater than 0",
+    "suggestion": "To fix this error, make sure the token decimals is greater than 0"
+  },
+  "FW341": {
+    "info": " TokenPaymaster.addTokenDepositTo() - the chainlink aggregator cannot be the zero address",
+    "suggestion": "To fix this error, make sure the chainlink aggregator is not the zero address"
+  },
+  "FW342": {
+    "info": " TokenPaymaster.removeTokenData() - The token doesn't exist in tokens",
+    "suggestion": "To fix this error, make sure the token address is not the zero address"
+  },
+  "FW343": {
+    "info": " TokenPaymaster.removeTokenData() - The tokenListIndex doesn't match with the tokenAddress",
+    "suggestion": "To fix this error, make sure the token at tokenList[tokenListIndex] is the same as the tokenAddress"
+  },
+  "FW344": {
+    "info": " GaslessPaymaster.batchActions() - Cannot recursively call batchActions from within batchActions",
+    "suggestion": "To fix this error, make sure you are not recursively calling batchActions from within batchActions"
+  },
+  "FW345": {
+    "info": " TokenPaymaster.batchActions() - Cannot recursively call batchActions from within batchActions",
+    "suggestion": "To fix this error, make sure you are not recursively calling batchActions from within batchActions"
+  },
+  "FW346": {
+    "info": " TokenPaymaster.postOp() - Invalid Permit transfer amount",
+    "suggestion": "To fix this error, make sure your permit transfer has transfered the correct amount of tokens"
+  },
+  "FW347": {
+    "info": " TokenPaymaster.\\_reimbursePaymaster() - Invalid amount of tokens transferred",
+    "suggestion": "The likely cause of this error is using a deflationary token that charges a tax when you transfer tokens. To fix this error, make sure you are transferring the correct amount of tokens and to account for the tax/deflation."
+  },
+  "FW348": {
+    "info": " UserAuthentication.init() - groupId count must be equal to groups length",
+    "suggestion": "Make sure the number of groupIds equals the number of groups."
+  },
+  "FW349": {
+    "info": " TokenPaymaster.calculatePostOpGas() - Invalid Auth Type",
+    "suggestion": "Make sure the authtype is correct"
+  },
+  "FW350": {
+    "info": " TokenPaymaster.\\_validatePaymasterUserOp() - Does not have enough balance of token",
+    "suggestion": "To fix this error, make sure your has enough tokens to permit transfer"
+  },
+  "FW351": {
+    "info": " BasePaymaster.\\withdrawStakeFromEntryPoint() - Cannot withdraw to address zero",
+    "suggestion": "To fix this error, make sure you are not withdrawing to address zero"
+  },
+  "FW401": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "### `FW402`: RoleBasedAccessControl.isValidAction(), isValidActionAndFee() - Invalid Target"
+  },
+  "FW402": {
+    "info": " RoleBasedAccessControl.isValidAction(), isValidActionAndFee() - Invalid Target",
+    "suggestion": "To fix this error, make sure the target that you are calling is in the merkle root of allowed targets verified by the rule. If this does not work make sure you are using the correct merkle root implementation."
+  },
+  "FW403": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the selector that you are calling is in the merkle root of allowed selector verified by the rule. If this does not work make sure you are using the correct merkle root implementation."
+  },
+  "FW404": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the ownerId is not 0 or an existing owner"
+  },
+  "FW405": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the ruleId is not 0"
+  },
+  "FW406": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the rule that you are using has a deadline that has passed."
+  },
+  "FW408": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "### `FW410`: RoleBasedAccessControl: isValidAction(), isValidActionAndFee() - Rule not added to role"
+  },
+  "FW410": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the rule is added to the role"
+  },
+  "FW411": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the value for the execution call is less than the limit"
+  },
+  "FW412": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the fee value for the execution call is less than the limit"
+  },
+  "FW413": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the fee recipient is in the rule fee merkle root"
+  },
+  "FW414": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the fee token is in the rule fee merkle root"
+  },
+  "FW417": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the rule you are using exists"
+  },
+  "FW418": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the user is in the role"
+  },
+  "FW419": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the feeRecipientTokenMerkleRootHash is not zero"
+  },
+  "FW420": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the targetSelectorMerkleRootHash is not zero"
+  },
+  "FW421": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "### `FW422`: RoleBasedAccessControl: init() - Wallet has not been initialized"
+  },
+  "FW422": {
+    "info": " RoleBasedAccessControl",
+    "suggestion": "To fix this error, make sure the wallet has not initialized the validation contract"
+  },
+  "FW500": {
+    "info": " FunWallet.initialize() - the entrypoint cannot be the zero address",
+    "suggestion": "To fix this error, make sure the entrypoint is not the zero address"
+  },
+  "FW501": {
+    "info": " FunWallet.initialize() - the msg.sender cannot be the address of the Funwallet contract",
+    "suggestion": "To fix this error, make sure the msg.sender is not the address of the Funwallet contract"
+  },
+  "FW502": {
+    "info": " FunWallet.\\_requireFromFunWalletProxy() - the function must be called from the funwallet proxy",
+    "suggestion": "To fix this error, make sure the msg.sender == funwallet"
+  },
+  "FW503": {
+    "info": " FunWallet.updateEntryPoint() - the new entrypoint address cannot be the zero address",
+    "suggestion": "To fix this error, make sure the new entrypoint address is not the zero address"
+  },
+  "FW504": {
+    "info": " FunWallet.depositToEntryPoint() - not enough eth in the funwallet",
+    "suggestion": "To fix this error, make sure the funwallet has more than the amount of eth you are trying to deposit"
+  },
+  "FW505": {
+    "info": " FunWallet.\\_transferEthFromEntrypoint() - withdrawing eth from the entrypoint failed",
+    "suggestion": "To fix this error, retry the operation and make sure you have greater than amount balance in the entrypoint"
+  },
+  "FW506": {
+    "info": " FunWallet.\\_requireFromModule() - make sure a funwalletfactory deployed the module",
+    "suggestion": "To fix this error, make sure the msg.sender is the module"
+  },
+  "FW507": {
+    "info": " FunWallet.\\_requireFromEntryPoint() - the msg.sender must be the entrypoint",
+    "suggestion": "To fix this error, make sure the msg.sender is the entrypoint"
+  },
+  "FW508": {
+    "info": " WalletFee.\\_transferEth() - the eth transfer failed",
+    "suggestion": "To fix this error, retry the operation and make sure you have greater than amount balance in the wallet"
+  },
+  "FW509": {
+    "info": " WalletFee.\\_handleFee() - the developer eth transfer failed",
+    "suggestion": "To fix this error, retry the operation and make sure you have greater than amount balance in the wallet"
+  },
+  "FW510": {
+    "info": " WalletFee.\\_handleFee() - the funOracle eth transfer failed",
+    "suggestion": "To fix this error, retry the operation and make sure you have greater than amount balance in the wallet"
+  },
+  "FW511": {
+    "info": " WalletValidation.initValidations() - the WalletValidations contract has already been initialized",
+    "suggestion": "Don't call initValidations() more than once"
+  },
+  "FW512": {
+    "info": " WalletValidation.initValidations() - make sure there are more than zero validations",
+    "suggestion": "To fix this error, make sure there are more than zero validations and the number of validation contract addresses are equal to the number of `initCallData` elements"
+  },
+  "FW513": {
+    "info": " WalletValidation.initValidations() - make sure there are no duplicate validation contract addresses",
+    "suggestion": "To fix this error, make sure there are no duplicate validation contract addresses in `validationData`"
+  },
+  "FW514": {
+    "info": " WalletValidation.\\_validateUserOp() - make sure the signature length is greater than 0",
+    "suggestion": "To fix this error, make sure the signature length is greater than 0"
+  },
+  "FW515": {
+    "info": " WalletValidation.isValidSignature() - make sure the number of validations is greater than zero",
+    "suggestion": "To fix this error, make sure the number of validations is greater than zero"
+  },
+  "FW516": {
+    "info": " WalletValidation.\\_requireValidValidation() - the validation failed",
+    "suggestion": "To fix this error, make sure the validation contract returns true"
+  },
+  "FW517": {
+    "info": " WalletValidation.\\_requireValidValidationFormat() - the validation was incorrectly formatted",
+    "suggestion": "To fix this error, make sure the validation contract address is not the zero address and the validation is valid and the address is not the zero address"
+  },
+  "FW518": {
+    "info": " WalletValidation.\\_requireValidPrevValidation() - the previous validation must be linked to this validation",
+    "suggestion": "To fix this error, make sure the previous validation is linked to this validation when adding or removing the validation"
+  },
+  "FW519": {
+    "info": " WalletValidation.getValidations() - you must have more than zero validations to get validations",
+    "suggestion": "To fix this error, make sure there are a nonzero amount of validations"
+  },
+  "FW520": {
+    "info": " WalletValidation.addValidation() - The caller must be this wallet.",
+    "suggestion": "To fix this error, make sure you are calling addValidation() from your funwallet."
+  },
+  "FW521": {
+    "info": " WalletValidation.removeValidation() - The caller must be this wallet.",
+    "suggestion": "To fix this error, make sure you are calling removeValidation() from your funwallet."
+  },
+  "FW522": {
+    "info": " WalletValidation.updateValidation() - The caller must be this wallet.",
+    "suggestion": "To fix this error, make sure you are calling updateValidation() from your funwallet."
+  },
+  "FW523": {
+    "info": " WalletModules.permitTransfer() - Invalid Permit Signature.",
+    "suggestion": "To fix this error, make sure you have a valid permit signature."
+  },
+  "FW524": {
+    "info": " WalletValidation.getValidations() - No Validations in the wallet",
+    "suggestion": "To fix this error, make sure the wallet has validation contracts"
+  },
+  "FW600": {
+    "info": " DataLib",
+    "suggestion": "To fix this error, make sure you are calling either execFromEntryPoint() or execFromEntryPointWithFee() from your funwallet."
+  },
+  "FW601": {
+    "info": " Ownable2StepNoRenounce",
+    "suggestion": "To fix this error, don't call this function."
+  }
+}
