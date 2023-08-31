@@ -265,7 +265,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
             expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
-            await wallet.executeOperation(funder, mintOperation)
+            console.log("permit", await wallet.executeOperation(funder, mintOperation))
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())
@@ -314,7 +314,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 spender: await sponsor.getPaymasterAddress(),
                 amount: config.paymasterTokensRequired
             })
-            await wallet.executeOperation(funder, approveTokenToPaymaster)
+            console.log("approve", await wallet.executeOperation(funder, approveTokenToPaymaster))
 
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams, {
                 ...options,
