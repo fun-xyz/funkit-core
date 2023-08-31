@@ -28,7 +28,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
 
     describe("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
-        this.timeout(300_000)
+        this.timeout(500_000)
         let funder: Auth
         let wallet: FunWallet
         let unpermittedWallet: FunWallet

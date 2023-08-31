@@ -144,6 +144,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
+
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
