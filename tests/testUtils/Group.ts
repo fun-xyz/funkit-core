@@ -86,6 +86,7 @@ export const GroupTest = (config: GroupTestConfig) => {
                 ],
                 storedGroupData
             )
+            console.log(storedGroup, storedGroupData)
 
             expect(storedGroup[0]).to.be.deep.equal(memberIds)
             expect(storedGroup[1]).to.be.equal(BigInt(threshold))

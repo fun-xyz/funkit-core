@@ -133,7 +133,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 })
                 const walletAddress = await wallet.getAddress()
                 const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [swapParams, approveParams])
-                await wallet.executeOperation(auth, operation)
+                console.log(await wallet.executeOperation(auth, operation))
                 const approvedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(
                     outTokenAddress,
                     "allowance",
