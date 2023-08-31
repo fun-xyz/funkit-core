@@ -1,6 +1,6 @@
 {
     "name": "@funkit/core",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "description": "Funkit core SDK provides feature-rich and extensible smart wallets built on account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
