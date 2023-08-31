@@ -59,6 +59,6 @@ export class UserOpFailureError extends ClientError {
 }
 
 const findFWContractError = (msg: string) => {
-    const match = msg.match(/FW\d{3}/)
+    const match = msg.match(/FW\d{3}|AA\d./)
     return match?.[0]
 }
