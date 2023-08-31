@@ -444,7 +444,6 @@ export class FunWallet extends FirstClassActions {
         operation.userOp.paymasterAndData = paymasterAndData
 
         const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
-
         // sign the userOp directly here as we do not have the opId yet
         estimatedOperation.userOp.signature = await auth.signOp(estimatedOperation, chain, isGroupOperation(operation))
 

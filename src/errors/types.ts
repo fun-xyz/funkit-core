@@ -48,6 +48,7 @@ export enum ErrorCode {
     ChainNotSupported = "ChainNotSupported",
     ServerMissingData = "ServerMissingData",
     ServerFailure = "ServerFailure",
+    ServerTimeout = "ServerTimeout",
     UnknownServerError = "UnknownServerError",
     ServerConnectionError = "ServerConnectionError",
     UserOpFailureError = "UserOpFailureError",

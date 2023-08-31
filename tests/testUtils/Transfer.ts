@@ -111,8 +111,14 @@ export const TransferTest = (config: TransferTestConfig) => {
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
 
-            assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
-            assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
+            assert(
+                randomTokenBalanceAfter > randomTokenBalanceBefore,
+                `Transfer failed, ${randomTokenBalanceAfter} ${randomTokenBalanceBefore}`
+            )
+            assert(
+                walletTokenBalanceBefore > walletTokenBalanceAfter,
+                `Transfer failed, ${walletTokenBalanceBefore} ${walletTokenBalanceAfter}`
+            )
         })
 
         describe("Transaction Fees enabled", function () {
@@ -256,9 +262,18 @@ export const TransferTest = (config: TransferTestConfig) => {
                     feeRecipientBalanceAfter
                 ] = await Promise.all([b1, b2, b3, b4, b5, b6])
 
-                assert(randomTokenBalanceAfter > randomTokenBalanceBefore, "Transfer failed")
-                assert(walletTokenBalanceBefore > walletTokenBalanceAfter, "Transfer failed")
-                assert(feeRecipientBalanceAfter > feeRecipientBalanceBefore, "Transfer failed")
+                assert(
+                    randomTokenBalanceAfter > randomTokenBalanceBefore,
+                    `Transfer failed, ${randomTokenBalanceAfter} ${randomTokenBalanceBefore}`
+                )
+                assert(
+                    walletTokenBalanceBefore > walletTokenBalanceAfter,
+                    `Transfer failed, ${walletTokenBalanceBefore} ${walletTokenBalanceAfter}`
+                )
+                assert(
+                    feeRecipientBalanceAfter > feeRecipientBalanceBefore,
+                    `Transfer failed, ${feeRecipientBalanceAfter} ${feeRecipientBalanceBefore}`
+                )
             })
 
             it("negative test - fee token and gas token not set", async () => {
@@ -353,7 +368,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                         }
                     }
                 ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 99976)
+                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index + 1 : 99976)
             })
 
             const chain = await Chain.getChain({ chainIdentifier: config.chainId })

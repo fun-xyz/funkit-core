@@ -103,11 +103,18 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                         "https://docs.fun.xyz"
                     )
                 }
+            } else if (response.status === 504) {
+                throw new InternalFailureError(
+                    ErrorCode.ServerTimeout,
+                    `server timeout failure ${JSON.stringify(json)}`,
+                    { body },
+                    "retry later. if it still fails, please contact us.",
+                    "https://docs.fun.xyz"
+                )
             } else if (!response.ok) {
                 throw new InternalFailureError(
                     ErrorCode.UnknownServerError,
                     `unknown server failure ${JSON.stringify(json)}`,
-
                     { body },
                     "retry later. if it still fails, please contact us.",
                     "https://docs.fun.xyz"

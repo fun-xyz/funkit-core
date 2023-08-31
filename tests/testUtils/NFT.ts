@@ -78,6 +78,9 @@ export const NFTTest = (config: NFTTestConfig) => {
                 })
                 await wallet1.executeOperation(auth, userOp)
 
+                if (config.chainId === 1) {
+                    await new Promise((r) => setTimeout(r, 10000))
+                }
                 const data = await nft.getApproved(nftId.toString())
                 assert(data === (await wallet2.getAddress()), "Wallet 2 did not receive")
             })
@@ -109,6 +112,9 @@ export const NFTTest = (config: NFTTestConfig) => {
                         but failed with error ${error}`
                     )
                 }
+                if (config.chainId === 1) {
+                    await new Promise((r) => setTimeout(r, 15000))
+                }
                 const bal1 = await nft.getBalance(await wallet1.getAddress())
                 assert(bal > bal1, "First nft transfer did not succeed")
 
@@ -127,6 +133,9 @@ export const NFTTest = (config: NFTTestConfig) => {
                         wallet1 ${await wallet1.getAddress()} should have succeeded
                         but failed with error ${error}`
                     )
+                }
+                if (config.chainId === 1) {
+                    await new Promise((r) => setTimeout(r, 15000))
                 }
                 const bal2 = await nft.getBalance(await wallet1.getAddress())
                 assert(bal2 > bal1, "Second nft transfer did not succeed")

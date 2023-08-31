@@ -49,7 +49,7 @@ export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void
 }
 
 export const getFullReceipt = async (opId, chainId, userOpHash): Promise<ExecutionReceipt> => {
-    const retries = 12
+    const retries = 20
     let result: any
     for (let i = 0; i < retries; i++) {
         try {
@@ -71,7 +71,6 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
             opFee: "Failed to find."
         }
     }
-
     return {
         ...result.receipt
     }
