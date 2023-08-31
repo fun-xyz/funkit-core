@@ -55,5 +55,6 @@ export enum ErrorCode {
     Unauthorized = "Unauthorized",
     RequestLimitExceeded = "RequestLimitExceeded",
     WalletPrefundError = "PrefundError",
-    GasSponsorFundError = "GasSponsorFundError"
+    GasSponsorFundError = "GasSponsorFundError",
+    FunWalletErrorCode = "FunWalletErrorCode"
 }
