@@ -72,7 +72,7 @@ export const createSessionKeyTransactionParams = async (
     ])
 }
 
-export const createSessionUser = () => {
+export const createSessionUser = (): SessionKeyAuth => {
     return new SessionKeyAuth({ privateKey: randomBytes(32) })
 }
 

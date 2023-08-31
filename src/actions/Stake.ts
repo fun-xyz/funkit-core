@@ -8,10 +8,10 @@ import { ContractInterface } from "../viem/ContractInterface"
 
 const withdrawQueueInterface = new ContractInterface(WITHDRAW_QUEUE_ABI)
 
-export const isRequestUnstakeParams = (input: any) => {
+export const isRequestUnstakeParams = (input: any): boolean => {
     return input.amounts !== undefined
 }
-export const isFinishUnstakeParams = (input: any) => {
+export const isFinishUnstakeParams = (input: any): boolean => {
     return input.recipient !== undefined
 }
 export const stakeTransactionParams = async (
@@ -121,7 +121,7 @@ export const finishUnstakeTransactionParams = async (
     ])
 }
 
-const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions: EnvOption) => {
+const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions: EnvOption): Promise<bigint[]> => {
     if (!isAddress(params.recipient ?? "")) {
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
