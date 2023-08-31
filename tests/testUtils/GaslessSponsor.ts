@@ -66,7 +66,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 }
             })
             sponsor = new GaslessSponsor()
-            console.log(await sponsor.getBalance(funderAddress), parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`))
+            await sponsor.getBalance(funderAddress), parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)
             if ((await sponsor.getBalance(funderAddress)) < parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)) {
                 const depositInfo1S = await sponsor.getBalance(funderAddress)
                 const stake = await sponsor.stake(funderAddress, funderAddress, stakeAmount / 2)
@@ -83,8 +83,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
             expect(await Token.getBalance(config.baseToken, walletAddress)).to.be.equal("0")
             const mintOperation = await wallet.createOperation(auth, await auth.getUserId(), mintTxParams)
-            console.log(await wallet.executeOperation(auth, mintOperation))
-            // expect(await wallet.executeOperation(auth, mintOperation)).to.not.throw
+            expect(await wallet.executeOperation(auth, mintOperation)).to.not.throw
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())

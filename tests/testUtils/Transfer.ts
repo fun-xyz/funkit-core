@@ -68,8 +68,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 amount: amount ? amount : 0.00001,
                 token: "eth"
             })
-            console.log(await wallet.executeOperation(auth, userOp))
-            // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
+            expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
 
@@ -105,8 +104,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 amount: outTokenPrefund ? outTokenPrefund / 2 : 0.00001,
                 token: outTokenAddress
             })
-            console.log(await wallet.executeOperation(auth, userOp))
-            // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
+            expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             const b3 = Token.getBalanceBN(outToken, await auth.getAddress())
             const b4 = Token.getBalanceBN(outToken, await wallet.getAddress())
 
@@ -146,8 +144,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log(await wallet.executeOperation(auth, userOp))
-                // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
+
+                expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
@@ -194,8 +192,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log(await wallet.executeOperation(auth, userOp))
-                // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
+                expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
@@ -244,8 +241,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                     },
                     options
                 )
-                console.log(await wallet.executeOperation(auth, userOp))
-                // expect(await wallet.executeOperation(auth, userOp)).to.not.throw
+                expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
                 const b3 = Token.getBalance(baseToken, randomAddress)
                 const b4 = Token.getBalance(baseToken, walletAddress)
@@ -392,8 +388,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             const operation = await wallet.getOperation(transferOp.opId!)
 
             // auth2 sign and execute the operation
-            console.log(await wallet.executeOperation(auth2, operation))
-            // expect(await wallet.executeOperation(auth2, operation)).to.not.throw
+            expect(await wallet.executeOperation(auth2, operation)).to.not.throw
 
             const b3 = Token.getBalance(baseToken, randomAddress)
             const b4 = Token.getBalance(baseToken, walletAddress)
@@ -421,8 +416,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
             // auth1 executes it without auth2 signature
             try {
-                console.log(await wallet.executeOperation(auth1, transferOp))
-                // await wallet.executeOperation(auth1, transferOp)
+                await wallet.executeOperation(auth1, transferOp)
             } catch (err) {
                 if (!(err instanceof InvalidParameterError)) {
                     throw err
@@ -467,8 +461,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth1 logs in and finds out the rejection operation
             const rejection = await wallet.getOperation(rejectionOp.opId!)
 
-            console.log(await wallet.executeOperation(auth1, rejection))
-            // expect(await wallet.executeOperation(auth1, rejection)).to.not.throw
+            expect(await wallet.executeOperation(auth1, rejection)).to.not.throw
 
             // now we try to use auth2 to sign the original op and execute it
             try {
