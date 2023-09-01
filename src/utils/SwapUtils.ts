@@ -250,5 +250,6 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
 export async function oneInchAPIRequest(methodName: string, queryParams: any, chainId: number): Promise<string> {
     const params = new URLSearchParams(queryParams)
     const url = `${ONE_INCH_API_URL}/${ONE_INCH_VERSION}/${chainId}/${methodName}?${params.toString()}`
+    await new Promise((r) => setTimeout(r, 1000))
     return url
 }

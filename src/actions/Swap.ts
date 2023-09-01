@@ -6,7 +6,6 @@ import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
 import { ErrorCode, InvalidParameterError } from "../errors"
-import { sendRequest } from "../utils"
 import { UniswapV2Addrs, UniswapV3Addrs, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
 
@@ -73,11 +72,15 @@ const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams): Promise<T
         disableEstimate: oneinchSwapParams.disableEstimate,
         allowPartialFill: oneinchSwapParams.allowPartialFill
     }
-    console.log("Reached")
-    const url = await oneInchAPIRequest("/swap", formattedData, oneinchSwapParams.chainId)
-    console.log(url)
-    const res = await sendRequest(url, "GET", "")
-    console.log("getOneInchSwapTx", res)
+    const url = await oneInchAPIRequest("swap", formattedData, oneinchSwapParams.chainId)
+    const res = await (
+        await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${ONE_INCH_API_KEY}` // notice the Bearer before your token
+            }
+        })
+    ).json()
     return {
         to: res.tx.to,
         value: Number(res.tx.value),
@@ -131,14 +134,15 @@ export const oneInchTransactionParams = async (
     console.log("approveTx from main", approveTx)
     if (!approveTx) {
         const swapTx = await getOneInchSwapTx(oneinchSwapParams)
-        return { to: approveAndExecAddress, value: params.inAmount, data: swapTx.data }
+        console.log("swapTx from main", swapTx)
+        return { to: swapTx.to, value: swapTx.value, data: swapTx.data }
     } else {
         const swapTx = await getOneInchSwapTx(oneinchSwapParams)
         return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,
             swapTx.data,
-            inToken,
+            inTokenAddress,
             approveTx.data
         ])
     }
