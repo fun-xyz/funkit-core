@@ -5,10 +5,9 @@ import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "vie
 import { UniSwapPoolFeeOptions } from "../actions"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
-import { EnvOption } from "../config"
-import { Chain } from "../data"
 
-const apiBaseUrl = "https://api.1inch.io/v5.0/"
+const ONE_INCH_API_URL = "https://api.1inch.dev/swap"
+const ONE_INCH_VERSION = "v5.2"
 
 export function fromReadableAmount(amount: number, decimals: number) {
     return parseUnits(`${amount}`, decimals)
@@ -248,9 +247,8 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
     }
 }
 
-const testIds = [36864, 31337]
-export async function oneInchAPIRequest(methodName: string, queryParams: any, options: EnvOption = (globalThis as any).globalEnvOption) {
-    const chain = await Chain.getChain({ chainIdentifier: options.chain })
-    const chainId = testIds.includes(Number(await chain.getChainId())) ? 1 : await chain.getChainId()
-    return apiBaseUrl + chainId + methodName + "?" + new URLSearchParams(queryParams).toString()
+export async function oneInchAPIRequest(methodName: string, queryParams: any, chainId: number): Promise<string> {
+    const params = new URLSearchParams(queryParams)
+    const url = `${ONE_INCH_API_URL}/${ONE_INCH_VERSION}/${chainId}/${methodName}?${params.toString()}`
+    return url
 }
