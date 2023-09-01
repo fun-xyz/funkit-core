@@ -9,7 +9,7 @@ import { ErrorCode, InvalidParameterError } from "../errors"
 import { UniswapV2Addrs, UniswapV3Addrs, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
 
-export const oneInchSupported: number[] = [137]
+export const oneInchSupported: number[] = [1, 10, 56, 137, 8453, 42161]
 export const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
