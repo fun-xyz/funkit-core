@@ -1,6 +1,6 @@
 import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
-import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
+import { UserOperationGasPrice, estimateOp, getChainFromId, getChainFromName, getGasPrice, getModuleInfo } from "../apis"
 import {
     BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION,
     CONTRACT_ADDRESSES,
@@ -88,7 +88,7 @@ export class Chain {
             transport: http(this.rpcUrl)
         })
         this.id = (await this.client.getChainId()).toString()
-        await this.loadChain(this.id)
+        await this.loadChain(this.id!)
     }
 
     private async loadChain(identifier: string) {
@@ -158,9 +158,19 @@ export class Chain {
         return this.client!
     }
 
-    async getFeeData(): Promise<bigint> {
+    async getFeeData(): Promise<UserOperationGasPrice> {
         await this.init()
-        return this.client!.getGasPrice()
+        let result
+        try {
+            result = await getGasPrice(this.id!)
+        } catch (err: any) {
+            const fallBackGasPrice = await this.client!.getGasPrice()
+            result = {
+                maxFeePerGas: fallBackGasPrice,
+                maxPriorityFeePerGas: fallBackGasPrice
+            }
+        }
+        return result
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
@@ -180,7 +190,7 @@ export class Chain {
             estimationUserOp.paymasterAndData = BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         } else if (this.id === "10") {
             estimationUserOp.paymasterAndData = OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
-        } else if (this.id === "1") {
+        } else if (this.id === "1" || this.id === "36865") {
             estimationUserOp.paymasterAndData = ETHEREUM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         }
 

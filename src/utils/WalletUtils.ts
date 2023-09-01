@@ -16,6 +16,14 @@ export const generateRandomGroupId = (): Hex => {
     return generateRandomBytes32()
 }
 
+export const generateRoleId = (): Hex => {
+    return generateRandomBytes32()
+}
+
+export const generateRuleId = (): Hex => {
+    return generateRandomBytes32()
+}
+
 export const generateRandomNonceKey = (): bigint => {
     return BigInt(randomBytes(24))
 }

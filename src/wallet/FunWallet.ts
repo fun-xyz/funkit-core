@@ -1,9 +1,19 @@
 import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, isAddress, isHex, keccak256, pad, toBytes } from "viem"
 import { FunWalletParams, User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
-import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
+import {
+    Currency,
+    getAllNFTs,
+    getAllTokens,
+    getLidoWithdrawals,
+    getNFTs,
+    getOffRampUrl,
+    getOnRampSupportedCurrencies,
+    getOnRampUrl,
+    getTokens
+} from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
-import { createGroup, getGroups } from "../apis/GroupApis"
+import { getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getFullReceipt, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GroupMetadata } from "../apis/types"
@@ -42,7 +52,8 @@ export class FunWallet extends FirstClassActions {
      * @param {object} params - The parameters for the constructing fun wallet - (users, uniqueId) or walletAddr
      */
     constructor(params: FunWalletParams | string) {
-        super()
+        const chain = (globalThis as any).globalEnvOption.chain
+        super(chain)
         if (typeof params === "string") {
             if (isAddress(params as string)) {
                 this.address = params as Address
@@ -285,7 +296,7 @@ export class FunWallet extends FirstClassActions {
         const userIds = new Set([...storedUserIds])
         if (this.userInfo) {
             for (const userId of this.userInfo.keys()) {
-                userIds.add(userId)
+                userIds.add(userId.toLowerCase() as Hex)
             }
         }
 
@@ -293,7 +304,7 @@ export class FunWallet extends FirstClassActions {
         const groupIds: Hex[] = []
 
         for (const userId of userIds) {
-            if (pad(userId, { size: 32 }) === (await auth.getUserId())) {
+            if (pad(userId, { size: 32 }).toLowerCase() === (await auth.getUserId())) {
                 users.push({ userId: pad(userId, { size: 32 }) } as User)
             } else {
                 groupIds.push(pad(userId, { size: 32 }))
@@ -339,12 +350,32 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
+     * Saves the wallet to the authentication system.
+     * @param auth - The auth or signer to save the wallet to.
+     * @param txOptions - The configuration options.
+     * @returns A Promise that resolves when the wallet is saved to the authentication system.
+     */
+    async saveWalletToAuth(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const walletAddr = await this.getAddress()
+        const userId = await auth.getUserId()
+        const users = await auth.getUserIds(walletAddr, await chain.getChainId())
+        if (!users.includes(userId)) {
+            if ((await checkWalletAccessInitialization(walletAddr)) === false) {
+                await initializeWalletAccess(walletAddr, await auth.getAddress())
+            }
+            await addUserToWallet(await auth.getAddress(), await chain.getChainId(), walletAddr, [userId], this.walletUniqueId)
+        }
+    }
+
+    /**
      * Generates an on-ramp URL for the account address.
      * @param {Address} address - The account address (optional, defaults to the wallet's address).
+     * @param {string} currencyCode - The currency code (optional, defaults to undefined to allow users to select).
      * @returns {Promise<string>} The on-ramp URL.
      */
-    async onRamp(address?: Address): Promise<string> {
-        return await getOnRampUrl(address ? address : await this.getAddress())
+    async onRamp(address?: Address, currencyCode?: string): Promise<string> {
+        return await getOnRampUrl(address ? address : await this.getAddress(), currencyCode ? currencyCode : undefined)
     }
 
     /**
@@ -354,6 +385,14 @@ export class FunWallet extends FirstClassActions {
      */
     async offRamp(address?: Address): Promise<string> {
         return await getOffRampUrl(address ? address : await this.getAddress())
+    }
+
+    /**
+     *  Retrieves the supported currencies for on-ramp.
+     * @returns {Promise<Currency[]>} The supported currencies.
+     */
+    async getSupportedCurrencies(): Promise<Currency[]> {
+        return await getOnRampSupportedCurrencies()
     }
 
     /**
@@ -379,7 +418,7 @@ export class FunWallet extends FirstClassActions {
                 "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
             )
         }
-        userId = pad(userId as Hex, { size: 32 })
+        userId = pad(userId as Hex, { size: 32 }).toLowerCase()
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
@@ -388,13 +427,11 @@ export class FunWallet extends FirstClassActions {
 
         let maxFeePerGas, maxPriorityFeePerGas
         const chainId = await chain.getChainId()
-        const OPStackChains = ["10"]
+        const OPStackChains = ["10", "8453"]
         if (OPStackChains.includes(chainId)) {
-            maxFeePerGas = 10n ** 8n
-            maxPriorityFeePerGas = 10n ** 8n
-        } else if (chainId === "8453") {
-            maxFeePerGas = 10n ** 9n
-            maxPriorityFeePerGas = 10n ** 9n
+            const gasPrice = await chain.getFeeData()
+            maxFeePerGas = gasPrice.maxFeePerGas
+            maxPriorityFeePerGas = gasPrice.maxPriorityFeePerGas
         } else {
             maxFeePerGas = 1n
             maxPriorityFeePerGas = 1n
@@ -411,6 +448,11 @@ export class FunWallet extends FirstClassActions {
             preVerificationGas: 100_000n,
             callGasLimit: BigInt(10e6),
             verificationGasLimit: BigInt(10e6)
+        }
+
+        if ((await chain.getChainId()) === "36865") {
+            partialOp.callGasLimit = BigInt(10e5)
+            partialOp.verificationGasLimit = BigInt(10e5)
         }
 
         const isGroupOp: boolean = (await auth.getUserId()) !== (userId as Hex)
@@ -579,21 +621,13 @@ export class FunWallet extends FirstClassActions {
         }
         receipt = await getFullReceipt(operation.opId, chainId, receipt.userOpHash)
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
-
-            if (isGroupOperation(operation)) {
-                const group = this.userInfo!.get(operation.groupId!)
-
-                if (group && group.groupInfo) {
-                    await createGroup(
-                        operation.groupId!,
-                        chainId,
-                        group.groupInfo.threshold,
-                        await this.getAddress(),
-                        group.groupInfo.memberIds
-                    )
-                }
-            }
+            await addUserToWallet(
+                await auth.getAddress(),
+                chainId,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
+            )
 
             if (txOptions?.gasSponsor?.sponsorAddress) {
                 const paymasterType = getPaymasterType(txOptions)
@@ -783,9 +817,9 @@ export class FunWallet extends FirstClassActions {
             ...res
         }
 
-        const maxFeePerGas = await chain.getFeeData()
+        const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
         operation.userOp.maxFeePerGas = maxFeePerGas
-        operation.userOp.maxPriorityFeePerGas = maxFeePerGas
+        operation.userOp.maxPriorityFeePerGas = maxPriorityFeePerGas
         return operation
     }
 
@@ -877,7 +911,9 @@ export class FunWallet extends FirstClassActions {
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                 )
             }
-            const token = new Token(options.fee.token)
+
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
+            const token = new Token(options.fee.token, chain)
             if (options.fee.gasPercent && !token.isNative) {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameterCombination,

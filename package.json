@@ -1,6 +1,6 @@
 {
     "name": "@funkit/core",
-    "version": "0.8.2",
+    "version": "0.8.6",
     "description": "Funkit core SDK provides feature-rich and extensible smart wallets built on account abstraction",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -25,8 +25,7 @@
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
         "add-token": "ts-node tests/addToken.ts",
-        "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
-        "prepare": "husky install"
+        "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts"
     },
     "author": "https://fun.xyz/",
     "license": "MIT",
@@ -35,9 +34,9 @@
         "@ethersproject/contracts": "^5.7.0",
         "@lifeomic/attempt": "^3.0.3",
         "@uniswap/sdk": "^3.0.3",
-        "@uniswap/v3-core": "^1.0.1",
-        "@uniswap/v3-sdk": "^3.9.0",
-        "@uniswap/v3-staker": "^1.0.2",
+        "@uniswap/v3-core": "1.0.1",
+        "@uniswap/v3-sdk": "3.9.0",
+        "@uniswap/v3-staker": "1.0.2",
         "dotenv": "^16.0.3",
         "ethers": "5.7.2",
         "node-fetch": "^2.6.11",

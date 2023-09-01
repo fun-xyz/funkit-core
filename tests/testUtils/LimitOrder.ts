@@ -28,6 +28,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
         let auth: Auth
         let wallet: FunWallet
         let opId
+        let chain: Chain
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -45,7 +46,7 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
             })
 
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId.toString() })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId.toString() })
             const client = await chain.getClient()
             const balance = await client.getBalance({ address: await wallet.getAddress() })
             if (balance < parseEther(`${prefundAmt}`)) {
@@ -54,16 +55,6 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
         })
 
         it("swap baseToken(ETH) schedule", async () => {
-            const WETH_ADDR = await Token.getAddress(config.baseToken)
-            if (Number(await Token.getBalance(WETH_ADDR, await wallet.getAddress())) < config.tokenInAmount) {
-                const mintWETHUserOp = await wallet.transfer(auth, await auth.getAddress(), {
-                    token: "eth",
-                    amount: config.tokenInAmount,
-                    to: WETH_ADDR
-                })
-                await wallet.executeOperation(auth, mintWETHUserOp)
-            }
-
             const userOp = await wallet.limitSwapOrder(auth, await auth.getAddress(), {
                 tokenIn: config.baseToken,
                 tokenOut: config.outToken,
@@ -72,18 +63,17 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             })
 
             opId = await wallet.scheduleOperation(auth, userOp)
-            console.log("limitOrder opId: ", opId)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
         })
 
-        it("transfer baseToken(ETH) executed", async () => {
-            const balBefore = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
+        it("swap baseToken(ETH) executed", async () => {
+            const balBefore = await Token.getBalanceBN(config.outToken, await wallet.getAddress(), chain)
             await new Promise((resolve) => {
                 setTimeout(resolve, 400_000)
             })
-            const balAfter = await Token.getBalanceBN(config.outToken, await wallet.getAddress())
+            const balAfter = await Token.getBalanceBN(config.outToken, await wallet.getAddress(), chain)
             assert(balAfter > balBefore, `Swap did not execute: Out token balance should be greater than before ${balBefore}, ${balAfter}`)
         })
     })
