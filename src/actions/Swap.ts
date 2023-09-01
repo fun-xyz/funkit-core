@@ -131,10 +131,8 @@ export const oneInchTransactionParams = async (
     }
 
     const approveTx = await getOneInchApproveTx(oneinchSwapParams)
-    console.log("approveTx from main", approveTx)
     if (!approveTx) {
         const swapTx = await getOneInchSwapTx(oneinchSwapParams)
-        console.log("swapTx from main", swapTx)
         return { to: swapTx.to, value: swapTx.value, data: swapTx.data }
     } else {
         const swapTx = await getOneInchSwapTx(oneinchSwapParams)
