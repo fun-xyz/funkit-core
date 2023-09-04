@@ -36,8 +36,8 @@ const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams): Promis
         ).json()
     )["allowance"]
     if (Number(allowance) < Number(oneInchSwapParams.amount)) {
-        const approveTxURL = await oneInchAPIRequest(
-            "/approve/transaction",
+        const url = await oneInchAPIRequest(
+            "approve/transaction",
             {
                 tokenAddress: oneInchSwapParams.src,
                 amount: oneInchSwapParams.amount
@@ -45,7 +45,7 @@ const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams): Promis
             oneInchSwapParams.chainId
         )
         const approveTx = await (
-            await fetch(approveTxURL, {
+            await fetch(url, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${ONE_INCH_API_KEY}` // notice the Bearer before your token
