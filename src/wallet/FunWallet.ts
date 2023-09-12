@@ -379,7 +379,7 @@ export class FunWallet extends FirstClassActions {
                 "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
             )
         }
-        userId = pad(userId as Hex, { size: 32 })
+        userId = pad(userId as Hex, { size: 32 }).toLowerCase()
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
