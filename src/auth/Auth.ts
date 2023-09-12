@@ -184,7 +184,7 @@ export class Auth {
      * @returns {Promise<Hex>} The padded user ID.
      */
     async getUserId(): Promise<Hex> {
-        return pad(await this.getAddress(), { size: 32 })
+        return pad(await this.getAddress(), { size: 32 }).toLowerCase() as Hex
     }
 
     /**

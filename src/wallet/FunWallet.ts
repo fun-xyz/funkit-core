@@ -293,7 +293,7 @@ export class FunWallet extends FirstClassActions {
         const groupIds: Hex[] = []
 
         for (const userId of userIds) {
-            if (pad(userId, { size: 32 }) === (await auth.getUserId())) {
+            if (pad(userId, { size: 32 }).toLowerCase() === (await auth.getUserId())) {
                 users.push({ userId: pad(userId, { size: 32 }) } as User)
             } else {
                 groupIds.push(pad(userId, { size: 32 }))
@@ -379,7 +379,7 @@ export class FunWallet extends FirstClassActions {
                 "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
             )
         }
-        userId = pad(userId as Hex, { size: 32 })
+        userId = pad(userId as Hex, { size: 32 }).toLowerCase()
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
