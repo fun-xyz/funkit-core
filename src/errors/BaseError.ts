@@ -1,4 +1,4 @@
-const discord = "https://discord.gg/7ZRAv4es"
+const discord = "https://discord.gg/mvQunrx6NG"
 export class BaseError extends Error {
     timestamp: string
 
