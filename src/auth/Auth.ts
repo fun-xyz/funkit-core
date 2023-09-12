@@ -281,7 +281,7 @@ export class Auth {
         const hash = await txClient.sendTransaction(action)
 
         let receipt
-        if (chainId !== "1") {
+        if (chainId !== "1" && chainId !== "5") {
             receipt = await client.waitForTransactionReceipt({ hash, timeout: 30_000 })
         } else {
             // ethereum mainnet is crazy slow and viem will throw out error
