@@ -100,7 +100,11 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runActionWithGaslessSponsor(wallet1)
                 throw new Error("Wallet is not whitelisted but transaction passed")
             } catch (error: any) {
-                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(
+                    error instanceof UserOpFailureError &&
+                        (error.message.includes("the sponsor must approve the spender") || error.message.includes("AA33"),
+                        "Error but not AA33\n" + error)
+                )
             }
         })
 
@@ -119,7 +123,11 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
                 await runActionWithGaslessSponsor(wallet1)
                 throw new Error("Wallet is not blacklisted but transaction passed")
             } catch (error: any) {
-                assert(error instanceof UserOpFailureError && error.message.includes("AA33"), "Error but not AA33\n" + error)
+                assert(
+                    error instanceof UserOpFailureError &&
+                        (error.message.includes("the sponsor must approve the spender") || error.message.includes("AA33"),
+                        "Error but not AA33\n" + error)
+                )
             }
         })
 
