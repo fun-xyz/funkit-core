@@ -1,11 +1,14 @@
 import { assert } from "chai"
+import { Hex } from "viem"
 import { randInt } from "./utils"
-import { SessionKeyParams, createSessionUser } from "../../src/actions"
-import { Auth } from "../../src/auth"
+import { SessionKeyParams } from "../../src/actions"
+import { Auth, SessionKeyAuth } from "../../src/auth"
 import { AddressZero, ERC20_ABI } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
+import { MerkleTree } from "../../src/utils/MerkleUtils"
+import { getSigHash } from "../../src/utils/ViemUtils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -52,7 +55,8 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
         })
 
         describe("With Session Key", () => {
-            const user = createSessionUser()
+            const sessionKeyPrivateKey = randomBytes(32)
+            const user = new SessionKeyAuth({ privateKey: sessionKeyPrivateKey })
             const second = 1000
             const minute = 60 * second
             let deadline
@@ -78,7 +82,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 await wallet.executeOperation(auth, operation)
             })
 
-            it("wallet should have lower allowance of specified token", async () => {
+            it.only("wallet should have lower allowance of specified token", async () => {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
                 const outTokenAddress = await new Token(outToken).getAddress()
@@ -89,6 +93,62 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     token: outTokenAddress
                 })
                 await wallet.executeOperation(user, operation)
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 5000)
+                })
+                const postApprove = await Token.getApproval(outToken, walletAddress, randomAddress)
+
+                assert(BigInt(await new Token(outTokenAddress).getDecimalAmount(randomApproveAmount)) === postApprove, "Approve failed")
+            })
+
+            it.only("use a regenerated session key with the same parameter", async () => {
+                const newuser = new SessionKeyAuth({ privateKey: sessionKeyPrivateKey }, await user.getRuleId(), await user.getRoleId())
+                const basetokenAddr = await Token.getAddress(baseToken)
+                const outtokenAddr = await Token.getAddress(outToken)
+                const params: SessionKeyParams = {
+                    user,
+                    targetWhitelist: [outtokenAddr, basetokenAddr],
+                    actionWhitelist: [
+                        {
+                            abi: ERC20_ABI,
+                            functionWhitelist: ["approve"]
+                        }
+                    ],
+                    feeTokenWhitelist: [AddressZero],
+                    feeRecipientWhitelist: [feeRecip],
+                    deadline
+                }
+                const recipients = params.feeRecipientWhitelist!.map((recipient) => recipient as Hex)
+                const tokens = await Promise.all(params.feeTokenWhitelist!.map((token) => Token.getAddress(token)))
+                const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
+                newuser.setFeeRecipientMerkleTree(feeRecipientAndTokenMerkleTree)
+
+                const selectors: Hex[] = []
+                params.actionWhitelist.forEach((actionWhitelistItem) => {
+                    if (typeof actionWhitelistItem === "string") {
+                        selectors.push(actionWhitelistItem)
+                    } else {
+                        selectors.push(
+                            ...actionWhitelistItem.functionWhitelist.map((functionName) =>
+                                getSigHash(actionWhitelistItem.abi, functionName)
+                            )
+                        )
+                    }
+                })
+                const targets = params.targetWhitelist.map((target) => target as Hex)
+
+                const targetSelectorMerkleTree = new MerkleTree([...targets, ...selectors])
+                newuser.setTargetSelectorMerkleTree(targetSelectorMerkleTree)
+                const randomAddress = randomBytes(20)
+                const walletAddress = await wallet.getAddress()
+                const outTokenAddress = await new Token(outToken).getAddress()
+                const randomApproveAmount = randInt(10000)
+                const operation = await wallet.tokenApprove(newuser, await newuser.getAddress(), {
+                    spender: randomAddress,
+                    amount: randomApproveAmount,
+                    token: outTokenAddress
+                })
+                console.log(await wallet.executeOperation(user, operation))
                 await new Promise((resolve) => {
                     setTimeout(resolve, 5000)
                 })

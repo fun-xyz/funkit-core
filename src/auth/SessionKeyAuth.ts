@@ -18,10 +18,18 @@ export class SessionKeyAuth extends Auth {
     targetSelectorMerkleTree?: MerkleTree
     feeRecipientMerkleTree?: MerkleTree
 
-    constructor(authInput: AuthInput) {
+    constructor(authInput: AuthInput, ruleId: Hex = randomBytes(32), roleId: Hex = randomBytes(32)) {
         super(authInput)
-        this.ruleId = randomBytes(32)
-        this.roleId = randomBytes(32)
+        this.ruleId = ruleId
+        this.roleId = roleId
+    }
+
+    async getRuleId(): Promise<Hex> {
+        return this.ruleId
+    }
+
+    async getRoleId(): Promise<Hex> {
+        return this.roleId
     }
 
     override async signOp(operation: Operation, chain: Chain): Promise<Hex> {
