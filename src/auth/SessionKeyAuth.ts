@@ -3,7 +3,6 @@ import { Auth } from "./Auth"
 import { AuthInput, WalletCallData } from "./types"
 import { ETH_TRANSFER_SELECTOR, WALLET_ABI } from "../common"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
-import { randomBytes } from "../utils"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
 
@@ -15,13 +14,15 @@ export class SessionKeyAuth extends Auth {
     ruleId: Hex
     roleId: Hex
 
-    targetSelectorMerkleTree?: MerkleTree
-    feeRecipientMerkleTree?: MerkleTree
+    targetSelectorMerkleTree: MerkleTree
+    feeRecipientMerkleTree: MerkleTree
 
-    constructor(authInput: AuthInput, ruleId: Hex = randomBytes(32), roleId: Hex = randomBytes(32)) {
+    constructor(authInput: AuthInput, ruleId: Hex, roleId: Hex, targetSelectorMerkleTree: MerkleTree, feeRecipientMerkleTree: MerkleTree) {
         super(authInput)
         this.ruleId = ruleId
         this.roleId = roleId
+        this.targetSelectorMerkleTree = targetSelectorMerkleTree
+        this.feeRecipientMerkleTree = feeRecipientMerkleTree
     }
 
     async getRuleId(): Promise<Hex> {
@@ -84,14 +85,6 @@ export class SessionKeyAuth extends Auth {
         } catch {
             throw new Error("Function or target is not allowed in session key")
         }
-    }
-
-    setTargetSelectorMerkleTree(targetSelectorMerkleTree: MerkleTree) {
-        this.targetSelectorMerkleTree = targetSelectorMerkleTree
-    }
-
-    setFeeRecipientMerkleTree(feeRecipientMerkleTree: MerkleTree) {
-        this.feeRecipientMerkleTree = feeRecipientMerkleTree
     }
 }
 

@@ -1,5 +1,4 @@
 import { Hex } from "viem"
-import { SessionKeyAuth } from "../auth"
 import { TransactionParams } from "../common"
 
 export interface ApproveAndExecParams {
@@ -84,7 +83,9 @@ export type SessionKeyParams = {
     deadline: number
     actionValueLimit?: bigint
     feeValueLimit?: bigint
-    user: SessionKeyAuth
+    ruleId: Hex // 32 bytes
+    roleId: Hex // 32 bytes
+    userId?: Hex // 32 bytes
 }
 
 export type ActionWhitelistObject = {

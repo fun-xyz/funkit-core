@@ -56,7 +56,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
 
         describe("With Session Key", () => {
             const sessionKeyPrivateKey = randomBytes(32)
-            const user = new SessionKeyAuth({ privateKey: sessionKeyPrivateKey })
+            const user = new SessionKeyAuth({ privateKey: sessionKeyPrivateKey }, )
             const second = 1000
             const minute = 60 * second
             let deadline
@@ -102,7 +102,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             })
 
             it.only("use a regenerated session key with the same parameter", async () => {
-                const newuser = new SessionKeyAuth({ privateKey: sessionKeyPrivateKey }, await user.getRuleId(), await user.getRoleId())
+                const newuser = createSessionUser()
                 const basetokenAddr = await Token.getAddress(baseToken)
                 const outtokenAddr = await Token.getAddress(outToken)
                 const params: SessionKeyParams = {
