@@ -136,7 +136,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 await wallet.executeOperation(auth, operation)
             })
 
-            it.only("ETH => ERC20", async () => {
+            it("ETH => ERC20", async () => {
                 const walletAddress = await wallet.getAddress()
                 const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
 

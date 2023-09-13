@@ -1,14 +1,11 @@
 import { assert } from "chai"
-import { Hex } from "viem"
 import { randInt } from "./utils"
-import { SessionKeyParams } from "../../src/actions"
+import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth, SessionKeyAuth } from "../../src/auth"
 import { AddressZero, ERC20_ABI } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
 import { fundWallet, randomBytes } from "../../src/utils"
-import { MerkleTree } from "../../src/utils/MerkleUtils"
-import { getSigHash } from "../../src/utils/ViemUtils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -55,18 +52,20 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
         })
 
         describe("With Session Key", () => {
+            let user: SessionKeyAuth
             const sessionKeyPrivateKey = randomBytes(32)
-            const user = new SessionKeyAuth({ privateKey: sessionKeyPrivateKey }, )
-            const second = 1000
-            const minute = 60 * second
+            const ruleId = randomBytes(32)
+            const roleId = randomBytes(32)
+            const minute = 60 * 1000
             let deadline
+            let outtokenAddr
+            let basetokenAddr
             const feeRecip = randomBytes(20)
             before(async () => {
                 deadline = (Date.now() + 3 * minute) / 1000
-                const basetokenAddr = await Token.getAddress(baseToken)
-                const outtokenAddr = await Token.getAddress(outToken)
+                basetokenAddr = await Token.getAddress(baseToken)
+                outtokenAddr = await Token.getAddress(outToken)
                 const sessionKeyParams: SessionKeyParams = {
-                    user,
                     targetWhitelist: [outtokenAddr, basetokenAddr],
                     actionWhitelist: [
                         {
@@ -76,13 +75,17 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     ],
                     feeTokenWhitelist: [AddressZero],
                     feeRecipientWhitelist: [feeRecip],
-                    deadline
+                    deadline,
+                    ruleId: ruleId,
+                    roleId: roleId
                 }
+                user = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams)
+                sessionKeyParams.userId = await user.getUserId()
                 const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
                 await wallet.executeOperation(auth, operation)
             })
 
-            it.only("wallet should have lower allowance of specified token", async () => {
+            it("wallet should have lower allowance of specified token", async () => {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
                 const outTokenAddress = await new Token(outToken).getAddress()
@@ -101,12 +104,8 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 assert(BigInt(await new Token(outTokenAddress).getDecimalAmount(randomApproveAmount)) === postApprove, "Approve failed")
             })
 
-            it.only("use a regenerated session key with the same parameter", async () => {
-                const newuser = createSessionUser()
-                const basetokenAddr = await Token.getAddress(baseToken)
-                const outtokenAddr = await Token.getAddress(outToken)
-                const params: SessionKeyParams = {
-                    user,
+            it("use a regenerated session key with the same parameters", async () => {
+                const sessionKeyParams: SessionKeyParams = {
                     targetWhitelist: [outtokenAddr, basetokenAddr],
                     actionWhitelist: [
                         {
@@ -116,29 +115,12 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     ],
                     feeTokenWhitelist: [AddressZero],
                     feeRecipientWhitelist: [feeRecip],
-                    deadline
+                    deadline,
+                    ruleId: ruleId,
+                    roleId: roleId
                 }
-                const recipients = params.feeRecipientWhitelist!.map((recipient) => recipient as Hex)
-                const tokens = await Promise.all(params.feeTokenWhitelist!.map((token) => Token.getAddress(token)))
-                const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
-                newuser.setFeeRecipientMerkleTree(feeRecipientAndTokenMerkleTree)
+                const newuser = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams)
 
-                const selectors: Hex[] = []
-                params.actionWhitelist.forEach((actionWhitelistItem) => {
-                    if (typeof actionWhitelistItem === "string") {
-                        selectors.push(actionWhitelistItem)
-                    } else {
-                        selectors.push(
-                            ...actionWhitelistItem.functionWhitelist.map((functionName) =>
-                                getSigHash(actionWhitelistItem.abi, functionName)
-                            )
-                        )
-                    }
-                })
-                const targets = params.targetWhitelist.map((target) => target as Hex)
-
-                const targetSelectorMerkleTree = new MerkleTree([...targets, ...selectors])
-                newuser.setTargetSelectorMerkleTree(targetSelectorMerkleTree)
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
                 const outTokenAddress = await new Token(outToken).getAddress()

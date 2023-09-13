@@ -50,6 +50,15 @@ export const createSessionKeyTransactionParams = async (
             "https://docs.fun.xyz"
         )
     }
+    if (params.userId === undefined) {
+        throw new InvalidParameterError(
+            ErrorCode.MissingParameter,
+            "userId is required",
+            { params },
+            "Provide userId when creating a session key.",
+            "https://docs.fun.xyz"
+        )
+    }
     let { actionValueLimit, feeValueLimit } = params
     actionValueLimit ??= 0n
     feeValueLimit ??= 0n
