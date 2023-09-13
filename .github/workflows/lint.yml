@@ -20,8 +20,8 @@ jobs:
                   node-version: "16"
                   cache: yarn
 
-            - name: Install 
+            - name: Install
               run: yarn install
-            
+
             - name: Lint
               run: yarn lint:fix
