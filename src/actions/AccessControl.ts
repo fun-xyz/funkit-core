@@ -73,11 +73,11 @@ export const createSessionKeyTransactionParams = async (
     }
     const roleId = params.roleId
     const ruleId = params.ruleId
-    const userid = params.userId
+    const userId = params.userId
 
     const setRuleCallData = RBAC_CONTRACT_INTERFACE.encodeData("setRule", [ruleId, ruleStruct])
     const connectRuleAndRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addRuleToRole", [roleId, ruleId])
-    const connectUserToRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addUserToRole", [roleId, userid])
+    const connectUserToRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addUserToRole", [roleId, userId])
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "multiCall", [

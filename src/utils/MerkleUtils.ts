@@ -1,4 +1,5 @@
-import { Hex, concat, keccak256, padHex } from "viem"
+import { Hex, concat, keccak256 } from "viem"
+import { HashZero } from "../common"
 
 // Copied from contracts repo
 
@@ -74,8 +75,6 @@ export const verifyPath = (root: Hex, item: Hex, path: Hex[]) => {
     return hash === root
 }
 
-export const HashOne = padHex("0x1", { size: 32 })
-
 export class MerkleTree {
     tree: Hex[]
     constructor(list: Hex[]) {
@@ -89,7 +88,7 @@ export class MerkleTree {
     }
     getRootHash() {
         if (this.tree.length === 0) {
-            return HashOne
+            return HashZero
         }
         return this.tree[1]
     }

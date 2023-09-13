@@ -25,14 +25,6 @@ export class SessionKeyAuth extends Auth {
         this.feeRecipientMerkleTree = feeRecipientMerkleTree
     }
 
-    async getRuleId(): Promise<Hex> {
-        return this.ruleId
-    }
-
-    async getRoleId(): Promise<Hex> {
-        return this.roleId
-    }
-
     override async signOp(operation: Operation, chain: Chain): Promise<Hex> {
         if (!this.targetSelectorMerkleTree) {
             throw new Error("SessionKeyAuth not connected to wallet")
