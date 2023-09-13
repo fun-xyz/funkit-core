@@ -1,5 +1,4 @@
-import { Hex, concat, keccak256 } from "viem"
-import { HashZero } from "../common"
+import { Hex, concat, keccak256, padHex } from "viem"
 
 // Copied from contracts repo
 
@@ -88,7 +87,7 @@ export class MerkleTree {
     }
     getRootHash() {
         if (this.tree.length === 0) {
-            return HashZero
+            return padHex("0x1", { size: 32 })
         }
         return this.tree[1]
     }
