@@ -11,26 +11,16 @@ import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
 
 export const createFeeRecipientAndTokenMerkleTree = async (params: SessionKeyParams): Promise<MerkleTree> => {
-    if (params.feeRecipientWhitelist && params.feeTokenWhitelist) {
-        const recipients = params.feeRecipientWhitelist.map((recipient) => getAddress(recipient))
-        const tokens = await Promise.all(params.feeTokenWhitelist.map((token) => Token.getAddress(token)))
-        const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
-        return feeRecipientAndTokenMerkleTree
-    } else {
-        return new MerkleTree([])
-    }
+    const recipients = (params.feeRecipientWhitelist ?? []).map((recipient) => getAddress(recipient))
+    const tokens = await Promise.all((params.feeTokenWhitelist ?? []).map((token) => Token.getAddress(token)))
+    const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
+    return feeRecipientAndTokenMerkleTree
 }
 
-export const createTargetSelectorMerkleTree = async (params: SessionKeyParams): Promise<MerkleTree> => {
+export const createTargetSelectorMerkleTree = (params: SessionKeyParams): MerkleTree => {
     const selectors: Hex[] = []
     params.actionWhitelist.forEach((actionWhitelistItem) => {
-        if (typeof actionWhitelistItem === "string") {
-            selectors.push(actionWhitelistItem)
-        } else {
-            selectors.push(
-                ...actionWhitelistItem.functionWhitelist.map((functionName) => getSigHash(actionWhitelistItem.abi, functionName))
-            )
-        }
+        selectors.push(...actionWhitelistItem.functionWhitelist.map((functionName) => getSigHash(actionWhitelistItem.abi, functionName)))
     })
     const targets = params.targetWhitelist.map((target) => getAddress(target))
     const targetSelectorMerkleTree = new MerkleTree([...targets, ...selectors])
@@ -62,7 +52,7 @@ export const createSessionKeyTransactionParams = async (
     let { actionValueLimit, feeValueLimit } = params
     actionValueLimit ??= 0n
     feeValueLimit ??= 0n
-    const targetSelectorMerkleTree = await createTargetSelectorMerkleTree(params)
+    const targetSelectorMerkleTree = createTargetSelectorMerkleTree(params)
     const feeRecipientTokenMerkleTree = await createFeeRecipientAndTokenMerkleTree(params)
     const ruleStruct: RuleStruct = {
         deadline: convertTimestampToBigInt(params.deadline),
@@ -86,7 +76,7 @@ export const createSessionKeyTransactionParams = async (
 }
 
 export const createSessionUser = async (auth: AuthInput, params: SessionKeyParams): Promise<SessionKeyAuth> => {
-    const targetSelectorMerkleTree = await createTargetSelectorMerkleTree(params)
+    const targetSelectorMerkleTree = createTargetSelectorMerkleTree(params)
     const feeRecipientAndTokenMerkleTree = await createFeeRecipientAndTokenMerkleTree(params)
     return new SessionKeyAuth(auth, params.ruleId, params.roleId, targetSelectorMerkleTree, feeRecipientAndTokenMerkleTree)
 }
