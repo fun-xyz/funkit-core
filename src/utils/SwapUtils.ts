@@ -2,12 +2,9 @@ import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
-import { UniSwapPoolFeeOptions } from "../actions"
+import { UniswapPoolFeeOptions } from "../actions"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
-
-const ONE_INCH_API_URL = "https://api.1inch.dev/swap"
-const ONE_INCH_VERSION = "v5.2"
 
 export function fromReadableAmount(amount: number, decimals: number) {
     return parseUnits(`${amount}`, decimals)
@@ -187,7 +184,7 @@ type SwapParamsUtils = {
     recipient: Address
     percentDecimal: number
     slippage: number
-    poolFee: UniSwapPoolFeeOptions
+    poolFee: UniswapPoolFeeOptions
 }
 
 export type UniswapV3Addrs = {
@@ -245,11 +242,4 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
     }
-}
-
-export async function oneInchAPIRequest(methodName: string, queryParams: any, chainId: number): Promise<string> {
-    const params = new URLSearchParams(queryParams)
-    const url = `${ONE_INCH_API_URL}/${ONE_INCH_VERSION}/${chainId}/${methodName}?${params.toString()}`
-    await new Promise((r) => setTimeout(r, 1000))
-    return url
 }

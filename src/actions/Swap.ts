@@ -1,5 +1,5 @@
 import { Address, isAddress } from "viem"
-import { OneInchSwapParams, SwapParams, UniSwapPoolFeeOptions } from "./types"
+import { OneInchSwapParams, SwapParams, UniswapPoolFeeOptions } from "./types"
 import { get1InchAllowance, get1InchApproveTx, get1InchSwapTx } from "../apis/SwapApis"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -140,7 +140,7 @@ export const uniswapV3SwapTransactionParams = async (
         recipient: params.recipient! as Address,
         percentDecimal,
         slippage,
-        poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
+        poolFee: params.poolFee ?? UniswapPoolFeeOptions.medium
     }
 
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
@@ -187,7 +187,7 @@ export const uniswapV2SwapTransactionParams = async (
         recipient: params.recipient! as Address,
         percentDecimal,
         slippage,
-        poolFee: params.poolFee ?? UniSwapPoolFeeOptions.medium
+        poolFee: params.poolFee ?? UniswapPoolFeeOptions.medium
     }
     const chainId = Number(await chain.getChainId())
 

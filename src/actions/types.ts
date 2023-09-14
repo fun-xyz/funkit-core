@@ -52,7 +52,7 @@ export type FinishUnstakeParams = {
     walletAddress: string
 }
 
-export enum UniSwapPoolFeeOptions {
+export enum UniswapPoolFeeOptions {
     lowest = "lowest",
     low = "low",
     medium = "medium",
@@ -65,7 +65,7 @@ export type SwapParams = {
     inAmount: number
     slippage?: number
     recipient?: string
-    poolFee?: UniSwapPoolFeeOptions
+    poolFee?: UniswapPoolFeeOptions
 }
 
 export type LimitOrderParam = {
@@ -73,7 +73,7 @@ export type LimitOrderParam = {
     tokenOut: string
     tokenInAmount: number
     tokenOutAmount: number
-    poolFee?: UniSwapPoolFeeOptions
+    poolFee?: UniswapPoolFeeOptions
 }
 
 export type SessionKeyParams = {
