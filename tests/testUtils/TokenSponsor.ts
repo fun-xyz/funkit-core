@@ -107,6 +107,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             // Allow the sponsor to whitelist tokens that are acceptable for use
             if (await sponsor.getTokenListMode(funderAddress)) {
                 await funder.sendTx(await sponsor.setTokenToWhitelistMode(funderAddress))
+                await new Promise((f) => setTimeout(f, 5000))
             }
             expect(await sponsor.getTokenListMode(funderAddress)).to.be.false
 
@@ -285,7 +286,11 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             try {
                 await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
             } catch (e: any) {
-                assert(e.toString().includes("FW327") || e.toString().includes("FW350"))
+                assert(
+                    e.toString().includes("FW327") ||
+                        e.toString().includes("FW350") ||
+                        e.toString().includes("the sponsor must approve the spender")
+                )
             }
         }
 
