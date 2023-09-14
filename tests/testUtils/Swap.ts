@@ -6,7 +6,7 @@ import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
-import { fundWallet, isContract, randomBytes } from "../../src/utils"
+import { fundWallet, generateRoleId, generateRuleId, isContract, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -126,8 +126,8 @@ export const SwapTest = (config: SwapTestConfig) => {
                         }
                     ],
                     deadline,
-                    ruleId: randomBytes(32),
-                    roleId: randomBytes(32)
+                    ruleId: generateRuleId(),
+                    roleId: generateRoleId()
                 }
                 user = await createSessionUser({ privateKey: randomBytes(32) }, sessionKeyParams)
                 sessionKeyParams.userId = await user.getUserId()

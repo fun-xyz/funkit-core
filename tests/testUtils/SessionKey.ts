@@ -5,7 +5,7 @@ import { Auth, SessionKeyAuth } from "../../src/auth"
 import { AddressZero, ERC20_ABI } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet, randomBytes } from "../../src/utils"
+import { fundWallet, generateRoleId, generateRuleId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -54,8 +54,8 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
         describe("With Session Key", () => {
             let user: SessionKeyAuth
             const sessionKeyPrivateKey = randomBytes(32)
-            const ruleId = randomBytes(32)
-            const roleId = randomBytes(32)
+            const ruleId = generateRuleId()
+            const roleId = generateRoleId()
             const minute = 60 * 1000
             let deadline
             let outtokenAddr
