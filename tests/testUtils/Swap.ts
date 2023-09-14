@@ -1,16 +1,15 @@
 import { assert, expect } from "chai"
 import { Hex } from "viem"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
-import { Auth } from "../../src/auth"
+import { Auth, SessionKeyAuth } from "../../src/auth"
 import { APPROVE_AND_SWAP_ABI, ERC20_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { InternalFailureError, InvalidParameterError } from "../../src/errors"
-import { fundWallet, isContract } from "../../src/utils"
+import { fundWallet, generateRoleId, generateRuleId, isContract, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
-
 export interface SwapTestConfig {
     chainId: number
     inToken: string
@@ -111,7 +110,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         })
 
         describe("With Session Key", () => {
-            const user = createSessionUser()
+            let user: SessionKeyAuth
             before(async () => {
                 const second = 1000
                 const minute = 60 * second
@@ -119,7 +118,6 @@ export const SwapTest = (config: SwapTestConfig) => {
                 const deadline = (Date.now() + 10 * minute) / 1000
                 const targetAddr = await chain.getAddress("tokenSwapAddress")
                 const sessionKeyParams: SessionKeyParams = {
-                    user,
                     targetWhitelist: [targetAddr],
                     actionWhitelist: [
                         {
@@ -127,8 +125,12 @@ export const SwapTest = (config: SwapTestConfig) => {
                             functionWhitelist: ["executeSwapETH", "executeSwapERC20"]
                         }
                     ],
-                    deadline
+                    deadline,
+                    ruleId: generateRuleId(),
+                    roleId: generateRoleId()
                 }
+                user = await createSessionUser({ privateKey: randomBytes(32) }, sessionKeyParams)
+                sessionKeyParams.userId = await user.getUserId()
 
                 const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
                 await wallet.executeOperation(auth, operation)
