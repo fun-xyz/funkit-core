@@ -1,91 +1,40 @@
-import fetch from "node-fetch"
 import { Address, isAddress } from "viem"
 import { OneInchSwapParams, SwapParams, UniSwapPoolFeeOptions } from "./types"
+import { get1InchAllowance, get1InchApproveTx, get1InchSwapTx } from "../apis/SwapApis"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
 import { ErrorCode, InvalidParameterError } from "../errors"
-import { UniswapV2Addrs, UniswapV3Addrs, oneInchAPIRequest, swapExec, swapExecV2 } from "../utils/SwapUtils"
+import { UniswapV2Addrs, UniswapV3Addrs, swapExec, swapExecV2 } from "../utils/SwapUtils"
 import { ContractInterface } from "../viem/ContractInterface"
 
 export const oneInchSupported: number[] = [1, 10, 56, 137, 8453, 42161]
 export const uniswapV3Supported = [1, 5, 10, 56, 137, 31337, 36865, 42161]
 const DEFAULT_SLIPPAGE = 0.5 // .5%
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-const ONE_INCH_API_KEY = "mOBW0CLnyH5HMaxY3O6xY75PPe0uHC9q"
 const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
 const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams): Promise<TransactionParams | null> => {
-    const url = await oneInchAPIRequest(
-        "approve/allowance",
-        {
-            tokenAddress: oneInchSwapParams.src,
-            walletAddress: oneInchSwapParams.from
-        },
-        oneInchSwapParams.chainId
-    )
-    const allowance = (
-        await (
-            await fetch(url, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${ONE_INCH_API_KEY}` // notice the Bearer before your token
-                }
-            })
-        ).json()
-    )["allowance"]
+    const allowance = await get1InchAllowance(oneInchSwapParams.chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.from)
     if (Number(allowance) < Number(oneInchSwapParams.amount)) {
-        const url = await oneInchAPIRequest(
-            "approve/transaction",
-            {
-                tokenAddress: oneInchSwapParams.src,
-                amount: oneInchSwapParams.amount
-            },
-            oneInchSwapParams.chainId
-        )
-        const approveTx = await (
-            await fetch(url, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${ONE_INCH_API_KEY}` // notice the Bearer before your token
-                }
-            })
-        ).json()
-        const transaction = {
-            to: approveTx.to,
-            value: approveTx.value,
-            data: approveTx.data
-        }
-        return transaction
+        const approveTx = await get1InchApproveTx(oneInchSwapParams.chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.amount)
+        return approveTx
     }
     return null
 }
 
 const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams): Promise<TransactionParams> => {
-    const formattedData = {
-        src: oneinchSwapParams.src,
-        dst: oneinchSwapParams.dst,
-        amount: oneinchSwapParams.amount,
-        from: oneinchSwapParams.from,
-        slippage: oneinchSwapParams.slippage,
-        disableEstimate: oneinchSwapParams.disableEstimate,
-        allowPartialFill: oneinchSwapParams.allowPartialFill
-    }
-    const url = await oneInchAPIRequest("swap", formattedData, oneinchSwapParams.chainId)
-    const res = await (
-        await fetch(url, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${ONE_INCH_API_KEY}` // notice the Bearer before your token
-            }
-        })
-    ).json()
-    return {
-        to: res.tx.to,
-        value: Number(res.tx.value),
-        data: res.tx.data
-    }
+    return await get1InchSwapTx(
+        oneinchSwapParams.chainId.toString(),
+        oneinchSwapParams.src.toString(),
+        oneinchSwapParams.dst.toString(),
+        oneinchSwapParams.amount.toString(),
+        oneinchSwapParams.from.toString(),
+        oneinchSwapParams.slippage.toString(),
+        oneinchSwapParams.disableEstimate.toString(),
+        oneinchSwapParams.allowPartialFill.toString()
+    )
 }
 
 export const oneInchTransactionParams = async (
@@ -131,11 +80,10 @@ export const oneInchTransactionParams = async (
     }
 
     const approveTx = await getOneInchApproveTx(oneinchSwapParams)
+    const swapTx = await getOneInchSwapTx(oneinchSwapParams)
     if (!approveTx) {
-        const swapTx = await getOneInchSwapTx(oneinchSwapParams)
-        return { to: swapTx.to, value: swapTx.value, data: swapTx.data }
+        return swapTx
     } else {
-        const swapTx = await getOneInchSwapTx(oneinchSwapParams)
         return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
             swapTx.to,
             swapTx.value,

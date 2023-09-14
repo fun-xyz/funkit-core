@@ -8,6 +8,6 @@ const config: SwapTestConfig = {
     amount: 0.0001,
     erc20toerc20Amt: 0.00001,
     erc20toethAmt: 0.0001,
-    prefundAmt: 0.001
+    prefundAmt: 0.003
 }
 SwapTest(config)
