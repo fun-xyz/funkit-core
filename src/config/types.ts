@@ -2,7 +2,7 @@ import { Address } from "viem"
 import { Chain } from "../data"
 
 export interface EnvOption {
-    chain: string | Chain | number
+    chain?: string | Chain | number
     gasSponsor?: {
         sponsorAddress?: Address
         token?: string
