@@ -1,4 +1,5 @@
-import { Hex } from "viem"
+import { Address, Hex } from "viem"
+import { SessionKeyAuth } from "../auth"
 import { TransactionParams } from "../common"
 
 export interface ApproveAndExecParams {
@@ -51,7 +52,7 @@ export type FinishUnstakeParams = {
     walletAddress: string
 }
 
-export enum UniSwapPoolFeeOptions {
+export enum UniswapPoolFeeOptions {
     lowest = "lowest",
     low = "low",
     medium = "medium",
@@ -64,7 +65,7 @@ export type SwapParams = {
     inAmount: number
     slippage?: number
     recipient?: string
-    poolFee?: UniSwapPoolFeeOptions
+    poolFee?: UniswapPoolFeeOptions
 }
 
 export type LimitOrderParam = {
@@ -72,7 +73,7 @@ export type LimitOrderParam = {
     tokenOut: string
     tokenInAmount: number
     tokenOutAmount: number
-    poolFee?: UniSwapPoolFeeOptions
+    poolFee?: UniswapPoolFeeOptions
 }
 
 export type SessionKeyParams = {
@@ -141,4 +142,15 @@ export type UpdateGroupParams = {
 
 export type RemoveGroupParams = {
     groupId: Hex
+}
+
+export type OneInchSwapParams = {
+    src: Address // token address or 0xeee...eee for ETH
+    dst: Address // token address or 0xeee...eee for ETH
+    amount: string // amount of src tokens to swap (in wei)
+    from: Address // wallet address
+    slippage: number // Maximum acceptable slippage percentage for the swap (e.g., 1 for 1%)
+    disableEstimate: boolean // Set to true to disable estimation of swap details
+    allowPartialFill: boolean // Set to true to allow partial filling of the swap order
+    chainId: number // Chain ID of the blockchain to use (e.g., 1 for Ethereum Mainnet)
 }
