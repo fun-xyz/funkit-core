@@ -1,6 +1,6 @@
 import { Address, Hex, PublicClient, createPublicClient, http } from "viem"
 import { Addresses, ChainInput, UserOperation } from "./types"
-import { estimateOp, getChainFromId, getChainFromName, getModuleInfo } from "../apis"
+import { GasPrice, estimateOp, getChainFromId, getChainFromName, getGasPrice, getModuleInfo } from "../apis"
 import {
     BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION,
     CONTRACT_ADDRESSES,
@@ -158,9 +158,9 @@ export class Chain {
         return this.client!
     }
 
-    async getFeeData(): Promise<bigint> {
+    async getFeeData(): Promise<GasPrice> {
         await this.init()
-        return this.client!.getGasPrice()
+        return await getGasPrice(this.id!)
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {

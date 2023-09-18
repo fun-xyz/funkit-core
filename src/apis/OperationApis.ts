@@ -1,5 +1,5 @@
 import { Address, Hex } from "viem"
-import { EstimateOpInput, EstimatedGas, ExecuteOpInput, ScheduleOpInput } from "./types"
+import { EstimateOpInput, EstimatedGas, ExecuteOpInput, GasPrice, ScheduleOpInput } from "./types"
 import { API_URL } from "../common/constants"
 import { ExecutionReceipt } from "../common/types"
 import { Operation, OperationStatus } from "../data"
@@ -74,4 +74,8 @@ export const getFullReceipt = async (opId, chainId, userOpHash): Promise<Executi
     return {
         ...result.receipt
     }
+}
+
+export const getGasPrice = async (chainId: string): Promise<GasPrice> => {
+    return await sendGetRequest(API_URL, `operation/chain/${chainId}/gas-price`)
 }
