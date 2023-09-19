@@ -1,6 +1,7 @@
 import { Address, pad } from "viem"
 import { addOwnerTxParams, createSessionKeyTransactionParams, removeOwnerTxParams } from "./AccessControl"
 import { createExecuteBatchTxParams } from "./BatchActions"
+import { bridgeTransactionParams } from "./Bridge"
 import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
 import { limitSwapOrderTransactionParams } from "./LimitOrder"
 import {
@@ -32,6 +33,7 @@ import {
     AddOwnerParams,
     AddUserToGroupParams,
     ApproveParams,
+    BridgeParams,
     CreateGroupParams,
     FinishUnstakeParams,
     LimitOrderParam,
@@ -72,6 +74,17 @@ export abstract class FirstClassActions {
      * @returns {Promise<Address>} The wallet address.
      */
     abstract getAddress(): Promise<Address>
+
+    async bridge(
+        auth: Auth,
+        userId: string,
+        params: BridgeParams,
+        txOptions: EnvOption = (globalThis as any).globalEnvOption
+    ): Promise<Operation> {
+        params.recipient ??= await this.getAddress()
+        const transactionParams = await bridgeTransactionParams(params, await this.getAddress())
+        return await this.createOperation(auth, userId, transactionParams, txOptions)
+    }
 
     /**
      * Initiates a swap operation and returns the prepared operation for execution.

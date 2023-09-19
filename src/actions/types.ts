@@ -153,3 +153,13 @@ export type OneInchSwapParams = {
     allowPartialFill: boolean // Set to true to allow partial filling of the swap order
     chainId: number // Chain ID of the blockchain to use (e.g., 1 for Ethereum Mainnet)
 }
+
+export type BridgeParams = {
+    fromChain: number
+    toChain: number
+    fromToken: string
+    toToken: string
+    amount: number
+    sort?: "output" | "gas" | "time"
+    recipient?: Address
+}
