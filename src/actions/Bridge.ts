@@ -12,8 +12,9 @@ import { ErrorCode, InvalidParameterError } from "../errors"
 
 export const bridgeTransactionParams = async (params: BridgeParams, walletAddress: Address): Promise<TransactionParams> => {
     const { recipient, fromToken, toToken, sort } = params
-    const tokenObj = new Token(fromToken)
-    const amount = await tokenObj.getDecimalAmount(params.amount)
+    const fromTokenObj = new Token(fromToken)
+    const toTokenObj = new Token(toToken)
+    const amount = await fromTokenObj.getDecimalAmount(params.amount)
     if (!recipient) {
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
@@ -32,24 +33,35 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
         walletAddress,
         fromChainId,
         await toChain.getChainId(),
-        fromToken,
-        toToken,
+        await fromTokenObj.getAddress(),
+        await toTokenObj.getAddress(),
         amount,
         sort
     )
     const socketTx = await getSocketBridgeTransaction(route)
     const { allowanceTarget, minimumApprovalAmount } = socketTx.result.approvalData
     if (socketTx.result.approvalData !== null) {
-        const allowanceStatusCheck = await getSocketBridgeAllowance(fromChainId, walletAddress, allowanceTarget, fromToken)
+        const allowanceStatusCheck = await getSocketBridgeAllowance(
+            fromChainId,
+            walletAddress,
+            allowanceTarget,
+            await fromTokenObj.getAddress()
+        )
         const allowanceValue = allowanceStatusCheck.result.value
         if (minimumApprovalAmount > allowanceValue) {
-            const approveTxData = await getSocketBridgeApproveTransaction(fromChainId, walletAddress, allowanceTarget, fromToken, amount)
+            const approveTxData = await getSocketBridgeApproveTransaction(
+                fromChainId,
+                walletAddress,
+                allowanceTarget,
+                await fromTokenObj.getAddress(),
+                amount
+            )
             const approveData = approveTxData.result.data
             return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
                 socketTx.result.txTarget,
                 socketTx.result.value,
                 socketTx.result.txData,
-                fromToken,
+                await fromTokenObj.getAddress(),
                 approveData
             ])
         }
