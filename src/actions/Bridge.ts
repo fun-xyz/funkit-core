@@ -25,11 +25,12 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
     }
     const fromChain = await Chain.getChain({ chainIdentifier: params.fromChain })
     const toChain = await Chain.getChain({ chainIdentifier: params.toChain })
+    const fromChainId = await fromChain.getChainId()
     const approveAndExecAddress = await fromChain.getAddress("approveAndExecAddress")
     const route = await getSocketBridgeQuote(
         recipient,
         walletAddress,
-        await fromChain.getChainId(),
+        fromChainId,
         await toChain.getChainId(),
         fromToken,
         toToken,
@@ -39,16 +40,10 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
     const socketTx = await getSocketBridgeTransaction(route)
     const { allowanceTarget, minimumApprovalAmount } = socketTx.result.approvalData
     if (socketTx.result.approvalData !== null) {
-        const allowanceStatusCheck = await getSocketBridgeAllowance(await fromChain.getChainId(), walletAddress, allowanceTarget, fromToken)
+        const allowanceStatusCheck = await getSocketBridgeAllowance(fromChainId, walletAddress, allowanceTarget, fromToken)
         const allowanceValue = allowanceStatusCheck.result.value
         if (minimumApprovalAmount > allowanceValue) {
-            const approveTxData = await getSocketBridgeApproveTransaction(
-                await fromChain.getChainId(),
-                walletAddress,
-                allowanceTarget,
-                fromToken,
-                amount
-            )
+            const approveTxData = await getSocketBridgeApproveTransaction(fromChainId, walletAddress, allowanceTarget, fromToken, amount)
             const approveData = approveTxData.result.data
             return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
                 socketTx.result.txTarget,
