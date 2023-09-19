@@ -1,5 +1,4 @@
 import { Address, Hex } from "viem"
-import { SessionKeyAuth } from "../auth"
 import { TransactionParams } from "../common"
 
 export interface ApproveAndExecParams {
