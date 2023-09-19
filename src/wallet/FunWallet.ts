@@ -386,7 +386,7 @@ export class FunWallet extends FirstClassActions {
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this.getThisInitCode(chain)
         let paymasterAndData = "0x"
 
-        var maxFeePerGas, maxPriorityFeePerGas
+        let maxFeePerGas, maxPriorityFeePerGas
         const chainId = await chain.getChainId()
         const OPStackChains = ["10", "8453"]
         if (OPStackChains.includes(chainId)) {
