@@ -4,6 +4,7 @@ import { ErrorCode, ResourceNotFoundError } from "../errors"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function getSocketBridgeQuote(
+    recipient: string,
     walletAddress: string,
     fromChain: string,
     toChain: string,
@@ -13,6 +14,7 @@ export async function getSocketBridgeQuote(
     sort?: string
 ): Promise<JSON> {
     const params = new URLSearchParams({
+        recipient: recipient,
         fromChainId: fromChain,
         fromTokenAddress: fromToken,
         toChainId: toChain,
@@ -23,8 +25,7 @@ export async function getSocketBridgeQuote(
         sort: sort ?? "output",
         singleTxOnly: "true"
     }).toString()
-    const res = await sendGetRequest(API_URL, `bridge/quote/?${params}`)
-    const quote = await res.json()
+    const quote = await sendGetRequest(API_URL, `bridge/quote/?${params}`)
     if (!quote.success || quote.result.routes.length === 0) {
         throw new ResourceNotFoundError(
             ErrorCode.BridgeRouteNotFound,
@@ -39,9 +40,7 @@ export async function getSocketBridgeQuote(
 }
 
 export async function getSocketBridgeTransaction(route: any): Promise<any> {
-    const res = await sendPostRequest(API_URL, "bridge/build-tx/", { route })
-    console.log("getSocketBridgeTransaction", await res.json())
-    return await res.json()
+    return await sendPostRequest(API_URL, "bridge/build-tx/", { route })
 }
 
 export async function getSocketBridgeApproveTransaction(
@@ -52,14 +51,13 @@ export async function getSocketBridgeApproveTransaction(
     amount: bigint
 ): Promise<any> {
     const params = new URLSearchParams({
-        chainID: chainId,
+        chainId: chainId,
         owner: sender,
         allowanceTarget: allowanceTarget,
         tokenAddress: token,
         amount: amount.toString()
     }).toString()
-    const res = await sendGetRequest(API_URL, `approval/build-tx/?${params}`)
-    const json = await res.json()
+    const json = await sendGetRequest(API_URL, `bridge/approval/build-tx/?${params}`)
     if (!json.result) {
         throw new ResourceNotFoundError(
             ErrorCode.BridgeApproveTxDataNotFound,
@@ -74,13 +72,12 @@ export async function getSocketBridgeApproveTransaction(
 
 export async function getSocketBridgeAllowance(chainId: string, sender: Address, allowanceTarget: string, token: string): Promise<any> {
     const params = new URLSearchParams({
-        chainID: chainId,
+        chainId: chainId,
         owner: sender,
         allowanceTarget: allowanceTarget,
         tokenAddress: token
     }).toString()
-    const res = await sendGetRequest(API_URL, `approval/check-allowance/?${params}`)
-    const json = await res.json()
+    const json = await sendGetRequest(API_URL, `bridge/approval/check-allowance/?${params}`)
     if (!json.result.value) {
         throw new ResourceNotFoundError(
             ErrorCode.BridgeAllowanceDataNotFound,

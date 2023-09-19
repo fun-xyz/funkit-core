@@ -28,6 +28,7 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
     const approveAndExecAddress = await fromChain.getAddress("approveAndExecAddress")
     const route = await getSocketBridgeQuote(
         recipient,
+        walletAddress,
         await fromChain.getChainId(),
         await toChain.getChainId(),
         fromToken,

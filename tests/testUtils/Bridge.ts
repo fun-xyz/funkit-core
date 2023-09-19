@@ -63,7 +63,6 @@ export const BridgeTest = (config: BridgeTestConfig) => {
         })
 
         it("bridge usdc source to destination chain", async () => {
-            console.log(await wallet.getAddress())
             const userOp = await wallet.bridge(auth, await auth.getAddress(), {
                 fromChain: config.fromChainId,
                 toChain: config.toChainId,
