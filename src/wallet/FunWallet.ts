@@ -285,7 +285,7 @@ export class FunWallet extends FirstClassActions {
         const userIds = new Set([...storedUserIds])
         if (this.userInfo) {
             for (const userId of this.userInfo.keys()) {
-                userIds.add(userId)
+                userIds.add(userId.toLowerCase() as Hex)
             }
         }
 
