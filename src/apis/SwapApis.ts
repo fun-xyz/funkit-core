@@ -44,7 +44,6 @@ export async function get1InchApproveTx(chainId: string, tokenAddress: string, a
         amount
     }).toString()
     const res = await sendGetRequest(API_URL, `swap/${chainId}/approve/transaction/?${params}`)
-    console.log("res", res)
     return {
         to: res.to,
         value: Number(res.value),

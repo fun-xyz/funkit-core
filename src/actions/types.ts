@@ -1,5 +1,6 @@
 import { Address, Hex } from "viem"
 import { TransactionParams } from "../common"
+import { Chain } from "../data"
 
 export interface ApproveAndExecParams {
     approve: ApproveERC20Params
@@ -151,5 +152,20 @@ export type OneInchSwapParams = {
     slippage: number // Maximum acceptable slippage percentage for the swap (e.g., 1 for 1%)
     disableEstimate: boolean // Set to true to disable estimation of swap details
     allowPartialFill: boolean // Set to true to allow partial filling of the swap order
-    chainId: number // Chain ID of the blockchain to use (e.g., 1 for Ethereum Mainnet)
+    chainId: string | Chain | number // Chain ID of the blockchain to use (e.g., 1 for Ethereum Mainnet)
+}
+
+export type BridgeParams = {
+    fromChain: string | Chain | number
+    toChain: string | Chain | number
+    fromToken: string
+    toToken: string
+    amount: number
+    sort?: SocketSort
+    recipient?: Address
+}
+export enum SocketSort {
+    output = "output",
+    gas = "gas",
+    time = "time"
 }
