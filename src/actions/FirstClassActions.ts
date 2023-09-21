@@ -81,9 +81,10 @@ export abstract class FirstClassActions {
         params: BridgeParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        params.recipient ??= await this.getAddress()
-        const transactionParams = await bridgeTransactionParams(params, await this.getAddress())
-        return await this.createOperation(auth, userId, transactionParams, txOptions)
+        const paramsCopy = JSON.parse(JSON.stringify(params))
+        paramsCopy.recipient ??= await this.getAddress()
+        const transactionParams = await bridgeTransactionParams(paramsCopy, await this.getAddress())
+        return this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
     /**

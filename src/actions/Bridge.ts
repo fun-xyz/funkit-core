@@ -39,8 +39,8 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
         sort ?? SocketSort.output
     )
     const socketTx = await getSocketBridgeTransaction(route)
-    const { allowanceTarget, minimumApprovalAmount } = socketTx.result.approvalData
     if (socketTx.result.approvalData !== null) {
+        const { allowanceTarget, minimumApprovalAmount } = socketTx.result.approvalData
         const allowanceStatusCheck = await getSocketBridgeAllowance(
             fromChainId,
             walletAddress,
