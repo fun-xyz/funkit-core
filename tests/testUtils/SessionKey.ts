@@ -1,11 +1,11 @@
 import { assert } from "chai"
 import { randInt } from "./utils"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
-import { Auth } from "../../src/auth"
+import { Auth, SessionKeyAuth } from "../../src/auth"
 import { AddressZero, ERC20_ABI } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
-import { fundWallet, randomBytes } from "../../src/utils"
+import { fundWallet, generateRoleId, generateRuleId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -52,17 +52,20 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
         })
 
         describe("With Session Key", () => {
-            const user = createSessionUser()
-            const second = 1000
-            const minute = 60 * second
+            let user: SessionKeyAuth
+            const sessionKeyPrivateKey = randomBytes(32)
+            const ruleId = generateRuleId()
+            const roleId = generateRoleId()
+            const minute = 60 * 1000
             let deadline
+            let outtokenAddr
+            let basetokenAddr
             const feeRecip = randomBytes(20)
             before(async () => {
                 deadline = (Date.now() + 3 * minute) / 1000
-                const basetokenAddr = await Token.getAddress(baseToken)
-                const outtokenAddr = await Token.getAddress(outToken)
+                basetokenAddr = await Token.getAddress(baseToken)
+                outtokenAddr = await Token.getAddress(outToken)
                 const sessionKeyParams: SessionKeyParams = {
-                    user,
                     targetWhitelist: [outtokenAddr, basetokenAddr],
                     actionWhitelist: [
                         {
@@ -72,8 +75,12 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     ],
                     feeTokenWhitelist: [AddressZero],
                     feeRecipientWhitelist: [feeRecip],
-                    deadline
+                    deadline,
+                    ruleId: ruleId,
+                    roleId: roleId
                 }
+                user = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams)
+                sessionKeyParams.userId = await user.getUserId()
                 const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
                 await wallet.executeOperation(auth, operation)
             })
@@ -84,6 +91,41 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 const outTokenAddress = await new Token(outToken).getAddress()
                 const randomApproveAmount = randInt(10000)
                 const operation = await wallet.tokenApprove(user, await user.getAddress(), {
+                    spender: randomAddress,
+                    amount: randomApproveAmount,
+                    token: outTokenAddress
+                })
+                await wallet.executeOperation(user, operation)
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 5000)
+                })
+                const postApprove = await Token.getApproval(outToken, walletAddress, randomAddress)
+
+                assert(BigInt(await new Token(outTokenAddress).getDecimalAmount(randomApproveAmount)) === postApprove, "Approve failed")
+            })
+
+            it("use a regenerated session key with the same parameters", async () => {
+                const sessionKeyParams: SessionKeyParams = {
+                    targetWhitelist: [outtokenAddr, basetokenAddr],
+                    actionWhitelist: [
+                        {
+                            abi: ERC20_ABI,
+                            functionWhitelist: ["approve"]
+                        }
+                    ],
+                    feeTokenWhitelist: [AddressZero],
+                    feeRecipientWhitelist: [feeRecip],
+                    deadline,
+                    ruleId: ruleId,
+                    roleId: roleId
+                }
+                const newuser = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams)
+
+                const randomAddress = randomBytes(20)
+                const walletAddress = await wallet.getAddress()
+                const outTokenAddress = await new Token(outToken).getAddress()
+                const randomApproveAmount = randInt(10000)
+                const operation = await wallet.tokenApprove(newuser, await newuser.getAddress(), {
                     spender: randomAddress,
                     amount: randomApproveAmount,
                     token: outTokenAddress

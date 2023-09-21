@@ -2,13 +2,9 @@ import { JSBI } from "@uniswap/sdk"
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from "@uniswap/sdk-core"
 import { FeeAmount, Pool, Route, SwapQuoter, SwapRouter, Trade, computePoolAddress } from "@uniswap/v3-sdk"
 import { Address, Hex, PublicClient, decodeAbiParameters, parseUnits } from "viem"
-import { UniSwapPoolFeeOptions } from "../actions"
+import { UniswapPoolFeeOptions } from "../actions"
 import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
-import { EnvOption } from "../config"
-import { Chain } from "../data"
-
-const apiBaseUrl = "https://api.1inch.io/v5.0/"
 
 export function fromReadableAmount(amount: number, decimals: number) {
     return parseUnits(`${amount}`, decimals)
@@ -188,7 +184,7 @@ type SwapParamsUtils = {
     recipient: Address
     percentDecimal: number
     slippage: number
-    poolFee: UniSwapPoolFeeOptions
+    poolFee: UniswapPoolFeeOptions
 }
 
 export type UniswapV3Addrs = {
@@ -246,11 +242,4 @@ export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Ad
         ])
         return { data: swapTxData.data, to: swapTxData.to, amount: fromReadableAmount(amountIn, tokenInDecimal).toString() }
     }
-}
-
-const testIds = [36864, 31337]
-export async function oneInchAPIRequest(methodName: string, queryParams: any, options: EnvOption = (globalThis as any).globalEnvOption) {
-    const chain = await Chain.getChain({ chainIdentifier: options.chain })
-    const chainId = testIds.includes(Number(await chain.getChainId())) ? 1 : await chain.getChainId()
-    return apiBaseUrl + chainId + methodName + "?" + new URLSearchParams(queryParams).toString()
 }

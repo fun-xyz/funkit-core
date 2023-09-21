@@ -56,5 +56,8 @@ export enum ErrorCode {
     RequestLimitExceeded = "RequestLimitExceeded",
     WalletPrefundError = "PrefundError",
     GasSponsorFundError = "GasSponsorFundError",
-    FunWalletErrorCode = "FunWalletErrorCode"
+    FunWalletErrorCode = "FunWalletErrorCode",
+    BridgeRouteNotFound = "BridgeRouteNotFound",
+    BridgeAllowanceDataNotFound = "BridgeAllowanceDataNotFound",
+    BridgeApproveTxDataNotFound = "BridgeApproveTxDataNotFound"
 }

@@ -285,7 +285,7 @@ export class FunWallet extends FirstClassActions {
         const userIds = new Set([...storedUserIds])
         if (this.userInfo) {
             for (const userId of this.userInfo.keys()) {
-                userIds.add(userId)
+                userIds.add(userId.toLowerCase() as Hex)
             }
         }
 
@@ -379,7 +379,7 @@ export class FunWallet extends FirstClassActions {
                 "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
             )
         }
-        userId = pad(userId as Hex, { size: 32 })
+        userId = pad(userId as Hex, { size: 32 }).toLowerCase()
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
@@ -388,13 +388,11 @@ export class FunWallet extends FirstClassActions {
 
         let maxFeePerGas, maxPriorityFeePerGas
         const chainId = await chain.getChainId()
-        const OPStackChains = ["10"]
+        const OPStackChains = ["10", "8453"]
         if (OPStackChains.includes(chainId)) {
-            maxFeePerGas = 10n ** 8n
-            maxPriorityFeePerGas = 10n ** 8n
-        } else if (chainId === "8453") {
-            maxFeePerGas = 10n ** 9n
-            maxPriorityFeePerGas = 10n ** 9n
+            const gasPrice = await chain.getFeeData()
+            maxFeePerGas = gasPrice.maxFeePerGas
+            maxPriorityFeePerGas = gasPrice.maxPriorityFeePerGas
         } else {
             maxFeePerGas = 1n
             maxPriorityFeePerGas = 1n
@@ -783,9 +781,9 @@ export class FunWallet extends FirstClassActions {
             ...res
         }
 
-        const maxFeePerGas = await chain.getFeeData()
+        const { maxFeePerGas, maxPriorityFeePerGas } = await chain.getFeeData()
         operation.userOp.maxFeePerGas = maxFeePerGas
-        operation.userOp.maxPriorityFeePerGas = maxFeePerGas
+        operation.userOp.maxPriorityFeePerGas = maxPriorityFeePerGas
         return operation
     }
 

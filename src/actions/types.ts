@@ -1,6 +1,6 @@
-import { Hex } from "viem"
-import { SessionKeyAuth } from "../auth"
+import { Address, Hex } from "viem"
 import { TransactionParams } from "../common"
+import { Chain } from "../data"
 
 export interface ApproveAndExecParams {
     approve: ApproveERC20Params
@@ -52,7 +52,7 @@ export type FinishUnstakeParams = {
     walletAddress: string
 }
 
-export enum UniSwapPoolFeeOptions {
+export enum UniswapPoolFeeOptions {
     lowest = "lowest",
     low = "low",
     medium = "medium",
@@ -65,7 +65,7 @@ export type SwapParams = {
     inAmount: number
     slippage?: number
     recipient?: string
-    poolFee?: UniSwapPoolFeeOptions
+    poolFee?: UniswapPoolFeeOptions
 }
 
 export type LimitOrderParam = {
@@ -73,7 +73,7 @@ export type LimitOrderParam = {
     tokenOut: string
     tokenInAmount: number
     tokenOutAmount: number
-    poolFee?: UniSwapPoolFeeOptions
+    poolFee?: UniswapPoolFeeOptions
 }
 
 export type SessionKeyParams = {
@@ -84,7 +84,9 @@ export type SessionKeyParams = {
     deadline: number
     actionValueLimit?: bigint
     feeValueLimit?: bigint
-    user: SessionKeyAuth
+    ruleId: Hex // 32 bytes
+    roleId: Hex // 32 bytes
+    userId?: Hex // 32 bytes
 }
 
 export type ActionWhitelistObject = {
@@ -140,4 +142,30 @@ export type UpdateGroupParams = {
 
 export type RemoveGroupParams = {
     groupId: Hex
+}
+
+export type OneInchSwapParams = {
+    src: Address // token address or 0xeee...eee for ETH
+    dst: Address // token address or 0xeee...eee for ETH
+    amount: string // amount of src tokens to swap (in wei)
+    from: Address // wallet address
+    slippage: number // Maximum acceptable slippage percentage for the swap (e.g., 1 for 1%)
+    disableEstimate: boolean // Set to true to disable estimation of swap details
+    allowPartialFill: boolean // Set to true to allow partial filling of the swap order
+    chainId: string | Chain | number // Chain ID of the blockchain to use (e.g., 1 for Ethereum Mainnet)
+}
+
+export type BridgeParams = {
+    fromChain: string | Chain | number
+    toChain: string | Chain | number
+    fromToken: string
+    toToken: string
+    amount: number
+    sort?: SocketSort
+    recipient?: Address
+}
+export enum SocketSort {
+    output = "output",
+    gas = "gas",
+    time = "time"
 }
