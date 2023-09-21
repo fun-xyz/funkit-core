@@ -11,8 +11,8 @@ export async function getSocketBridgeQuote(
     fromToken: string,
     toToken: string,
     amount: bigint,
-    sort?: string
-): Promise<JSON> {
+    sort: string
+): Promise<any> {
     const params = new URLSearchParams({
         recipient: recipient,
         fromChainId: fromChain,
@@ -22,7 +22,7 @@ export async function getSocketBridgeQuote(
         fromAmount: amount.toString(),
         userAddress: walletAddress,
         uniqueRoutesPerBridge: "true",
-        sort: sort ?? "output",
+        sort,
         singleTxOnly: "true"
     }).toString()
     const quote = await sendGetRequest(API_URL, `bridge/quote/?${params}`)

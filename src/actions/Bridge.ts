@@ -1,5 +1,5 @@
 import { Address } from "viem"
-import { BridgeParams } from "./types"
+import { BridgeParams, SocketSort } from "./types"
 import {
     getSocketBridgeAllowance,
     getSocketBridgeApproveTransaction,
@@ -36,7 +36,7 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
         await fromTokenObj.getAddress(),
         await toTokenObj.getAddress(),
         amount,
-        sort
+        sort ?? SocketSort.output
     )
     const socketTx = await getSocketBridgeTransaction(route)
     const { allowanceTarget, minimumApprovalAmount } = socketTx.result.approvalData

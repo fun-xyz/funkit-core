@@ -1,5 +1,5 @@
 import { expect } from "chai"
-import { tokenTransferTransactionParams } from "../../src/actions"
+import { SocketSort, tokenTransferTransactionParams } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Token } from "../../src/data"
@@ -69,10 +69,40 @@ export const BridgeTest = (config: BridgeTestConfig) => {
                 fromToken: config.fromToken,
                 toToken: config.toToken,
                 amount: config.amountToBridge,
-                sort: "gas"
+                sort: SocketSort.gas
             })
             const bridgeExecutionReceipt = await wallet.executeOperation(auth, userOp)
             expect(bridgeExecutionReceipt).to.not.throw
+        })
+
+        it("failure - invalid token address", async () => {
+            try {
+                await wallet.bridge(auth, await auth.getAddress(), {
+                    fromChain: config.fromChainId,
+                    toChain: config.toChainId,
+                    fromToken: config.fromToken,
+                    toToken: "0x0000000000000000000000000000000000000000",
+                    amount: config.amountToBridge,
+                    sort: SocketSort.gas
+                })
+            } catch (e: any) {
+                expect(e.message).to.include("Unable to find a route for these assets between these chains")
+            }
+        })
+
+        it("failure - not enough tokens", async () => {
+            try {
+                await wallet.bridge(auth, await auth.getAddress(), {
+                    fromChain: config.fromChainId,
+                    toChain: config.toChainId,
+                    fromToken: config.fromToken,
+                    toToken: config.toToken,
+                    amount: 100000000000000000000,
+                    sort: SocketSort.gas
+                })
+            } catch (e: any) {
+                expect(e.message).to.include("server failure")
+            }
         })
     })
 }

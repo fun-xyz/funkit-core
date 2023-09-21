@@ -16,17 +16,19 @@ const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
 const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams): Promise<TransactionParams | null> => {
+    const chainId = await Chain.getChain({ chainIdentifier: oneInchSwapParams.chainId })
     const allowance = await get1InchAllowance(oneInchSwapParams.chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.from)
     if (Number(allowance) < Number(oneInchSwapParams.amount)) {
-        const approveTx = await get1InchApproveTx(oneInchSwapParams.chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.amount)
+        const approveTx = await get1InchApproveTx(chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.amount)
         return approveTx
     }
     return null
 }
 
 const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams): Promise<TransactionParams> => {
+    const chainId = await Chain.getChain({ chainIdentifier: oneinchSwapParams.chainId })
     return await get1InchSwapTx(
-        oneinchSwapParams.chainId.toString(),
+        chainId.toString(),
         oneinchSwapParams.src.toString(),
         oneinchSwapParams.dst.toString(),
         oneinchSwapParams.amount.toString(),
