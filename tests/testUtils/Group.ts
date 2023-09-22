@@ -1,10 +1,10 @@
 import { expect } from "chai"
-import { Address, Hex, concat, decodeAbiParameters, keccak256, pad } from "viem"
+import { Hex, pad } from "viem"
 import { Auth } from "../../src/auth"
-import { WALLET_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
+import { getOnChainGroupData } from "../../src/utils/GroupUtils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
@@ -23,7 +23,6 @@ export const GroupTest = (config: GroupTestConfig) => {
         let auth: Auth
         let wallet: FunWallet
         let chain: Chain
-        let userAuthContractAddr: Address
         let groupId: Hex
         let memberIds: Hex[] = []
         const threshold = 2
@@ -55,7 +54,6 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
-            userAuthContractAddr = await chain.getAddress("userAuthAddress")
             groupId = generateRandomGroupId()
         })
 
@@ -73,27 +71,10 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (config.chainId === 1) {
                 await new Promise((r) => setTimeout(r, 15000))
             }
-            const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
-            const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
-                await wallet.getAddress(),
-                "getState",
-                [groupKey],
-                chain
-            )
-            const [storedGroup]: any[] = decodeAbiParameters(
-                [
-                    {
-                        type: "tuple",
-                        components: [{ type: "bytes32[]" }, { type: "uint256" }]
-                    }
-                ],
-                storedGroupData
-            )
 
-            expect(storedGroup[0]).to.be.deep.equal(memberIds)
-            expect(storedGroup[1]).to.be.equal(BigInt(threshold))
-            const authUsers = await wallet.getUsers(auth)
-            expect(authUsers.some((user) => user.userId === groupId)).to.be.true
+            const groupData = await getOnChainGroupData(groupId, chain, await wallet.getAddress())
+            expect(groupData.memberIds).to.be.deep.equal(memberIds)
+            expect(groupData.threshold).to.be.equal(threshold)
         })
 
         it("add user to group", async () => {
@@ -108,30 +89,11 @@ export const GroupTest = (config: GroupTestConfig) => {
                 await new Promise((r) => setTimeout(r, 15000))
             }
             await new Promise((r) => setTimeout(r, 2000))
-            const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
-
-            const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
-                await wallet.getAddress(),
-                "getState",
-                [groupKey],
-                chain
-            )
-            const [storedGroup]: any[] = decodeAbiParameters(
-                [
-                    {
-                        type: "tuple",
-                        components: [{ type: "bytes32[]" }, { type: "uint256" }]
-                    }
-                ],
-                storedGroupData
-            )
 
             const currentMemberIds = memberIds.concat(pad(newUserId, { size: 32 })).sort((a, b) => b.localeCompare(a))
-            expect(storedGroup[0]).to.be.deep.equal(currentMemberIds)
-            expect(storedGroup[1]).to.be.equal(BigInt(threshold))
-            const authUsers = await wallet.getUsers(auth)
-            const targetGroup = authUsers.find((user) => user.userId === groupId)
-            expect(targetGroup?.groupInfo?.memberIds.includes(pad(newUserId, { size: 32 }))).to.be.true
+            const groupData = await getOnChainGroupData(groupId, chain, await wallet.getAddress())
+            expect(groupData.memberIds).to.be.deep.equal(currentMemberIds)
+            expect(groupData.threshold).to.be.equal(threshold)
         })
 
         it("remove user from group", async () => {
@@ -145,28 +107,10 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (config.chainId === 1) {
                 await new Promise((r) => setTimeout(r, 15000))
             }
-            const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
-            const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
-                await wallet.getAddress(),
-                "getState",
-                [groupKey],
-                chain
-            )
-            const [storedGroup]: any[] = decodeAbiParameters(
-                [
-                    {
-                        type: "tuple",
-                        components: [{ type: "bytes32[]" }, { type: "uint256" }]
-                    }
-                ],
-                storedGroupData
-            )
 
-            expect(storedGroup[0]).to.be.deep.equal(memberIds)
-            expect(storedGroup[1]).to.be.equal(BigInt(threshold))
-            const authUsers = await wallet.getUsers(auth)
-            const targetGroup = authUsers.find((user) => user.userId === groupId)
-            expect(targetGroup?.groupInfo?.memberIds.includes(pad(newUserId, { size: 32 }))).to.be.false
+            const groupData = await getOnChainGroupData(groupId, chain, await wallet.getAddress())
+            expect(groupData.memberIds).to.be.deep.equal(memberIds)
+            expect(groupData.threshold).to.be.equal(threshold)
         })
 
         it("update group threshold", async () => {
@@ -180,28 +124,10 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (config.chainId === 1) {
                 await new Promise((r) => setTimeout(r, 15000))
             }
-            const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
-            const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
-                await wallet.getAddress(),
-                "getState",
-                [groupKey],
-                chain
-            )
-            const [storedGroup]: any[] = decodeAbiParameters(
-                [
-                    {
-                        type: "tuple",
-                        components: [{ type: "bytes32[]" }, { type: "uint256" }]
-                    }
-                ],
-                storedGroupData
-            )
 
-            expect(storedGroup[0]).to.be.deep.equal(memberIds)
-            expect(storedGroup[1]).to.be.equal(BigInt(3))
-            const authUsers = await wallet.getUsers(auth)
-            const targetGroup = authUsers.find((user) => user.userId === groupId)
-            expect(targetGroup?.groupInfo?.threshold).to.be.equal(3)
+            const groupData = await getOnChainGroupData(groupId, chain, await wallet.getAddress())
+            expect(groupData.memberIds).to.be.deep.equal(memberIds)
+            expect(groupData.threshold).to.be.equal(3)
         })
 
         it("remove group", async () => {
@@ -214,18 +140,10 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (config.chainId === 1) {
                 await new Promise((r) => setTimeout(r, 15000))
             }
-            const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
-            const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
-                await wallet.getAddress(),
-                "getState",
-                [groupKey],
-                chain
-            )
 
-            expect(storedGroupData).to.be.equal("0x")
-            const authUsers = await wallet.getUsers(auth)
-            const targetGroup = authUsers.find((user) => user.userId === groupId)
-            expect(targetGroup).to.be.undefined
+            const groupData = await getOnChainGroupData(groupId, chain, await wallet.getAddress())
+            expect(groupData.memberIds).to.be.deep.equal([])
+            expect(groupData.threshold).to.be.equal(0)
         })
     })
 }

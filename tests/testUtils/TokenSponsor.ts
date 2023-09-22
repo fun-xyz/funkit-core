@@ -26,7 +26,7 @@ export interface TokenSponsorTestConfig {
 export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
     const paymasterToken = config.paymasterToken
 
-    describe.only("TokenSponsor", function () {
+    describe("TokenSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(500_000)
         let funder: Auth
