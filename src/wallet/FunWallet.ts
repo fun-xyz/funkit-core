@@ -13,7 +13,7 @@ import {
     getTokens
 } from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
-import { createGroup, getGroups } from "../apis/GroupApis"
+import { getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getFullReceipt, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
 import { addTransaction } from "../apis/PaymasterApis"
 import { GroupMetadata } from "../apis/types"
@@ -615,26 +615,7 @@ export class FunWallet extends FirstClassActions {
         }
         receipt = await getFullReceipt(operation.opId, chainId, receipt.userOpHash)
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(
-                await auth.getAddress(),
-                chainId,
-                await this.getAddress(),
-                Array.from(this.userInfo!.keys()),
-                this.walletUniqueId
-            )
-            if (isGroupOperation(operation)) {
-                const group = this.userInfo!.get(operation.groupId!)
-
-                if (group && group.groupInfo) {
-                    await createGroup(
-                        operation.groupId!,
-                        chainId,
-                        group.groupInfo.threshold,
-                        await this.getAddress(),
-                        group.groupInfo.memberIds
-                    )
-                }
-            }
+            await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
 
             if (txOptions?.gasSponsor?.sponsorAddress) {
                 const paymasterType = getPaymasterType(txOptions)
