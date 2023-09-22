@@ -1,4 +1,8 @@
 {
+  "AA14": {
+    "info": "This is an error that comes from the entrypoint: AA14 initCode must return sender",
+    "suggestion": "To fix this error, make sure you have enough funds in your wallet to cover the transaction fee."
+  },
   "AA21": {
     "info": " Your wallet lacks funds for this transaction.",
     "suggestion": "To fix this error, make sure you have enough funds in your wallet to cover the transaction fee."

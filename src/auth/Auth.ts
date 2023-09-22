@@ -5,15 +5,16 @@ import {
     PrivateKeyAccount,
     TransactionReceipt,
     WalletClient,
+    concat,
     createWalletClient,
     custom,
-    encodeAbiParameters,
     hexToSignature,
     http,
     isHex,
     keccak256,
     pad,
-    toBytes
+    toBytes,
+    toHex
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
@@ -180,7 +181,7 @@ export class Auth {
             maxPriorityFeePerGas: operation.userOp.maxPriorityFeePerGas,
             paymasterAndData: operation.userOp.paymasterAndData,
             entrypoint: await chain.getAddress("entryPointAddress"),
-            chainid: await chain.getChainId()
+            chainid: BigInt(Number(await chain.getChainId()))
         }
         console.log("domain", domain)
         console.log("types", types)
@@ -207,14 +208,15 @@ export class Auth {
         }
         console.log("EIP712 signature", EIP712signature)
         const { v, r, s } = hexToSignature(EIP712signature)
-        const signature = encodeAbiParameters(
-            [
-                { name: "v", type: "uint8" },
-                { name: "r", type: "bytes32" },
-                { name: "s", type: "bytes32" }
-            ],
-            [Number(v), r, s]
-        )
+        const signature = concat([toHex(v), r, s])
+        // const signature = encodeAbiParameters(
+        //     [
+        //         { name: "v", type: "uint8" },
+        //         { name: "r", type: "bytes32" },
+        //         { name: "s", type: "bytes32" }
+        //     ],
+        //     [Number(v), r, s]
+        // )
         console.log("v,r,s", v, r, s)
         console.log("signature", signature)
         if (isGroupOp) {
@@ -273,11 +275,14 @@ export class Auth {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getEstimateGasSignature(userId: string, _: Operation): Promise<Hex> {
         await this.init()
-        const walletSignature: WalletSignature = {
-            userId: pad(userId as Hex, { size: 32 }),
-            signature: pad("0x", { size: 65 })
-        }
-        return encodeWalletSignature(walletSignature)
+        userId
+        // const walletSignature: WalletSignature = {
+        //     userId: pad(userId as Hex, { size: 32 }),
+        //     signature: pad("0x", { size: 65 })
+        // }
+        // return encodeWalletSignature(walletSignature)
+        const chain = await Chain.getChain({ chainIdentifier: 5 })
+        return await this.signUserOperation(_, chain, false)
     }
 
     /**

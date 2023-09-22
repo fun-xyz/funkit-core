@@ -193,12 +193,15 @@ export class Chain {
         } else if (this.id === "1") {
             estimationUserOp.paymasterAndData = ETHEREUM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         }
-
+        console.log("estimationUserOp", estimationUserOp)
+        console.log("this.addresses.entryPointAddress", this.addresses.entryPointAddress)
+        console.log("this.id", this.id)
         let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
             chainId: this.id!,
             entryPointAddress: this.addresses.entryPointAddress,
             userOp: estimationUserOp
         })
+        console.log(preVerificationGas, callGasLimit, verificationGasLimit)
         if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }

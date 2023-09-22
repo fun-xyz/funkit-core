@@ -46,9 +46,11 @@ export class AccessDeniedError extends ClientError {
 
 export class UserOpFailureError extends ClientError {
     constructor(code: string, msg: string, paramsUsed: any, fixSuggestion: string, docLink: string) {
+        console.log(msg)
         const FWCode = findFWContractError(msg)
         if (FWCode) {
             const { reqId } = JSON.parse(msg)
+            console.log(FWCode)
             msg = FWErrors[FWCode].info
             fixSuggestion = FWErrors[FWCode].suggestion
             super(ErrorType.UserOpFailureError, ErrorCode.FunWalletErrorCode, msg, { reqId }, fixSuggestion, docLink)
