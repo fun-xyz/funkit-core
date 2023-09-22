@@ -7,6 +7,8 @@ import {
     WalletClient,
     createWalletClient,
     custom,
+    encodeAbiParameters,
+    hexToSignature,
     http,
     isHex,
     keccak256,
@@ -18,7 +20,7 @@ import * as chains from "viem/chains"
 import { AuthInput } from "./types"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
-import { TransactionData, TransactionParams, VALID_PRIVATE_KEY_LENGTH } from "../common"
+import { TransactionData, TransactionParams, USER_AUTHENTICATION_CONTRACT_INTERFACE, VALID_PRIVATE_KEY_LENGTH } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
@@ -49,20 +51,6 @@ chains["funtestnet"] = {
 }
 
 preProcessesChains["8453"] = "base"
-chains["base"] = {
-    id: 8453,
-    name: "Base",
-    network: "base",
-    nativeCurrency: { name: "ethereum", symbol: "ETH", decimals: 18 },
-    rpcUrls: {
-        default: { http: ["https://soft-broken-arm.base-mainnet.quiknode.pro/57c67d9e841d721a3943054111f538c0cc343c89/"] },
-        public: { http: ["https://soft-broken-arm.base-mainnet.quiknode.pro/57c67d9e841d721a3943054111f538c0cc343c89/"] }
-    },
-    blockExplorers: {
-        etherscan: { name: "BaseScan", url: "https://basescan.org/" },
-        default: { name: "BaseScan", url: "https://basescan.org/" }
-    }
-}
 
 export class Auth {
     authId?: string
@@ -155,6 +143,84 @@ export class Auth {
         }
     }
 
+    async signUserOperation(operation: Operation, chain: Chain, isGroupOp = false): Promise<Hex> {
+        await this.init()
+        const userAuthAddress = await chain.getAddress("userAuthAddress")
+        const domain = {
+            name: await USER_AUTHENTICATION_CONTRACT_INTERFACE.readFromChain(userAuthAddress, "EIP712_NAME", [], chain),
+            version: await USER_AUTHENTICATION_CONTRACT_INTERFACE.readFromChain(userAuthAddress, "EIP712_VERSION", [], chain),
+            chainId: await USER_AUTHENTICATION_CONTRACT_INTERFACE.readFromChain(userAuthAddress, "CHAIN_ID", [], chain),
+            verifyingContract: userAuthAddress
+        }
+        const types = {
+            UserOperation: [
+                { name: "sender", type: "address" },
+                { name: "nonce", type: "uint256" },
+                { name: "initCode", type: "bytes" },
+                { name: "callData", type: "bytes" },
+                { name: "callGasLimit", type: "uint256" },
+                { name: "verificationGasLimit", type: "uint256" },
+                { name: "preVerificationGas", type: "uint256" },
+                { name: "maxFeePerGas", type: "uint256" },
+                { name: "maxPriorityFeePerGas", type: "uint256" },
+                { name: "paymasterAndData", type: "bytes" },
+                { name: "entrypoint", type: "address" },
+                { name: "chainid", type: "uint256" }
+            ]
+        }
+        const value = {
+            sender: operation.userOp.sender,
+            nonce: operation.userOp.nonce,
+            initCode: operation.userOp.initCode,
+            callData: operation.userOp.callData,
+            callGasLimit: operation.userOp.callGasLimit,
+            verificationGasLimit: operation.userOp.verificationGasLimit,
+            preVerificationGas: operation.userOp.preVerificationGas,
+            maxFeePerGas: operation.userOp.maxFeePerGas,
+            maxPriorityFeePerGas: operation.userOp.maxPriorityFeePerGas,
+            paymasterAndData: operation.userOp.paymasterAndData,
+            entrypoint: await chain.getAddress("entryPointAddress"),
+            chainid: await chain.getChainId()
+        }
+        let EIP712signature
+        if (this.signer?.type === "local") {
+            EIP712signature = await this.signer.signTypedData({
+                domain,
+                types,
+                primaryType: "UserOperation",
+                message: value
+            })
+        } else if (this.client && this.account) {
+            EIP712signature = await this.client.signTypedData({
+                account: await this.client.account!,
+                domain,
+                types,
+                primaryType: "UserOperation",
+                message: value
+            })
+        } else {
+            throw new Error("No signer or client")
+        }
+        const { v, r, s } = hexToSignature(EIP712signature)
+        const signature = encodeAbiParameters(
+            [
+                { name: "v", type: "uint8" },
+                { name: "r", type: "bytes32" },
+                { name: "s", type: "bytes32" }
+            ],
+            [Number(v), r, s]
+        )
+        if (isGroupOp) {
+            return signature
+        } else {
+            const walletSignature: WalletSignature = {
+                userId: await this.getUserId(),
+                signature: signature
+            }
+            return encodeWalletSignature(walletSignature)
+        }
+    }
+
     /**
      * Signs an operation using the stored signer and returns the signature.
      * @param {Operation} operation - The operation to be signed.
@@ -164,8 +230,7 @@ export class Auth {
      */
     async signOp(operation: Operation, chain: Chain, isGroupOp = false): Promise<Hex> {
         await this.init()
-        const opHash = await operation.getOpHash(chain)
-        return await this.signHash(opHash, isGroupOp)
+        return await this.signUserOperation(operation, chain, isGroupOp)
     }
 
     /**
