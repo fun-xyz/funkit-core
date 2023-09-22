@@ -16,11 +16,6 @@ export type GroupMetadata = {
     memberIds: Hex[]
 }
 
-export type UpdateGroupMetadata = {
-    threshold?: number
-    memberIds?: Hex[]
-}
-
 export type ExecuteOpInput = {
     opId: Hex
     chainId: string

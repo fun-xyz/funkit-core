@@ -48,14 +48,12 @@ import {
     UpdateGroupParams,
     UpdateThresholdOfGroupParams
 } from "./types"
-import { createGroup, deleteGroup, getGroups, updateGroup } from "../apis/GroupApis"
-import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletIdentity } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
 import { Chain, Operation } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
-import { getAuthIdFromAddr, isAddress } from "../utils"
+import { getOnChainGroupData } from "../utils/GroupUtils"
 
 export abstract class FirstClassActions {
     /**
@@ -320,12 +318,6 @@ export abstract class FirstClassActions {
         params: AddOwnerParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        if (isAddress(params.ownerId)) {
-            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-            const authId = await getAuthIdFromAddr(params.ownerId as Address)
-            await addUserToWallet(authId, await chain.getChainId(), await this.getAddress(), [pad(params.ownerId, { size: 32 })])
-        }
-
         const txParams = await addOwnerTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
@@ -344,11 +336,6 @@ export abstract class FirstClassActions {
         params: RemoveOwnerParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        if (isAddress(params.ownerId)) {
-            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-            const authId = await getAuthIdFromAddr(params.ownerId as Address)
-            await removeUserWalletIdentity(authId, await chain.getChainId(), await this.getAddress(), pad(params.ownerId, { size: 32 }))
-        }
         const txParams = await removeOwnerTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
@@ -367,14 +354,6 @@ export abstract class FirstClassActions {
         params: CreateGroupParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const walletAddr = await this.getAddress()
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const chainId = await chain.getChainId()
-        await createGroup(params.groupId, chainId, Number(params.group.threshold), walletAddr, params.group.userIds)
-        params.group.userIds.forEach(async (userId) => {
-            const authId = await getAuthIdFromAddr(userId as Address)
-            await addUserToGroup(authId, chainId, walletAddr, params.groupId)
-        })
         const txParams = await createGroupTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
@@ -396,9 +375,8 @@ export abstract class FirstClassActions {
         params.userId = pad(params.userId, { size: 32 })
         params.groupId = pad(params.groupId, { size: 32 })
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const chainId = await chain.getChainId()
-        const groups = await getGroups([params.groupId], chainId)
-        if (!groups || groups.length === 0) {
+        const onChainGroupData = await getOnChainGroupData(params.groupId, chain, await this.getAddress())
+        if (!onChainGroupData || onChainGroupData.memberIds.length === 0) {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
                 "group is not found",
@@ -408,8 +386,8 @@ export abstract class FirstClassActions {
             )
         }
 
-        const originalMembers = new Set(groups[0].memberIds)
-        const members = new Set(groups[0].memberIds)
+        const originalMembers = new Set(onChainGroupData.memberIds)
+        const members = new Set(onChainGroupData.memberIds)
         members.add(params.userId)
         if (members.size <= originalMembers.size) {
             throw new InvalidParameterError(
@@ -421,14 +399,11 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address)
-        await addUserToGroup(authId, chainId, await this.getAddress(), params.groupId)
-
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
             group: {
                 userIds: Array.from(members),
-                threshold: groups[0].threshold
+                threshold: onChainGroupData.threshold
             }
         }
 
@@ -453,9 +428,8 @@ export abstract class FirstClassActions {
         params.userId = pad(params.userId, { size: 32 })
         params.groupId = pad(params.groupId, { size: 32 })
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const chainId = await chain.getChainId()
-        const groups = await getGroups([params.groupId], chainId)
-        if (!groups || groups.length === 0) {
+        const onChainGroupData = await getOnChainGroupData(params.groupId, chain, await this.getAddress())
+        if (!onChainGroupData || onChainGroupData.memberIds.length === 0) {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
                 "group is not found",
@@ -465,8 +439,8 @@ export abstract class FirstClassActions {
             )
         }
 
-        const originalMembers = new Set(groups[0].memberIds)
-        const members = new Set(groups[0].memberIds)
+        const originalMembers = new Set(onChainGroupData.memberIds)
+        const members = new Set(onChainGroupData.memberIds)
         members.delete(params.userId)
         if (members.size >= originalMembers.size) {
             throw new ResourceNotFoundError(
@@ -478,14 +452,11 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address)
-        await removeUserFromGroup(authId, chainId, await this.getAddress(), params.groupId)
-
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
             group: {
                 userIds: Array.from(members),
-                threshold: groups[0].threshold
+                threshold: onChainGroupData.threshold
             }
         }
         const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
@@ -508,9 +479,8 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         params.groupId = pad(params.groupId, { size: 32 })
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const chainId = await chain.getChainId()
-        const groups = await getGroups([params.groupId], chainId)
-        if (!groups || groups.length === 0) {
+        const onChainGroupData = await getOnChainGroupData(params.groupId, chain, await this.getAddress())
+        if (!onChainGroupData || onChainGroupData.memberIds.length === 0) {
             throw new ResourceNotFoundError(
                 ErrorCode.GroupNotFound,
                 "group is not found",
@@ -520,22 +490,20 @@ export abstract class FirstClassActions {
             )
         }
 
-        if (!Number.isInteger(params.threshold) || params.threshold < 1 || params.threshold > groups[0].memberIds.length) {
+        if (!Number.isInteger(params.threshold) || params.threshold < 1 || params.threshold > onChainGroupData.memberIds.length) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidThreshold,
                 "threshold can not be 0 or bigger than number of members in the group",
-                { params, memberIds: groups[0].memberIds },
+                { params, memberIds: onChainGroupData.memberIds },
                 "Provide proper threshold number.",
                 "https://docs.fun.xyz"
             )
         }
 
-        await updateGroup(params.groupId, chainId, { threshold: Number(params.threshold) })
-
         const updateGroupParams: UpdateGroupParams = {
             groupId: params.groupId,
             group: {
-                userIds: groups[0].memberIds,
+                userIds: onChainGroupData.memberIds,
                 threshold: params.threshold
             }
         }
@@ -558,8 +526,6 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         params.groupId = pad(params.groupId, { size: 32 })
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        await deleteGroup(params.groupId, await chain.getChainId())
         const txParams = await removeGroupTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
