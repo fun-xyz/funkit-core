@@ -69,14 +69,14 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it("approve", async () => {
+            it.only("approve", async () => {
                 const nft = new NFT(nftAddress)
                 const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {
                     spender: await wallet2.getAddress(),
                     collection: nftAddress,
                     tokenId: nftId
                 })
-                await wallet1.executeOperation(auth, userOp)
+                console.log("test", await wallet1.executeOperation(auth, userOp))
 
                 if (config.chainId === 1) {
                     await new Promise((r) => setTimeout(r, 10000))
@@ -107,7 +107,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 } catch (error) {
                     assert(
                         false,
-                        `Transfer from wallet1 ${await wallet1.getAddress()} to 
+                        `Transfer from wallet1 ${await wallet1.getAddress()} to
                         wallet2 ${await wallet2.getAddress()} should have succeeded
                         but failed with error ${error}`
                     )
@@ -129,7 +129,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 } catch (error) {
                     assert(
                         false,
-                        `Transfer from wallet2 ${await wallet2.getAddress()} to 
+                        `Transfer from wallet2 ${await wallet2.getAddress()} to
                         wallet1 ${await wallet1.getAddress()} should have succeeded
                         but failed with error ${error}`
                     )

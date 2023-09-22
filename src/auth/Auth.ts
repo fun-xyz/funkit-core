@@ -182,6 +182,9 @@ export class Auth {
             entrypoint: await chain.getAddress("entryPointAddress"),
             chainid: await chain.getChainId()
         }
+        console.log("domain", domain)
+        console.log("types", types)
+        console.log("value", value)
         let EIP712signature
         if (this.signer?.type === "local") {
             EIP712signature = await this.signer.signTypedData({
@@ -191,6 +194,7 @@ export class Auth {
                 message: value
             })
         } else if (this.client && this.account) {
+            console.log("signing with client")
             EIP712signature = await this.client.signTypedData({
                 account: await this.client.account!,
                 domain,
@@ -201,6 +205,7 @@ export class Auth {
         } else {
             throw new Error("No signer or client")
         }
+        console.log("EIP712 signature", EIP712signature)
         const { v, r, s } = hexToSignature(EIP712signature)
         const signature = encodeAbiParameters(
             [
@@ -210,6 +215,8 @@ export class Auth {
             ],
             [Number(v), r, s]
         )
+        console.log("v,r,s", v, r, s)
+        console.log("signature", signature)
         if (isGroupOp) {
             return signature
         } else {
@@ -217,6 +224,7 @@ export class Auth {
                 userId: await this.getUserId(),
                 signature: signature
             }
+            console.log("wallet signature", walletSignature)
             return encodeWalletSignature(walletSignature)
         }
     }
