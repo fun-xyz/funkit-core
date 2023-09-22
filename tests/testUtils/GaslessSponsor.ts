@@ -24,7 +24,7 @@ export interface GaslessSponsorTestConfig {
 export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
     const { stakeAmount } = config
 
-    describe.only("GaslessSponsor", function () {
+    describe("GaslessSponsor", function () {
         this.retries(config.numRetry ? config.numRetry : 0)
         this.timeout(250_000)
         let funder: Auth
