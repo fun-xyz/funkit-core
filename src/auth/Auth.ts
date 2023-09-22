@@ -230,6 +230,10 @@ export class Auth {
      */
     async signOp(operation: Operation, chain: Chain, isGroupOp = false): Promise<Hex> {
         await this.init()
+        if ((await chain.getChainId()) !== "5") {
+            const opHash = await operation.getOpHash(chain)
+            return await this.signHash(opHash, isGroupOp)
+        }
         return await this.signUserOperation(operation, chain, isGroupOp)
     }
 
