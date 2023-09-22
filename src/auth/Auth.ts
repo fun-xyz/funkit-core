@@ -5,16 +5,15 @@ import {
     PrivateKeyAccount,
     TransactionReceipt,
     WalletClient,
-    concat,
     createWalletClient,
     custom,
+    encodeAbiParameters,
     hexToSignature,
     http,
     isHex,
     keccak256,
     pad,
-    toBytes,
-    toHex
+    toBytes
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
@@ -183,9 +182,6 @@ export class Auth {
             entrypoint: await chain.getAddress("entryPointAddress"),
             chainid: BigInt(Number(await chain.getChainId()))
         }
-        console.log("domain", domain)
-        console.log("types", types)
-        console.log("value", value)
         let EIP712signature
         if (this.signer?.type === "local") {
             EIP712signature = await this.signer.signTypedData({
@@ -195,7 +191,6 @@ export class Auth {
                 message: value
             })
         } else if (this.client && this.account) {
-            console.log("signing with client")
             EIP712signature = await this.client.signTypedData({
                 account: await this.client.account!,
                 domain,
@@ -208,17 +203,17 @@ export class Auth {
         }
         console.log("EIP712 signature", EIP712signature)
         const { v, r, s } = hexToSignature(EIP712signature)
-        const signature = concat([toHex(v), r, s])
-        // const signature = encodeAbiParameters(
-        //     [
-        //         { name: "v", type: "uint8" },
-        //         { name: "r", type: "bytes32" },
-        //         { name: "s", type: "bytes32" }
-        //     ],
-        //     [Number(v), r, s]
-        // )
+        // const signature: Hex = concat([toHex(v), r, s]) as Hex
         console.log("v,r,s", v, r, s)
-        console.log("signature", signature)
+        const signature = encodeAbiParameters(
+            [
+                { name: "v", type: "uint8" },
+                { name: "r", type: "bytes32" },
+                { name: "s", type: "bytes32" }
+            ],
+            [Number(v), r, s]
+        )
+        console.log(signature)
         if (isGroupOp) {
             return signature
         } else {
@@ -226,7 +221,6 @@ export class Auth {
                 userId: await this.getUserId(),
                 signature: signature
             }
-            console.log("wallet signature", walletSignature)
             return encodeWalletSignature(walletSignature)
         }
     }
