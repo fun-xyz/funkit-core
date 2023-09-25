@@ -33,10 +33,10 @@ export const generateRandomNonce = (): bigint => {
     return randomKey << 64n
 }
 
-export const getWalletAddress = async (chain: Chain, walletUniqueId: Hex): Promise<Address> => {
+export const getWalletAddress = async (chain: Chain, walletUniqueId: Hex, initializerCallData: Hex): Promise<Address> => {
     const data = encodeLoginData({ salt: walletUniqueId })
     const factoryAddress = await chain.getAddress("factoryAddress")
-    return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data], chain)
+    return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data, initializerCallData], chain)
 }
 
 export const isWalletInitOp = (userOp: UserOperation): boolean => {

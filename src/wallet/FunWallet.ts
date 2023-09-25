@@ -35,6 +35,7 @@ export class FunWallet extends FirstClassActions {
     walletUniqueId?: Hex
     userInfo?: Map<Hex, User>
     address?: Address
+    initializerCallData?: Hex
 
     /**
      * Creates FunWallet object
@@ -99,6 +100,10 @@ export class FunWallet extends FirstClassActions {
             )
 
             this.walletUniqueId = uniqueId as Hex
+            ;(async () => {
+                const chain = await Chain.getChain({ chainIdentifier: 5 })
+                await this.getThisInitCode(chain)
+            })()
         }
     }
 
@@ -109,7 +114,11 @@ export class FunWallet extends FirstClassActions {
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(
+                await Chain.getChain({ chainIdentifier: 5 }),
+                this.walletUniqueId!,
+                this.initializerCallData!
+            )
         }
         return this.address!
     }
@@ -120,9 +129,9 @@ export class FunWallet extends FirstClassActions {
      * @param {string} apiKey - The API key to access the required resources.
      * @returns {Promise<Address>} The wallet address.
      */
-    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
+    static async getAddress(uniqueId: string, apiKey: string, initializerCallData: Hex): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)), initializerCallData)
     }
 
     /**
@@ -825,6 +834,7 @@ export class FunWallet extends FirstClassActions {
             input.entryPointAddress,
             encodedVerificationInitdata
         ])
+        this.initializerCallData = initializerCallData
 
         const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [initializerCallData, encodeLoginData(input.loginData)])
         return concat([input.factoryAddress, data])
