@@ -762,6 +762,7 @@ export class FunWallet extends FirstClassActions {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
+        console.log("Estimate Op Gas UserOp", operation.userOp)
         const res = await chain.estimateOpGas(operation.userOp)
         operation.userOp = {
             ...operation.userOp,
@@ -798,7 +799,6 @@ export class FunWallet extends FirstClassActions {
         const initCodeParams: InitCodeParams = {
             entryPointAddress,
             factoryAddress,
-            implementationAddress: AddressZero,
             loginData: loginData,
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
