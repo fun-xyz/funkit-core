@@ -5,15 +5,16 @@ import {
     PrivateKeyAccount,
     TransactionReceipt,
     WalletClient,
+    concat,
     createWalletClient,
     custom,
-    encodeAbiParameters,
     hexToSignature,
     http,
     isHex,
     keccak256,
     pad,
-    toBytes
+    toBytes,
+    toHex
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
@@ -203,17 +204,17 @@ export class Auth {
         }
         console.log("EIP712 signature", EIP712signature)
         const { v, r, s } = hexToSignature(EIP712signature)
-        // const signature: Hex = concat([toHex(v), r, s]) as Hex
+        const signature: Hex = concat([toHex(v), r, s]) as Hex
         console.log("v,r,s", v, r, s)
-        const signature = encodeAbiParameters(
-            [
-                { name: "v", type: "uint8" },
-                { name: "r", type: "bytes32" },
-                { name: "s", type: "bytes32" }
-            ],
-            [Number(v), r, s]
-        )
-        console.log(signature)
+        // const signature = encodeAbiParameters(
+        //     [
+        //         { name: "v", type: "uint8" },
+        //         { name: "r", type: "bytes32" },
+        //         { name: "s", type: "bytes32" }
+        //     ],
+        //     [Number(v), r, s]
+        // )
+        // console.log(signature)
         if (isGroupOp) {
             return signature
         } else {
