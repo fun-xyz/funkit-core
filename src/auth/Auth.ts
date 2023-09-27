@@ -1,3 +1,4 @@
+import { ethers } from "ethers"
 import {
     Address,
     Hex,
@@ -5,16 +6,13 @@ import {
     PrivateKeyAccount,
     TransactionReceipt,
     WalletClient,
-    concat,
     createWalletClient,
     custom,
-    hexToSignature,
     http,
     isHex,
     keccak256,
     pad,
-    toBytes,
-    toHex
+    toBytes
 } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as chains from "viem/chains"
@@ -203,8 +201,8 @@ export class Auth {
             throw new Error("No signer or client")
         }
         console.log("EIP712 signature", EIP712signature)
-        const { v, r, s } = hexToSignature(EIP712signature)
-        const signature: Hex = concat([toHex(v), r, s]) as Hex
+        const { v, r, s } = ethers.utils.splitSignature(EIP712signature)
+        const signature = ethers.utils.defaultAbiCoder.encode(["uint8", "bytes32", "bytes32"], [v, r, s]) as Hex
         console.log("v,r,s", v, r, s)
         // const signature = encodeAbiParameters(
         //     [
