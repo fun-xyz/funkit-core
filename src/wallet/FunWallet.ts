@@ -449,6 +449,8 @@ export class FunWallet extends FirstClassActions {
             }
         }
         operation.userOp.paymasterAndData = paymasterAndData
+        console.log("operations", operation.userOp)
+        console.log("TxOptions", txOptions)
 
         const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
         // sign the userOp directly here as we do not have the opId yet
