@@ -57,7 +57,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             }
         })
 
-        it.only("transfer baseToken directly", async () => {
+        it("transfer baseToken directly", async () => {
             const randomAddress = await auth.getAddress()
             const walletAddress = await wallet.getAddress()
 

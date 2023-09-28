@@ -6,6 +6,7 @@ const config: LimitOrderConfig = {
     baseToken: "eth",
     tokenInAmount: 0.001,
     tokenOutAmount: 0.00001,
-    prefundAmt: 0.2
+    prefundAmt: 0.2,
+    index: 123123
 }
 LimitOrderTest(config)

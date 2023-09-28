@@ -69,7 +69,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         })
 
         describe("Write functions - Basic Functionality", () => {
-            it.only("approve", async () => {
+            it("approve", async () => {
                 console.log("wallet address", await wallet1.getAddress())
                 const nft = new NFT(nftAddress)
                 const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {

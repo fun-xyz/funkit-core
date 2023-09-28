@@ -67,7 +67,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         it("wallet should not have the same address with a different index", async () => {
             const wallet1 = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(18)
+                uniqueId: await auth.getWalletUniqueId(Math.floor(Math.random() * 1000000))
             })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()
@@ -77,7 +77,7 @@ export const FactoryTest = (config: FactoryTestConfig) => {
         it("wallet should not have the same address with a different uniqueId", async () => {
             const wallet1 = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth2.getWalletUniqueId(3923)
+                uniqueId: await auth2.getWalletUniqueId(Math.floor(Math.random() * 1000000))
             })
             const walletAddress = await wallet.getAddress()
             const wallet1Address = await wallet1.getAddress()

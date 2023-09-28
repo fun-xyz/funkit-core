@@ -52,11 +52,11 @@ export function encodeWalletSignature(data: WalletSignature): Hex {
     ruleId ??= HashZero
     authType ??= 0
     const extraDataEncoded: Hex[][] = extraData ? parseExtraData(extraData) : [[], [], [], []]
-    console.log("encodeWalletSignature", signature)
-    console.log(
-        "final signature",
-        encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded]).toLowerCase() as Hex
-    )
+    // console.log("encodeWalletSignature", signature)
+    // console.log(
+    //     "final signature",
+    //     encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded]).toLowerCase() as Hex
+    // )
     return encodeAbiParameters(walletSigEncodingTypes, [authType, userId, roleId, ruleId, signature, extraDataEncoded]).toLowerCase() as Hex
 }
 
