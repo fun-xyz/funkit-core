@@ -69,7 +69,7 @@ export class Operation {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.userOp
         const mul: number = this.userOp.paymasterAndData !== "0x" ? 3 : 1
         const requiredGas = callGasLimit + verificationGasLimit * BigInt(mul) + preVerificationGas! ? preVerificationGas : 0n
-        return maxFeePerGas * requiredGas!
+        return BigInt(maxFeePerGas) * BigInt(requiredGas!)
     }
 
     async estimateGas(auth: Auth, userId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {

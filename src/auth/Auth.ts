@@ -200,19 +200,8 @@ export class Auth {
         } else {
             throw new Error("No signer or client")
         }
-        // console.log("EIP712 signature", EIP712signature)
         const { v, r, s } = ethers.utils.splitSignature(EIP712signature)
         const signature = ethers.utils.defaultAbiCoder.encode(["uint8", "bytes32", "bytes32"], [v, r, s]) as Hex
-        // console.log("v,r,s", v, r, s)
-        // const signature = encodeAbiParameters(
-        //     [
-        //         { name: "v", type: "uint8" },
-        //         { name: "r", type: "bytes32" },
-        //         { name: "s", type: "bytes32" }
-        //     ],
-        //     [Number(v), r, s]
-        // )
-        // console.log(signature)
         if (isGroupOp) {
             return signature
         } else {
