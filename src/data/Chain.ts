@@ -88,7 +88,7 @@ export class Chain {
             transport: http(this.rpcUrl)
         })
         this.id = (await this.client.getChainId()).toString()
-        await this.loadChain(this.id)
+        await this.loadChain(this.id!)
     }
 
     private async loadChain(identifier: string) {

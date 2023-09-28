@@ -58,7 +58,7 @@ export async function gasCalculation(txid: string, chain: Chain) {
     const gasPrice = txReceipt.effectiveGasPrice
     const opFee = gasUsed * gasPrice
     const chainPrice = BigInt(Math.ceil((await getPriceData(await chain.getCurrency())) * 100))
-    const opFeeUSD = opFee * BigInt(chainPrice)
+    const opFeeUSD = BigInt(opFee) * BigInt(chainPrice)
 
     return { gasUsed: gasUsed.toString(), opFee: formatUnits(opFee, 18).toString(), opFeeUSD: formatUnits(opFeeUSD, 20).toString() }
 }
