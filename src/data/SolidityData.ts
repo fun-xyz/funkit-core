@@ -19,21 +19,8 @@ const walletSigEncodingTypes = [
 ]
 export function encodeLoginData(data: LoginData): Hex {
     let { salt } = data
-    // newFunWalletOwner = newFunWalletOwner ? newFunWalletOwner : AddressZero
-    // index = index ? BigInt(index) : 0n
-    // socialHandle = socialHandle ? socialHandle : "0x"
     salt = salt ? salt : HashZero
-    // loginType = loginType ? loginType : 0
     return encodeAbiParameters([{ type: "bytes32" }], [salt])
-    // return encodeAbiParameters(
-    //     [
-    //         {
-    //             type: "tuple",
-    //             components: [{ type: "uint8" }, { type: "address" }, { type: "bytes32" }, { type: "uint256" }, { type: "bytes" }]
-    //         }
-    //     ],
-    //     [[loginType, newFunWalletOwner, salt, index, socialHandle]]
-    // )
 }
 
 const parseExtraData = (data: ExtraDataType): Hex[][] => {

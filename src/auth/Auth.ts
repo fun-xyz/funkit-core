@@ -267,8 +267,6 @@ export class Auth {
             signature: pad("0x", { size: 65 })
         }
         return encodeWalletSignature(walletSignature)
-        // const chain = await Chain.getChain({ chainIdentifier: 5 })
-        // return await this.signUserOperation(_, chain, false)
     }
 
     /**
