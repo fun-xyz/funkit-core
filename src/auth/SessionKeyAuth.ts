@@ -1,3 +1,4 @@
+import { ethers } from "ethers"
 import { Hex, decodeAbiParameters, pad, toBytes } from "viem"
 import { Auth } from "./Auth"
 import { AuthInput, WalletCallData } from "./types"
@@ -5,7 +6,6 @@ import { ETH_TRANSFER_SELECTOR, USER_AUTHENTICATION_CONTRACT_INTERFACE, WALLET_A
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
-import { ethers } from "ethers"
 
 const SELECTOR_LENGTH = 10
 const execFromEntryPointSelector = getSigHash(WALLET_ABI, "execFromEntryPoint")
@@ -127,7 +127,6 @@ export class SessionKeyAuth extends Auth {
                 }
             }
             return encodeWalletSignature(walletSignature)
-
         }
     }
 

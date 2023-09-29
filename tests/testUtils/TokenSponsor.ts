@@ -274,7 +274,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
             expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
-            const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams,  {
+            const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams, {
                 ...options,
                 gasSponsor: {
                     ...options.gasSponsor,
@@ -329,18 +329,22 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 )
             }
 
-            const approveTokenToPaymaster = await wallet.tokenApprove(funder, await funder.getUserId(), {
-                token: config.paymasterToken,
-                spender: await sponsor.getPaymasterAddress(),
-                amount: config.paymasterTokensRequired
-            },
-            {
-                ...options,
-                gasSponsor: {
-                    ...options.gasSponsor,
-                    usePermit: false
+            const approveTokenToPaymaster = await wallet.tokenApprove(
+                funder,
+                await funder.getUserId(),
+                {
+                    token: config.paymasterToken,
+                    spender: await sponsor.getPaymasterAddress(),
+                    amount: config.paymasterTokensRequired
+                },
+                {
+                    ...options,
+                    gasSponsor: {
+                        ...options.gasSponsor,
+                        usePermit: false
+                    }
                 }
-            })
+            )
             await wallet.executeOperation(funder, approveTokenToPaymaster)
 
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams, {

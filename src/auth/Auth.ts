@@ -14,7 +14,11 @@ import {
     pad,
     toBytes
 } from "viem"
+// @ts-ignore
+// eslint-disable-next-line
 import { privateKeyToAccount } from "viem/accounts"
+// @ts-ignore
+// eslint-disable-next-line
 import * as chains from "viem/chains"
 import { AuthInput } from "./types"
 import { Wallet } from "../apis/types"

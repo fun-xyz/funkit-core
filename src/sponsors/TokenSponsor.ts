@@ -81,7 +81,7 @@ export class TokenSponsor extends Sponsor {
         const client = await chain.getClient()
         const chainId = await client.getChainId()
         const hash = await getPermitHash(tokenAddress, paymasterAddress, decAmount, nonce, walletAddr, BigInt(chainId))
-        const sig = await auth.signHexitash(hash)
+        const sig = await auth.signHash(hash)
         const encodedSig = encodeAbiParameters(
             [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "uint256" }, { type: "bytes" }],
             [tokenAddress, paymasterAddress, decAmount, nonce, sig]

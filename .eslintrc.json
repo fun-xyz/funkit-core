@@ -61,7 +61,7 @@
         "allowSeparatedGroups": true
       }
     ],
-    "import/no-unresolved": false,
+    "import/no-unresolved": 2,
     "import/order": [
       "error",
       {
