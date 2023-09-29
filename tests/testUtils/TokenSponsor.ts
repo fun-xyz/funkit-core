@@ -104,10 +104,6 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         })
 
         it.only("Whitelist a funwallet and use the token paymaster with permit", async () => {
-            console.log("funderAddress", funderAddress)
-            console.log("walletAddress", walletAddress)
-            console.log("paymasterToken", paymasterToken)
-            console.log("sponsor", await sponsor.getPaymasterAddress())
             // Allow the sponsor to whitelist tokens that are acceptable for use
             if (await sponsor.getTokenListMode(funderAddress)) {
                 await funder.sendTx(await sponsor.setTokenToWhitelistMode())
@@ -281,7 +277,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                     usePermit: true
                 }
             })
-            console.log("operation", await wallet.executeOperation(funder, mintOperation))
+            await wallet.executeOperation(funder, mintOperation)
             const nft = new NFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())

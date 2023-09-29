@@ -198,7 +198,6 @@ export class Chain {
             entryPointAddress: this.addresses.entryPointAddress,
             userOp: estimationUserOp
         })
-        // console.log("Successful op estimation", preVerificationGas, callGasLimit, verificationGasLimit)
         if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }

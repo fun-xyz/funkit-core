@@ -449,8 +449,6 @@ export class FunWallet extends FirstClassActions {
             }
         }
         operation.userOp.paymasterAndData = paymasterAndData
-        console.log("operations", operation.userOp)
-        console.log("TxOptions", txOptions)
 
         const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
         // sign the userOp directly here as we do not have the opId yet
@@ -577,7 +575,6 @@ export class FunWallet extends FirstClassActions {
                 groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
             })
         } else {
-            // console.log("UserOp", operation.userOp)
             receipt = await executeOp({
                 opId: operation.opId!,
                 chainId,
@@ -773,7 +770,6 @@ export class FunWallet extends FirstClassActions {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
-        // console.log("Estimate Op Gas UserOp", operation.userOp)
         const res = await chain.estimateOpGas(operation.userOp)
         operation.userOp = {
             ...operation.userOp,

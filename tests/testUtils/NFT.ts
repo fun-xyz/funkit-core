@@ -70,14 +70,12 @@ export const NFTTest = (config: NFTTestConfig) => {
 
         describe("Write functions - Basic Functionality", () => {
             it("approve", async () => {
-                console.log("wallet address", await wallet1.getAddress())
                 const nft = new NFT(nftAddress)
-                const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {
+                await wallet1.tokenApprove(auth, await auth.getAddress(), {
                     spender: await wallet2.getAddress(),
                     collection: nftAddress,
                     tokenId: nftId
                 })
-                console.log("test", await wallet1.executeOperation(auth, userOp))
 
                 if (config.chainId === 1) {
                     await new Promise((r) => setTimeout(r, 10000))

@@ -55,7 +55,6 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
                 token: "eth"
             })
             opId = await wallet.scheduleOperation(auth, userOp)
-            console.log(opId, await wallet.getAddress())
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
