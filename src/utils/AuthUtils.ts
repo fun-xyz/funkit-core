@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from "uuid"
 import { Hex } from "viem"
+// @ts-ignore
+// eslint-disable-next-line
 import { generatePrivateKey as generateRandomPrivateKey } from "viem/accounts"
 import { createUser, getUserUniqueId } from "../apis/UserApis"
 
