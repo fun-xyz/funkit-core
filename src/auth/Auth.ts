@@ -258,6 +258,7 @@ export class Auth {
      * @param {Operation} _ - The operation (not used in this method).
      * @returns {Promise<Hex>} The estimate gas signature.
      */
+    // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getEstimateGasSignature(userId: string, _: Operation): Promise<Hex> {
         await this.init()
