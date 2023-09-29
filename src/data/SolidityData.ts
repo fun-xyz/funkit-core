@@ -1,7 +1,7 @@
 import { defaultAbiCoder } from "@ethersproject/abi"
 import { Address, Hex, encodeAbiParameters, pad } from "viem"
 import { ExtraDataType, LoginData, WalletSignature } from "./types"
-import { AddressZero, HashZero } from "../common"
+import { HashZero } from "../common"
 import { User } from "../wallet/types"
 
 const extraDataStructType = {
@@ -18,21 +18,9 @@ const walletSigEncodingTypes = [
     extraDataStructType
 ]
 export function encodeLoginData(data: LoginData): Hex {
-    let { loginType, newFunWalletOwner, index, socialHandle, salt } = data
-    newFunWalletOwner = newFunWalletOwner ? newFunWalletOwner : AddressZero
-    index = index ? BigInt(index) : 0n
-    socialHandle = socialHandle ? socialHandle : "0x"
+    let { salt } = data
     salt = salt ? salt : HashZero
-    loginType = loginType ? loginType : 0
-    return encodeAbiParameters(
-        [
-            {
-                type: "tuple",
-                components: [{ type: "uint8" }, { type: "address" }, { type: "bytes32" }, { type: "uint256" }, { type: "bytes" }]
-            }
-        ],
-        [[loginType, newFunWalletOwner, salt, index, socialHandle]]
-    )
+    return encodeAbiParameters([{ type: "bytes32" }], [salt])
 }
 
 const parseExtraData = (data: ExtraDataType): Hex[][] => {

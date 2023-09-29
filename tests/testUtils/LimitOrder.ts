@@ -62,7 +62,6 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             })
 
             opId = await wallet.scheduleOperation(auth, userOp)
-            console.log("limitOrder opId: ", opId)
             const operation = await getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())

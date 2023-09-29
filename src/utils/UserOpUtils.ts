@@ -60,7 +60,7 @@ export async function gasCalculation(txid: string, chain: Chain) {
     const chainPrice = BigInt(Math.ceil((await getPriceData(await chain.getCurrency())) * 100))
     // @ts-ignore
     // eslint-disable-next-line
-    const opFeeUSD = opFee * BigInt(chainPrice)
+    const opFeeUSD = BigInt(opFee) * BigInt(chainPrice)
 
     return { gasUsed: gasUsed.toString(), opFee: formatUnits(opFee, 18).toString(), opFeeUSD: formatUnits(opFeeUSD, 20).toString() }
 }

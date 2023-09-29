@@ -2,12 +2,13 @@ import { TokenSponsorTest, TokenSponsorTestConfig } from "../testUtils/TokenSpon
 
 const config: TokenSponsorTestConfig = {
     chainId: 5,
-    paymasterToken: "0x4dF8d8AA018cABB7c1194E6Df064961ea3572c48", // Goerli USDC
+    paymasterToken: "0xdB6eCe914a89b1cd11454B99b8BC7F54b04CcF5e", // Goerli USDC
     baseToken: "eth",
     baseTokenStakeAmt: 1,
     mintPaymasterToken: true,
     numRetry: 0,
     paymasterTokensRequired: 1000,
-    prefundAmt: 0.005
+    prefundAmt: 0.005,
+    walletIndex: 1231238987123
 }
 TokenSponsorTest(config)

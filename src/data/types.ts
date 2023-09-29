@@ -15,7 +15,6 @@ export type FactoryCreateAccountParams = {
 export type InitCodeParams = {
     entryPointAddress: Address
     factoryAddress: Address
-    implementationAddress?: Address
     loginData: LoginData
     verificationData: readonly Hex[]
     verificationAddresses: readonly Address[]

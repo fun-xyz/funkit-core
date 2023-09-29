@@ -36,7 +36,7 @@ export const StakeTest = (config: StakeTestConfig) => {
             auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
             wallet = new FunWallet({
                 users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(1799811349)
+                uniqueId: await auth.getWalletUniqueId(1799812311349)
             })
 
             if (!(await wallet.getDeploymentStatus())) {

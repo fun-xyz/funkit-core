@@ -1,5 +1,9 @@
 import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, isAddress, isHex, keccak256, pad, toBytes } from "viem"
 import { FunWalletParams, User } from "./types"
+import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
+import FACTORY_CONTRACT from "../abis/FunWalletFactory.json"
+import ROLE_BASED_ACCESS_CONTROL_CONTRACT from "../abis/RoleBasedAccessControl.json"
+import USER_AUTHENTICATION_CONTRACT from "../abis/UserAuthentication.json"
 import { FirstClassActions } from "../actions/FirstClassActions"
 import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
@@ -30,11 +34,11 @@ import { GaslessSponsor, TokenSponsor } from "../sponsors"
 import { generateRandomNonceKey, getWalletAddress, isGroupOperation, isSignatureMissing, isWalletInitOp } from "../utils"
 import { getPaymasterType } from "../utils/PaymasterUtils"
 import { isBytes32 } from "../utils/TypeUtils"
-
 export class FunWallet extends FirstClassActions {
     walletUniqueId?: Hex
     userInfo?: Map<Hex, User>
     address?: Address
+    initializerCallData?: Hex
 
     /**
      * Creates FunWallet object
@@ -99,6 +103,7 @@ export class FunWallet extends FirstClassActions {
             )
 
             this.walletUniqueId = uniqueId as Hex
+            this.getConstructorInitCode()
         }
     }
 
@@ -109,7 +114,11 @@ export class FunWallet extends FirstClassActions {
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), this.walletUniqueId!)
+            this.address = await getWalletAddress(
+                await Chain.getChain({ chainIdentifier: 5 }),
+                this.walletUniqueId!,
+                this.initializerCallData!
+            )
         }
         return this.address!
     }
@@ -120,9 +129,9 @@ export class FunWallet extends FirstClassActions {
      * @param {string} apiKey - The API key to access the required resources.
      * @returns {Promise<Address>} The wallet address.
      */
-    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
+    static async getAddress(uniqueId: string, apiKey: string, initializerCallData: Hex): Promise<Address> {
         ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)))
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)), initializerCallData)
     }
 
     /**
@@ -773,6 +782,38 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
+    private getConstructorInitCode() {
+        const owners: Hex[] = Array.from(this.userInfo!.keys())
+        const entryPointAddress = ENTRYPOINT_CONTRACT["addresses"]["5"]
+        const factoryAddress = FACTORY_CONTRACT["addresses"]["5"]
+        const rbac = ROLE_BASED_ACCESS_CONTROL_CONTRACT["addresses"]["5"]
+        const userAuth = USER_AUTHENTICATION_CONTRACT["addresses"]["5"]
+
+        const loginData: LoginData = {
+            salt: this.walletUniqueId!
+        }
+
+        const rbacInitData = toBytes32Arr(owners)
+
+        let userAuthInitData = "0x" as Hex
+        const groupUsers: User[] = Array.from(this.userInfo!.values()).filter(
+            (user) => user.groupInfo !== null && user.groupInfo !== undefined
+        )
+        if (groupUsers.length > 0) {
+            userAuthInitData = encodeUserAuthInitData(groupUsers)
+        }
+
+        const initCodeParams: InitCodeParams = {
+            entryPointAddress,
+            factoryAddress,
+            loginData: loginData,
+            verificationAddresses: [rbac, userAuth],
+            verificationData: [rbacInitData, userAuthInitData]
+        }
+
+        return this.getInitCode(initCodeParams)
+    }
+
     private async getThisInitCode(chain: Chain) {
         const owners: Hex[] = Array.from(this.userInfo!.keys())
         const entryPointAddress = await chain.getAddress("entryPointAddress")
@@ -797,7 +838,6 @@ export class FunWallet extends FirstClassActions {
         const initCodeParams: InitCodeParams = {
             entryPointAddress,
             factoryAddress,
-            implementationAddress: AddressZero,
             loginData: loginData,
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
@@ -824,6 +864,7 @@ export class FunWallet extends FirstClassActions {
             input.entryPointAddress,
             encodedVerificationInitdata
         ])
+        this.initializerCallData = initializerCallData
 
         const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [initializerCallData, encodeLoginData(input.loginData)])
         return concat([input.factoryAddress, data])

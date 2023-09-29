@@ -1,6 +1,6 @@
 import { createWalletClient, custom, toBytes } from "viem"
 // @ts-ignore
-//eslint-disable-next-line
+// eslint-disable-next-line
 import { Chain, mainnet } from "viem/chains"
 
 interface web3ProviderConversionInterface {

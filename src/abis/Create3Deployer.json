@@ -1,1 +1,648 @@
-{"name":"Create3Deployer","abi":[{"inputs":[{"internalType":"address[]","name":"_deployers","type":"address[]"},{"internalType":"uint256","name":"_threshold","type":"uint256"},{"internalType":"address[]","name":"implementationAddresses","type":"address[]"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"bytes","name":"","type":"bytes"}],"name":"ErrorCreatingContract","type":"error"},{"inputs":[],"name":"ErrorCreatingProxy","type":"error"},{"inputs":[],"name":"TargetAlreadyExists","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"deployer","type":"address"}],"name":"AddDeployer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"}],"name":"ContractDeployed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"ImplementationAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"implementation","type":"address"}],"name":"ImplementationRemoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"deployer","type":"address"}],"name":"RemoveDeployer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"threshold","type":"uint256"}],"name":"SetThreshold","type":"event"},{"inputs":[],"name":"ADD_DEPLOYER_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ADD_IMPLEMENTATION_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"CALL_CHILD_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEPLOY_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"EIP712_DOMAIN","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REMOVE_DEPLOYER_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REMOVE_IMPLEMENTATION_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SET_THRESHOLD_TYPE","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_deployer","type":"address"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"addDeployer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_implementation","type":"address"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"addImplementation","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_salt","type":"bytes32"}],"name":"addressOfModule","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_salt","type":"bytes32"}],"name":"addressOfWallet","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"child","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"callChild","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_salt","type":"bytes32"},{"internalType":"bytes","name":"creationCode","type":"bytes"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"deploy","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_salt","type":"bytes32"},{"internalType":"bytes","name":"creationCode","type":"bytes"}],"name":"deployWallet","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"deployers","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"deployer","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structAddDeployerStruct","name":"addDeployerStruct","type":"tuple"}],"name":"hashAddDeployer","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"implementation","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structImplementationStruct","name":"addImplementationStruct","type":"tuple"}],"name":"hashAddImplementation","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"child","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structCallChildStruct","name":"callChildStruct","type":"tuple"}],"name":"hashCallChild","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"bytes32","name":"salt","type":"bytes32"},{"internalType":"bytes","name":"creationCode","type":"bytes"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structDeployStruct","name":"deployStruct","type":"tuple"}],"name":"hashDeploy","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"deployer","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structRemoveDeployerStruct","name":"removeDeployerStruct","type":"tuple"}],"name":"hashRemoveDeployer","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"address","name":"implementation","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structImplementationStruct","name":"removeImplementationStruct","type":"tuple"}],"name":"hashRemoveImplementation","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"uint256","name":"threshold","type":"uint256"},{"internalType":"uint256","name":"nonce","type":"uint256"}],"internalType":"structSetThresholdStruct","name":"setThresholdStruct","type":"tuple"}],"name":"hashSetThreshold","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"implementations","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"nonce","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_deployer","type":"address"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"removeDeployer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_implementation","type":"address"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"removeImplementation","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"salt","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_threshold","type":"uint256"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"}],"name":"setThreshold","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"threshold","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"target","type":"address"}],"name":"verifyIsValidContractAndImplementation","outputs":[],"stateMutability":"view","type":"function"}],"addresses":{"1":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7","5":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7","10":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7","137":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7","8453":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7","36865":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7","42161":"0xA2B9ED597A9a835c9c46987E947a9742a463E4b7"}}
+{
+    "name": "Create3Deployer",
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "address[]",
+                    "name": "_deployers",
+                    "type": "address[]"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_threshold",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address[]",
+                    "name": "implementationAddresses",
+                    "type": "address[]"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes",
+                    "name": "",
+                    "type": "bytes"
+                }
+            ],
+            "name": "ErrorCreatingContract",
+            "type": "error"
+        },
+        {
+            "inputs": [],
+            "name": "ErrorCreatingProxy",
+            "type": "error"
+        },
+        {
+            "inputs": [],
+            "name": "InvalidShortString",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "str",
+                    "type": "string"
+                }
+            ],
+            "name": "StringTooLong",
+            "type": "error"
+        },
+        {
+            "inputs": [],
+            "name": "TargetAlreadyExists",
+            "type": "error"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "deployer",
+                    "type": "address"
+                }
+            ],
+            "name": "AddDeployer",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "contractAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "ContractDeployed",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [],
+            "name": "EIP712DomainChanged",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "implementation",
+                    "type": "address"
+                }
+            ],
+            "name": "ImplementationAdded",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "implementation",
+                    "type": "address"
+                }
+            ],
+            "name": "ImplementationRemoved",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "deployer",
+                    "type": "address"
+                }
+            ],
+            "name": "RemoveDeployer",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "uint256",
+                    "name": "threshold",
+                    "type": "uint256"
+                }
+            ],
+            "name": "SetThreshold",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "ADD_DEPLOYER_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "ADD_IMPLEMENTATION_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "CALL_CHILD_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "CHAIN_ID",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "DEPLOY_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "DOMAIN_SEPARATOR",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "EIP712_DOMAIN",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "EIP712_NAME",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "EIP712_VERSION",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "REMOVE_DEPLOYER_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "REMOVE_IMPLEMENTATION_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "SET_THRESHOLD_TYPEHASH",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_deployer",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "addDeployer",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_implementation",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "addImplementation",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_salt",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "addressOfModule",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_salt",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "addressOfWallet",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "child",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "data",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "callChild",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_salt",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "creationCode",
+                    "type": "bytes"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "deploy",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_salt",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "creationCode",
+                    "type": "bytes"
+                }
+            ],
+            "name": "deployWallet",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "deployers",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "eip712Domain",
+            "outputs": [
+                {
+                    "internalType": "bytes1",
+                    "name": "fields",
+                    "type": "bytes1"
+                },
+                {
+                    "internalType": "string",
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "version",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "chainId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "address",
+                    "name": "verifyingContract",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "salt",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "extensions",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "implementations",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "nonce",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_deployer",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "removeDeployer",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_implementation",
+                    "type": "address"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "removeImplementation",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "salt",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_threshold",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes[]",
+                    "name": "signatures",
+                    "type": "bytes[]"
+                }
+            ],
+            "name": "setThreshold",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "threshold",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "target",
+                    "type": "address"
+                }
+            ],
+            "name": "verifyIsValidContractAndImplementation",
+            "outputs": [],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ],
+    "addresses": {
+        "1": "0xA2B9ED597A9a835c9c46987E947a9742a463E4b7",
+        "5": "0xD4DB81C1f496cccE4525636fBf683eB40cb24E41",
+        "10": "0xA2B9ED597A9a835c9c46987E947a9742a463E4b7",
+        "137": "0xA2B9ED597A9a835c9c46987E947a9742a463E4b7",
+        "8453": "0xA2B9ED597A9a835c9c46987E947a9742a463E4b7",
+        "36865": "0xA2B9ED597A9a835c9c46987E947a9742a463E4b7",
+        "42161": "0xA2B9ED597A9a835c9c46987E947a9742a463E4b7"
+    }
+}

@@ -186,7 +186,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 [groupKey],
                 chain
             )
-            const [storedGroup]: any[] = decodeAbiParameters(
+            const [storedGroup]: any = decodeAbiParameters(
                 [
                     {
                         type: "tuple",

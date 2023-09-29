@@ -2,6 +2,7 @@ import IUniswapV3PoolABI from "@uniswap/v3-core/artifacts/contracts/interfaces/I
 import { padHex } from "viem"
 import APPROVE_AND_EXEC_CONTRACT from "../abis/ApproveAndExec.json"
 import APPROVE_AND_SWAP_CONTRACT from "../abis/ApproveAndSwap.json"
+import CREATE3_DEPLOYER_CONTRACT from "../abis/Create3Deployer.json"
 import ENTRYPOINT_CONTRACT from "../abis/EntryPoint.json"
 import ERC20_CONTRACT from "../abis/ERC20.json"
 import ERC_721_CONTRACT from "../abis/ERC721.json"
@@ -85,6 +86,7 @@ export const HashZero = padHex("0x", { size: 32 })
 // abis
 export const APPROVE_AND_EXEC_ABI = APPROVE_AND_EXEC_CONTRACT["abi"]
 export const APPROVE_AND_SWAP_ABI = APPROVE_AND_SWAP_CONTRACT["abi"]
+export const CREATE3_DEPLOYER_ABI = CREATE3_DEPLOYER_CONTRACT["abi"]
 export const ENTRYPOINT_ABI = ENTRYPOINT_CONTRACT["abi"]
 export const ERC20_ABI = ERC20_CONTRACT["abi"]
 export const WALLET_ABI = FUN_WALLET_CONTRACT["abi"]
@@ -101,6 +103,7 @@ export const USER_AUTHENTICATION_ABI = USER_AUTHENTICATION_CONTRACT["abi"]
 export const ESTIMATION_PAYMASTER_ABI = ESTIMATION_PAYMASTER_CONTRACT["abi"]
 
 // contract interface
+export const CREATE3_DEPLOYER_CONTRACT_INTERFACE = new ContractInterface(CREATE3_DEPLOYER_ABI)
 export const ENTRYPOINT_CONTRACT_INTERFACE = new ContractInterface(ENTRYPOINT_ABI)
 export const ERC721_CONTRACT_INTERFACE = new ContractInterface(ERC_721_ABI)
 export const ERC20_CONTRACT_INTERFACE = new ContractInterface(ERC20_ABI)
@@ -143,7 +146,8 @@ export const CONTRACT_ADDRESSES = {
         "137": FUN_TOKEN_SPONSOR_ADDRESS,
         "8453": FUN_TOKEN_SPONSOR_ADDRESS,
         "42161": FUN_TOKEN_SPONSOR_ADDRESS
-    }
+    },
+    create3Deployer: CREATE3_DEPLOYER_CONTRACT["addresses"]
 }
 
 export const gasSpecificChain = {
