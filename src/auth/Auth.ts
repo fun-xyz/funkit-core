@@ -261,7 +261,6 @@ export class Auth {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getEstimateGasSignature(userId: string, _: Operation): Promise<Hex> {
         await this.init()
-        userId
         const walletSignature: WalletSignature = {
             userId: pad(userId as Hex, { size: 32 }),
             signature: pad("0x", { size: 65 })
