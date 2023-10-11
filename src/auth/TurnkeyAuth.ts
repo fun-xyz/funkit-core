@@ -1,17 +1,17 @@
+import * as crypto from "crypto"
 import { TurnkeyClient, getWebAuthnAttestation } from "@turnkey/http"
 import { createAccount } from "@turnkey/viem"
 import { WebauthnStamper } from "@turnkey/webauthn-stamper"
 import axios from "axios"
 import { createWalletClient, http } from "viem"
-import { goerli } from "viem/chains"
 import { Auth } from "./Auth"
-import { AuthInput } from "./types"
+import { randomBytes } from "../utils"
 
 export class TurnkeyAuth extends Auth {
     rpId: string
     subOrgId?: string
-    constructor(authInput: AuthInput, rpId: string, subOrgId?: string) {
-        super(authInput)
+    constructor(rpId: string, subOrgId?: string) {
+        super({ privateKey: randomBytes(32) })
         // Create this.client and set it to the viem client
         this.rpId = rpId
         this.subOrgId = subOrgId
@@ -100,7 +100,6 @@ export class TurnkeyAuth extends Auth {
 
         const viemClient = createWalletClient({
             account: viemAccount,
-            chain: goerli,
             transport: http()
         })
         this.client = viemClient
