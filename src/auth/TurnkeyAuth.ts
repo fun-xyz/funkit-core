@@ -1,13 +1,13 @@
 import { TurnkeyClient, getWebAuthnAttestation } from "@turnkey/http"
 import { createAccount } from "@turnkey/viem"
 import { WebauthnStamper } from "@turnkey/webauthn-stamper"
-import { Address, Hex, createWalletClient, http } from "viem"
+import axios from "axios"
+import { createWalletClient, http } from "viem"
 import { goerli } from "viem/chains"
 import { Auth } from "./Auth"
 import { AuthInput } from "./types"
-import { Operation } from "../data"
 
-export class SessionKeyAuth extends Auth {
+export class TurnkeyAuth extends Auth {
     rpId: string
     subOrgId?: string
     constructor(authInput: AuthInput, rpId: string, subOrgId?: string) {
@@ -103,21 +103,11 @@ export class SessionKeyAuth extends Auth {
             chain: goerli,
             transport: http()
         })
-        // if (this.client) {
-        //     const address = await this.client.requestAddresses()
-        //     this.account = address[0]
-        // } else if (this.signer) {
-        //     this.account = this.signer.address
-        // }
-        // this.authId ??= this.account
-        // this.inited = true
+        this.client = viemClient
+        this.account = viemAccount.address
+        this.authId ??= this.account
+        this.inited = true
     }
-
-    override async signHash(hash: Hex, isGroupOp = false): Promise<Hex> {}
-
-    override async signOp(operation: Operation, chain: Chain): Promise<Hex> {}
-
-    override async getAddress(): Promise<Address> {}
 }
 
 const humanReadableDateTime = (): string => {
