@@ -52,12 +52,17 @@ import { createGroup, deleteGroup, getGroups, updateGroup } from "../apis/GroupA
 import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletIdentity } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
-import { EnvOption } from "../config"
+import { EnvOption, GlobalEnvOption } from "../config"
 import { Chain, Operation } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
+    protected options: GlobalEnvOption
+
+    constructor(options: GlobalEnvOption) {
+        this.options = options
+    }
     /**
      * Creates a new operation to be associated with the wallet and prepares it for execution.
      * @param {Auth} auth - The authentication instance for the user.
@@ -322,7 +327,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
             const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-            const authId = await getAuthIdFromAddr(params.ownerId as Address)
+            const authId = await getAuthIdFromAddr(params.ownerId as Address, this.options.apiKey!)
             await addUserToWallet(authId, await chain.getChainId(), await this.getAddress(), [pad(params.ownerId, { size: 32 })])
         }
 
@@ -346,7 +351,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
             const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-            const authId = await getAuthIdFromAddr(params.ownerId as Address)
+            const authId = await getAuthIdFromAddr(params.ownerId as Address, this.options.apiKey!)
             await removeUserWalletIdentity(authId, await chain.getChainId(), await this.getAddress(), pad(params.ownerId, { size: 32 }))
         }
         const txParams = await removeOwnerTxParams(params, txOptions)
@@ -372,7 +377,7 @@ export abstract class FirstClassActions {
         const chainId = await chain.getChainId()
         await createGroup(params.groupId, chainId, Number(params.group.threshold), walletAddr, params.group.userIds)
         params.group.userIds.forEach(async (userId) => {
-            const authId = await getAuthIdFromAddr(userId as Address)
+            const authId = await getAuthIdFromAddr(userId as Address, this.options.apiKey!)
             await addUserToGroup(authId, chainId, walletAddr, params.groupId)
         })
         const txParams = await createGroupTxParams(params, txOptions)
@@ -421,7 +426,7 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address)
+        const authId = await getAuthIdFromAddr(params.userId as Address, this.options.apiKey!)
         await addUserToGroup(authId, chainId, await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
@@ -478,7 +483,7 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address)
+        const authId = await getAuthIdFromAddr(params.userId as Address, this.options.apiKey!)
         await removeUserFromGroup(authId, chainId, await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {

@@ -4,18 +4,24 @@ import { API_URL } from "../common/constants"
 import { ResourceNotFoundError } from "../errors"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
-export async function createUser(authId: string, addr: string, method: string, userUniqueId: string): Promise<void> {
-    await sendPostRequest(API_URL, "user", {
-        authId,
-        addr,
-        method,
-        userUniqueId
-    })
+export async function createUser(authId: string, addr: string, method: string, userUniqueId: string, apiKey: string): Promise<void> {
+    await sendPostRequest(
+        API_URL,
+        "user",
+        {
+            authId,
+            addr,
+            method,
+            userUniqueId
+        },
+        apiKey
+    )
 }
 
-export async function getUserUniqueId(authId: string): Promise<string> {
+export async function getUserUniqueId(authId: string, apiKey: string): Promise<string> {
     try {
-        return (await sendGetRequest(API_URL, `user/auth/${authId}/unique-id`)).userUniqueId
+        console.log("getUserUniqueId", authId, apiKey)
+        return (await sendGetRequest(API_URL, `user/auth/${authId}/unique-id`, apiKey)).userUniqueId
     } catch (err) {
         if (err instanceof ResourceNotFoundError) {
             return ""

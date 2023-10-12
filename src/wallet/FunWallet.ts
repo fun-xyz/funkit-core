@@ -11,7 +11,7 @@ import { addUserToWallet } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionParams, WALLET_CONTRACT_INTERFACE } from "../common"
 import { AddressZero, FACTORY_CONTRACT_INTERFACE } from "../common/constants"
-import { EnvOption, parseOptions } from "../config"
+import { EnvOption, GlobalEnvOption, parseOptions } from "../config"
 import {
     AuthType,
     Chain,
@@ -41,8 +41,9 @@ export class FunWallet extends FirstClassActions {
      * @constructor
      * @param {object} params - The parameters for the constructing fun wallet - (users, uniqueId) or walletAddr
      */
-    constructor(params: FunWalletParams | string) {
-        super()
+    constructor(params: FunWalletParams | string, options: GlobalEnvOption) {
+        console.log("Creating FunWallet in constructor")
+        super(options)
         if (typeof params === "string") {
             if (isAddress(params as string)) {
                 this.address = params as Address
@@ -183,7 +184,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
-     * Get all tokens on all supported chains. Merge tokens by symbol
+     * Get all tokens on all supported chains. Merge tokens by chainId
      * @param {string} chainIdInput string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
      * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
      * @param {boolean} checkStatus true if you want to check if the address has any pending lido withdrawals
