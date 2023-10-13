@@ -339,6 +339,25 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
+     * Saves the wallet to the authentication system.
+     * @param auth - The auth or signer to save the wallet to.
+     * @param txOptions - The configuration options.
+     * @returns A Promise that resolves when the wallet is saved to the authentication system.
+     */
+    async saveWalletToAuth(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const walletAddr = await this.getAddress()
+        const userId = await auth.getUserId()
+        const users = await auth.getUserIds(walletAddr, await chain.getChainId())
+        if (!users.includes(userId)) {
+            if (!(await checkWalletAccessInitialization(walletAddr))) {
+                await initializeWalletAccess(walletAddr, await auth.getAddress())
+            }
+            await addUserToWallet(auth.authId!, await chain.getChainId(), walletAddr, [userId], this.walletUniqueId)
+        }
+    }
+
+    /**
      * Generates an on-ramp URL for the account address.
      * @param {Address} address - The account address (optional, defaults to the wallet's address).
      * @returns {Promise<string>} The on-ramp URL.

@@ -12,7 +12,7 @@
         "test": "ts-mocha --exit tests/tenderly/*.ts --exit",
         "test-tenderly": "ts-mocha --exit tests/tenderly/*.ts",
         "test-aws": "env ts-mocha",
-        "test-goerli": "env ts-mocha --exit tests/goerli/*.ts",
+        "test-goerli": "env ts-mocha --exit tests/goerli/Wallet.ts",
         "local-test-tenderly": "env NODE_ENV=local ts-mocha --exit tests/tenderly/*.ts",
         "local-test-goerli": "env NODE_ENV=local ts-mocha --exit tests/goerli/*.ts",
         "staging-test-tenderly": "env NODE_ENV=staging ts-mocha --exit tests/tenderly/*.ts",
