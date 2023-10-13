@@ -41,4 +41,15 @@ describe("Get Operations", function () {
             })
         })
     })
+
+    describe("Get Supported Currencies", () => {
+        it("wallet.getSupportedCurrencies", async () => {
+            const res = await wallet.getSupportedCurrencies()
+            expect(res).to.be.an("array")
+            expect(res.length).to.be.greaterThan(0)
+            expect(res[0]).to.have.property("id")
+            expect(res[0]).to.have.property("name")
+            expect(res[0]).to.have.property("code")
+        })
+    })
 })
