@@ -57,7 +57,7 @@ export interface Currency {
 
 export async function getOnRampSupportedCurrencies(): Promise<Currency[]> {
     const currencies: Currency[] = await sendGetRequest(API_URL, "on-ramp/currencies")
-    if (!currencies) {
+    if (!currencies || !currencies.length) {
         throw new InternalFailureError(
             ErrorCode.UnknownServerError,
             "No supported currencies found.",
