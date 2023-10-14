@@ -2,8 +2,12 @@ import { API_URL } from "../common/constants"
 import { ErrorCode, InternalFailureError } from "../errors"
 import { sendGetRequest } from "../utils/ApiUtils"
 
-export async function getOnRampUrl(walletAddr: string): Promise<string> {
-    const url: string = (await sendGetRequest(API_URL, `on-ramp/${walletAddr}?provider=moonpay`))?.url
+export async function getOnRampUrl(walletAddr: string, currencyCode?: string): Promise<string> {
+    const endpoint = `on-ramp/${walletAddr}?provider=moonpay`
+    if (currencyCode) {
+        endpoint.concat(`&currencyCode=${currencyCode}`)
+    }
+    const url: string = (await sendGetRequest(API_URL, endpoint))?.url
     if (!url) {
         throw new InternalFailureError(
             ErrorCode.UnknownServerError,
