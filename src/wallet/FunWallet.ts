@@ -596,7 +596,13 @@ export class FunWallet extends FirstClassActions {
         }
         receipt = await getFullReceipt(operation.opId, chainId, receipt.userOpHash)
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
+            await addUserToWallet(
+                await auth.getAddress(),
+                chainId,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
+            )
 
             if (txOptions?.gasSponsor?.sponsorAddress) {
                 const paymasterType = getPaymasterType(txOptions)
