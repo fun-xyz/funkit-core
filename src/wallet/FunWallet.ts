@@ -350,10 +350,10 @@ export class FunWallet extends FirstClassActions {
         const userId = await auth.getUserId()
         const users = await auth.getUserIds(walletAddr, await chain.getChainId())
         if (!users.includes(userId)) {
-            if (!(await checkWalletAccessInitialization(walletAddr))) {
+            if ((await checkWalletAccessInitialization(walletAddr)) === false) {
                 await initializeWalletAccess(walletAddr, await auth.getAddress())
             }
-            await addUserToWallet(auth.authId!, await chain.getChainId(), walletAddr, [userId], this.walletUniqueId)
+            await addUserToWallet(await auth.getAddress(), await chain.getChainId(), walletAddr, [userId], this.walletUniqueId)
         }
     }
 
