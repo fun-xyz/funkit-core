@@ -351,10 +351,11 @@ export class FunWallet extends FirstClassActions {
     /**
      * Generates an on-ramp URL for the account address.
      * @param {Address} address - The account address (optional, defaults to the wallet's address).
+     * @param {string} currencyCode - The currency code (optional, defaults to undefined to allow users to select).
      * @returns {Promise<string>} The on-ramp URL.
      */
-    async onRamp(address?: Address): Promise<string> {
-        return await getOnRampUrl(address ? address : await this.getAddress())
+    async onRamp(address?: Address, currencyCode?: string): Promise<string> {
+        return await getOnRampUrl(address ? address : await this.getAddress(), currencyCode ? currencyCode : undefined)
     }
 
     /**
