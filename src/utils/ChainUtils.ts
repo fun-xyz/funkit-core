@@ -16,7 +16,6 @@ import { sendRequest } from "./ApiUtils"
 import { sendAsset } from "../apis/FaucetApis"
 import { Auth } from "../auth"
 import { WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
-import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { FunWallet } from "../wallet"
@@ -30,13 +29,8 @@ export const isAddress = (address: string): boolean => {
     }
 }
 
-export const fundWallet = async (
-    auth: Auth,
-    wallet: FunWallet,
-    value: number,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-) => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number) => {
+    const chain = wallet.getChain()
     const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData

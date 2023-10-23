@@ -113,8 +113,7 @@ export class Chain {
         Object.assign(this, { ...this, addresses })
     }
 
-    async getChainId(): Promise<string> {
-        await this.init()
+    getChainId(): string {
         return this.id!
     }
 
