@@ -2,7 +2,7 @@ import { assert, expect } from "chai"
 import { getOps } from "../../src/apis/OperationApis"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -24,6 +24,7 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         let auth: Auth
         let wallet: FunWallet
         let opId
+        let chain: Chain
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -43,7 +44,10 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
+
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -61,11 +65,11 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         })
 
         it("transfer baseToken(ETH) executed", async () => {
-            const balBefore = await Token.getBalanceBN("eth", await auth.getAddress())
+            const balBefore = await Token.getBalanceBN("eth", await auth.getAddress(), chain)
             await new Promise((resolve) => {
                 setTimeout(resolve, 300_000)
             })
-            const balAfter = await Token.getBalanceBN("eth", await auth.getAddress())
+            const balAfter = await Token.getBalanceBN("eth", await auth.getAddress(), chain)
             assert(balAfter > balBefore, `Balance not equal to amount ${balAfter} ${balBefore}`)
         })
     })

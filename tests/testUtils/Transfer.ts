@@ -123,7 +123,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             )
         })
 
-        describe.only("Transaction Fees enabled", function () {
+        describe("Transaction Fees enabled", function () {
             it("pay a fixed amount of fees in eth", async function () {
                 const randomAddress = randomBytes(20)
                 const feeRecipientAddress = randomBytes(20)
@@ -223,7 +223,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 assert.closeTo(Number(feeRecipientBalanceAfter) - Number(feeRecipientBalanceBefore), fee, fee / 9, "Transfer failed")
             })
 
-            it.only("pay a percentage of gas for fees", async () => {
+            it("pay a percentage of gas for fees", async () => {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
@@ -348,6 +348,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
+        let chain: Chain
         const groupId: Hex = "0x149b4d0ada7707782e74fef64f083cda823f45213f99ff177d3327e9761a245b" // generateRandomGroupId()
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -373,11 +374,11 @@ export const TransferTest = (config: TransferTestConfig) => {
                 uniqueId: await auth1.getWalletUniqueId(config.index ? config.index + 1 : 99976)
             })
 
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.01)
             }
         })
@@ -386,8 +387,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -407,8 +408,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth2 sign and execute the operation
             expect(await wallet.executeOperation(auth2, operation)).to.not.throw
 
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -421,8 +422,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -440,8 +441,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                 }
             }
 
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -452,7 +453,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
         it("Group Wallet Reject Op -- transfer base token", async () => {
             const randomAddress = randomBytes(20)
-            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -489,7 +490,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 }
             }
 
-            const b2 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, randomAddress, chain)
 
             const [randomTokenBalanceBefore, randomTokenBalanceAfter] = await Promise.all([b1, b2])
 
@@ -501,8 +502,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -520,8 +521,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth2 logs in and should not be able to find the operation.
             expect(await wallet.getOperation(transferOp.opId!)).to.throw
 
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])

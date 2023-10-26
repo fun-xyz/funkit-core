@@ -115,9 +115,12 @@ export const erc20ApproveTransactionParams = async (
             "https://docs.fun.xyz"
         )
     }
-    const tokenObj = new Token(token)
-    const convertedAmount = await tokenObj.getDecimalAmount(amount, txOptions)
-    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(txOptions), "approve", [spender, convertedAmount])
+
+    // TODO: remove this fallback after refactoring -- Panda
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const tokenObj = new Token(token, chain)
+    const convertedAmount = await tokenObj.getDecimalAmount(amount)
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(), "approve", [spender, convertedAmount])
 }
 
 export const erc721ApproveTransactionParams = async (params: ApproveERC721Params): Promise<TransactionParams> => {
