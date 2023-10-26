@@ -894,7 +894,9 @@ export class FunWallet extends FirstClassActions {
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                 )
             }
-            const token = new Token(options.fee.token)
+
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
+            const token = new Token(options.fee.token, chain)
             if (options.fee.gasPercent && !token.isNative) {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameterCombination,

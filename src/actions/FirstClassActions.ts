@@ -188,10 +188,12 @@ export abstract class FirstClassActions {
             params.from = params.from ? params.from : await this.getAddress()
             transactionParams = await erc721TransferTransactionParams(params)
         } else if (isTokenTransferParams(params)) {
+            // TODO: To be deprecated
+            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
             if (params.from) {
-                transactionParams = await tokenTransferFromTransactionParams(params, txOptions)
+                transactionParams = await tokenTransferFromTransactionParams(params, chain)
             } else {
-                transactionParams = await tokenTransferTransactionParams(params, txOptions)
+                transactionParams = await tokenTransferTransactionParams(params, chain)
             }
         } else {
             throw new InvalidParameterError(
