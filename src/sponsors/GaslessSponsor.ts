@@ -41,8 +41,8 @@ export class GaslessSponsor extends Sponsor {
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const amountdec = await Token.getDecimalAmount("eth", amount, chain)
         await addTransaction(
             await chain.getChainId(),
             Date.now(),
@@ -71,9 +71,10 @@ export class GaslessSponsor extends Sponsor {
         amount: number,
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
-
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
+
+        const amountdec = await Token.getDecimalAmount("eth", amount, chain)
+
         await addTransaction(
             await chain.getChainId(),
             Date.now(),

@@ -170,7 +170,7 @@ export abstract class FirstClassActions {
         params: LimitOrderParam,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const transactionParams: TransactionParams = await limitSwapOrderTransactionParams(params, txOptions)
+        const transactionParams: TransactionParams = await limitSwapOrderTransactionParams(params, this.chain)
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 

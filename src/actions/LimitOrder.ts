@@ -7,7 +7,6 @@ import {
     TransactionParams,
     UNISWAP_V3_LIMIT_ORDER_CONTRACT_INTERFACE
 } from "../common"
-import { EnvOption } from "../config"
 import { Chain, Token } from "../data"
 
 const fees = {
@@ -17,16 +16,12 @@ const fees = {
     high: FeeAmount.HIGH
 }
 
-export const limitSwapOrderTransactionParams = async (
-    params: LimitOrderParam,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
+export const limitSwapOrderTransactionParams = async (params: LimitOrderParam, chain: Chain): Promise<TransactionParams> => {
     const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount, poolFee } = params
-    const tokenInAddress = await new Token(tokenIn).getAddress()
-    const tokenOutAddress = await new Token(tokenOut).getAddress()
-    const amountIn = await new Token(tokenIn).getDecimalAmount(tokenInAmount)
-    const amountOut = await new Token(tokenOut).getDecimalAmount(tokenOutAmount)
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const tokenInAddress = await new Token(tokenIn, chain).getAddress()
+    const tokenOutAddress = await new Token(tokenOut, chain).getAddress()
+    const amountIn = await new Token(tokenIn, chain).getDecimalAmount(tokenInAmount)
+    const amountOut = await new Token(tokenOut, chain).getDecimalAmount(tokenOutAmount)
     const uniswapv3LimitOrderAddress = await chain.getAddress("uniswapv3LimitOrder")
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
     const _poolFee = poolFee ? fees[poolFee] : FeeAmount.MEDIUM

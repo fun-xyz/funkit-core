@@ -1,7 +1,7 @@
 import { assert, expect } from "chai"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -25,6 +25,7 @@ export const StakeTest = (config: StakeTestConfig) => {
         this.timeout(120_000)
         let auth: Auth
         let wallet: FunWallet
+        let chain: Chain
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -42,20 +43,21 @@ export const StakeTest = (config: StakeTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.002)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < config.stakeAmt) {
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < config.stakeAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.002)
             }
         })
 
         it("wallet should have lower balance of gas token", async () => {
             const walletAddress = await wallet.getAddress()
-            const balBefore = await Token.getBalanceBN(baseToken, walletAddress)
+            const balBefore = await Token.getBalanceBN(baseToken, walletAddress, chain)
             const userOp = await wallet.stake(auth, await auth.getAddress(), { amount: config.stakeAmt })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
             await new Promise((resolve) => {
                 setTimeout(resolve, 5000)
             })
-            const balAfter = await Token.getBalanceBN(baseToken, walletAddress)
+            const balAfter = await Token.getBalanceBN(baseToken, walletAddress, chain)
             assert(balAfter < balBefore, "unable to stake")
         })
 
@@ -87,13 +89,13 @@ export const StakeTest = (config: StakeTestConfig) => {
                 withdrawals = assets.lidoWithdrawals
             }
             if (withdrawals[0].length > 0) {
-                const balBefore = await Token.getBalance(baseToken, await wallet.getAddress())
+                const balBefore = await Token.getBalance(baseToken, await wallet.getAddress(), chain)
                 const userOp = await wallet.unstake(auth, await auth.getAddress(), {
                     recipient: await wallet.getAddress(),
                     walletAddress: await wallet.getAddress()
                 })
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
-                const balAfter = await Token.getBalance(baseToken, await wallet.getAddress())
+                const balAfter = await Token.getBalance(baseToken, await wallet.getAddress(), chain)
                 assert(balAfter > balBefore, "unable to finish unstaking")
             } else {
                 try {
