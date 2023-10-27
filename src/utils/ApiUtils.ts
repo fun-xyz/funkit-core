@@ -62,6 +62,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                     "https://docs.fun.xyz"
                 )
             } else if (response.status === 403) {
+                console.log("403 error", json)
                 throw new AccessDeniedError(
                     ErrorCode.Unauthorized,
                     "Invalid API key or insufficient access.",
