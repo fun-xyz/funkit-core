@@ -349,6 +349,25 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
+     * Saves the wallet to the authentication system.
+     * @param auth - The auth or signer to save the wallet to.
+     * @param txOptions - The configuration options.
+     * @returns A Promise that resolves when the wallet is saved to the authentication system.
+     */
+    async saveWalletToAuth(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
+        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const walletAddr = await this.getAddress()
+        const userId = await auth.getUserId()
+        const users = await auth.getUserIds(walletAddr, await chain.getChainId())
+        if (!users.includes(userId)) {
+            if ((await checkWalletAccessInitialization(walletAddr)) === false) {
+                await initializeWalletAccess(walletAddr, await auth.getAddress())
+            }
+            await addUserToWallet(await auth.getAddress(), await chain.getChainId(), walletAddr, [userId], this.walletUniqueId)
+        }
+    }
+
+    /**
      * Generates an on-ramp URL for the account address.
      * @param {Address} address - The account address (optional, defaults to the wallet's address).
      * @param {string} currencyCode - The currency code (optional, defaults to undefined to allow users to select).
@@ -596,8 +615,13 @@ export class FunWallet extends FirstClassActions {
         }
         receipt = await getFullReceipt(operation.opId, chainId, receipt.userOpHash)
         if (isWalletInitOp(operation.userOp) && txOptions.skipDBAction !== true) {
-            await addUserToWallet(auth.authId!, chainId, await this.getAddress(), Array.from(this.userInfo!.keys()), this.walletUniqueId)
-
+            await addUserToWallet(
+                await auth.getAddress(),
+                chainId,
+                await this.getAddress(),
+                Array.from(this.userInfo!.keys()),
+                this.walletUniqueId
+            )
             if (isGroupOperation(operation)) {
                 const group = this.userInfo!.get(operation.groupId!)
 
