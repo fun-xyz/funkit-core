@@ -52,7 +52,8 @@ export class FunWallet extends FirstClassActions {
      * @param {object} params - The parameters for the constructing fun wallet - (users, uniqueId) or walletAddr
      */
     constructor(params: FunWalletParams | string) {
-        super()
+        const chain = (globalThis as any).globalEnvOption.chain
+        super(chain)
         if (typeof params === "string") {
             if (isAddress(params as string)) {
                 this.address = params as Address

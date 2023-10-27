@@ -58,6 +58,12 @@ import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../erro
 import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
+    protected chain: Chain
+
+    constructor(chain: Chain) {
+        this.chain = chain
+    }
+
     /**
      * Creates a new operation to be associated with the wallet and prepares it for execution.
      * @param {Auth} auth - The authentication instance for the user.
@@ -83,7 +89,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const paramsCopy = JSON.parse(JSON.stringify(params))
         paramsCopy.recipient ??= await this.getAddress()
-        const transactionParams = await bridgeTransactionParams(paramsCopy, await this.getAddress())
+        const transactionParams = await bridgeTransactionParams(paramsCopy, await this.getAddress(), this.chain)
         return this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
@@ -188,12 +194,10 @@ export abstract class FirstClassActions {
             params.from = params.from ? params.from : await this.getAddress()
             transactionParams = await erc721TransferTransactionParams(params)
         } else if (isTokenTransferParams(params)) {
-            // TODO: To be deprecated
-            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
             if (params.from) {
-                transactionParams = await tokenTransferFromTransactionParams(params, chain)
+                transactionParams = await tokenTransferFromTransactionParams(params, this.chain)
             } else {
-                transactionParams = await tokenTransferTransactionParams(params, chain)
+                transactionParams = await tokenTransferTransactionParams(params, this.chain)
             }
         } else {
             throw new InvalidParameterError(
