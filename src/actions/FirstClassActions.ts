@@ -52,12 +52,19 @@ import { createGroup, deleteGroup, getGroups, updateGroup } from "../apis/GroupA
 import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletIdentity } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
-import { EnvOption } from "../config"
+import { EnvOption, GlobalEnvOption } from "../config"
 import { Chain, Operation } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthIdFromAddr, isAddress } from "../utils"
 
 export abstract class FirstClassActions {
+    protected chain: Chain
+    protected options: GlobalEnvOption
+
+    constructor(chain: Chain, options: GlobalEnvOption) {
+        this.chain = chain
+        this.options = options
+    }
     /**
      * Creates a new operation to be associated with the wallet and prepares it for execution.
      * @param {Auth} auth - The authentication instance for the user.
@@ -129,8 +136,7 @@ export abstract class FirstClassActions {
             )
         }
         let transactionParams: TransactionParams
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const chainId = Number(await chain.getChainId())
+        const chainId = Number(this.chain.getChainId())
         params.recipient ??= await this.getAddress()
         if (oneInchSupported.includes(chainId)) {
             transactionParams = await oneInchTransactionParams(params, await this.getAddress(), txOptions)
@@ -321,8 +327,8 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
-            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-            const authId = await getAuthIdFromAddr(params.ownerId as Address)
+            const chain = this.chain
+            const authId = await getAuthIdFromAddr(params.ownerId as Address, this.options.apiKey!)
             await addUserToWallet(authId, await chain.getChainId(), await this.getAddress(), [pad(params.ownerId, { size: 32 })])
         }
 
@@ -345,8 +351,8 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         if (isAddress(params.ownerId)) {
-            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-            const authId = await getAuthIdFromAddr(params.ownerId as Address)
+            const chain = this.chain
+            const authId = await getAuthIdFromAddr(params.ownerId as Address, this.options.apiKey!)
             await removeUserWalletIdentity(authId, await chain.getChainId(), await this.getAddress(), pad(params.ownerId, { size: 32 }))
         }
         const txParams = await removeOwnerTxParams(params, txOptions)
@@ -368,11 +374,11 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         const walletAddr = await this.getAddress()
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         const chainId = await chain.getChainId()
         await createGroup(params.groupId, chainId, Number(params.group.threshold), walletAddr, params.group.userIds)
         params.group.userIds.forEach(async (userId) => {
-            const authId = await getAuthIdFromAddr(userId as Address)
+            const authId = await getAuthIdFromAddr(userId as Address, this.options.apiKey!)
             await addUserToGroup(authId, chainId, walletAddr, params.groupId)
         })
         const txParams = await createGroupTxParams(params, txOptions)
@@ -395,7 +401,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         params.userId = pad(params.userId, { size: 32 })
         params.groupId = pad(params.groupId, { size: 32 })
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         const chainId = await chain.getChainId()
         const groups = await getGroups([params.groupId], chainId)
         if (!groups || groups.length === 0) {
@@ -421,7 +427,7 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address)
+        const authId = await getAuthIdFromAddr(params.userId as Address, this.options.apiKey!)
         await addUserToGroup(authId, chainId, await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
@@ -452,7 +458,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         params.userId = pad(params.userId, { size: 32 })
         params.groupId = pad(params.groupId, { size: 32 })
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         const chainId = await chain.getChainId()
         const groups = await getGroups([params.groupId], chainId)
         if (!groups || groups.length === 0) {
@@ -478,7 +484,7 @@ export abstract class FirstClassActions {
             )
         }
 
-        const authId = await getAuthIdFromAddr(params.userId as Address)
+        const authId = await getAuthIdFromAddr(params.userId as Address, this.options.apiKey!)
         await removeUserFromGroup(authId, chainId, await this.getAddress(), params.groupId)
 
         const updateGroupParams: UpdateGroupParams = {
@@ -507,7 +513,7 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         params.groupId = pad(params.groupId, { size: 32 })
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         const chainId = await chain.getChainId()
         const groups = await getGroups([params.groupId], chainId)
         if (!groups || groups.length === 0) {
@@ -558,7 +564,7 @@ export abstract class FirstClassActions {
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
         params.groupId = pad(params.groupId, { size: 32 })
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         await deleteGroup(params.groupId, await chain.getChainId())
         const txParams = await removeGroupTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)

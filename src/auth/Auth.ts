@@ -209,9 +209,9 @@ export class Auth {
      * @param {boolean} skipDBActions - Whether to skip database actions (default: false).
      * @returns {Promise<Hex>} The generated unique ID for the wallet.
      */
-    async getWalletUniqueId(index = 0, skipDBActions = false): Promise<Hex> {
+    async getWalletUniqueId(index = 0, apiKey, skipDBActions = false): Promise<Hex> {
         await this.init()
-        const authUniqueId = await getAuthUniqueId(this.authId!, await this.getAddress(), skipDBActions)
+        const authUniqueId = await getAuthUniqueId(this.authId!, apiKey, await this.getAddress(), skipDBActions)
         return keccak256(toBytes(`${authUniqueId}-${index}`))
     }
 

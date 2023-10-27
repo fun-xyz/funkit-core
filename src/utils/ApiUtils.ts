@@ -62,6 +62,7 @@ export const sendRequest = async (uri: string, method: string, apiKey: string, b
                     "https://docs.fun.xyz"
                 )
             } else if (response.status === 403) {
+                console.log("in 403 error calling url", uri, apiKey, method, body)
                 throw new AccessDeniedError(
                     ErrorCode.Unauthorized,
                     "Invalid API key or insufficient access.",
@@ -141,6 +142,7 @@ export async function sendGetRequest(
     endpoint: string,
     apiKey: string = (globalThis as any).globalEnvOption?.apiKey
 ): Promise<any> {
+    console.log("calling url", `${uri}/${endpoint}`, apiKey)
     return await sendRequest(`${uri}/${endpoint}`, "GET", apiKey)
 }
 

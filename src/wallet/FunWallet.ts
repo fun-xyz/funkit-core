@@ -21,7 +21,7 @@ import { addUserToWallet } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE, ExecutionReceipt, TransactionParams, WALLET_CONTRACT_INTERFACE } from "../common"
 import { AddressZero, FACTORY_CONTRACT_INTERFACE } from "../common/constants"
-import { EnvOption, parseOptions } from "../config"
+import { EnvOption, GlobalEnvOption, parseOptions } from "../config"
 import {
     AuthType,
     Chain,
@@ -45,14 +45,16 @@ export class FunWallet extends FirstClassActions {
     walletUniqueId?: Hex
     userInfo?: Map<Hex, User>
     address?: Address
+    override chain: Chain
 
     /**
      * Creates FunWallet object
      * @constructor
      * @param {object} params - The parameters for the constructing fun wallet - (users, uniqueId) or walletAddr
      */
-    constructor(params: FunWalletParams | string) {
-        super()
+    constructor(params: FunWalletParams | string, options: GlobalEnvOption, chain: Chain) {
+        console.log("Creating FunWallet in constructor")
+        super(chain, options)
         if (typeof params === "string") {
             if (isAddress(params as string)) {
                 this.address = params as Address
@@ -110,6 +112,15 @@ export class FunWallet extends FirstClassActions {
 
             this.walletUniqueId = uniqueId as Hex
         }
+        this.chain = chain
+    }
+
+    getChain(): Chain {
+        return this.chain
+    }
+
+    async getToken(input: Address | string): Promise<Token> {
+        return new Token(input, this)
     }
 
     /**
@@ -193,7 +204,7 @@ export class FunWallet extends FirstClassActions {
     }
 
     /**
-     * Get all tokens on all supported chains. Merge tokens by symbol
+     * Get all tokens on all supported chains. Merge tokens by chainId
      * @param {string} chainIdInput string version of the chainId or ALL. If empty, then default to the one in globalEnvOption
      * @param {*} onlyVerifiedTokens true if you want to filter out spam tokens(Uses alchemy lists)
      * @param {boolean} checkStatus true if you want to check if the address has any pending lido withdrawals
@@ -237,17 +248,12 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<bigint>} The nonce value.
      */
-    async getNonce(
-        sender: string,
-        key = generateRandomNonceKey(),
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<bigint> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const entryPointAddress = await chain.getAddress("entryPointAddress")
+    async getNonce(sender: string, key = generateRandomNonceKey()): Promise<bigint> {
+        const entryPointAddress = await this.chain.getAddress("entryPointAddress")
         let nonce = undefined
         let retryCount = 3
         while ((nonce === undefined || nonce === null) && retryCount > 0) {
-            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], chain)
+            nonce = await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getNonce", [sender, key], this.chain)
             retryCount--
         }
 
@@ -264,12 +270,8 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<Operation[]>} A list of operations.
      */
-    async getOperations(
-        status: OperationStatus = OperationStatus.ALL,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Operation[]> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        return await getOpsOfWallet(await this.getAddress(), await chain.getChainId(), status)
+    async getOperations(status: OperationStatus = OperationStatus.ALL): Promise<Operation[]> {
+        return await getOpsOfWallet(await this.getAddress(), this.chain.getChainId(), status)
     }
 
     /**
@@ -278,9 +280,8 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<Operation>} The requested operation.
      */
-    async getOperation(opId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        return (await getOps([opId], await chain.getChainId()))[0]
+    async getOperation(opId: Hex): Promise<Operation> {
+        return (await getOps([opId], this.chain.getChainId()))[0]
     }
 
     /**
@@ -289,9 +290,8 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<User[]>} A list of users with their group information.
      */
-    async getUsers(auth: Auth, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<User[]> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const storedUserIds = await auth.getUserIds(await this.getAddress(), await chain.getChainId())
+    async getUsers(auth: Auth): Promise<User[]> {
+        const storedUserIds = await auth.getUserIds(await this.getAddress(), this.chain.getChainId())
         const userIds = new Set([...storedUserIds])
         if (this.userInfo) {
             for (const userId of this.userInfo.keys()) {
@@ -311,7 +311,7 @@ export class FunWallet extends FirstClassActions {
         }
 
         if (groupIds && groupIds.length > 0) {
-            const groups: GroupMetadata[] = await getGroups(groupIds, await chain.getChainId())
+            const groups: GroupMetadata[] = await getGroups(groupIds, this.chain.getChainId())
             groups.forEach((group) => {
                 users.push({
                     userId: group.groupId,
@@ -331,9 +331,8 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<boolean>} `true` if the address is a contract, `false` otherwise.
      */
-    async getDeploymentStatus(txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        return await chain.addressIsContract(await this.getAddress())
+    async getDeploymentStatus(): Promise<boolean> {
+        return await this.chain.addressIsContract(await this.getAddress())
     }
 
     /**
@@ -343,9 +342,9 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<Operation>} The operation to create the wallet.
      */
-    async create(auth: Auth, userId: string, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+    async create(auth: Auth, userId: string): Promise<Operation> {
         const transactionParams: TransactionParams = { to: await this.getAddress(), data: "0x", value: 0n }
-        return await this.createOperation(auth, userId, transactionParams, txOptions)
+        return await this.createOperation(auth, userId, transactionParams)
     }
 
     /**
@@ -402,12 +401,7 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<Operation>} The created and prepared operation.
      */
-    async createOperation(
-        auth: Auth,
-        userId: string,
-        transactionParams: TransactionParams,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Operation> {
+    async createOperation(auth: Auth, userId: string, transactionParams: TransactionParams): Promise<Operation> {
         if (!userId || userId === "") {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
@@ -418,7 +412,7 @@ export class FunWallet extends FirstClassActions {
             )
         }
         userId = pad(userId as Hex, { size: 32 }).toLowerCase()
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
 
         const sender = await this.getAddress()
         const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this.getThisInitCode(chain)
@@ -435,6 +429,8 @@ export class FunWallet extends FirstClassActions {
             maxFeePerGas = 1n
             maxPriorityFeePerGas = 1n
         }
+
+        const txOptions = this.options
 
         const partialOp = {
             callData: await this.buildCalldata(auth, userId, transactionParams, txOptions),
@@ -479,7 +475,7 @@ export class FunWallet extends FirstClassActions {
         }
         operation.userOp.paymasterAndData = paymasterAndData
 
-        const estimatedOperation = await this.estimateOperation(auth, userId, operation, txOptions)
+        const estimatedOperation = await this.estimateOperation(auth, userId, operation)
         // sign the userOp directly here as we do not have the opId yet
         estimatedOperation.userOp.signature = await auth.signOp(estimatedOperation, chain, isGroupOperation(operation))
 
@@ -502,13 +498,13 @@ export class FunWallet extends FirstClassActions {
      * @returns {Promise<Operation>} The signed operation.
      */
     async signOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         operation = Operation.convertTypeToObject(operation)
         operation.userOp.signature = await auth.signOp(operation, chain, isGroupOperation(operation))
         if (isGroupOperation(operation) && txOptions.skipDBAction !== true) {
             await signOp(
                 operation.opId!,
-                await chain.getChainId(),
+                chain.getChainId(),
                 operation.userOp.signature as Hex,
                 await auth.getAddress(),
                 this.userInfo?.get(operation.groupId!)?.groupInfo?.threshold
@@ -532,7 +528,7 @@ export class FunWallet extends FirstClassActions {
     ): Promise<ExecutionReceipt> {
         txOptions = parseOptions(txOptions)
         operation = Operation.convertTypeToObject(operation)
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+        const chain = this.chain
         const chainId = await chain.getChainId()
 
         if (txOptions.skipDBAction !== true) {
@@ -668,8 +664,8 @@ export class FunWallet extends FirstClassActions {
     async scheduleOperation(auth: Auth, operation: Operation, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<Hex> {
         txOptions = parseOptions(txOptions)
         operation = Operation.convertTypeToObject(operation)
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        const chainId = await chain.getChainId()
+        const chain: Chain = this.chain
+        const chainId = chain.getChainId()
 
         if (txOptions.skipDBAction !== true) {
             // cache group info
@@ -767,9 +763,8 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<void>} A promise that resolves after the operation is removed.
      */
-    async removeOperation(_: Auth, operationId: Hex, txOptions: EnvOption = (globalThis as any).globalEnvOption): Promise<void> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
-        await deleteOp(operationId, await chain.getChainId())
+    async removeOperation(_: Auth, operationId: Hex): Promise<void> {
+        await deleteOp(operationId, this.chain.getChainId())
     }
 
     /**
@@ -809,13 +804,8 @@ export class FunWallet extends FirstClassActions {
      * @param {EnvOption} txOptions - Transaction environment options (default: global environment options).
      * @returns {Promise<Operation>} The updated operation with gas estimation details.
      */
-    async estimateOperation(
-        auth: Auth,
-        userId: string,
-        operation: Operation,
-        txOptions: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<Operation> {
-        const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    async estimateOperation(auth: Auth, userId: string, operation: Operation): Promise<Operation> {
+        const chain = this.chain
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, operation)
         operation.userOp.signature = estimateGasSignature.toLowerCase()
         const res = await chain.estimateOpGas(operation.userOp)
@@ -918,7 +908,8 @@ export class FunWallet extends FirstClassActions {
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                 )
             }
-            const token = new Token(options.fee.token)
+            // const token = new Token(options.fee.token)
+            const token = await this.getToken(options.fee.token)
             if (options.fee.gasPercent && !token.isNative) {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameterCombination,
@@ -945,11 +936,13 @@ export class FunWallet extends FirstClassActions {
                     params.data,
                     feedata
                 ])
+
+                this.options = { ...this.options, fee: undefined }
                 const operation = await this.createOperation(
                     auth,
                     userId,
-                    { to: params.to, value: params.value, data: estimateGasCalldata },
-                    { ...options, fee: undefined }
+                    { to: params.to, value: params.value, data: estimateGasCalldata }
+                    // { ...options, fee: undefined }
                 )
                 const gasUsed = await operation.getMaxTxCost()
                 options.fee.amount = Math.ceil((Number(gasUsed) * options.fee.gasPercent) / 100)
