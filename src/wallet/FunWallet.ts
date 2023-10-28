@@ -1,7 +1,17 @@
 import { Address, Hex, concat, createPublicClient, encodeAbiParameters, http, isAddress, isHex, keccak256, pad, toBytes } from "viem"
 import { FunWalletParams, User } from "./types"
 import { FirstClassActions } from "../actions/FirstClassActions"
-import { getAllNFTs, getAllTokens, getLidoWithdrawals, getNFTs, getOffRampUrl, getOnRampUrl, getTokens } from "../apis"
+import {
+    Currency,
+    getAllNFTs,
+    getAllTokens,
+    getLidoWithdrawals,
+    getNFTs,
+    getOffRampUrl,
+    getOnRampSupportedCurrencies,
+    getOnRampUrl,
+    getTokens
+} from "../apis"
 import { checkWalletAccessInitialization, initializeWalletAccess } from "../apis/AccessControlApis"
 import { getGroups } from "../apis/GroupApis"
 import { createOp, deleteOp, executeOp, getFullReceipt, getOps, getOpsOfWallet, scheduleOp, signOp } from "../apis/OperationApis"
@@ -360,10 +370,11 @@ export class FunWallet extends FirstClassActions {
     /**
      * Generates an on-ramp URL for the account address.
      * @param {Address} address - The account address (optional, defaults to the wallet's address).
+     * @param {string} currencyCode - The currency code (optional, defaults to undefined to allow users to select).
      * @returns {Promise<string>} The on-ramp URL.
      */
-    async onRamp(address?: Address): Promise<string> {
-        return await getOnRampUrl(address ? address : await this.getAddress())
+    async onRamp(address?: Address, currencyCode?: string): Promise<string> {
+        return await getOnRampUrl(address ? address : await this.getAddress(), currencyCode ? currencyCode : undefined)
     }
 
     /**
@@ -373,6 +384,14 @@ export class FunWallet extends FirstClassActions {
      */
     async offRamp(address?: Address): Promise<string> {
         return await getOffRampUrl(address ? address : await this.getAddress())
+    }
+
+    /**
+     *  Retrieves the supported currencies for on-ramp.
+     * @returns {Promise<Currency[]>} The supported currencies.
+     */
+    async getSupportedCurrencies(): Promise<Currency[]> {
+        return await getOnRampSupportedCurrencies()
     }
 
     /**

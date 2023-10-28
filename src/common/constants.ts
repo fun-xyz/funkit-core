@@ -35,7 +35,7 @@ switch (process.env.NODE_ENV) {
         API_URL = "https://api.fun.xyz/staging/v1"
         break
     case "testing":
-        API_URL = "https://api.fun.xyz/testing"
+        API_URL = "https://api.fun.xyz/testing/v1"
         break
     case "local":
         API_URL = LOCAL_API_URL
