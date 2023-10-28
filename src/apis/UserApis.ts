@@ -58,10 +58,6 @@ export async function addUserToWallet(
     }
 }
 
-export async function removeUserWalletIdentity(authId: string, chainId: string, walletAddr: Address, userId: Hex): Promise<void> {
-    await sendDeleteRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/identity/${userId}`)
-}
-
 // return userIds of the specificed Wallet.
 export async function getUserWalletIdentities(authId: string, chainId: string, walletAddr: Address): Promise<Hex[]> {
     return (await sendGetRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/identities`)).ids ?? []
