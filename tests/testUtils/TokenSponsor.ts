@@ -265,6 +265,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         const runActionWithTokenSponsorPermit = async (wallet: FunWallet) => {
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
+            await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken))
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
             expect(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)).to.be.equal("0")
             await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken))
