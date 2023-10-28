@@ -49,7 +49,7 @@ import {
     UpdateThresholdOfGroupParams
 } from "./types"
 import { createGroup, deleteGroup, getGroups, updateGroup } from "../apis/GroupApis"
-import { addUserToGroup, addUserToWallet, removeUserFromGroup } from "../apis/UserApis"
+import { addUserToGroup, addUserToWallet, removeUserFromGroup, removeUserWalletIdentity } from "../apis/UserApis"
 import { Auth } from "../auth"
 import { TransactionParams } from "../common"
 import { EnvOption } from "../config"
@@ -350,6 +350,11 @@ export abstract class FirstClassActions {
         params: RemoveOwnerParams,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
+        if (isAddress(params.ownerId)) {
+            const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+            const authId = await getAuthIdFromAddr(params.ownerId as Address)
+            await removeUserWalletIdentity(authId, await chain.getChainId(), await this.getAddress(), pad(params.ownerId, { size: 32 }))
+        }
         const txParams = await removeOwnerTxParams(params, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
