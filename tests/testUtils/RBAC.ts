@@ -74,7 +74,8 @@ export const RBACTest = (config: RBACTestConfig) => {
             expect(storedOwnerRule !== HashZero, "Owner rule not stored in wallet")
         })
 
-        it("remove owner", async () => {
+        // TODO: skip until staging -> main
+        it.skip("remove owner", async () => {
             const operation = await wallet.removeOwner(auth, await auth.getAddress(), {
                 ownerId: ownerId
             })
