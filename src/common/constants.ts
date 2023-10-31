@@ -28,19 +28,19 @@ import { ContractInterface } from "../viem/ContractInterface"
 export const LOCAL_API_URL = "http://127.0.0.1:3000"
 
 // prod
-let API_URL = "https://api.fun.xyz/v1"
+const API_URL = LOCAL_API_URL //"https://api.fun.xyz/v1"
 
-switch (process.env.NODE_ENV) {
-    case "staging":
-        API_URL = "https://api.fun.xyz/staging/v1"
-        break
-    case "testing":
-        API_URL = "https://api.fun.xyz/testing"
-        break
-    case "local":
-        API_URL = LOCAL_API_URL
-        break
-}
+// switch (process.env.NODE_ENV) {
+//     case "staging":
+//         API_URL = "https://api.fun.xyz/staging/v1"
+//         break
+//     case "testing":
+//         API_URL = "https://api.fun.xyz/testing"
+//         break
+//     case "local":
+//         API_URL = LOCAL_API_URL
+//         break
+// }
 
 export { API_URL }
 
