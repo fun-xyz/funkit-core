@@ -2,8 +2,8 @@ import { API_URL } from "../common/constants"
 import { sendPostRequest } from "../utils/ApiUtils"
 
 export async function createSubOrg(createSubOrgRequest: any): Promise<string> {
-    const res = await sendPostRequest(API_URL, "turnkey/createSubOrg/", createSubOrgRequest)
-    return res.newSubOrgId
+    const res = await sendPostRequest(API_URL, "turnkey/createSubOrg", createSubOrgRequest)
+    return res
 }
 
 export async function createPrivateKey(signedRequest: any): Promise<any> {
