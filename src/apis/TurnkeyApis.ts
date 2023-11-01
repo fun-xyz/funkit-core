@@ -7,7 +7,8 @@ export async function createSubOrg(createSubOrgRequest: any): Promise<string> {
 }
 
 export async function createPrivateKey(signedRequest: any): Promise<any> {
-    const res = await sendPostRequest(API_URL, "turnkey/createPrivateKey/", signedRequest)
+    const res = await sendPostRequest(API_URL, "turnkey/createPrivateKey", signedRequest)
+    console.log("CORE", res)
     return {
         id: res.id,
         address: res.address
