@@ -380,7 +380,7 @@ export const TransferTest = (config: TransferTestConfig) => {
             }
         })
 
-        it.only("Group Wallet Create, Collect Sig, and Execute -- transfer base token", async () => {
+        it("Group Wallet Create, Collect Sig, and Execute -- transfer base token", async () => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
