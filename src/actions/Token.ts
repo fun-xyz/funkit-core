@@ -1,8 +1,8 @@
 import { Address, Hex, isAddress, parseEther } from "viem"
 import { ApproveERC20Params, ApproveERC721Params, ApproveParams, ERC721TransferParams, TokenTransferParams, TransferParams } from "./types"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
-import { EnvOption } from "../config"
 import { NFT, Token } from "../data"
+import { Chain } from "../data/Chain"
 import { ErrorCode, InvalidParameterError } from "../errors"
 export const isERC721TransferParams = (obj: TransferParams): obj is ERC721TransferParams => {
     return "tokenId" in obj
@@ -32,10 +32,7 @@ export const erc721TransferTransactionParams = async (params: ERC721TransferPara
     return ERC721_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, tokenId])
 }
 
-export const tokenTransferTransactionParams = async (
-    params: TokenTransferParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
+export const tokenTransferTransactionParams = async (params: TokenTransferParams, chain: Chain): Promise<TransactionParams> => {
     const { to, amount, token } = params
     if (!isAddress(to)) {
         throw new InvalidParameterError(
@@ -46,11 +43,11 @@ export const tokenTransferTransactionParams = async (
             "https://docs.fun.xyz"
         )
     }
-    const tokenObj = new Token(token)
+    const tokenObj = new Token(token, chain)
     if (tokenObj.isNative) {
         return { to: to as Address, data: "0x" as Hex, value: parseEther(`${amount}`) }
     } else {
-        const tokenAddr = await tokenObj.getAddress(txOptions)
+        const tokenAddr = await tokenObj.getAddress()
         if (!tokenAddr) {
             throw new InvalidParameterError(
                 ErrorCode.TokenNotFound,
@@ -60,15 +57,12 @@ export const tokenTransferTransactionParams = async (
                 "https://docs.fun.xyz"
             )
         }
-        const convertedAmount = await tokenObj.getDecimalAmount(amount, txOptions)
+        const convertedAmount = await tokenObj.getDecimalAmount(amount)
         return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transfer", [to, convertedAmount])
     }
 }
 
-export const tokenTransferFromTransactionParams = async (
-    params: TokenTransferParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
+export const tokenTransferFromTransactionParams = async (params: TokenTransferParams, chain: Chain): Promise<TransactionParams> => {
     const { to, amount, token, from } = params
     if (!isAddress(to ?? "") || !isAddress(from ?? "")) {
         throw new InvalidParameterError(
@@ -79,11 +73,11 @@ export const tokenTransferFromTransactionParams = async (
             "https://docs.fun.xyz"
         )
     }
-    const tokenObj = new Token(token)
+    const tokenObj = new Token(token, chain)
     if (tokenObj.isNative) {
         return { to: to as Address, data: "0x" as Hex, value: parseEther(`${amount}`) }
     } else {
-        const tokenAddr = await tokenObj.getAddress(txOptions)
+        const tokenAddr = await tokenObj.getAddress()
         if (!tokenAddr) {
             throw new InvalidParameterError(
                 ErrorCode.TokenNotFound,
@@ -93,7 +87,7 @@ export const tokenTransferFromTransactionParams = async (
                 "https://docs.fun.xyz"
             )
         }
-        const convertedAmount = await tokenObj.getDecimalAmount(amount, txOptions)
+        const convertedAmount = await tokenObj.getDecimalAmount(amount)
         return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(tokenAddr, "transferFrom", [from, to, convertedAmount])
     }
 }
@@ -106,10 +100,7 @@ export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721P
     return "tokenId" in obj && "collection" in obj
 }
 
-export const erc20ApproveTransactionParams = async (
-    params: ApproveERC20Params,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
+export const erc20ApproveTransactionParams = async (params: ApproveERC20Params): Promise<TransactionParams> => {
     const { spender, amount, token } = params
     if (!isAddress(spender ?? "")) {
         throw new InvalidParameterError(
@@ -120,9 +111,12 @@ export const erc20ApproveTransactionParams = async (
             "https://docs.fun.xyz"
         )
     }
-    const tokenObj = new Token(token)
-    const convertedAmount = await tokenObj.getDecimalAmount(amount, txOptions)
-    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(txOptions), "approve", [spender, convertedAmount])
+
+    // TODO: remove this fallback after refactoring -- Panda
+    const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+    const tokenObj = new Token(token, chain)
+    const convertedAmount = await tokenObj.getDecimalAmount(amount)
+    return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(), "approve", [spender, convertedAmount])
 }
 
 export const erc721ApproveTransactionParams = async (params: ApproveERC721Params): Promise<TransactionParams> => {

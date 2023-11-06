@@ -33,6 +33,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         this.timeout(200_000)
         let auth: Auth
         let wallet: FunWallet
+        let chain: Chain
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -47,22 +48,22 @@ export const SwapTest = (config: SwapTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811940)
             })
 
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.01)
             }
             if (mint) {
-                const inTokenAddress = await Token.getAddress(inToken, options)
-                const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
+                const inTokenAddress = await Token.getAddress(inToken, chain)
+                const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, chain)
                 const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
                     await wallet.getAddress(),
                     decAmount
                 ])
                 await auth.sendTx({ ...data })
-                const wethAddr = await Token.getAddress("weth", options)
+                const wethAddr = await Token.getAddress("weth", chain)
                 const userOp = await wallet.transfer(auth, await auth.getAddress(), { to: wethAddr, amount: 0.002, token: "eth" })
                 await wallet.executeOperation(auth, userOp)
             }
@@ -70,7 +71,7 @@ export const SwapTest = (config: SwapTestConfig) => {
 
         it("ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 tokenIn: baseToken,
                 inAmount: config.amount ? config.amount : 0.001,
@@ -78,13 +79,13 @@ export const SwapTest = (config: SwapTestConfig) => {
             })
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("ERC20 => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 tokenIn: inToken,
                 inAmount: 0.000001,
@@ -92,20 +93,20 @@ export const SwapTest = (config: SwapTestConfig) => {
                 slippage: config.slippage ? config.slippage : 0.5
             })
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter < tokenBalanceBefore, `Swap did not execute, ${tokenBalanceAfter} ${tokenBalanceBefore}`)
         })
 
         it("ERC20 => ETH", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
             const operation = await wallet.swap(auth, await auth.getAddress(), {
                 tokenIn: inToken,
                 inAmount: 0.000001,
                 tokenOut: baseToken
             })
             await wallet.executeOperation(auth, operation)
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter < tokenBalanceBefore, `Swap did not execute ${tokenBalanceAfter} ${tokenBalanceBefore}`)
         })
 
@@ -138,7 +139,7 @@ export const SwapTest = (config: SwapTestConfig) => {
 
             it("ETH => ERC20", async () => {
                 const walletAddress = await wallet.getAddress()
-                const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+                const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
 
                 const operation = await wallet.swap(user, await user.getAddress(), {
                     tokenIn: baseToken,
@@ -151,13 +152,13 @@ export const SwapTest = (config: SwapTestConfig) => {
                 if (config.chainId === 1) {
                     await new Promise((r) => setTimeout(r, 10000))
                 }
-                const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+                const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
                 assert(tokenBalanceAfter > tokenBalanceBefore, `Swap did not execute ${tokenBalanceAfter}, ${tokenBalanceBefore}`)
             })
 
             it("ERC20 => ERC20", async () => {
                 const walletAddress = await wallet.getAddress()
-                const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+                const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
 
                 const operation = await wallet.swap(user, await user.getAddress(), {
                     tokenIn: inToken,
@@ -171,7 +172,7 @@ export const SwapTest = (config: SwapTestConfig) => {
                 if (config.chainId === 1) {
                     await new Promise((r) => setTimeout(r, 15000))
                 }
-                const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+                const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
                 assert(tokenBalanceAfter < tokenBalanceBefore, "Swap did not execute")
             })
         })
@@ -183,6 +184,7 @@ export const SwapTest = (config: SwapTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
+        let chain: Chain
         const groupId: Hex = "0xbaec3e7f11004e16972a0392ad0d114b7c6378b7b47b6cddd802ba44c3f56bb8" // generateRandomGroupId()
         before(async function () {
             const apiKey = await getTestApiKey()
@@ -209,24 +211,24 @@ export const SwapTest = (config: SwapTestConfig) => {
                 uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 12909468)
             })
 
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < 0.009) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < 0.009) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.01)
             }
 
             if (mint) {
-                const inTokenAddress = await Token.getAddress(inToken, options)
-                const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, options)
+                const inTokenAddress = await Token.getAddress(inToken, chain)
+                const decAmount = await Token.getDecimalAmount(inTokenAddress, amount ? amount : 19000000, chain)
                 const data = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(inTokenAddress, "mint", [
                     await wallet.getAddress(),
                     decAmount
                 ])
 
                 await auth1.sendTx({ ...data })
-                const wethAddr = await Token.getAddress("weth", options)
+                const wethAddr = await Token.getAddress("weth", chain)
                 const userOp = await wallet.transfer(auth1, groupId, { to: wethAddr, amount: 0.002, token: "eth" })
                 await wallet.executeOperation(auth1, userOp)
             }
@@ -234,7 +236,7 @@ export const SwapTest = (config: SwapTestConfig) => {
 
         it("Group Wallet Create, Collect Sig, and Execute -- ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
@@ -258,13 +260,13 @@ export const SwapTest = (config: SwapTestConfig) => {
             // auth1 execute the operation
             expect(await wallet.executeOperation(auth1, operation)).to.not.throw
 
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter > tokenBalanceBefore, "Swap did not execute")
         })
 
         it("Group Wallet Create, Execute Without Required Sigs -- ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
@@ -283,13 +285,13 @@ export const SwapTest = (config: SwapTestConfig) => {
                 }
             }
 
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter === tokenBalanceBefore, "Swap executed without required sigs")
         })
 
         it("Group Wallet Reject Op -- ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
@@ -327,13 +329,13 @@ export const SwapTest = (config: SwapTestConfig) => {
                 }
             }
 
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter === tokenBalanceBefore, "Swap executed with bad nonce")
         })
 
         it("Group Wallet Create, Remove Op -- ETH => ERC20", async () => {
             const walletAddress = await wallet.getAddress()
-            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceBefore = await Token.getBalanceBN(inToken, walletAddress, chain)
 
             // auth1 creates and signs the swap operation, the operation should be stored into DDB
             const swapOp = await wallet.swap(auth1, groupId, {
@@ -352,7 +354,7 @@ export const SwapTest = (config: SwapTestConfig) => {
             // auth2 logs in and should not be able to find the operation.
             expect(await wallet.getOperation(swapOp.opId!)).to.throw
 
-            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress)
+            const tokenBalanceAfter = await Token.getBalanceBN(inToken, walletAddress, chain)
             assert(tokenBalanceAfter === tokenBalanceBefore, "Swap executed without enough signature")
         })
     })

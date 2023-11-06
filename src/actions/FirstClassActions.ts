@@ -56,6 +56,12 @@ import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../erro
 import { getOnChainGroupData } from "../utils/GroupUtils"
 
 export abstract class FirstClassActions {
+    protected chain: Chain
+
+    constructor(chain: Chain) {
+        this.chain = chain
+    }
+
     /**
      * Creates a new operation to be associated with the wallet and prepares it for execution.
      * @param {Auth} auth - The authentication instance for the user.
@@ -81,7 +87,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         const paramsCopy = JSON.parse(JSON.stringify(params))
         paramsCopy.recipient ??= await this.getAddress()
-        const transactionParams = await bridgeTransactionParams(paramsCopy, await this.getAddress())
+        const transactionParams = await bridgeTransactionParams(paramsCopy, await this.getAddress(), this.chain)
         return this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
@@ -162,7 +168,7 @@ export abstract class FirstClassActions {
         params: LimitOrderParam,
         txOptions: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<Operation> {
-        const transactionParams: TransactionParams = await limitSwapOrderTransactionParams(params, txOptions)
+        const transactionParams: TransactionParams = await limitSwapOrderTransactionParams(params, this.chain)
         return await this.createOperation(auth, userId, transactionParams, txOptions)
     }
 
@@ -187,9 +193,9 @@ export abstract class FirstClassActions {
             transactionParams = await erc721TransferTransactionParams(params)
         } else if (isTokenTransferParams(params)) {
             if (params.from) {
-                transactionParams = await tokenTransferFromTransactionParams(params, txOptions)
+                transactionParams = await tokenTransferFromTransactionParams(params, this.chain)
             } else {
-                transactionParams = await tokenTransferTransactionParams(params, txOptions)
+                transactionParams = await tokenTransferTransactionParams(params, this.chain)
             }
         } else {
             throw new InvalidParameterError(
@@ -220,7 +226,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams
         if (isERC20ApproveParams(params)) {
-            transactionParams = await erc20ApproveTransactionParams(params, txOptions)
+            transactionParams = await erc20ApproveTransactionParams(params)
         } else if (isERC721ApproveParams(params)) {
             transactionParams = await erc721ApproveTransactionParams(params)
         } else {

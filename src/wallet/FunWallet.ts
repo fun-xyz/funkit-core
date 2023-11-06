@@ -52,7 +52,8 @@ export class FunWallet extends FirstClassActions {
      * @param {object} params - The parameters for the constructing fun wallet - (users, uniqueId) or walletAddr
      */
     constructor(params: FunWalletParams | string) {
-        super()
+        const chain = (globalThis as any).globalEnvOption.chain
+        super(chain)
         if (typeof params === "string") {
             if (isAddress(params as string)) {
                 this.address = params as Address
@@ -910,7 +911,9 @@ export class FunWallet extends FirstClassActions {
                     "https://docs.fun.xyz/how-to-guides/execute-transactions#execute-transactions"
                 )
             }
-            const token = new Token(options.fee.token)
+
+            const chain = await Chain.getChain({ chainIdentifier: options.chain })
+            const token = new Token(options.fee.token, chain)
             if (options.fee.gasPercent && !token.isNative) {
                 throw new InvalidParameterError(
                     ErrorCode.InvalidParameterCombination,

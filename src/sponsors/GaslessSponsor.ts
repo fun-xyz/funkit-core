@@ -35,7 +35,8 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async stake(sponsor: Address, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const amountdec = await Token.getDecimalAmount("eth", amount, chain)
         return this.contractInterface.encodeTransactionParams(
             await this.getPaymasterAddress(),
             "addDepositTo",
@@ -45,7 +46,8 @@ export class GaslessSponsor extends Sponsor {
     }
 
     async unstake(receiver: Address, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
+        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const amountdec = await Token.getDecimalAmount("eth", amount, chain)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawDepositTo", [receiver, amountdec])
     }
 

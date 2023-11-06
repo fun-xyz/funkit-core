@@ -30,6 +30,7 @@ export const NFTTest = (config: NFTTestConfig) => {
         let wallet2: FunWallet
         let apiKey: string
         let nftId: number
+        let chain: Chain
         before(async function () {
             apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
@@ -51,17 +52,18 @@ export const NFTTest = (config: NFTTestConfig) => {
             if (!(await wallet1.getDeploymentStatus())) {
                 await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet1.getAddress())) < prefundAmt) {
+            chain = await Chain.getChain({ chainIdentifier: options.chain })
+
+            if (Number(await Token.getBalance(baseToken, await wallet1.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.1)
             }
 
             if (!(await wallet2.getDeploymentStatus())) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress())) < prefundAmt) {
+            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
-            const chain = await Chain.getChain({ chainIdentifier: options.chain })
             nftId = Math.floor(Math.random() * 10_000_000_000)
             nftAddress = await chain.getAddress("TestNFT")
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet1.getAddress(), nftId])

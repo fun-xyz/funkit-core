@@ -2,7 +2,7 @@ import { expect } from "chai"
 import { SocketSort, tokenTransferTransactionParams } from "../../src/actions"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Token } from "../../src/data"
+import { Chain, Token } from "../../src/data"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -25,6 +25,7 @@ export const BridgeTest = (config: BridgeTestConfig) => {
         this.timeout(400_000)
         let auth: Auth
         let wallet: FunWallet
+        let chain: Chain
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -40,16 +41,21 @@ export const BridgeTest = (config: BridgeTestConfig) => {
                 users: [{ userId: await auth.getAddress() }],
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1992811349)
             })
-            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < config.walletCreationCost) {
+
+            chain = await Chain.getChain({ chainIdentifier: config.fromChainId })
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)) < config.walletCreationCost) {
                 await fundWallet(auth, wallet, config.walletCreationCost)
             }
-            if (Number(await new Token(config.fromToken).getBalance(await wallet.getAddress())) < config.amountToBridge) {
+            if (Number(await new Token(config.fromToken, chain).getBalance(await wallet.getAddress())) < config.amountToBridge) {
                 await auth.sendTx(
-                    await tokenTransferTransactionParams({
-                        to: await wallet.getAddress(),
-                        amount: config.amountToBridge,
-                        token: config.fromToken
-                    })
+                    await tokenTransferTransactionParams(
+                        {
+                            to: await wallet.getAddress(),
+                            amount: config.amountToBridge,
+                            token: config.fromToken
+                        },
+                        chain
+                    )
                 )
             }
         })
@@ -57,7 +63,7 @@ export const BridgeTest = (config: BridgeTestConfig) => {
         after(async function () {
             await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
-                amount: (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) * 4) / 5,
+                amount: (Number(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)) * 4) / 5,
                 token: "eth"
             })
         })

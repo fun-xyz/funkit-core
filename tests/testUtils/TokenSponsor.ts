@@ -37,6 +37,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let walletAddress: Address
         let sponsor: TokenSponsor
         let options: GlobalEnvOption
+        let chain: Chain
 
         before(async function () {
             funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
@@ -46,6 +47,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 apiKey: apiKey
             }
             await configureEnvironment(options)
+
+            chain = await Chain.getChain({ chainIdentifier: options.chain })
 
             wallet = new FunWallet({
                 users: [{ userId: await funder.getAddress() }],
@@ -73,9 +76,9 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         })
 
         it("Acquire paymaster tokens for the funwallet", async () => {
-            const requiredAmount = await Token.getDecimalAmount(config.paymasterToken, config.paymasterTokensRequired)
+            const requiredAmount = await Token.getDecimalAmount(config.paymasterToken, config.paymasterTokensRequired, chain)
             if (config.mintPaymasterToken) {
-                const paymasterTokenAddress = await Token.getAddress(paymasterToken, options)
+                const paymasterTokenAddress = await Token.getAddress(paymasterToken, chain)
                 const paymasterTokenMint1 = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     walletAddress,
                     requiredAmount
@@ -87,8 +90,8 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 ])
                 await funder.sendTx({ ...paymasterTokenMint2 })
             }
-            if (Number(await Token.getBalanceBN(config.paymasterToken, walletAddress)) < requiredAmount) {
-                await funder.sendTx(await new Token(config.paymasterToken).transfer(walletAddress, config.paymasterTokensRequired))
+            if (Number(await Token.getBalanceBN(config.paymasterToken, walletAddress, chain)) < requiredAmount) {
+                await funder.sendTx(await new Token(config.paymasterToken, chain).transfer(walletAddress, config.paymasterTokensRequired))
             }
         })
 
@@ -262,12 +265,11 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorPermit = async (wallet: FunWallet) => {
-            const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken))
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
+            expect(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)).to.be.equal("0")
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
             await wallet.executeOperation(funder, mintOperation)
             const nft = new NFT(nftAddress)
@@ -281,11 +283,10 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorPermitFail = async (wallet: FunWallet) => {
-            const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, await wallet.getAddress())).to.be.equal("0")
+            expect(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)).to.be.equal("0")
             try {
                 await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
             } catch (e: any) {
@@ -303,17 +304,16 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorApprove = async (wallet: FunWallet) => {
-            const chain = await Chain.getChain({ chainIdentifier: options.chain })
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress())) < config.prefundAmt) {
+            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)) < config.prefundAmt) {
                 await fundWallet(funder, wallet, config.prefundAmt)
             }
 
-            if (Number(await Token.getBalance(config.paymasterToken, await wallet.getAddress())) < config.paymasterTokensRequired) {
+            if (Number(await Token.getBalance(config.paymasterToken, await wallet.getAddress(), chain)) < config.paymasterTokensRequired) {
                 await funder.sendTx(
-                    await new Token(config.paymasterToken).transfer(await wallet.getAddress(), config.paymasterTokensRequired)
+                    await new Token(config.paymasterToken, chain).transfer(await wallet.getAddress(), config.paymasterTokensRequired)
                 )
             }
 

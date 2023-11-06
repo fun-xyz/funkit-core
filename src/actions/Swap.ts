@@ -65,8 +65,8 @@ export const oneInchTransactionParams = async (
     }
 
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
-    const inToken = new Token(params.tokenIn)
-    const outToken = new Token(params.tokenOut)
+    const inToken = new Token(params.tokenIn, chain)
+    const outToken = new Token(params.tokenOut, chain)
 
     const inTokenAddress = inToken.isNative ? eth1InchAddress : await inToken.getAddress()
     const outTokenAddress = outToken.isNative ? eth1InchAddress : await outToken.getAddress()
@@ -106,8 +106,8 @@ export const uniswapV3SwapTransactionParams = async (
     const univ3quoter = await chain.getAddress("univ3quoter")
     const univ3factory = await chain.getAddress("univ3factory")
     const univ3router = await chain.getAddress("univ3router")
-    const tokenIn = new Token(params.tokenIn)
-    const tokenOut = new Token(params.tokenOut)
+    const tokenIn = new Token(params.tokenIn, chain)
+    const tokenOut = new Token(params.tokenOut, chain)
 
     const tokenInAddress = await tokenIn.getAddress()
     const tokenOutAddress = await tokenOut.getAddress()
@@ -163,8 +163,8 @@ export const uniswapV2SwapTransactionParams = async (
     const factory = await chain.getAddress("UniswapV2Factory")
     const router = await chain.getAddress("UniswapV2Router02")
 
-    const tokenIn = new Token(params.tokenIn)
-    const tokenOut = new Token(params.tokenOut)
+    const tokenIn = new Token(params.tokenIn, chain)
+    const tokenOut = new Token(params.tokenOut, chain)
 
     const tokenInAddress = await tokenIn.getAddress()
     const tokenOutAddress = await tokenOut.getAddress()
