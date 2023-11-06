@@ -411,6 +411,11 @@ export class FunWallet extends FirstClassActions {
             verificationGasLimit: BigInt(10e6)
         }
 
+        if ((await chain.getChainId()) === "36865") {
+            partialOp.callGasLimit = BigInt(10e5)
+            partialOp.verificationGasLimit = BigInt(10e5)
+        }
+
         const isGroupOp: boolean = (await auth.getUserId()) !== (userId as Hex)
 
         const operation: Operation = new Operation(partialOp, {

@@ -107,7 +107,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 } catch (error) {
                     assert(
                         false,
-                        `Transfer from wallet1 ${await wallet1.getAddress()} to 
+                        `Transfer from wallet1 ${await wallet1.getAddress()} to
                         wallet2 ${await wallet2.getAddress()} should have succeeded
                         but failed with error ${error}`
                     )
@@ -129,7 +129,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 } catch (error) {
                     assert(
                         false,
-                        `Transfer from wallet2 ${await wallet2.getAddress()} to 
+                        `Transfer from wallet2 ${await wallet2.getAddress()} to
                         wallet1 ${await wallet1.getAddress()} should have succeeded
                         but failed with error ${error}`
                     )
