@@ -47,7 +47,7 @@ export class TokenSponsor extends Sponsor {
 
     async getPaymasterAndData(options: EnvOption = (globalThis as any).globalEnvOption): Promise<string> {
         // TODO: temporary fallback, remove after refactoring -- Panda
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
         const tokenAddress = await Token.getAddress(this.token, chain)
         const paymasterAddress = await this.getPaymasterAddress(options)
         const sponsor = await this.getFunSponsorAddress(options)
@@ -157,7 +157,7 @@ export class TokenSponsor extends Sponsor {
 
     async getUnlockBlock(sponsor: Address, token: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<bigint> {
         // TODO: temporary fallback, remove after refactoring -- Panda
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+        const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
         const tokenAddr = (await Token.isNative(token)) ? AddressZero : await Token.getAddress(token, chain)
         return (await this.getAllTokenData(tokenAddr, sponsor, options)).unlockBlock
     }
@@ -245,7 +245,7 @@ export class TokenSponsor extends Sponsor {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
         const tokenObj = new Token(token, chain)
         const tokenAddress = await tokenObj.getAddress()
-        const amountdec = await tokenObj.getDecimalAmount(amount)
+        const amountDec = await tokenObj.getDecimalAmount(amount)
         addTransaction(
             await chain.getChainId(),
             Date.now(),
@@ -263,7 +263,7 @@ export class TokenSponsor extends Sponsor {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "addTokenDepositTo", [
             tokenAddress,
             spender,
-            amountdec
+            amountDec
         ])
     }
 

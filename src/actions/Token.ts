@@ -1,7 +1,6 @@
 import { Address, Hex, isAddress, parseEther } from "viem"
 import { ApproveERC20Params, ApproveERC721Params, ApproveParams, ERC721TransferParams, TokenTransferParams, TransferParams } from "./types"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE, TransactionParams } from "../common"
-import { EnvOption } from "../config"
 import { NFT, Token } from "../data"
 import { Chain } from "../data/Chain"
 import { ErrorCode, InvalidParameterError } from "../errors"
@@ -101,10 +100,7 @@ export const isERC721ApproveParams = (obj: ApproveParams): obj is ApproveERC721P
     return "tokenId" in obj && "collection" in obj
 }
 
-export const erc20ApproveTransactionParams = async (
-    params: ApproveERC20Params,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
+export const erc20ApproveTransactionParams = async (params: ApproveERC20Params): Promise<TransactionParams> => {
     const { spender, amount, token } = params
     if (!isAddress(spender ?? "")) {
         throw new InvalidParameterError(
@@ -117,7 +113,7 @@ export const erc20ApproveTransactionParams = async (
     }
 
     // TODO: remove this fallback after refactoring -- Panda
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
     const tokenObj = new Token(token, chain)
     const convertedAmount = await tokenObj.getDecimalAmount(amount)
     return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await tokenObj.getAddress(), "approve", [spender, convertedAmount])

@@ -228,7 +228,7 @@ export abstract class FirstClassActions {
     ): Promise<Operation> {
         let transactionParams
         if (isERC20ApproveParams(params)) {
-            transactionParams = await erc20ApproveTransactionParams(params, txOptions)
+            transactionParams = await erc20ApproveTransactionParams(params)
         } else if (isERC721ApproveParams(params)) {
             transactionParams = await erc721ApproveTransactionParams(params)
         } else {
