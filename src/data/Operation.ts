@@ -67,9 +67,10 @@ export class Operation {
 
     getMaxTxCost(): bigint {
         const { maxFeePerGas, preVerificationGas, callGasLimit, verificationGasLimit } = this.userOp
-        const mul: number = this.userOp.paymasterAndData !== "0x" ? 3 : 1
-        const requiredGas = callGasLimit + verificationGasLimit * BigInt(mul) + preVerificationGas! ? preVerificationGas : 0n
-        return BigInt(maxFeePerGas) * BigInt(requiredGas!)
+        const mul: bigint = this.userOp.paymasterAndData !== "0x" ? 3n : 1n
+        const additionalGas = preVerificationGas ? preVerificationGas : 0n
+        const requiredGas: bigint = callGasLimit + verificationGasLimit * mul + additionalGas
+        return BigInt(maxFeePerGas) * requiredGas
     }
 
     async estimateGas(auth: Auth, userId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
