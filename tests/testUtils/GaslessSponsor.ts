@@ -81,7 +81,7 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, walletAddress)).to.be.equal("0")
+            expect(await Token.getBalance(config.baseToken, walletAddress, chain)).to.be.equal("0")
             const mintOperation = await wallet.createOperation(auth, await auth.getUserId(), mintTxParams)
             expect(await wallet.executeOperation(auth, mintOperation)).to.not.throw
             const nft = new NFT(nftAddress)

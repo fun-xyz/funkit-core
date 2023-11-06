@@ -12,7 +12,12 @@ import { getSigHash } from "../utils/ViemUtils"
 
 export const createFeeRecipientAndTokenMerkleTree = async (params: SessionKeyParams): Promise<MerkleTree> => {
     const recipients = (params.feeRecipientWhitelist ?? []).map((recipient) => getAddress(recipient))
-    const tokens = await Promise.all((params.feeTokenWhitelist ?? []).map((token) => Token.getAddress(token)))
+
+    // TODO: Temporary fallback, remove after refactoring -- Panda
+    const options = (globalThis as any).globalEnvOption
+    const chain = await Chain.getChain({ chainIdentifier: options.chain })
+
+    const tokens = await Promise.all((params.feeTokenWhitelist ?? []).map((token) => Token.getAddress(token, chain)))
     const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
     return feeRecipientAndTokenMerkleTree
 }

@@ -56,7 +56,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -65,7 +65,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
-            const outTokenAddress = await Token.getAddress(outToken)
+            const outTokenAddress = await Token.getAddress(outToken, chain)
             const txParams = await Promise.all(
                 randomAddresses.map((randomAddress) => {
                     return erc20ApproveTransactionParams({
@@ -85,7 +85,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     chain
                 )
                 assert(
-                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress).getDecimalAmount(approveAmount)),
+                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(approveAmount)),
                     "BatchActions failed"
                 )
             }
@@ -95,7 +95,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const randAuth = new Auth({ privateKey: randomBytes(32) })
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const approveAmount = randInt(10000)
-            const outTokenAddress = await Token.getAddress(outToken)
+            const outTokenAddress = await Token.getAddress(outToken, chain)
 
             const txParams = await Promise.all(
                 randomAddresses.map((randomAddress) => {
@@ -125,7 +125,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     inAmount: 0.001,
                     recipient: randomAddress
                 })
-                const outTokenAddress = await Token.getAddress(outToken)
+                const outTokenAddress = await Token.getAddress(outToken, chain)
                 const approveParams = await erc20ApproveTransactionParams({
                     spender: randomAddress,
                     amount: approveAmount,
@@ -141,7 +141,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     chain
                 )
                 assert(
-                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress).getDecimalAmount(approveAmount)),
+                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(approveAmount)),
                     "BatchActions failed"
                 )
                 const swappedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(outTokenAddress, "balanceOf", [randomAddress], chain)
@@ -278,7 +278,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -290,7 +290,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
 
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
-            const outTokenAddress = await Token.getAddress(outToken)
+            const outTokenAddress = await Token.getAddress(outToken, chain)
             const txParams = await Promise.all(
                 randomAddresses.map((randomAddress) => {
                     return erc20ApproveTransactionParams({
@@ -313,7 +313,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     chain
                 )
                 assert(
-                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress).getDecimalAmount(approveAmount)),
+                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(approveAmount)),
                     "BatchActions failed"
                 )
             }

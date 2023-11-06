@@ -10,10 +10,10 @@ import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, TransactionParams } from "../commo
 import { Chain, Token } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 
-export const bridgeTransactionParams = async (params: BridgeParams, walletAddress: Address): Promise<TransactionParams> => {
+export const bridgeTransactionParams = async (params: BridgeParams, walletAddress: Address, chain: Chain): Promise<TransactionParams> => {
     const { recipient, fromToken, toToken, sort } = params
-    const fromTokenObj = new Token(fromToken)
-    const toTokenObj = new Token(toToken)
+    const fromTokenObj = new Token(fromToken, chain)
+    const toTokenObj = new Token(toToken, chain)
     const amount = await fromTokenObj.getDecimalAmount(params.amount)
     if (!recipient) {
         throw new InvalidParameterError(

@@ -28,6 +28,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
+        let chain: Chain
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -44,16 +45,17 @@ export const TransferTest = (config: TransferTestConfig) => {
                 uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1992811349)
             })
 
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
             const outTokenPrefundAmount = outTokenPrefund ? outTokenPrefund : 0.01
-            if (Number(await Token.getBalance(outToken, await wallet.getAddress())) < outTokenPrefundAmount) {
-                await auth.sendTx(await new Token(outToken).transfer(await wallet.getAddress(), outTokenPrefundAmount))
+            if (Number(await Token.getBalance(outToken, await wallet.getAddress(), chain)) < outTokenPrefundAmount) {
+                await auth.sendTx(await new Token(outToken, chain).transfer(await wallet.getAddress(), outTokenPrefundAmount))
             }
         })
 
@@ -61,16 +63,16 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = await auth.getAddress()
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: randomAddress,
                 amount: amount ? amount : 0.00001,
                 token: "eth"
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             await new Promise((r) => setTimeout(r, 2000))
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
@@ -87,7 +89,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         })
 
         it("wallet should have lower balance of specified token", async () => {
-            const outTokenObj = new Token(outToken)
+            const outTokenObj = new Token(outToken, chain)
             const outTokenAddress = await outTokenObj.getAddress()
             if (config.chainId === 5) {
                 const outTokenMint = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(outTokenAddress, "mint", [
@@ -97,16 +99,16 @@ export const TransferTest = (config: TransferTestConfig) => {
                 await auth.sendTx({ ...outTokenMint })
             }
 
-            const b1 = Token.getBalanceBN(outToken, await auth.getAddress())
-            const b2 = Token.getBalanceBN(outToken, await wallet.getAddress())
+            const b1 = Token.getBalanceBN(outToken, await auth.getAddress(), chain)
+            const b2 = Token.getBalanceBN(outToken, await wallet.getAddress(), chain)
             const userOp = await wallet.transfer(auth, await auth.getAddress(), {
                 to: await auth.getAddress(),
                 amount: outTokenPrefund ? outTokenPrefund / 2 : 0.00001,
                 token: outTokenAddress
             })
             expect(await wallet.executeOperation(auth, userOp)).to.not.throw
-            const b3 = Token.getBalanceBN(outToken, await auth.getAddress())
-            const b4 = Token.getBalanceBN(outToken, await wallet.getAddress())
+            const b3 = Token.getBalanceBN(outToken, await auth.getAddress(), chain)
+            const b4 = Token.getBalanceBN(outToken, await wallet.getAddress(), chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -127,9 +129,9 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const feeRecipientAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
-                const b1 = Token.getBalance(baseToken, randomAddress)
-                const b2 = Token.getBalance(baseToken, walletAddress)
-                const b5 = Token.getBalance(baseToken, feeRecipientAddress)
+                const b1 = Token.getBalance(baseToken, randomAddress, chain)
+                const b2 = Token.getBalance(baseToken, walletAddress, chain)
+                const b5 = Token.getBalance(baseToken, feeRecipientAddress, chain)
                 const fee = outTokenPrefund ? outTokenPrefund / 10 : 0.00001
                 const options: EnvOption = {
                     chain: config.chainId,
@@ -153,9 +155,9 @@ export const TransferTest = (config: TransferTestConfig) => {
 
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
-                const b3 = Token.getBalance(baseToken, randomAddress)
-                const b4 = Token.getBalance(baseToken, walletAddress)
-                const b6 = Token.getBalance(baseToken, feeRecipientAddress)
+                const b3 = Token.getBalance(baseToken, randomAddress, chain)
+                const b4 = Token.getBalance(baseToken, walletAddress, chain)
+                const b6 = Token.getBalance(baseToken, feeRecipientAddress, chain)
 
                 const [
                     randomTokenBalanceBefore,
@@ -175,9 +177,9 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const feeRecipientAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
-                const b1 = Token.getBalance(baseToken, randomAddress)
-                const b2 = Token.getBalance(baseToken, walletAddress)
-                const b5 = Token.getBalance(outToken, feeRecipientAddress)
+                const b1 = Token.getBalance(baseToken, randomAddress, chain)
+                const b2 = Token.getBalance(baseToken, walletAddress, chain)
+                const b5 = Token.getBalance(outToken, feeRecipientAddress, chain)
                 const fee = outTokenPrefund ? outTokenPrefund / 2 : 0.00001
                 const options: EnvOption = {
                     chain: config.chainId,
@@ -200,9 +202,9 @@ export const TransferTest = (config: TransferTestConfig) => {
                 )
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
-                const b3 = Token.getBalance(baseToken, randomAddress)
-                const b4 = Token.getBalance(baseToken, walletAddress)
-                const b6 = Token.getBalance(outToken, feeRecipientAddress)
+                const b3 = Token.getBalance(baseToken, randomAddress, chain)
+                const b4 = Token.getBalance(baseToken, walletAddress, chain)
+                const b6 = Token.getBalance(outToken, feeRecipientAddress, chain)
 
                 const [
                     randomTokenBalanceBefore,
@@ -225,9 +227,9 @@ export const TransferTest = (config: TransferTestConfig) => {
                 const randomAddress = randomBytes(20)
                 const walletAddress = await wallet.getAddress()
 
-                const b1 = Token.getBalance(baseToken, randomAddress)
-                const b2 = Token.getBalance(baseToken, walletAddress)
-                const b5 = Token.getBalance(baseToken, await auth.getAddress())
+                const b1 = Token.getBalance(baseToken, randomAddress, chain)
+                const b2 = Token.getBalance(baseToken, walletAddress, chain)
+                const b5 = Token.getBalance(baseToken, await auth.getAddress(), chain)
                 const options: EnvOption = {
                     chain: config.chainId,
                     fee: {
@@ -249,9 +251,9 @@ export const TransferTest = (config: TransferTestConfig) => {
                 )
                 expect(await wallet.executeOperation(auth, userOp)).to.not.throw
 
-                const b3 = Token.getBalance(baseToken, randomAddress)
-                const b4 = Token.getBalance(baseToken, walletAddress)
-                const b6 = Token.getBalance(baseToken, await auth.getAddress())
+                const b3 = Token.getBalance(baseToken, randomAddress, chain)
+                const b4 = Token.getBalance(baseToken, walletAddress, chain)
+                const b6 = Token.getBalance(baseToken, await auth.getAddress(), chain)
 
                 const [
                     randomTokenBalanceBefore,
@@ -346,6 +348,7 @@ export const TransferTest = (config: TransferTestConfig) => {
         let auth1: Auth
         let auth2: Auth
         let wallet: FunWallet
+        let chain: Chain
         const groupId: Hex = "0x149b4d0ada7707782e74fef64f083cda823f45213f99ff177d3327e9761a245b" // generateRandomGroupId()
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -371,11 +374,11 @@ export const TransferTest = (config: TransferTestConfig) => {
                 uniqueId: await auth1.getWalletUniqueId(config.index ? config.index + 1 : 99976)
             })
 
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            chain = await Chain.getChain({ chainIdentifier: config.chainId })
             if (!(await isContract(await wallet.getAddress(), await chain.getClient()))) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress())) < prefundAmt) {
+            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.01)
             }
         })
@@ -384,8 +387,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -405,8 +408,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth2 sign and execute the operation
             expect(await wallet.executeOperation(auth2, operation)).to.not.throw
 
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -419,8 +422,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -438,8 +441,8 @@ export const TransferTest = (config: TransferTestConfig) => {
                 }
             }
 
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
@@ -450,7 +453,7 @@ export const TransferTest = (config: TransferTestConfig) => {
 
         it("Group Wallet Reject Op -- transfer base token", async () => {
             const randomAddress = randomBytes(20)
-            const b1 = Token.getBalance(baseToken, randomAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -487,7 +490,7 @@ export const TransferTest = (config: TransferTestConfig) => {
                 }
             }
 
-            const b2 = Token.getBalance(baseToken, randomAddress)
+            const b2 = Token.getBalance(baseToken, randomAddress, chain)
 
             const [randomTokenBalanceBefore, randomTokenBalanceAfter] = await Promise.all([b1, b2])
 
@@ -499,8 +502,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             const randomAddress = randomBytes(20)
             const walletAddress = await wallet.getAddress()
 
-            const b1 = Token.getBalance(baseToken, randomAddress)
-            const b2 = Token.getBalance(baseToken, walletAddress)
+            const b1 = Token.getBalance(baseToken, randomAddress, chain)
+            const b2 = Token.getBalance(baseToken, walletAddress, chain)
 
             // auth1 creates and signs the transfer operation, the operation should be stored into DDB
             const transferOp = await wallet.transfer(auth1, groupId, {
@@ -518,8 +521,8 @@ export const TransferTest = (config: TransferTestConfig) => {
             // auth2 logs in and should not be able to find the operation.
             expect(await wallet.getOperation(transferOp.opId!)).to.throw
 
-            const b3 = Token.getBalance(baseToken, randomAddress)
-            const b4 = Token.getBalance(baseToken, walletAddress)
+            const b3 = Token.getBalance(baseToken, randomAddress, chain)
+            const b4 = Token.getBalance(baseToken, walletAddress, chain)
 
             const [randomTokenBalanceBefore, walletTokenBalanceBefore, randomTokenBalanceAfter, walletTokenBalanceAfter] =
                 await Promise.all([b1, b2, b3, b4])
