@@ -54,3 +54,8 @@ export type UserOperationGasPrice = {
     maxFeePerGas: bigint
     maxPriorityFeePerGas: bigint
 }
+
+export type TPrivateKeyState = {
+    id: string
+    address: string
+} | null
