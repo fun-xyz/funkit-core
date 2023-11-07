@@ -95,7 +95,9 @@ export class TokenSponsor extends Sponsor {
     }
 
     async stake(sponsor: Address, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
-        const amountdec = await Token.getDecimalAmount("eth", amount, options)
+        const chainIdentifier = options.chain ?? (globalThis as any).globalEnvOption.chain
+        const chain = await Chain.getChain({ chainIdentifier })
+        const amountdec = await Token.getDecimalAmount("eth", amount, chain)
         return this.contractInterface.encodeTransactionParams(
             await this.getPaymasterAddress(),
             "addEthDepositTo",
@@ -106,7 +108,8 @@ export class TokenSponsor extends Sponsor {
 
     async unstake(receiver: Address, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
         // TODO: temporary fallback, remove after refactoring -- Panda
-        const chain = await Chain.getChain({ chainIdentifier: (globalThis as any).globalEnvOption.chain })
+        const chainIdentifier = options.chain ?? (globalThis as any).globalEnvOption.chain
+        const chain = await Chain.getChain({ chainIdentifier })
         const amountdec = await Token.getDecimalAmount("eth", amount, chain)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawEthDepositTo", [
             receiver,
@@ -218,7 +221,7 @@ export class TokenSponsor extends Sponsor {
         options: EnvOption = (globalThis as any).globalEnvOption
     ): Promise<TransactionParams> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        const tokenObj = new Token(token, chain))
+        const tokenObj = new Token(token, chain)
         const tokenAddress = await tokenObj.getAddress()
         const amountdec = await tokenObj.getDecimalAmount(amount)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawTokenDepositTo", [
@@ -340,10 +343,6 @@ export class TokenSponsor extends Sponsor {
             const tokenAddress = await Token.getAddress(tokens[i], chain)
             calldata.push(this.contractInterface.encodeData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
         }
-<<<<<<< HEAD
-=======
-        await batchOperation(await chain.getChainId(), tokens, modes, "tokensWhiteList", this.paymasterType, sponsor)
->>>>>>> 384b79e6 ([BAC-273] Token refactor (#393))
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [calldata])
     }
 
@@ -383,10 +382,6 @@ export class TokenSponsor extends Sponsor {
                 ])
             )
         }
-<<<<<<< HEAD
-=======
-        await batchOperation(await chain.getChainId(), tokens, modes, "tokensBlackList", this.paymasterType, sponsor)
->>>>>>> 384b79e6 ([BAC-273] Token refactor (#393))
         return this.batchTransaction(calldata)
     }
 

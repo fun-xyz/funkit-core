@@ -628,6 +628,22 @@ export class FunWallet extends FirstClassActions {
                 Array.from(this.userInfo!.keys()),
                 this.walletUniqueId
             )
+<<<<<<< HEAD
+=======
+            if (isGroupOperation(operation)) {
+                const group = this.userInfo!.get(operation.groupId!)
+
+                if (group && group.groupInfo) {
+                    await createGroup(
+                        operation.groupId!,
+                        chainId,
+                        group.groupInfo.threshold,
+                        await this.getAddress(),
+                        group.groupInfo.memberIds
+                    )
+                }
+            }
+>>>>>>> main
 
             if (txOptions?.gasSponsor?.sponsorAddress) {
                 const paymasterType = getPaymasterType(txOptions)

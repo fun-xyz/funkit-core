@@ -59,7 +59,10 @@ export const RBACTest = (config: RBACTestConfig) => {
 =======
             ownerId = randomBytes(32)
             console.log("ownerId", ownerId)
+<<<<<<< HEAD
 >>>>>>> 384b79e6 ([BAC-273] Token refactor (#393))
+=======
+>>>>>>> main
         })
 
         it("add owner", async () => {
