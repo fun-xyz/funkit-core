@@ -101,7 +101,7 @@ export const getPermitHash = (token: Address, to: Address, amount: bigint, nonce
             ["EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"]
         )
     )
-    const PERMIT_TYPEHASH = "PermitTransferStruct(address token, address to, uint256 amount, uint256 nonce)"
+    const PERMIT_TYPEHASH = "PermitTransferStruct(address token,address to,uint256 amount,uint256 nonce)"
     const DOMAIN_SEPARATOR = keccak256(
         encodeAbiParameters(
             [{ type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }, { type: "uint256" }, { type: "address" }, { type: "bytes32" }],

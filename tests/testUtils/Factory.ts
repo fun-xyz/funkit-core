@@ -90,5 +90,19 @@ export const FactoryTest = (config: FactoryTestConfig) => {
             const wallet1Address = await wallet1.getAddress()
             expect(walletAddress).to.be.equal(wallet1Address)
         })
+
+        it("wallet should not have the same address with a different initializerCall data", async () => {
+            const wallet1 = new FunWallet({
+                users: [{ userId: await auth.getAddress() }],
+                uniqueId: await auth2.getWalletUniqueId(3923)
+            })
+            const wallet2 = new FunWallet({
+                users: [{ userId: await auth2.getAddress() }],
+                uniqueId: await auth2.getWalletUniqueId(3923)
+            })
+            const wallet1Address = await wallet1.getAddress()
+            const wallet2Address = await wallet2.getAddress()
+            expect(wallet2Address).to.not.be.equal(wallet1Address)
+        })
     })
 }

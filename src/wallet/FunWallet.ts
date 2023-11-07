@@ -120,7 +120,9 @@ export class FunWallet extends FirstClassActions {
      */
     async getAddress(): Promise<Address> {
         if (!this.address) {
-            this.address = await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), this.walletUniqueId!)
+            const chain = await Chain.getChain({ chainIdentifier: 5 })
+            const initializerCallData = await this.getInitalizerCallData(chain)
+            this.address = await getWalletAddress(chain, this.walletUniqueId!, initializerCallData)
         }
         return this.address!
     }
@@ -131,9 +133,9 @@ export class FunWallet extends FirstClassActions {
      * @param {string} apiKey - The API key to access the required resources.
      * @returns {Promise<Address>} The wallet address.
      */
-    static async getAddress(uniqueId: string, apiKey: string): Promise<Address> {
-        ;(globalThis as any).globalEnvOption.apiKey = apiKey
-        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)))
+    static async getAddress(uniqueId: string, initializerCalldata: Hex, apiKey: string): Promise<Address> {
+        globalThis.globalEnvOption.apiKey = apiKey
+        return await getWalletAddress(await Chain.getChain({ chainIdentifier: 137 }), keccak256(toBytes(uniqueId)), initializerCalldata)
     }
 
     /**
@@ -422,7 +424,7 @@ export class FunWallet extends FirstClassActions {
         const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
 
         const sender = await this.getAddress()
-        const initCode = (await chain.addressIsContract(sender)) ? "0x" : await this.getThisInitCode(chain)
+        const initCode = await this.getInitCode(chain)
         let paymasterAndData = "0x"
 
         let maxFeePerGas, maxPriorityFeePerGas
@@ -823,7 +825,7 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
-    private async getThisInitCode(chain: Chain) {
+    private async getInitCodeParams(chain: Chain): Promise<InitCodeParams> {
         const owners: Hex[] = Array.from(this.userInfo!.keys())
         const entryPointAddress = await chain.getAddress("entryPointAddress")
         const factoryAddress = await chain.getAddress("factoryAddress")
@@ -844,7 +846,7 @@ export class FunWallet extends FirstClassActions {
             userAuthInitData = encodeUserAuthInitData(groupUsers)
         }
 
-        const initCodeParams: InitCodeParams = {
+        return {
             entryPointAddress,
             factoryAddress,
             implementationAddress: AddressZero,
@@ -852,11 +854,24 @@ export class FunWallet extends FirstClassActions {
             verificationAddresses: [rbac, userAuth],
             verificationData: [rbacInitData, userAuthInitData]
         }
-
-        return this.getInitCode(initCodeParams)
     }
 
-    private getInitCode(input: InitCodeParams) {
+    private async getInitCode(chain: Chain) {
+        if (await chain.addressIsContract(await this.getAddress())) {
+            return "0x"
+        }
+        const input = await this.getInitCodeParams(chain)
+        const initializerCallData = this.encodeInitializerCallData(input)
+        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [initializerCallData, encodeLoginData(input.loginData)])
+        return concat([input.factoryAddress, data])
+    }
+
+    private async getInitalizerCallData(chain: Chain): Promise<Hex> {
+        const input = await this.getInitCodeParams(chain)
+        return this.encodeInitializerCallData(input)
+    }
+
+    private encodeInitializerCallData(input: InitCodeParams) {
         const encodedVerificationInitdata = encodeAbiParameters(
             [
                 {
@@ -870,13 +885,7 @@ export class FunWallet extends FirstClassActions {
             ],
             [input.verificationAddresses, input.verificationData]
         )
-        const initializerCallData = WALLET_CONTRACT_INTERFACE.encodeData("initialize", [
-            input.entryPointAddress,
-            encodedVerificationInitdata
-        ])
-
-        const data = FACTORY_CONTRACT_INTERFACE.encodeData("createAccount", [initializerCallData, encodeLoginData(input.loginData)])
-        return concat([input.factoryAddress, data])
+        return WALLET_CONTRACT_INTERFACE.encodeData("initialize", [input.entryPointAddress, encodedVerificationInitdata])
     }
 
     /**
