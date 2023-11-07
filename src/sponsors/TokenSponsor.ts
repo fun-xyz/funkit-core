@@ -1,7 +1,7 @@
 import { Address, concat, encodeAbiParameters } from "viem"
 import { Sponsor } from "./Sponsor"
 import { AllTokenData, PaymasterType } from "./types"
-import { addTransaction, batchOperation, updatePaymasterMode } from "../apis/PaymasterApis"
+import { addTransaction } from "../apis/PaymasterApis"
 import { Auth } from "../auth"
 import { TOKEN_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
 import { AddressZero, TOKEN_PAYMASTER_CONTRACT_INTERFACE } from "../common/constants"
@@ -94,30 +94,10 @@ export class TokenSponsor extends Sponsor {
         return concat([paymasterAddress, encodedData])
     }
 
-    async stake(
-        depositor: Address,
-        sponsor: Address,
-        amount: number,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+    async stake(sponsor: Address, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+        const chainIdentifier = options.chain ?? (globalThis as any).globalEnvOption.chain
+        const chain = await Chain.getChain({ chainIdentifier })
         const amountdec = await Token.getDecimalAmount("eth", amount, chain)
-
-        await addTransaction(
-            await chain.getChainId(),
-            Date.now(),
-            "0x",
-            {
-                action: "stake",
-                amount,
-                from: depositor,
-                to: await this.getPaymasterAddress(options),
-                token: "eth"
-            },
-            this.paymasterType,
-            sponsor
-        )
-
         return this.contractInterface.encodeTransactionParams(
             await this.getPaymasterAddress(),
             "addEthDepositTo",
@@ -126,29 +106,11 @@ export class TokenSponsor extends Sponsor {
         )
     }
 
-    async unstake(
-        sponsor: Address,
-        receiver: Address,
-        amount: number,
-        options: EnvOption = (globalThis as any).globalEnvOption
-    ): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-
+    async unstake(receiver: Address, amount: number, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
+        // TODO: temporary fallback, remove after refactoring -- Panda
+        const chainIdentifier = options.chain ?? (globalThis as any).globalEnvOption.chain
+        const chain = await Chain.getChain({ chainIdentifier })
         const amountdec = await Token.getDecimalAmount("eth", amount, chain)
-        await addTransaction(
-            await chain.getChainId(),
-            Date.now(),
-            "0x",
-            {
-                action: "unstake",
-                amount,
-                from: sponsor,
-                to: await this.getPaymasterAddress(options),
-                token: "eth"
-            },
-            this.paymasterType,
-            receiver
-        )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawEthDepositTo", [
             receiver,
             amountdec
@@ -236,7 +198,6 @@ export class TokenSponsor extends Sponsor {
     }
 
     async depositToken(
-        depositor: Address,
         token: string,
         spender: Address,
         amount: number,
@@ -246,20 +207,6 @@ export class TokenSponsor extends Sponsor {
         const tokenObj = new Token(token, chain)
         const tokenAddress = await tokenObj.getAddress()
         const amountDec = await tokenObj.getDecimalAmount(amount)
-        addTransaction(
-            await chain.getChainId(),
-            Date.now(),
-            "0x",
-            {
-                action: "stakeToken",
-                amount,
-                from: depositor,
-                to: await this.getPaymasterAddress(options),
-                token
-            },
-            this.paymasterType,
-            spender
-        )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "addTokenDepositTo", [
             tokenAddress,
             spender,
@@ -268,7 +215,6 @@ export class TokenSponsor extends Sponsor {
     }
 
     async withdrawToken(
-        withdrawer: Address,
         token: string,
         receiver: Address,
         amount: number,
@@ -278,21 +224,6 @@ export class TokenSponsor extends Sponsor {
         const tokenObj = new Token(token, chain)
         const tokenAddress = await tokenObj.getAddress()
         const amountdec = await tokenObj.getDecimalAmount(amount)
-
-        addTransaction(
-            await chain.getChainId(),
-            Date.now(),
-            "0x",
-            {
-                action: "unstakeToken",
-                amount,
-                from: withdrawer,
-                to: await this.getPaymasterAddress(options),
-                token
-            },
-            this.paymasterType,
-            receiver
-        )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawTokenDepositTo", [
             tokenAddress,
             receiver,
@@ -396,14 +327,11 @@ export class TokenSponsor extends Sponsor {
         )
     }
 
-    async setTokenToWhitelistMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        await updatePaymasterMode(await chain.getChainId(), { tokenMode: "whitelist" }, this.paymasterType, sponsor)
+    async setTokenToWhitelistMode(): Promise<TransactionParams> {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setTokenListMode", [false])
     }
 
     async batchWhitelistTokens(
-        sponsor: Address,
         tokens: string[],
         modes: boolean[],
         options: EnvOption = (globalThis as any).globalEnvOption
@@ -415,7 +343,6 @@ export class TokenSponsor extends Sponsor {
             const tokenAddress = await Token.getAddress(tokens[i], chain)
             calldata.push(this.contractInterface.encodeData("setTokenWhitelistMode", [tokenAddress, modes[i]]))
         }
-        await batchOperation(await chain.getChainId(), tokens, modes, "tokensWhiteList", this.paymasterType, sponsor)
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "batchActions", [calldata])
     }
 
@@ -435,14 +362,11 @@ export class TokenSponsor extends Sponsor {
         )
     }
 
-    async setTokenToBlacklistMode(sponsor: Address, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        await updatePaymasterMode(await chain.getChainId(), { tokenMode: "blacklist" }, this.paymasterType, sponsor)
+    async setTokenToBlacklistMode(): Promise<TransactionParams> {
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "setTokenListMode", [true])
     }
 
     async batchBlacklistTokens(
-        sponsor: Address,
         tokens: string[],
         modes: boolean[],
         options: EnvOption = (globalThis as any).globalEnvOption
@@ -458,7 +382,6 @@ export class TokenSponsor extends Sponsor {
                 ])
             )
         }
-        await batchOperation(await chain.getChainId(), tokens, modes, "tokensBlackList", this.paymasterType, sponsor)
         return this.batchTransaction(calldata)
     }
 

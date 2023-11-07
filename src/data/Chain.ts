@@ -88,7 +88,7 @@ export class Chain {
             transport: http(this.rpcUrl)
         })
         this.id = (await this.client.getChainId()).toString()
-        await this.loadChain(this.id)
+        await this.loadChain(this.id!)
     }
 
     private async loadChain(identifier: string) {
@@ -190,7 +190,7 @@ export class Chain {
             estimationUserOp.paymasterAndData = BASE_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         } else if (this.id === "10") {
             estimationUserOp.paymasterAndData = OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
-        } else if (this.id === "1") {
+        } else if (this.id === "1" || this.id === "36865") {
             estimationUserOp.paymasterAndData = ETHEREUM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         }
 

@@ -4,10 +4,11 @@ dotenv.config()
 
 const config: TransferTestConfig = {
     chainId: 36865,
-    outToken: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    outToken: "usdc",
     amount: 1,
     baseToken: "eth",
     prefundAmt: 10,
-    numRetry: 0
+    numRetry: 0,
+    index: 19928113499999
 }
 TransferTest(config)

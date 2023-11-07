@@ -25,8 +25,7 @@
         "lint": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}'",
         "lint:fix": "eslint -c .eslintrc.json --ext .ts,.tsx './**/*.{ts,tsx}' --fix",
         "add-token": "ts-node tests/addToken.ts",
-        "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts",
-        "prepare": "husky install"
+        "fund-tenderly-account": "ts-node tests/scripts/fundAccount.ts"
     },
     "author": "https://fun.xyz/",
     "license": "MIT",
