@@ -54,12 +54,8 @@ export const RBACTest = (config: RBACTestConfig) => {
             }
 
             rbacContractAddr = await chain.getAddress("rbacAddress")
-<<<<<<< HEAD
             ownerId = randomBytes(20)
-=======
-            ownerId = randomBytes(32)
             console.log("ownerId", ownerId)
->>>>>>> 384b79e6 ([BAC-273] Token refactor (#393))
         })
 
         it("add owner", async () => {
