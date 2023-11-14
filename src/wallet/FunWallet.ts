@@ -840,6 +840,10 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
+    setOptions(options: GlobalEnvOption) {
+        this.options = options
+    }
+
     private async getThisInitCode(chain: Chain) {
         const owners: Hex[] = Array.from(this.userInfo!.keys())
         const entryPointAddress = await chain.getAddress("entryPointAddress")
