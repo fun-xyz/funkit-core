@@ -2,7 +2,6 @@ import { Address, isAddress } from "viem"
 import { OneInchSwapParams, SwapParams, UniswapPoolFeeOptions } from "./types"
 import { get1InchAllowance, get1InchApproveTx, get1InchSwapTx } from "../apis/SwapApis"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, APPROVE_AND_SWAP_ABI, TransactionParams } from "../common"
-import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
 import { ErrorCode, InvalidParameterError } from "../errors"
@@ -15,8 +14,7 @@ const DEFAULT_SLIPPAGE = 0.5 // .5%
 const eth1InchAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 const approveAndSwapInterface = new ContractInterface(APPROVE_AND_SWAP_ABI)
 
-const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams): Promise<TransactionParams | null> => {
-    const chainId = await Chain.getChain({ chainIdentifier: oneInchSwapParams.chainId })
+const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams, chainId: String): Promise<TransactionParams | null> => {
     const allowance = await get1InchAllowance(oneInchSwapParams.chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.from)
     if (Number(allowance) < Number(oneInchSwapParams.amount)) {
         const approveTx = await get1InchApproveTx(chainId.toString(), oneInchSwapParams.src, oneInchSwapParams.amount)
@@ -25,8 +23,7 @@ const getOneInchApproveTx = async (oneInchSwapParams: OneInchSwapParams): Promis
     return null
 }
 
-const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams): Promise<TransactionParams> => {
-    const chainId = await Chain.getChain({ chainIdentifier: oneinchSwapParams.chainId })
+const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams, chainId: String): Promise<TransactionParams> => {
     return await get1InchSwapTx(
         chainId.toString(),
         oneinchSwapParams.src.toString(),
@@ -39,12 +36,7 @@ const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams): Promise<T
     )
 }
 
-export const oneInchTransactionParams = async (
-    params: SwapParams,
-    walletAddress: Address,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const oneInchTransactionParams = async (params: SwapParams, walletAddress: Address, chain: Chain): Promise<TransactionParams> => {
     if (!oneInchSupported.includes(Number(await chain.getChainId()))) {
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
@@ -65,8 +57,19 @@ export const oneInchTransactionParams = async (
     }
 
     const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
-    const inToken = new Token(params.tokenIn, chain)
-    const outToken = new Token(params.tokenOut, chain)
+
+    if (!(params.tokenIn instanceof Token) || !(params.tokenOut instanceof Token)) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "TokenIn and TokenOut must be Token object",
+            { params },
+            "Please provide Token object",
+            "https://docs.fun.xyz"
+        )
+    }
+
+    const inToken = params.tokenIn
+    const outToken = params.tokenOut
 
     const inTokenAddress = inToken.isNative ? eth1InchAddress : await inToken.getAddress()
     const outTokenAddress = outToken.isNative ? eth1InchAddress : await outToken.getAddress()
@@ -81,8 +84,8 @@ export const oneInchTransactionParams = async (
         chainId: Number(await chain.getChainId())
     }
 
-    const approveTx = await getOneInchApproveTx(oneinchSwapParams)
-    const swapTx = await getOneInchSwapTx(oneinchSwapParams)
+    const approveTx = await getOneInchApproveTx(oneinchSwapParams, chain.getChainId())
+    const swapTx = await getOneInchSwapTx(oneinchSwapParams, chain.getChainId())
     if (!approveTx) {
         return swapTx
     } else {
@@ -96,21 +99,25 @@ export const oneInchTransactionParams = async (
     }
 }
 
-export const uniswapV3SwapTransactionParams = async (
-    params: SwapParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const uniswapV3SwapTransactionParams = async (params: SwapParams, chain: Chain): Promise<TransactionParams> => {
     const client = await chain.getClient()
-    const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
-    const univ3quoter = await chain.getAddress("univ3quoter")
-    const univ3factory = await chain.getAddress("univ3factory")
-    const univ3router = await chain.getAddress("univ3router")
-    const tokenIn = new Token(params.tokenIn, chain)
-    const tokenOut = new Token(params.tokenOut, chain)
+    const tokenSwapAddress = chain.getAddress("tokenSwapAddress")
+    const univ3quoter = chain.getAddress("univ3quoter")
+    const univ3factory = chain.getAddress("univ3factory")
+    const univ3router = chain.getAddress("univ3router")
 
-    const tokenInAddress = await tokenIn.getAddress()
-    const tokenOutAddress = await tokenOut.getAddress()
+    if (!(params.tokenIn instanceof Token) || !(params.tokenOut instanceof Token)) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "TokenIn and TokenOut must be Token object",
+            { params },
+            "Please provide Token object",
+            "https://docs.fun.xyz"
+        )
+    }
+
+    const tokenInAddress = await params.tokenIn.getAddress()
+    const tokenOutAddress = await params.tokenOut.getAddress()
 
     const uniswapAddrs: UniswapV3Addrs = {
         univ3quoter,
@@ -146,28 +153,31 @@ export const uniswapV3SwapTransactionParams = async (
     }
 
     const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
-    if (tokenIn.isNative) {
+    if (params.tokenIn.isNative) {
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [amount, data])
     } else {
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])
     }
 }
 
-export const uniswapV2SwapTransactionParams = async (
-    params: SwapParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const uniswapV2SwapTransactionParams = async (params: SwapParams, chain: Chain, apiKey: string): Promise<TransactionParams> => {
     const client = await chain.getClient()
     const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
     const factory = await chain.getAddress("UniswapV2Factory")
     const router = await chain.getAddress("UniswapV2Router02")
 
-    const tokenIn = new Token(params.tokenIn, chain)
-    const tokenOut = new Token(params.tokenOut, chain)
+    if (!(params.tokenIn instanceof Token) || !(params.tokenOut instanceof Token)) {
+        throw new InvalidParameterError(
+            ErrorCode.InvalidParameter,
+            "TokenIn and TokenOut must be Token object",
+            { params },
+            "Please provide Token object",
+            "https://docs.fun.xyz"
+        )
+    }
 
-    const tokenInAddress = await tokenIn.getAddress()
-    const tokenOutAddress = await tokenOut.getAddress()
+    const tokenInAddress = await params.tokenIn.getAddress()
+    const tokenOutAddress = await params.tokenOut.getAddress()
 
     const uniswapAddrs: UniswapV2Addrs = {
         factory,
@@ -193,9 +203,9 @@ export const uniswapV2SwapTransactionParams = async (
     }
     const chainId = Number(await chain.getChainId())
 
-    const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId)
+    const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId, apiKey)
 
-    if (tokenIn.isNative) {
+    if (params.tokenIn.isNative) {
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [to, amount, data])
     } else {
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapERC20", [tokenInAddress, amount, data])

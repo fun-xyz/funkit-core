@@ -59,5 +59,9 @@ export enum ErrorCode {
     FunWalletErrorCode = "FunWalletErrorCode",
     BridgeRouteNotFound = "BridgeRouteNotFound",
     BridgeAllowanceDataNotFound = "BridgeAllowanceDataNotFound",
-    BridgeApproveTxDataNotFound = "BridgeApproveTxDataNotFound"
+    BridgeApproveTxDataNotFound = "BridgeApproveTxDataNotFound",
+    ChainNotInitialized = "ChainNotInitialized",
+    AuthNotInitialized = "AuthNotInitialized",
+    FunWalletAddressNotInitialized = "FunWalletAddressNotInitialized",
+    InvalidAction = "InvalidAction"
 }

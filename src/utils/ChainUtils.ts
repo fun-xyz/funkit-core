@@ -16,7 +16,6 @@ import { sendRequest } from "./ApiUtils"
 import { sendAsset } from "../apis/FaucetApis"
 import { Auth } from "../auth"
 import { WALLET_CONTRACT_INTERFACE, gasSpecificChain } from "../common"
-import { EnvOption } from "../config"
 import { Chain } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { FunWallet } from "../wallet"
@@ -30,13 +29,8 @@ export const isAddress = (address: string): boolean => {
     }
 }
 
-export const fundWallet = async (
-    auth: Auth,
-    wallet: FunWallet,
-    value: number,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-) => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number) => {
+    const chain = wallet.getChain()
     const chainId = await chain.getChainId()
     const to = await wallet.getAddress()
     let txData
@@ -63,8 +57,7 @@ export const fundWallet = async (
     } else {
         txData = { to, data: "0x", value: parseEther(`${value}`) }
     }
-    const receipt = await auth.sendTx({ ...txData })
-    return await receipt
+    return await auth.sendTx({ ...txData }, chain)
 }
 
 export const isContract = async (address: Address, client: PublicClient): Promise<boolean> => {
@@ -122,7 +115,7 @@ export const getGasStation = async (gasStationUrl: string): Promise<any> => {
 }
 
 export const useFaucet = async (chainIdentifier: Chain | number | string, wallet: FunWallet) => {
-    const chain = await Chain.getChain({ chainIdentifier: chainIdentifier })
+    const chain = wallet.getChain()
     const chainName = await chain.getChainName()
     if (chainName !== "goerli") {
         throw new InvalidParameterError(
@@ -134,9 +127,9 @@ export const useFaucet = async (chainIdentifier: Chain | number | string, wallet
         )
     }
     const walletAddress = await wallet.getAddress()
-    const ethRequest = await sendAsset("eth", chainName, walletAddress)
-    const usdcRequest = await sendAsset("usdc", chainName, walletAddress)
-    const usdtRequest = await sendAsset("usdt", chainName, walletAddress)
-    const daiRequest = await sendAsset("dai", chainName, walletAddress)
+    const ethRequest = await sendAsset("eth", chainName, walletAddress, wallet.options.apiKey)
+    const usdcRequest = await sendAsset("usdc", chainName, walletAddress, wallet.options.apiKey)
+    const usdtRequest = await sendAsset("usdt", chainName, walletAddress, wallet.options.apiKey)
+    const daiRequest = await sendAsset("dai", chainName, walletAddress, wallet.options.apiKey)
     return [ethRequest, usdcRequest, usdtRequest, daiRequest]
 }

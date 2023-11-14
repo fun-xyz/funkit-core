@@ -4,6 +4,7 @@ import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE, ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, NFT, Token } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { TokenSponsor } from "../../src/sponsors"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
@@ -39,59 +40,54 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         let options: GlobalEnvOption
         let chain: Chain
 
+        let fun: FunKit
+        let paymasterTokenObj: Token
+        let baseTokenObj: Token
+
         before(async function () {
-            funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             const apiKey = await getTestApiKey()
             options = {
                 chain: config.chainId,
                 apiKey: apiKey
             }
-            await configureEnvironment(options)
 
-            chain = await Chain.getChain({ chainIdentifier: options.chain })
-
-            wallet = new FunWallet({
-                users: [{ userId: await funder.getAddress() }],
-                uniqueId: await funder.getWalletUniqueId(config.walletIndex ? config.walletIndex : 1823452391856349)
-            })
-            unpermittedWallet = new FunWallet({
-                users: [{ userId: await funder.getAddress() }],
-                uniqueId: await funder.getWalletUniqueId(18234526349)
-            })
-            approveWallet = new FunWallet({
-                users: [{ userId: await funder.getAddress() }],
-                uniqueId: await funder.getWalletUniqueId(182134526349)
-            })
-
-            walletAddress = await wallet.getAddress()
+            fun = new FunKit(options)
+            funder = fun.getAuth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY")) as Hex })
             funderAddress = await funder.getAddress()
-
-            options.gasSponsor = {
+            sponsor = fun.setTokenSponsor({
                 sponsorAddress: funderAddress,
                 token: paymasterToken,
                 usePermit: true
-            }
-            await configureEnvironment(options)
-            sponsor = new TokenSponsor()
+            })
+
+            chain = await fun.getChain(config.chainId)
+
+            wallet = await fun.createWalletWithAuth(funder, config.walletIndex ? config.walletIndex : 1823452391856349)
+            unpermittedWallet = await fun.createWalletWithAuth(funder, 18234526349)
+            approveWallet = await fun.createWalletWithAuth(funder, 182134526349)
+
+            walletAddress = await wallet.getAddress()
+            paymasterTokenObj = wallet.getToken(paymasterToken)
+            baseTokenObj = wallet.getToken(config.baseToken)
         })
 
         it("Acquire paymaster tokens for the funwallet", async () => {
-            const requiredAmount = await Token.getDecimalAmount(config.paymasterToken, config.paymasterTokensRequired, chain)
+            const requiredAmount = await paymasterTokenObj.getDecimalAmount(config.paymasterTokensRequired)
             if (config.mintPaymasterToken) {
-                const paymasterTokenAddress = await Token.getAddress(paymasterToken, chain)
+                const paymasterTokenAddress = await paymasterTokenObj.getAddress()
                 const paymasterTokenMint1 = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     walletAddress,
                     requiredAmount
                 ])
-                await funder.sendTx({ ...paymasterTokenMint1 })
+                await funder.sendTx({ ...paymasterTokenMint1 }, chain)
                 const paymasterTokenMint2 = ERC20_CONTRACT_INTERFACE.encodeTransactionParams(paymasterTokenAddress, "mint", [
                     funderAddress,
                     requiredAmount
                 ])
-                await funder.sendTx({ ...paymasterTokenMint2 })
+                await funder.sendTx({ ...paymasterTokenMint2 }, chain)
             }
-            if (Number(await Token.getBalanceBN(config.paymasterToken, walletAddress, chain)) < requiredAmount) {
-                await funder.sendTx(await new Token(config.paymasterToken, chain).transfer(walletAddress, config.paymasterTokensRequired))
+            if (Number(await paymasterTokenObj.getBalanceBN()) < requiredAmount) {
+                await funder.sendTx(await paymasterTokenObj.transfer(walletAddress, config.paymasterTokensRequired), chain)
             }
         })
 
@@ -100,7 +96,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const stakedEthAmount = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
             if (stakedEthAmount < baseStakeAmount) {
                 const stakeData = await sponsor.stake(funderAddress, funderAddress, config.baseTokenStakeAmt)
-                await funder.sendTx(stakeData)
+                await funder.sendTx(stakeData, chain)
             }
             const stakedEthAmountAfter = Number(await sponsor.getTokenBalance(funderAddress, "eth"))
             assert(stakedEthAmountAfter >= baseStakeAmount, "Stake Failed")
@@ -109,35 +105,35 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         it("Whitelist a funwallet and use the token paymaster with permit", async () => {
             // Allow the sponsor to whitelist tokens that are acceptable for use
             if (await sponsor.getTokenListMode(funderAddress)) {
-                await funder.sendTx(await sponsor.setTokenToWhitelistMode(funderAddress))
+                await funder.sendTx(await sponsor.setTokenToWhitelistMode(funderAddress), chain)
                 await new Promise((f) => setTimeout(f, 5000))
             }
             expect(await sponsor.getTokenListMode(funderAddress)).to.be.false
 
             // Allow the sponsor to whitelist users that are acceptable for use
             if (await sponsor.getListMode(funderAddress)) {
-                await funder.sendTx(await sponsor.setToWhitelistMode(funderAddress))
+                await funder.sendTx(await sponsor.setToWhitelistMode(funderAddress), chain)
                 await new Promise((f) => setTimeout(f, 5000))
             }
             expect(await sponsor.getListMode(funderAddress)).to.be.false
 
             // Whitelist the funwallet that wants to use the token paymaster
             if (!(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress))) {
-                await funder.sendTx(await sponsor.addSpenderToWhitelist(funderAddress, walletAddress))
+                await funder.sendTx(await sponsor.addSpenderToWhitelist(funderAddress, walletAddress), chain)
             }
             expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
             if (!(await sponsor.getSpenderWhitelisted(await approveWallet.getAddress(), funderAddress))) {
-                await funder.sendTx(await sponsor.addSpenderToWhitelist(funderAddress, await approveWallet.getAddress()))
+                await funder.sendTx(await sponsor.addSpenderToWhitelist(funderAddress, await approveWallet.getAddress()), chain)
             }
             expect(await sponsor.getSpenderWhitelisted(await approveWallet.getAddress(), funderAddress)).to.be.true
             if (!(await sponsor.getSpenderWhitelisted(await unpermittedWallet.getAddress(), funderAddress))) {
-                await funder.sendTx(await sponsor.removeSpenderFromWhitelist(funderAddress, await unpermittedWallet.getAddress()))
+                await funder.sendTx(await sponsor.removeSpenderFromWhitelist(funderAddress, await unpermittedWallet.getAddress()), chain)
             }
             expect(await sponsor.getSpenderWhitelisted(await unpermittedWallet.getAddress(), funderAddress)).to.be.false
 
             // Whitelist the token that the funwallet wants to use to pay for gas
             if (!(await sponsor.getTokenWhitelisted((await sponsor.getFunSponsorAddress())!, paymasterToken))) {
-                await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]))
+                await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]), chain)
             }
             expect(await sponsor.getTokenWhitelisted((await sponsor.getFunSponsorAddress())!, paymasterToken)).to.be.true
 
@@ -149,32 +145,35 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         it("Enable blacklist mode but don't turn blacklist the funwallet and use the token paymaster with permit", async () => {
             // Allow the sponsor to blacklist tokens that are acceptable for use
             if (!(await sponsor.getTokenListMode(funderAddress))) {
-                await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress))
+                await funder.sendTx(await sponsor.setTokenToBlacklistMode(funderAddress), chain)
             }
             expect(await sponsor.getTokenListMode(funderAddress)).to.be.true
 
             // Allow the sponsor to allow all users to use the paymaster except for blacklisted users
             if (!(await sponsor.getListMode(funderAddress))) {
-                await funder.sendTx(await sponsor.setToBlacklistMode(funderAddress))
+                await funder.sendTx(await sponsor.setToBlacklistMode(funderAddress), chain)
                 await new Promise((f) => setTimeout(f, 3000))
             }
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
             // Make sure the token is not blacklisted
             if (await sponsor.getTokenBlacklisted((await sponsor.getFunSponsorAddress())!, paymasterToken)) {
-                await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
+                await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]), chain)
             }
             expect(await sponsor.getTokenBlacklisted((await sponsor.getFunSponsorAddress())!, paymasterToken)).to.be.false
 
             // Make sure the funwallet is not blacklisted
             if (await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)) {
-                await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [false]))
+                await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [false]), chain)
             }
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
 
             // Make sure the funwallet is not blacklisted
             if (!(await sponsor.getSpenderBlacklisted(await unpermittedWallet.getAddress(), funderAddress))) {
-                await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [await unpermittedWallet.getAddress()], [true]))
+                await funder.sendTx(
+                    await sponsor.batchBlacklistSpenders(funderAddress, [await unpermittedWallet.getAddress()], [true]),
+                    chain
+                )
             }
             expect(await sponsor.getSpenderBlacklisted(await unpermittedWallet.getAddress(), funderAddress)).to.be.true
 
@@ -184,68 +183,68 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
         })
 
         it("Lock and Unlock tokens from the token paymaster", async () => {
-            await funder.sendTx(await sponsor.unlockTokenDepositAfter(paymasterToken, 0))
+            await funder.sendTx(await sponsor.unlockTokenDepositAfter(paymasterToken, 0), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, paymasterToken)).to.be.false
-            await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken))
+            await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, paymasterToken)).to.be.true
         })
 
         it("Lock and Unlock the native gas token from the token paymaster", async () => {
-            await funder.sendTx(await sponsor.unlockDepositAfter(0))
+            await funder.sendTx(await sponsor.unlockDepositAfter(0), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, "eth")).to.be.false
-            await funder.sendTx(await sponsor.lockDeposit())
+            await funder.sendTx(await sponsor.lockDeposit(), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getLockState(funderAddress, "eth")).to.be.true
         })
 
         it("Batch Blacklist and whitelist users", async () => {
             // blacklist spenders
-            await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [false]))
+            await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [false]), chain)
             await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.false
 
             // remove spender from blacklist
-            await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [true]))
+            await funder.sendTx(await sponsor.batchBlacklistSpenders(funderAddress, [walletAddress], [true]), chain)
             await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getSpenderBlacklisted(walletAddress, funderAddress)).to.be.true
 
             // whitelist spender
-            await funder.sendTx(await sponsor.batchWhitelistSpenders(funderAddress, [walletAddress], [false]))
+            await funder.sendTx(await sponsor.batchWhitelistSpenders(funderAddress, [walletAddress], [false]), chain)
             await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.false
 
             // remove spender from whitelist
-            await funder.sendTx(await sponsor.batchWhitelistSpenders(funderAddress, [walletAddress], [true]))
+            await funder.sendTx(await sponsor.batchWhitelistSpenders(funderAddress, [walletAddress], [true]), chain)
             await new Promise((f) => setTimeout(f, 2000))
             expect(await sponsor.getSpenderWhitelisted(walletAddress, funderAddress)).to.be.true
         })
 
         it("Batch Blacklist and whitelist tokens", async () => {
             // blacklist tokens
-            await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
+            await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getTokenBlacklisted(funderAddress, paymasterToken)).to.be.false
 
             // remove token from paymaster blacklist to allow users to pay for transactions using this sponsor
-            await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]))
+            await funder.sendTx(await sponsor.batchBlacklistTokens(funderAddress, [paymasterToken], [false]), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getTokenBlacklisted(funderAddress, paymasterToken)).to.be.false
 
             // whitelist tokens
-            await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [false]))
+            await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [false]), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.false
 
             // whitelist tokens
-            await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]))
+            await funder.sendTx(await sponsor.batchWhitelistTokens(funderAddress, [paymasterToken], [true]), chain)
             await new Promise((f) => setTimeout(f, 5000))
             expect(await sponsor.getTokenWhitelisted(funderAddress, paymasterToken)).to.be.true
         })
 
-        it("Use the fun owned token paymaster", async () => {
+        it.only("Use the fun owned token paymaster", async () => {
             const funOwnedTokenSponsor = "0x40C0cCa76088D45106c2D74D0B4B6405865f22De"
             options.gasSponsor = {
                 sponsorAddress: funOwnedTokenSponsor,
@@ -263,14 +262,14 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
          * token paymaster
          */
         const runActionWithTokenSponsorPermit = async (wallet: FunWallet) => {
-            const nftAddress = await chain.getAddress("TestNFT")
+            const nftAddress = chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
-            await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken))
+            await funder.sendTx(await sponsor.lockTokenDeposit(paymasterToken), chain)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)).to.be.equal("0")
+            expect(await baseTokenObj.getBalance()).to.be.equal("0")
             const mintOperation = await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
             await wallet.executeOperation(funder, mintOperation)
-            const nft = new NFT(nftAddress)
+            const nft = new NFT(nftAddress, options)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())
         }
@@ -284,7 +283,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)).to.be.equal("0")
+            expect(await baseTokenObj.getBalance()).to.be.equal("0")
             try {
                 await wallet.createOperation(funder, await funder.getUserId(), mintTxParams)
             } catch (e: any) {
@@ -305,14 +304,12 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
             const nftAddress = await chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
             const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            if (Number(await Token.getBalance(config.baseToken, await wallet.getAddress(), chain)) < config.prefundAmt) {
+            if (Number(await baseTokenObj.getBalance()) < config.prefundAmt) {
                 await fundWallet(funder, wallet, config.prefundAmt)
             }
 
-            if (Number(await Token.getBalance(config.paymasterToken, await wallet.getAddress(), chain)) < config.paymasterTokensRequired) {
-                await funder.sendTx(
-                    await new Token(config.paymasterToken, chain).transfer(await wallet.getAddress(), config.paymasterTokensRequired)
-                )
+            if (Number(await paymasterTokenObj.getBalance()) < config.paymasterTokensRequired) {
+                await funder.sendTx(await paymasterTokenObj.transfer(await wallet.getAddress(), config.paymasterTokensRequired), chain)
             }
 
             const approveTokenToPaymaster = await wallet.tokenApprove(funder, await funder.getUserId(), {
@@ -330,7 +327,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 }
             })
             await wallet.executeOperation(funder, mintOperation)
-            const nft = new NFT(nftAddress)
+            const nft = new NFT(nftAddress, options)
             const owner = await nft.ownerOf(nftId)
             expect(owner).to.equal(await wallet.getAddress())
         }

@@ -19,5 +19,5 @@ export interface EnvOption {
 }
 
 export interface GlobalEnvOption extends EnvOption {
-    apiKey?: string
+    apiKey: string
 }

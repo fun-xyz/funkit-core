@@ -3,21 +3,17 @@ import { AddOwnerParams, RemoveOwnerParams, RuleStruct, SessionKeyParams } from 
 import { SessionKeyAuth } from "../auth"
 import { AuthInput } from "../auth/types"
 import { RBAC_CONTRACT_INTERFACE, TransactionParams } from "../common"
-import { EnvOption } from "../config"
+import { GlobalEnvOption } from "../config"
 import { Chain } from "../data"
 import { Token } from "../data/Token"
 import { ErrorCode, InvalidParameterError } from "../errors"
 import { MerkleTree } from "../utils/MerkleUtils"
 import { getSigHash } from "../utils/ViemUtils"
 
-export const createFeeRecipientAndTokenMerkleTree = async (params: SessionKeyParams): Promise<MerkleTree> => {
+export const createFeeRecipientAndTokenMerkleTree = async (params: SessionKeyParams, chain: Chain, apiKey: string): Promise<MerkleTree> => {
     const recipients = (params.feeRecipientWhitelist ?? []).map((recipient) => getAddress(recipient))
 
-    // TODO: Temporary fallback, remove after refactoring -- Panda
-    const options = (globalThis as any).globalEnvOption
-    const chain = await Chain.getChain({ chainIdentifier: options.chain })
-
-    const tokens = await Promise.all((params.feeTokenWhitelist ?? []).map((token) => Token.getAddress(token, chain)))
+    const tokens = await Promise.all((params.feeTokenWhitelist ?? []).map((token) => Token.getAddress(token, chain, apiKey)))
     const feeRecipientAndTokenMerkleTree = new MerkleTree([...recipients, ...tokens])
     return feeRecipientAndTokenMerkleTree
 }
@@ -34,7 +30,8 @@ export const createTargetSelectorMerkleTree = (params: SessionKeyParams): Merkle
 
 export const createSessionKeyTransactionParams = async (
     params: SessionKeyParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
+    chain: Chain,
+    apiKey: string
 ): Promise<TransactionParams> => {
     if (params.targetWhitelist.length === 0) {
         throw new InvalidParameterError(
@@ -58,7 +55,7 @@ export const createSessionKeyTransactionParams = async (
     actionValueLimit ??= 0n
     feeValueLimit ??= 0n
     const targetSelectorMerkleTree = createTargetSelectorMerkleTree(params)
-    const feeRecipientTokenMerkleTree = await createFeeRecipientAndTokenMerkleTree(params)
+    const feeRecipientTokenMerkleTree = await createFeeRecipientAndTokenMerkleTree(params, chain, apiKey)
     const ruleStruct: RuleStruct = {
         deadline: convertTimestampToBigInt(params.deadline),
         targetSelectorMerkleRootHash: targetSelectorMerkleTree.getRootHash(),
@@ -73,33 +70,26 @@ export const createSessionKeyTransactionParams = async (
     const setRuleCallData = RBAC_CONTRACT_INTERFACE.encodeData("setRule", [ruleId, ruleStruct])
     const connectRuleAndRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addRuleToRole", [roleId, ruleId])
     const connectUserToRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addUserToRole", [roleId, userId])
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "multiCall", [
         [setRuleCallData, connectRuleAndRoleCallData, connectUserToRoleCallData]
     ])
 }
 
-export const createSessionUser = async (auth: AuthInput, params: SessionKeyParams): Promise<SessionKeyAuth> => {
+export const createSessionUser = async (auth: AuthInput, params: SessionKeyParams, txOptions: GlobalEnvOption): Promise<SessionKeyAuth> => {
     const targetSelectorMerkleTree = createTargetSelectorMerkleTree(params)
-    const feeRecipientAndTokenMerkleTree = await createFeeRecipientAndTokenMerkleTree(params)
-    return new SessionKeyAuth(auth, params.ruleId, params.roleId, targetSelectorMerkleTree, feeRecipientAndTokenMerkleTree)
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
+    const apiKey = txOptions.apiKey
+    const feeRecipientAndTokenMerkleTree = await createFeeRecipientAndTokenMerkleTree(params, chain, apiKey)
+    return new SessionKeyAuth(auth, params.ruleId, params.roleId, targetSelectorMerkleTree, feeRecipientAndTokenMerkleTree, apiKey)
 }
 
-export const addOwnerTxParams = async (
-    params: AddOwnerParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const addOwnerTxParams = async (params: AddOwnerParams, chain: Chain): Promise<TransactionParams> => {
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "addOwner", [pad(params.ownerId, { size: 32 })])
 }
 
-export const removeOwnerTxParams = async (
-    params: RemoveOwnerParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const removeOwnerTxParams = async (params: RemoveOwnerParams, chain: Chain): Promise<TransactionParams> => {
     const rbacAddress = await chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "removeOwner", [pad(params.ownerId, { size: 32 })])
 }

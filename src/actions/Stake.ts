@@ -1,7 +1,7 @@
 import { Address, isAddress, parseEther } from "viem"
 import { FinishUnstakeParams, RequestUnstakeParams, StakeParams } from "./types"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, ERC20_CONTRACT_INTERFACE, TransactionParams, WITHDRAW_QUEUE_ABI } from "../common"
-import { EnvOption } from "../config"
+import { GlobalEnvOption } from "../config"
 import { Chain } from "../data"
 import { ErrorCode, InternalFailureError, InvalidParameterError } from "../errors"
 import { ContractInterface } from "../viem/ContractInterface"
@@ -14,18 +14,15 @@ export const isRequestUnstakeParams = (input: any): boolean => {
 export const isFinishUnstakeParams = (input: any): boolean => {
     return input.recipient !== undefined
 }
-export const stakeTransactionParams = async (
-    params: StakeParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
-): Promise<TransactionParams> => {
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+export const stakeTransactionParams = async (params: StakeParams, txOptions: GlobalEnvOption): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
     const lidoAddress = getSteth(await chain.getChainId())
     return { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
 }
 
 export const requestUnstakeTransactionParams = async (
     params: RequestUnstakeParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
+    txOptions: GlobalEnvOption
 ): Promise<TransactionParams> => {
     if (!isAddress(params.recipient ?? "")) {
         throw new InvalidParameterError(
@@ -37,7 +34,7 @@ export const requestUnstakeTransactionParams = async (
         )
     }
     // Approve steth
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
     const chainId = await chain.getChainId()
     const steth = getSteth(chainId)
     const withdrawalQueue: Address = getWithdrawalQueue(chainId)
@@ -73,7 +70,7 @@ export const requestUnstakeTransactionParams = async (
 
 export const finishUnstakeTransactionParams = async (
     params: FinishUnstakeParams,
-    txOptions: EnvOption = (globalThis as any).globalEnvOption
+    txOptions: GlobalEnvOption
 ): Promise<TransactionParams> => {
     if (!isAddress(params.recipient ?? "")) {
         throw new InvalidParameterError(
@@ -84,7 +81,7 @@ export const finishUnstakeTransactionParams = async (
             "https://docs.fun.xyz"
         )
     }
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
     const withdrawQueueAddress = getWithdrawalQueue(await chain.getChainId())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params, txOptions)).slice(0, 5)
     if (readyToWithdrawRequestIds.length === 0) {
@@ -121,7 +118,7 @@ export const finishUnstakeTransactionParams = async (
     ])
 }
 
-const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions: EnvOption): Promise<bigint[]> => {
+const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions: GlobalEnvOption): Promise<bigint[]> => {
     if (!isAddress(params.recipient ?? "")) {
         throw new InvalidParameterError(
             ErrorCode.InvalidParameter,
@@ -132,7 +129,7 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions
         )
     }
     // check withdrawal requests
-    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain })
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
     const withdrawalQueueAddr: Address = getWithdrawalQueue(await chain.getChainId())
 
     const withdrawalRequests: bigint[] = await withdrawQueueInterface.readFromChain(

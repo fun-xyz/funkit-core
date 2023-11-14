@@ -5,6 +5,7 @@ import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { NFT } from "../../src/data/NFT"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -31,48 +32,52 @@ export const NFTTest = (config: NFTTestConfig) => {
         let apiKey: string
         let nftId: number
         let chain: Chain
+        let fun: FunKit
+        let baseTokenObj1: Token
+        let baseTokenObj2: Token
+        let options: GlobalEnvOption
+
         before(async function () {
             apiKey = await getTestApiKey()
-            const options: GlobalEnvOption = {
+            options = {
                 chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            const users = [{ userId: await auth.getAddress() }]
+            const uniqueId1 = await auth.getWalletUniqueId(1792811340)
+            const uniqueId2 = await auth.getWalletUniqueId(1792811341)
 
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet1 = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(1792811340)
-            })
-            wallet2 = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(1792811341)
-            })
+            wallet1 = await fun.createWalletWithUsersAndId(users, uniqueId1)
+            wallet2 = await fun.createWalletWithUsersAndId(users, uniqueId2)
+
             if (!(await wallet1.getDeploymentStatus())) {
                 await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.2)
             }
-            chain = await Chain.getChain({ chainIdentifier: options.chain })
-
-            if (Number(await Token.getBalance(baseToken, await wallet1.getAddress(), chain)) < prefundAmt) {
+            chain = await fun.getChain(options.chain)
+            baseTokenObj1 = wallet1.getToken(baseToken)
+            if (Number(await baseTokenObj1.getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet1, prefundAmt ? prefundAmt : 0.1)
             }
 
             if (!(await wallet2.getDeploymentStatus())) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet2.getAddress(), chain)) < prefundAmt) {
+            baseTokenObj2 = wallet2.getToken(baseToken)
+            if (Number(await baseTokenObj2.getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
             nftId = Math.floor(Math.random() * 10_000_000_000)
             nftAddress = await chain.getAddress("TestNFT")
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet1.getAddress(), nftId])
-            await auth.sendTx({ ...data })
+            await auth.sendTx({ ...data }, chain)
         })
 
         describe("Write functions - Basic Functionality", () => {
             it("approve", async () => {
-                const nft = new NFT(nftAddress)
+                const nft = new NFT(nftAddress, options)
                 const userOp = await wallet1.tokenApprove(auth, await auth.getAddress(), {
                     spender: await wallet2.getAddress(),
                     collection: nftAddress,
@@ -88,7 +93,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             })
 
             it("getApproval", async () => {
-                const nft = new NFT(nftAddress)
+                const nft = new NFT(nftAddress, options)
                 const tokenId = nftId.toString()
                 const approved = await nft.getApproved(tokenId)
                 const owner = await wallet2.getAddress()
@@ -96,7 +101,7 @@ export const NFTTest = (config: NFTTestConfig) => {
             })
 
             it("transfer", async () => {
-                const nft = new NFT(nftAddress)
+                const nft = new NFT(nftAddress, options)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 try {
                     const userOp = await wallet1.transfer(auth, await auth.getAddress(), {
@@ -146,13 +151,13 @@ export const NFTTest = (config: NFTTestConfig) => {
 
         describe("Read functions - Basic Functionality", () => {
             it("getAddress", async () => {
-                const nft = new NFT(nftAddress)
+                const nft = new NFT(nftAddress, options)
                 await nft.getAddress()
                 assert(nft.address === nftAddress, "Address is not correct")
             })
 
             it("getBalance", async () => {
-                const nft = new NFT(nftAddress)
+                const nft = new NFT(nftAddress, options)
                 const bal = await nft.getBalance(await wallet1.getAddress())
                 assert(bal.toString() >= "1", "Balance is not correct")
             })
@@ -164,7 +169,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     gasSponsor: {}
                 }
                 await configureEnvironment(options)
-                const nft = new NFT(config.testNFTAddress)
+                const nft = new NFT(config.testNFTAddress, options)
                 const nftName = await nft.getName()
                 assert(nftName === config.testNFTName, "Incorrect NFT Name")
             })
@@ -176,7 +181,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     gasSponsor: {}
                 }
                 await configureEnvironment(options)
-                const nft = new NFT(config.testNFTName)
+                const nft = new NFT(config.testNFTName, options)
                 const nftAddr = await nft.getAddress()
                 assert(nftAddr === config.testNFTAddress, "Incorrect NFT Address")
             })

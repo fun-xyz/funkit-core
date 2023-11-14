@@ -11,9 +11,13 @@ export class Token {
     chain: Chain
     isNative = false
     symbol = ""
+    apiKey: string
+    walletAddress: Address
 
-    constructor(input: Address | string, chain: Chain) {
+    constructor(input: Address | string, chain: Chain, walletAddress: Address, apiKey: string) {
         this.chain = chain
+        this.walletAddress = walletAddress
+        this.apiKey = apiKey
 
         if (isAddress(input)) {
             this.address = input
@@ -26,15 +30,15 @@ export class Token {
     }
 
     async getAddress(): Promise<Address> {
-        const chainId = await this.chain.getChainId()
+        const chainId = this.chain.getChainId()
 
         if (this.isNative) {
             const nativeName = (wrappedNativeTokens as any)[this.symbol]
-            return await getTokenInfo(nativeName, chainId)
+            return await getTokenInfo(nativeName, chainId, this.apiKey)
         } else if (this.address) {
             return this.address
         } else if (this.symbol) {
-            return await getTokenInfo(this.symbol, chainId)
+            return await getTokenInfo(this.symbol, chainId, this.apiKey)
         } else {
             throw new InternalFailureError(
                 ErrorCode.ServerMissingData,
@@ -53,25 +57,25 @@ export class Token {
         return await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "decimals", [], this.chain)
     }
 
-    async getBalance(address: Address): Promise<string> {
-        const amount = await this.getBalanceBN(address)
+    async getBalance(): Promise<string> {
+        const amount = await this.getBalanceBN()
         const decimals = await this.getDecimals()
         return formatUnits(amount, Number(decimals))
     }
 
-    async getBalanceBN(address: Address): Promise<bigint> {
+    async getBalanceBN(): Promise<bigint> {
         const chain = this.chain
         let amount = 0n
         if (this.isNative) {
             const client = await chain.getClient()
-            amount = await client.getBalance({ address })
+            amount = await client.getBalance({ address: this.walletAddress })
         } else {
-            amount = await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "balanceOf", [address], chain)
+            amount = await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "balanceOf", [this.walletAddress], chain)
         }
         return amount
     }
 
-    async getApproval(owner: string, spender: string): Promise<bigint> {
+    async getApproval(spender: string): Promise<bigint> {
         if (this.isNative) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidParameter,
@@ -82,7 +86,9 @@ export class Token {
             )
         }
         const chain = this.chain
-        return BigInt(await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "allowance", [owner, spender], chain))
+        return BigInt(
+            await ERC20_CONTRACT_INTERFACE.readFromChain(await this.getAddress(), "allowance", [this.walletAddress, spender], chain)
+        )
     }
 
     async getDecimalAmount(amount: number): Promise<bigint> {
@@ -102,42 +108,43 @@ export class Token {
         return ERC20_CONTRACT_INTERFACE.encodeTransactionParams(await this.getAddress(), "transfer", [spender, amountDec])
     }
 
-    static async getAddress(data: string, chain: Chain): Promise<Address> {
-        const token = new Token(data, chain)
+    static async getAddress(data: string, chain: Chain, apiKey: string): Promise<Address> {
+        const token = new Token(data, chain, "0x", apiKey)
         return await token.getAddress()
     }
 
-    static async getDecimals(data: string, chain: Chain): Promise<bigint> {
-        const token = new Token(data, chain)
+    static async getDecimals(data: string, chain: Chain, apiKey: string): Promise<bigint> {
+        const token = new Token(data, chain, "0x", apiKey)
         return await token.getDecimals()
     }
 
-    static async getBalance(data: string, address: Address, chain: Chain): Promise<string> {
-        const token = new Token(data, chain)
-        return await token.getBalance(address)
+    // token address, ownerWallet address, chain
+    static async getBalance(data: string, address: Address, chain: Chain, apiKey: string): Promise<string> {
+        const token = new Token(data, chain, address, apiKey)
+        return await token.getBalance()
     }
 
-    static async getBalanceBN(data: string, address: Address, chain: Chain): Promise<bigint> {
-        const token = new Token(data, chain)
-        return await token.getBalanceBN(address)
+    static async getBalanceBN(data: string, address: Address, chain: Chain, apiKey: string): Promise<bigint> {
+        const token = new Token(data, chain, address, apiKey)
+        return await token.getBalanceBN()
     }
 
-    static async getApproval(data: string, owner: string, spender: string, chain: Chain): Promise<bigint> {
-        const token = new Token(data, chain)
-        return await token.getApproval(owner, spender)
+    static async getApproval(data: string, owner: Address, spender: string, chain: Chain, apiKey: string): Promise<bigint> {
+        const token = new Token(data, chain, owner, apiKey)
+        return await token.getApproval(spender)
     }
-    static async getDecimalAmount(data: string, amount: number, chain: Chain): Promise<bigint> {
-        const token = new Token(data, chain)
+    static async getDecimalAmount(data: string, amount: number, chain: Chain, apiKey: string): Promise<bigint> {
+        const token = new Token(data, chain, "0x", apiKey)
         return await token.getDecimalAmount(amount)
     }
 
-    static async approve(data: string, spender: string, amount: number, chain: Chain): Promise<TransactionParams> {
-        const token = new Token(data, chain)
+    static async approve(data: string, spender: string, amount: number, chain: Chain, apiKey: string): Promise<TransactionParams> {
+        const token = new Token(data, chain, "0x", apiKey)
         return await token.approve(spender, amount)
     }
 
-    static async transfer(data: string, spender: string, amount: number, chain: Chain): Promise<TransactionParams> {
-        const token = new Token(data, chain)
+    static async transfer(data: string, spender: string, amount: number, chain: Chain, apiKey: string): Promise<TransactionParams> {
+        const token = new Token(data, chain, "0x", apiKey)
         return await token.transfer(spender, amount)
     }
 

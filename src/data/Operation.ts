@@ -3,7 +3,6 @@ import { Chain } from "./Chain"
 import { AuthType, OperationMetadata, OperationStatus, OperationType, Signature, UserOperation } from "./types"
 import { Auth } from "../auth"
 import { ENTRYPOINT_CONTRACT_INTERFACE } from "../common/constants"
-import { EnvOption } from "../config"
 import { calcPreVerificationGas } from "../utils"
 
 export class Operation {
@@ -28,8 +27,9 @@ export class Operation {
     opFee?: string
     executedBlockNumber?: number
     executedBlockTimeStamp?: number
+    chain: Chain
 
-    constructor(userOp: UserOperation, metadata: OperationMetadata) {
+    constructor(userOp: UserOperation, metadata: OperationMetadata, chain: Chain) {
         this.userOp = userOp
         this.userOp.preVerificationGas = userOp.preVerificationGas ? userOp.preVerificationGas : calcPreVerificationGas(this.userOp)
         this.opId = metadata.opId
@@ -52,12 +52,17 @@ export class Operation {
         this.opFee = metadata.opFee
         this.executedBlockNumber = metadata.executedBlockNumber
         this.executedBlockTimeStamp = metadata.executedBlockTimeStamp
+        this.chain = chain
     }
 
-    static convertTypeToObject(op: Operation): Operation {
-        return new Operation(op.userOp, {
-            ...op
-        })
+    static convertTypeToObject(op: Operation, chain: Chain): Operation {
+        return new Operation(
+            op.userOp,
+            {
+                ...op
+            },
+            chain
+        )
     }
 
     async getOpHash(chain: Chain): Promise<Hex> {
@@ -75,12 +80,11 @@ export class Operation {
         return BigInt(maxFeePerGas) * requiredGas
     }
 
-    async estimateGas(auth: Auth, userId: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<Operation> {
+    async estimateGas(auth: Auth, userId: string): Promise<Operation> {
         if (!this.userOp.signature || this.userOp.signature === "0x") {
             this.userOp.signature = await auth.getEstimateGasSignature(userId, this)
         }
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        const res = await chain.estimateOpGas({
+        const res = await this.chain.estimateOpGas({
             ...this.userOp,
             paymasterAndData: "0x",
             maxFeePerGas: 0n,

@@ -26,9 +26,11 @@ export async function configureEnvironment(option: GlobalEnvOption) {
     }
 
     if ((!option || !option.chain) && !globalEnvOption.chain) {
-        globalEnvOption.chain = await Chain.getChain({ chainIdentifier: 5 })
+        globalEnvOption.chain = await Chain.getChain({ chainIdentifier: 5 }, globalEnvOption.apiKey)
     } else {
-        globalEnvOption.chain = option.chain ? await Chain.getChain({ chainIdentifier: option.chain }) : globalEnvOption.chain
+        globalEnvOption.chain = option.chain
+            ? await Chain.getChain({ chainIdentifier: option.chain }, globalEnvOption.apiKey)
+            : globalEnvOption.chain
     }
 
     if (option.gasSponsor !== null && option.gasSponsor !== undefined) {

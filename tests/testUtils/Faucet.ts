@@ -1,7 +1,7 @@
 import { expect } from "chai"
 import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, Token } from "../../src/data"
+import { GlobalEnvOption } from "../../src/config"
+import { FunKit } from "../../src/FunKit"
 import { useFaucet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -18,6 +18,8 @@ export const FaucetTest = (config: FaucetTestConfig) => {
         let auth: Auth
         let wallet: FunWallet
 
+        let fun: FunKit
+
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
@@ -26,25 +28,32 @@ export const FaucetTest = (config: FaucetTestConfig) => {
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId()
-            })
+
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = await fun.createWalletWithAuth(auth, 1992811349)
         })
 
         it("Test Faucet - Should get USDC, DAI, USDT", async () => {
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
-            const ethBalBefore = Number(await Token.getBalance("eth", await wallet.getAddress(), chain))
-            const daiBalBefore = Number(await Token.getBalance("dai", await wallet.getAddress(), chain))
-            const usdcBalBefore = Number(await Token.getBalance("usdc", await wallet.getAddress(), chain))
-            const usdtBalBefore = Number(await Token.getBalance("usdt", await wallet.getAddress(), chain))
+            const chain = wallet.getChain()
+
+            const ethTokenObj = wallet.getToken("eth")
+            const daiTokenObj = wallet.getToken("dai")
+            const usdcTokenObj = wallet.getToken("usdc")
+            const usdtTokenObj = wallet.getToken("usdt")
+
+            const ethBalBefore = Number(await ethTokenObj.getBalance())
+            const daiBalBefore = Number(await daiTokenObj.getBalance())
+            const usdcBalBefore = Number(await usdcTokenObj.getBalance())
+            const usdtBalBefore = Number(await usdtTokenObj.getBalance())
+
             await useFaucet(chain, wallet)
-            const ethBalAfter = Number(await Token.getBalance("eth", await wallet.getAddress(), chain))
-            const daiBalAfter = Number(await Token.getBalance("dai", await wallet.getAddress(), chain))
-            const usdcBalAfter = Number(await Token.getBalance("usdc", await wallet.getAddress(), chain))
-            const usdtBalAfter = Number(await Token.getBalance("usdt", await wallet.getAddress(), chain))
+
+            const ethBalAfter = Number(await ethTokenObj.getBalance())
+            const daiBalAfter = Number(await daiTokenObj.getBalance())
+            const usdcBalAfter = Number(await usdcTokenObj.getBalance())
+            const usdtBalAfter = Number(await usdtTokenObj.getBalance())
+
             expect(ethBalAfter).to.be.greaterThan(ethBalBefore)
             expect(daiBalAfter).to.be.greaterThan(daiBalBefore)
             expect(usdcBalAfter).to.be.greaterThan(usdcBalBefore)

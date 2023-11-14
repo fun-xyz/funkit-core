@@ -1,9 +1,9 @@
 import { assert, expect } from "chai"
 import { parseEther } from "viem"
-import { getOps } from "../../src/apis/OperationApis"
 import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, Token } from "../../src/data"
+import { GlobalEnvOption } from "../../src/config"
+import { Chain } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -30,6 +30,8 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
         let opId
         let chain: Chain
 
+        let fun: FunKit
+
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
@@ -38,15 +40,12 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
 
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
-            })
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = await fun.createWalletWithAuth(auth, config.index ? config.index : 1792811340)
 
-            chain = await Chain.getChain({ chainIdentifier: config.chainId.toString() })
+            chain = wallet.chain
             const client = await chain.getClient()
             const balance = await client.getBalance({ address: await wallet.getAddress() })
             if (balance < parseEther(`${prefundAmt}`)) {
@@ -63,17 +62,18 @@ export const LimitOrderTest = (config: LimitOrderConfig) => {
             })
 
             opId = await wallet.scheduleOperation(auth, userOp)
-            const operation = await getOps([opId], config.chainId.toString())
+            const operation = await fun.getOps([opId])
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
         })
 
         it("swap baseToken(ETH) executed", async () => {
-            const balBefore = await Token.getBalanceBN(config.outToken, await wallet.getAddress(), chain)
+            const outTokenObj = wallet.getToken(config.outToken)
+            const balBefore = await outTokenObj.getBalanceBN()
             await new Promise((resolve) => {
                 setTimeout(resolve, 400_000)
             })
-            const balAfter = await Token.getBalanceBN(config.outToken, await wallet.getAddress(), chain)
+            const balAfter = await outTokenObj.getBalanceBN()
             assert(balAfter > balBefore, `Swap did not execute: Out token balance should be greater than before ${balBefore}, ${balAfter}`)
         })
     })

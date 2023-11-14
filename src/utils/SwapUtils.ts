@@ -214,14 +214,20 @@ export async function swapExec(client: PublicClient, uniswapAddrs: UniswapV3Addr
     return { ...data, amount: tokenInAmount }
 }
 
-export async function swapExecV2(client: PublicClient, uniswapAddrs: UniswapV2Addrs, swapParams: SwapParamsUtils, chainId: number) {
+export async function swapExecV2(
+    client: PublicClient,
+    uniswapAddrs: UniswapV2Addrs,
+    swapParams: SwapParamsUtils,
+    chainId: number,
+    apiKey: string
+) {
     const { router, factory } = uniswapAddrs
 
     const { tokenInAddress, tokenOutAddress, amountIn, recipient } = swapParams
 
     const swapper = new SwapToken(client, 2, undefined, undefined, router, factory)
     const tokenInDecimal = await swapper.getTokenDecimals(tokenInAddress)
-    const wethAddr = await getTokenInfo("weth", chainId.toString())
+    const wethAddr = await getTokenInfo("weth", chainId.toString(), apiKey)
     let swapTxData
     if (wethAddr === tokenOutAddress) {
         swapTxData = UNISWAPV2ROUTER02_INTERFACE.encodeTransactionParams(router, "swapExactTokensForETH", [

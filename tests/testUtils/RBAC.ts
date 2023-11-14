@@ -2,8 +2,9 @@ import { assert, expect } from "chai"
 import { Address, pad } from "viem"
 import { Auth } from "../../src/auth"
 import { HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, Token } from "../../src/data"
+import { GlobalEnvOption } from "../../src/config"
+import { Chain } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -25,21 +26,21 @@ export const RBACTest = (config: RBACTestConfig) => {
         let chain: Chain
         let rbacContractAddr: Address
         let ownerId: Address
+        let fun: FunKit
+
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId,
+                chain: chainId,
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811349)
-            })
 
-            chain = await Chain.getChain({ chainIdentifier: chainId })
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = await fun.createWalletWithAuth(auth, config.index ? config.index : 1792811340)
+
+            chain = wallet.getChain()
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
                 try {
@@ -49,13 +50,12 @@ export const RBACTest = (config: RBACTestConfig) => {
                     assert(false, `Failed to deploy wallet ${e}`)
                 }
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
+            if (Number(await wallet.getToken(baseToken).getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
 
             rbacContractAddr = await chain.getAddress("rbacAddress")
             ownerId = randomBytes(32)
-            console.log("ownerId", ownerId)
         })
 
         it("add owner", async () => {
