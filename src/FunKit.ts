@@ -61,7 +61,6 @@ export class FunKit {
     }
 
     async createWalletWithAuth(auth: Auth, index?: number, chainId?: number): Promise<FunWallet> {
-        console.log("Creating wallet from auth")
         const userId = await auth.getAddress()
         const uniqueId = await auth.getWalletUniqueId(index)
         const wallet = new FunWallet(
@@ -160,7 +159,7 @@ export class FunKit {
         return new GaslessSponsor(this.options)
     }
 
-    setTokenSponsor(tokenSponsorParams: any, chainId?: number): TokenSponsor {
+    setTokenSponsor(tokenSponsorParams?: any, chainId?: number): TokenSponsor {
         this.options = {
             ...this.options,
             chain: chainId ? chainId : this.options.chain,

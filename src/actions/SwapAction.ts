@@ -1,6 +1,7 @@
 import { Action } from "./Action"
 import { uniswapV3SwapTransactionParams } from "./Swap"
-import { SwapParams, TransactionParams } from "./types"
+import { SwapParams } from "./types"
+import { TransactionParams } from "../common"
 import { GlobalEnvOption } from "../config"
 import { Chain, Token } from "../data"
 

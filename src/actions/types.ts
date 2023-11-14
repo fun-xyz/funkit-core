@@ -169,4 +169,3 @@ export enum SocketSort {
     gas = "gas",
     time = "time"
 }
-export { TransactionParams }

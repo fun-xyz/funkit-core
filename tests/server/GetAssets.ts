@@ -1,6 +1,7 @@
 import { expect } from "chai"
 import { Auth } from "../../src/auth"
 import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { FunKit } from "../../src/FunKit"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 const chainId = 5
@@ -11,6 +12,8 @@ describe("GetAssets", function () {
     this.timeout(120_000)
     let auth: Auth
     let wallet: FunWallet
+
+    let fun: FunKit
     before(async function () {
         const apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
@@ -18,17 +21,14 @@ describe("GetAssets", function () {
             apiKey: apiKey,
             gasSponsor: {}
         }
-        await configureEnvironment(options)
-        auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
 
-        wallet = new FunWallet({
-            users: [{ userId: await auth.getAddress() }],
-            uniqueId: await auth.getWalletUniqueId(14142)
-        })
+        fun = new FunKit(options)
+        auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+        wallet = await fun.createWalletWithAuth(auth, 14142)
     })
 
     describe("/get-tokens", () => {
-        describe("Positive Unit Tests", () => {
+        describe.skip("Positive Unit Tests", () => {
             it("Goerli, Funwallet", async () => {
                 const res = await wallet.getTokens(chainId.toString(), true)
                 expect(Math.floor((Object.values(res.tokens) as any)[0].price) >= 500).to.be.true

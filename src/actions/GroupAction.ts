@@ -1,6 +1,7 @@
 import { Action } from "./Action"
 import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from "./Group"
-import { CreateGroupParams, TransactionParams } from "./types"
+import { CreateGroupParams } from "./types"
+import { TransactionParams } from "../common/types"
 import { GlobalEnvOption } from "../config"
 import { Chain } from "../data"
 

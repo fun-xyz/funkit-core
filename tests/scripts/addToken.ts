@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv"
-import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { TokenSponsor } from "../../src/sponsors"
+import { GlobalEnvOption } from "../../src/config"
+import { FunKit } from "../../src/FunKit"
 import { getTestApiKey } from "../getAWSSecrets"
 dotenv.config()
 
@@ -14,12 +13,14 @@ const getOptions = async (chain = 36865) => {
 }
 
 const paymasterConfig = async (chainId, privateKey, aggergator, oracle, tokenAddress) => {
-    await configureEnvironment(await getOptions(chainId))
+    const fun = new FunKit(await getOptions(chainId))
+    // await configureEnvironment(await getOptions(chainId))
     // const tokenAddress = await Token.getAddress("usdc")
-    const eoa = new Auth({ privateKey: privateKey })
-    const sponsor = new TokenSponsor()
-
-    await eoa.sendTx(await sponsor.addUsableToken(oracle, tokenAddress, aggergator))
+    // const eoa = new Auth({ privateKey: privateKey })
+    const eoa = fun.getAuth({ privateKey: privateKey })
+    const sponsor = fun.setTokenSponsor({})
+    const chain = await fun.getChain(chainId)
+    await eoa.sendTx(await sponsor.addUsableToken(oracle, tokenAddress, aggergator), chain)
 }
 
 //ORACLE=Token oracle address

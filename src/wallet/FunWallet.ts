@@ -277,7 +277,7 @@ export class FunWallet extends FirstClassActions {
      * @returns {Promise<Operation[]>} A list of operations.
      */
     async getOperations(status: OperationStatus = OperationStatus.ALL): Promise<Operation[]> {
-        return await getOpsOfWallet(await this.getAddress(), this.chain.getChainId(), status)
+        return await getOpsOfWallet(await this.getAddress(), this.chain.getChainId(), this.options.apiKey, status)
     }
 
     /**
@@ -367,7 +367,6 @@ export class FunWallet extends FirstClassActions {
         if (!users.includes(userId)) {
             if ((await checkWalletAccessInitialization(walletAddr, txOptions.apiKey)) === false) {
                 await initializeWalletAccess(walletAddr, await auth.getAddress(), txOptions.apiKey)
-                console.log("Initialized wallet access")
             }
             await addUserToWallet(await auth.getAddress(), chain.getChainId(), walletAddr, [userId], txOptions.apiKey, this.walletUniqueId)
         }
@@ -380,7 +379,7 @@ export class FunWallet extends FirstClassActions {
      * @returns {Promise<string>} The on-ramp URL.
      */
     async onRamp(address?: Address, currencyCode?: string): Promise<string> {
-        return await getOnRampUrl(address ? address : await this.getAddress(), currencyCode ? currencyCode : undefined)
+        return await getOnRampUrl(address ? address : await this.getAddress(), this.options.apiKey, currencyCode ? currencyCode : undefined)
     }
 
     /**
@@ -389,7 +388,7 @@ export class FunWallet extends FirstClassActions {
      * @returns {Promise<string>} The off-ramp URL.
      */
     async offRamp(address?: Address): Promise<string> {
-        return await getOffRampUrl(address ? address : await this.getAddress())
+        return await getOffRampUrl(address ? address : await this.getAddress(), this.options.apiKey)
     }
 
     /**

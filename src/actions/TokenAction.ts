@@ -7,7 +7,8 @@ import {
     tokenTransferFromTransactionParams,
     tokenTransferTransactionParams
 } from "./Token"
-import { ApproveERC20Params, ApproveERC721Params, ERC721TransferParams, TokenTransferParams, TransactionParams } from "./types" // Assuming you have these types defined
+import { ApproveERC20Params, ApproveERC721Params, ERC721TransferParams, TokenTransferParams } from "./types"
+import { TransactionParams } from "../common/types"
 import { GlobalEnvOption } from "../config"
 import { Chain, NFT, Token } from "../data"
 

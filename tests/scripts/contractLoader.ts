@@ -1,21 +1,10 @@
 import fs from "fs"
 import path from "path"
 import { getContractAbi } from "../../src/apis/ContractApis"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain } from "../../src/data/Chain"
 import { getTestApiKey } from "../getAWSSecrets"
 
-async function setGlobal() {
-    const apiKey = await getTestApiKey()
-    const options: GlobalEnvOption = {
-        chain: await Chain.getChain({ chainIdentifier: 5 }),
-        apiKey: apiKey
-    }
-    await configureEnvironment(options)
-}
-
 const loadAbis = async (): Promise<void> => {
-    await setGlobal()
+    const apiKey = await getTestApiKey()
     const contracts = [
         "EntryPoint",
         "UserAuthentication",
@@ -39,7 +28,7 @@ const loadAbis = async (): Promise<void> => {
 
     for (const contract of contracts) {
         try {
-            const data = await getContractAbi(contract)
+            const data = await getContractAbi(contract, apiKey)
             const fileName = `${contract}.json`
             const dir = path.resolve(__dirname, "../../src/abis")
             const filePath = path.join(dir, fileName)

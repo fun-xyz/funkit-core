@@ -17,11 +17,11 @@ export async function getOpsOfGroup(groupId: Hex, chainId: string, status: Opera
     return (await sendGetRequest(API_URL, endpoint)).operations
 }
 
-export async function getOpsOfWallet(walletAddr: Address, chainId: string, status?: OperationStatus): Promise<Operation[]> {
+export async function getOpsOfWallet(walletAddr: Address, chainId: string, apiKey: string, status?: OperationStatus): Promise<Operation[]> {
     const endpoint = status
         ? `operation/wallet/${walletAddr}/chain/${chainId}?status=${status}`
         : `operation/wallet/${walletAddr}/chain/${chainId}`
-    return (await sendGetRequest(API_URL, endpoint)).operations
+    return (await sendGetRequest(API_URL, endpoint, apiKey)).operations
 }
 
 export async function getOps(opIds: Hex[], chainId: string, apiKey: string): Promise<Operation[]> {

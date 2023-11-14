@@ -1,6 +1,7 @@
 import { expect } from "chai"
 import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { GlobalEnvOption } from "../../src/config"
+import { FunKit } from "../../src/FunKit"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 const chainId = "5"
@@ -11,6 +12,8 @@ describe("Get Operations", function () {
     this.timeout(200_000)
     let auth: Auth
     let wallet: FunWallet
+
+    let fun: FunKit
     before(async function () {
         // this.retries(config.numRetry ? config.numRetry : 0)
         const apiKey = await getTestApiKey()
@@ -19,12 +22,9 @@ describe("Get Operations", function () {
             apiKey: apiKey,
             gasSponsor: {}
         }
-        await configureEnvironment(options)
-        auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-        wallet = new FunWallet({
-            users: [{ userId: await auth.getAddress() }],
-            uniqueId: await auth.getWalletUniqueId(1792811340)
-        })
+        fun = new FunKit(options)
+        auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+        wallet = await fun.createWalletWithAuth(auth, 1792811340)
     })
 
     describe("wallet.getOperations", () => {
