@@ -12,11 +12,11 @@ describe("Get Operations", function () {
     describe("Chain", () => {
         it("Overwrite Chain", async () => {
             const eth = await Chain.getChain({ chainIdentifier: 1 }, apiKey)
-            expect(await eth.getChainId()).to.be.equal("1")
+            expect(eth.getChainId()).to.be.equal("1")
             const goerli = await Chain.getChain({ chainIdentifier: 5 }, apiKey)
-            expect(await goerli.getChainId()).to.be.equal("5")
+            expect(goerli.getChainId()).to.be.equal("5")
             const eth2 = await Chain.getChain({ chainIdentifier: 1 }, apiKey)
-            expect(await eth2.getChainId()).to.be.equal("1")
+            expect(eth2.getChainId()).to.be.equal("1")
         })
     })
 })
