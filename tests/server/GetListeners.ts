@@ -1,6 +1,5 @@
 import { expect } from "chai"
 import { createListener, deleteListener } from "../../src/apis/ListenerApis"
-const chainId = "5"
 import "../../fetch-polyfill"
 
 describe("Get Operations", function () {
