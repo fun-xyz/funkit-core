@@ -1,7 +1,6 @@
 import { Address, concat } from "viem"
 import { Sponsor } from "./Sponsor"
 import { PaymasterType } from "./types"
-import { addTransaction } from "../apis/PaymasterApis"
 import { GASLESS_PAYMASTER_CONTRACT_INTERFACE, GASLESS_SPONSOR_SUPPORT_CHAINS, TransactionParams } from "../common"
 import { GlobalEnvOption } from "../config"
 import { Chain, Token } from "../data"
@@ -37,23 +36,9 @@ export class GaslessSponsor extends Sponsor {
         return concat([paymasterAddress, sponsor])
     }
 
-    async stake(depositor: Address, sponsor: Address, amount: number, options: GlobalEnvOption = this.options): Promise<TransactionParams> {
+    async stake(sponsor: Address, amount: number, options: GlobalEnvOption = this.options): Promise<TransactionParams> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
         const amountdec = await Token.getDecimalAmount("eth", amount, chain, options.apiKey)
-        await addTransaction(
-            await chain.getChainId(),
-            Date.now(),
-            "0x",
-            {
-                action: "stake",
-                amount,
-                from: depositor,
-                to: await this.getPaymasterAddress(options),
-                token: "eth"
-            },
-            this.paymasterType,
-            sponsor
-        )
         return this.contractInterface.encodeTransactionParams(
             await this.getPaymasterAddress(),
             "addDepositTo",
@@ -62,30 +47,9 @@ export class GaslessSponsor extends Sponsor {
         )
     }
 
-    async unstake(
-        sponsor: Address,
-        receiver: Address,
-        amount: number,
-        options: GlobalEnvOption = this.options
-    ): Promise<TransactionParams> {
+    async unstake(receiver: Address, amount: number, options: GlobalEnvOption = this.options): Promise<TransactionParams> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
-
         const amountdec = await Token.getDecimalAmount("eth", amount, chain, options.apiKey)
-
-        await addTransaction(
-            await chain.getChainId(),
-            Date.now(),
-            "0x",
-            {
-                action: "unstake",
-                amount,
-                from: sponsor,
-                to: await this.getPaymasterAddress(options),
-                token: "eth"
-            },
-            this.paymasterType,
-            receiver
-        )
         return this.contractInterface.encodeTransactionParams(await this.getPaymasterAddress(), "withdrawDepositTo", [receiver, amountdec])
     }
 

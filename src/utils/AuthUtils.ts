@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from "uuid"
-import { Address, Hex, decodeAbiParameters, pad } from "viem"
+import { Hex } from "viem"
+// @ts-ignore
+// eslint-disable-next-line
 import { generatePrivateKey as generateRandomPrivateKey } from "viem/accounts"
-import { createUser, getUserAuthIdByAddr, getUserUniqueId } from "../apis/UserApis"
-import { ResourceNotFoundError } from "../errors"
+import { createUser, getUserUniqueId } from "../apis/UserApis"
 
 export const getAuthUniqueId = async (authId: string, apiKey: string, addr = "NO_ADDRESS", skipDBActions = false) => {
     let authUniqueId
@@ -25,22 +26,6 @@ export const getAuthUniqueId = async (authId: string, apiKey: string, addr = "NO
     await createUser(authId, addr, method, authUniqueId, apiKey)
 
     return authUniqueId
-}
-
-export const getAuthIdFromAddr = async (addr: Address, apiKey: string) => {
-    let authId: string
-    try {
-        const [decodedAddr] = decodeAbiParameters([{ type: "address" }], pad(addr, { size: 32 }))
-        authId = await getUserAuthIdByAddr(decodedAddr as string, apiKey)
-    } catch (err) {
-        if (err instanceof ResourceNotFoundError) {
-            authId = addr
-            await createUser(addr, addr, "eoa", uuidv4(), apiKey)
-        } else {
-            throw err
-        }
-    }
-    return authId
 }
 
 export const generatePrivateKey = (): Hex => {

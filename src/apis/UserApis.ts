@@ -2,7 +2,7 @@ import { Address, Hex, InvalidParameterError } from "viem"
 import { Wallet } from "./types"
 import { API_URL } from "../common/constants"
 import { ResourceNotFoundError } from "../errors"
-import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
+import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
 export async function createUser(authId: string, addr: string, method: string, userUniqueId: string, apiKey: string): Promise<void> {
     await sendPostRequest(
@@ -70,32 +70,7 @@ export async function addUserToWallet(
     }
 }
 
-export async function removeUserWalletIdentity(authId: string, chainId: string, walletAddr: Address, userId: Hex): Promise<void> {
-    await sendDeleteRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/identity/${userId}`)
-}
-
 // return userIds of the specificed Wallet.
 export async function getUserWalletIdentities(authId: string, chainId: string, walletAddr: Address, apiKey: string): Promise<Hex[]> {
     return (await sendGetRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/identities`, apiKey)).ids ?? []
-}
-
-export async function addUserToGroup(authId: string, chainId: string, walletAddr: Address, groupId: Hex, apiKey: string): Promise<void> {
-    await sendPostRequest(
-        API_URL,
-        `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/group`,
-        {
-            groupId
-        },
-        apiKey
-    )
-}
-
-export async function removeUserFromGroup(
-    authId: string,
-    chainId: string,
-    walletAddr: Address,
-    groupId: Hex,
-    apiKey: string
-): Promise<void> {
-    await sendDeleteRequest(API_URL, `user/auth/${authId}/chain/${chainId}/wallet/${walletAddr}/group/${groupId}`, apiKey)
 }

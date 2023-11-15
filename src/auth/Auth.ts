@@ -13,7 +13,11 @@ import {
     pad,
     toBytes
 } from "viem"
+// @ts-ignore
+// eslint-disable-next-line
 import { privateKeyToAccount } from "viem/accounts"
+// @ts-ignore
+// eslint-disable-next-line
 import * as chains from "viem/chains"
 import { AuthInput } from "./types"
 import { Wallet } from "../apis/types"
@@ -194,6 +198,7 @@ export class Auth {
      * @param {Operation} _ - The operation (not used in this method).
      * @returns {Promise<Hex>} The estimate gas signature.
      */
+    // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getEstimateGasSignature(userId: string, _: Operation): Promise<Hex> {
         await this.init()

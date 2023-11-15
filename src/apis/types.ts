@@ -16,11 +16,6 @@ export type GroupMetadata = {
     memberIds: Hex[]
 }
 
-export type UpdateGroupMetadata = {
-    threshold?: number
-    memberIds?: Hex[]
-}
-
 export type ExecuteOpInput = {
     opId: Hex
     chainId: string
@@ -59,3 +54,8 @@ export type UserOperationGasPrice = {
     maxFeePerGas: bigint
     maxPriorityFeePerGas: bigint
 }
+
+export type TPrivateKeyState = {
+    id: string
+    address: string
+} | null

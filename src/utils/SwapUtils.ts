@@ -7,7 +7,7 @@ import { getTokenInfo } from "../apis"
 import { ERC20_CONTRACT_INTERFACE, POOL_CONTRACT_INTERFACE, UNISWAPV2ROUTER02_INTERFACE } from "../common"
 
 export function fromReadableAmount(amount: number, decimals: number) {
-    return parseUnits(`${amount}`, decimals)
+    return parseUnits(amount.toFixed(20) as `${number}`, decimals)
 }
 
 class SwapToken {
