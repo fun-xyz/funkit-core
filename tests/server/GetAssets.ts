@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { GlobalEnvOption } from "../../src/config"
 import { FunKit } from "../../src/FunKit"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -14,8 +14,9 @@ describe("GetAssets", function () {
     let wallet: FunWallet
 
     let fun: FunKit
+    let apiKey: string
     before(async function () {
-        const apiKey = await getTestApiKey()
+        apiKey = await getTestApiKey()
         const options: GlobalEnvOption = {
             chain: chainId,
             apiKey: apiKey,
@@ -35,47 +36,23 @@ describe("GetAssets", function () {
             })
 
             it("Mainnet, Binance 8", async () => {
-                const apiKey = await getTestApiKey()
-                const options: GlobalEnvOption = {
-                    chain: "1",
-                    apiKey: apiKey
-                }
-                await configureEnvironment(options)
-                const res = await wallet.getTokens(chainId.toString(), true)
+                const res = await wallet.getTokens("1", true)
                 expect(Math.ceil((Object.values(res.tokens) as any)[0].price) > 0).to.be.true
             })
 
             it("Optimism, Optimism Foundation", async () => {
-                const apiKey = await getTestApiKey()
-                const options: GlobalEnvOption = {
-                    chain: "10",
-                    apiKey: apiKey
-                }
-                await configureEnvironment(options)
-                const res = await wallet.getTokens(chainId.toString(), true)
+                const res = await wallet.getTokens("10", true)
                 expect((Object.values(res.tokens) as any)[0].tokenBalance >= 0).to.be.true
                 expect(Math.ceil((Object.values(res.tokens) as any)[0].price) > 0).to.be.true
             })
 
             it("Polygon, Quickswap Team", async () => {
-                const apiKey = await getTestApiKey()
-                const options: GlobalEnvOption = {
-                    chain: "137",
-                    apiKey: apiKey
-                }
-                await configureEnvironment(options)
-                const res = await wallet.getTokens(chainId.toString(), true)
+                const res = await wallet.getTokens("137", true)
                 expect((Object.values(res.tokens) as any)[0].tokenBalance >= 0).to.be.true
             })
 
             it("Arbitrum", async () => {
-                const apiKey = await getTestApiKey()
-                const options: GlobalEnvOption = {
-                    chain: "42161",
-                    apiKey: apiKey
-                }
-                await configureEnvironment(options)
-                const res = await wallet.getTokens(chainId.toString(), true)
+                const res = await wallet.getTokens("42161", true)
                 expect((Object.values(res.tokens) as any)[0].tokenBalance >= 0).to.be.true
                 expect(Math.ceil((Object.values(res.tokens) as any)[0].price) > 0).to.be.true
             })
@@ -85,57 +62,47 @@ describe("GetAssets", function () {
     describe("/get-nfts", () => {
         describe("Positive Unit Tests", () => {
             it("Goerli, Funwallet", async () => {
-                const apiKey = await getTestApiKey()
-                const options: GlobalEnvOption = {
-                    chain: "5",
-                    apiKey: apiKey
-                }
-                await configureEnvironment(options)
                 const res = await wallet.getNFTs()
                 expect(res.nfts.length).to.equal(0)
             })
 
             it("Mainnet, Franklinisbored.eth", async () => {
-                const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "1",
                     apiKey: apiKey
                 }
-                await configureEnvironment(options)
-                const res = await wallet.getNFTs()
+
+                const res = await wallet.getUpdatedWallet(options).getNFTs()
                 expect(res.nfts.length).to.equal(0)
             })
 
             it("Optimism, Uniswap Positions", async () => {
-                const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "10",
                     apiKey: apiKey
                 }
-                await configureEnvironment(options)
-                const res = await wallet.getNFTs()
+
+                const res = await wallet.getUpdatedWallet(options).getNFTs()
                 expect(res.nfts.length).to.equal(0)
             })
 
             it("Polygon, Uniswap Positions", async () => {
-                const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "137",
                     apiKey: apiKey
                 }
-                await configureEnvironment(options)
-                const res = await wallet.getNFTs()
+
+                const res = await wallet.getUpdatedWallet(options).getNFTs()
                 expect(res.nfts.length).to.equal(0)
             })
 
             it("Arbitrum, Arbitrum Odyssey", async () => {
-                const apiKey = await getTestApiKey()
                 const options: GlobalEnvOption = {
                     chain: "42161",
                     apiKey: apiKey
                 }
-                await configureEnvironment(options)
-                const res = await wallet.getNFTs()
+
+                const res = await wallet.getUpdatedWallet(options).getNFTs()
                 expect(res.nfts.length).to.equal(0)
             })
         })

@@ -178,6 +178,6 @@ const userOpTypeSig = {
 }
 
 export async function getOpHash(chain: Chain, userOp: UserOperation): Promise<Hex> {
-    const entryPointAddress = await chain.getAddress("entryPointAddress")
+    const entryPointAddress = chain.getAddress("entryPointAddress")
     return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [userOp], chain)
 }

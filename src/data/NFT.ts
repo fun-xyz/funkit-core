@@ -57,7 +57,7 @@ export class NFT {
                     "https://docs.fun.xyz"
                 )
             }
-            const nft = await getNftAddress(this.name)
+            const nft = await getNftAddress(this.name, this.options.apiKey)
             return nft.address
         } else {
             return this.address
@@ -67,7 +67,7 @@ export class NFT {
     async getName(options: GlobalEnvOption = this.options): Promise<string> {
         if (!this.name && this.address) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
-            const nft = await getNftName(await chain.getChainId(), this.address)
+            const nft = await getNftName(chain.getChainId(), this.address, options.apiKey)
             return nft.name
         }
         return this.name

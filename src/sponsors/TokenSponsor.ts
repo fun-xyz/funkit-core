@@ -32,13 +32,13 @@ export class TokenSponsor extends Sponsor {
     async getFunSponsorAddress(options: GlobalEnvOption = this.options): Promise<Address> {
         if (!this.sponsorAddress) {
             const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
-            if (TOKEN_SPONSOR_SUPPORT_CHAINS.includes(await chain.getChainId())) {
-                this.sponsorAddress = await chain.getAddress("funTokenSponsorAddress")
+            if (TOKEN_SPONSOR_SUPPORT_CHAINS.includes(chain.getChainId())) {
+                this.sponsorAddress = chain.getAddress("funTokenSponsorAddress")
             } else {
                 throw new ResourceNotFoundError(
                     ErrorCode.MissingParameter,
                     "The network you are working with does not support token Fun Sponsor. You will need to run and manage your own token sponsor.",
-                    { tokenSponsorSupportChains: TOKEN_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
+                    { tokenSponsorSupportChains: TOKEN_SPONSOR_SUPPORT_CHAINS, chain: chain.getChainId() },
                     "Manage your own token sponsor, or use a supported network",
                     "https://docs.fun.xyz"
                 )
@@ -66,7 +66,7 @@ export class TokenSponsor extends Sponsor {
         const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
         const estimateGasSignature = await auth.getEstimateGasSignature(userId, partialOp)
         partialOp.userOp.signature = estimateGasSignature.toLowerCase()
-        const estimationPaymasterAddress = await chain.getAddress("estimationPaymasterAddress")
+        const estimationPaymasterAddress = chain.getAddress("estimationPaymasterAddress")
         const { callGasLimit, verificationGasLimit, preVerificationGas } = await chain.estimateOpGas({
             ...partialOp.userOp,
             paymasterAndData: estimationPaymasterAddress

@@ -396,10 +396,7 @@ export abstract class FirstClassActions {
             }
         }
 
-        const txParams = await updateGroupTxParams(
-            updateGroupParams,
-            await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-        )
+        const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -451,10 +448,7 @@ export abstract class FirstClassActions {
                 threshold: onChainGroupData.threshold
             }
         }
-        const txParams = await updateGroupTxParams(
-            updateGroupParams,
-            await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-        )
+        const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 
@@ -502,10 +496,7 @@ export abstract class FirstClassActions {
                 threshold: params.threshold
             }
         }
-        const txParams = await updateGroupTxParams(
-            updateGroupParams,
-            await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-        )
+        const txParams = await updateGroupTxParams(updateGroupParams, txOptions)
         return await this.createOperation(auth, userId, txParams, txOptions)
     }
 

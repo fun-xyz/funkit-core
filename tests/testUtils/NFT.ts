@@ -2,7 +2,7 @@ import { assert } from "chai"
 import { Address } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { GlobalEnvOption } from "../../src/config"
 import { Chain, Token } from "../../src/data"
 import { NFT } from "../../src/data/NFT"
 import { FunKit } from "../../src/FunKit"
@@ -70,7 +70,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                 await fundWallet(auth, wallet2, prefundAmt ? prefundAmt : 0.1)
             }
             nftId = Math.floor(Math.random() * 10_000_000_000)
-            nftAddress = await chain.getAddress("TestNFT")
+            nftAddress = chain.getAddress("TestNFT")
             const data = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet1.getAddress(), nftId])
             await auth.sendTx({ ...data }, chain)
         })
@@ -168,7 +168,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     apiKey: apiKey,
                     gasSponsor: {}
                 }
-                await configureEnvironment(options)
+
                 const nft = new NFT(config.testNFTAddress, options)
                 const nftName = await nft.getName()
                 assert(nftName === config.testNFTName, "Incorrect NFT Name")
@@ -180,7 +180,7 @@ export const NFTTest = (config: NFTTestConfig) => {
                     apiKey: apiKey,
                     gasSponsor: {}
                 }
-                await configureEnvironment(options)
+
                 const nft = new NFT(config.testNFTName, options)
                 const nftAddr = await nft.getAddress()
                 assert(nftAddr === config.testNFTAddress, "Incorrect NFT Address")

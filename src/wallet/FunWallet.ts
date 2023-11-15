@@ -453,7 +453,7 @@ export class FunWallet extends FirstClassActions {
             verificationGasLimit: BigInt(10e6)
         }
 
-        if ((await chain.getChainId()) === "36865") {
+        if (chain.getChainId() === "36865") {
             partialOp.callGasLimit = BigInt(10e5)
             partialOp.verificationGasLimit = BigInt(10e5)
         }
@@ -609,7 +609,7 @@ export class FunWallet extends FirstClassActions {
                     opId: operation.opId!,
                     chainId,
                     executedBy: await auth.getAddress(),
-                    entryPointAddress: await chain.getAddress("entryPointAddress"),
+                    entryPointAddress: chain.getAddress("entryPointAddress"),
                     signature: operation.userOp.signature as Hex,
                     groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
                 },
@@ -621,7 +621,7 @@ export class FunWallet extends FirstClassActions {
                     opId: operation.opId!,
                     chainId,
                     executedBy: await auth.getAddress(),
-                    entryPointAddress: await chain.getAddress("entryPointAddress"),
+                    entryPointAddress: chain.getAddress("entryPointAddress"),
                     signature: operation.userOp.signature as Hex,
                     userOp: operation.userOp
                 },
@@ -737,7 +737,7 @@ export class FunWallet extends FirstClassActions {
                     opId: operation.opId!,
                     chainId,
                     scheduledBy: await auth.getAddress(),
-                    entryPointAddress: await chain.getAddress("entryPointAddress"),
+                    entryPointAddress: chain.getAddress("entryPointAddress"),
                     signature: operation.userOp.signature as Hex,
                     groupInfo: this.userInfo?.get(operation.groupId!)?.groupInfo
                 },
@@ -749,7 +749,7 @@ export class FunWallet extends FirstClassActions {
                     opId: operation.opId!,
                     chainId,
                     scheduledBy: await auth.getAddress(),
-                    entryPointAddress: await chain.getAddress("entryPointAddress"),
+                    entryPointAddress: chain.getAddress("entryPointAddress"),
                     signature: operation.userOp.signature as Hex,
                     userOp: operation.userOp
                 },
@@ -831,16 +831,17 @@ export class FunWallet extends FirstClassActions {
         return operation
     }
 
-    setOptions(options: GlobalEnvOption) {
+    getUpdatedWallet(options: GlobalEnvOption): this {
         this.options = options
+        return this
     }
 
     private async getThisInitCode(chain: Chain) {
         const owners: Hex[] = Array.from(this.userInfo!.keys())
-        const entryPointAddress = await chain.getAddress("entryPointAddress")
-        const factoryAddress = await chain.getAddress("factoryAddress")
-        const rbac = await chain.getAddress("rbacAddress")
-        const userAuth = await chain.getAddress("userAuthAddress")
+        const entryPointAddress = chain.getAddress("entryPointAddress")
+        const factoryAddress = chain.getAddress("factoryAddress")
+        const rbac = chain.getAddress("rbacAddress")
+        const userAuth = chain.getAddress("userAuthAddress")
 
         const loginData: LoginData = {
             salt: this.walletUniqueId!

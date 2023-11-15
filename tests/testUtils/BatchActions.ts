@@ -37,10 +37,12 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         let outTokenObj: Token
         let tokenAction: TokenAction
 
+        let options: GlobalEnvOption
+
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
-            const options: GlobalEnvOption = {
+            options = {
                 chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: {}
@@ -179,7 +181,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [createGroupParams, addUserToGroupParams])
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const userAuthContractAddr = await chain.getAddress("userAuthAddress")
+            const userAuthContractAddr = chain.getAddress("userAuthAddress")
             const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
 
             const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
@@ -209,19 +211,19 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 {
                     ownerId: newOwnerId1
                 },
-                chain
+                options
             )
             const addOwner2Params = await addOwnerTxParams(
                 {
                     ownerId: newOwnerId2
                 },
-                chain
+                options
             )
             const removeOwner1Params = await removeOwnerTxParams(
                 {
                     ownerId: newOwnerId1
                 },
-                chain
+                options
             )
 
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [
@@ -231,7 +233,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             ])
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const rbacContractAddr = await chain.getAddress("rbacAddress")
+            const rbacContractAddr = chain.getAddress("rbacAddress")
             const storedOwner1Rule = await WALLET_CONTRACT_INTERFACE.readFromChain(
                 await wallet.getAddress(),
                 "getState32WithAddr",

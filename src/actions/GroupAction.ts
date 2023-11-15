@@ -3,7 +3,6 @@ import { createGroupTxParams, removeGroupTxParams, updateGroupTxParams } from ".
 import { CreateGroupParams } from "./types"
 import { TransactionParams } from "../common/types"
 import { GlobalEnvOption } from "../config"
-import { Chain } from "../data"
 
 export class GroupAction extends Action {
     override txOptions: GlobalEnvOption
@@ -13,17 +12,14 @@ export class GroupAction extends Action {
     }
 
     async createGroupTxParams(params: CreateGroupParams): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: this.txOptions.chain }, this.txOptions.apiKey)
-        return await createGroupTxParams(params, chain)
+        return await createGroupTxParams(params, this.txOptions)
     }
 
     async updateGroupTxParams(params: CreateGroupParams): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: this.txOptions.chain }, this.txOptions.apiKey)
-        return await updateGroupTxParams(params, chain)
+        return await updateGroupTxParams(params, this.txOptions)
     }
 
     async removeGroupTxParams(params: CreateGroupParams): Promise<TransactionParams> {
-        const chain = await Chain.getChain({ chainIdentifier: this.txOptions.chain }, this.txOptions.apiKey)
-        return await removeGroupTxParams(params, chain)
+        return await removeGroupTxParams(params, this.txOptions)
     }
 }

@@ -21,7 +21,7 @@ export class GaslessSponsor extends Sponsor {
                 throw new ResourceNotFoundError(
                     ErrorCode.MissingParameter,
                     "The network you are working with does not support gasless Fun Sponsor. You will need to run and manage your own gasless sponsor.",
-                    { gaslessSponsorSupportChains: GASLESS_SPONSOR_SUPPORT_CHAINS, chain: await chain.getChainId() },
+                    { gaslessSponsorSupportChains: GASLESS_SPONSOR_SUPPORT_CHAINS, chain: chain.getChainId() },
                     "Manage your own gasless sponsor, or use a supported network.",
                     "https://docs.fun.xyz"
                 )

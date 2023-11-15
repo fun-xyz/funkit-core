@@ -37,7 +37,7 @@ const getOneInchSwapTx = async (oneinchSwapParams: OneInchSwapParams, chainId: S
 }
 
 export const oneInchTransactionParams = async (params: SwapParams, walletAddress: Address, chain: Chain): Promise<TransactionParams> => {
-    if (!oneInchSupported.includes(Number(await chain.getChainId()))) {
+    if (!oneInchSupported.includes(Number(chain.getChainId()))) {
         throw new InvalidParameterError(
             ErrorCode.ChainNotSupported,
             "Incorrect chainId, oneInch only available on Ethereum mainnet and polygon",
@@ -56,7 +56,7 @@ export const oneInchTransactionParams = async (params: SwapParams, walletAddress
         )
     }
 
-    const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    const approveAndExecAddress = chain.getAddress("approveAndExecAddress")
 
     if (!(params.tokenIn instanceof Token) || !(params.tokenOut instanceof Token)) {
         throw new InvalidParameterError(
@@ -81,7 +81,7 @@ export const oneInchTransactionParams = async (params: SwapParams, walletAddress
         slippage: params.slippage ?? DEFAULT_SLIPPAGE,
         disableEstimate: true,
         allowPartialFill: false,
-        chainId: Number(await chain.getChainId())
+        chainId: Number(chain.getChainId())
     }
 
     const approveTx = await getOneInchApproveTx(oneinchSwapParams, chain.getChainId())
@@ -152,7 +152,7 @@ export const uniswapV3SwapTransactionParams = async (params: SwapParams, chain: 
         poolFee: params.poolFee ?? UniswapPoolFeeOptions.medium
     }
 
-    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(await chain.getChainId()))
+    const { data, amount } = await swapExec(client, uniswapAddrs, swapParams, Number(chain.getChainId()))
     if (params.tokenIn.isNative) {
         return approveAndSwapInterface.encodeTransactionParams(tokenSwapAddress, "executeSwapETH", [amount, data])
     } else {
@@ -162,9 +162,9 @@ export const uniswapV3SwapTransactionParams = async (params: SwapParams, chain: 
 
 export const uniswapV2SwapTransactionParams = async (params: SwapParams, chain: Chain, apiKey: string): Promise<TransactionParams> => {
     const client = await chain.getClient()
-    const tokenSwapAddress = await chain.getAddress("tokenSwapAddress")
-    const factory = await chain.getAddress("UniswapV2Factory")
-    const router = await chain.getAddress("UniswapV2Router02")
+    const tokenSwapAddress = chain.getAddress("tokenSwapAddress")
+    const factory = chain.getAddress("UniswapV2Factory")
+    const router = chain.getAddress("UniswapV2Router02")
 
     if (!(params.tokenIn instanceof Token) || !(params.tokenOut instanceof Token)) {
         throw new InvalidParameterError(
@@ -201,7 +201,7 @@ export const uniswapV2SwapTransactionParams = async (params: SwapParams, chain: 
         slippage,
         poolFee: params.poolFee ?? UniswapPoolFeeOptions.medium
     }
-    const chainId = Number(await chain.getChainId())
+    const chainId = Number(chain.getChainId())
 
     const { data, to, amount } = await swapExecV2(client, uniswapAddrs, swapParams, chainId, apiKey)
 

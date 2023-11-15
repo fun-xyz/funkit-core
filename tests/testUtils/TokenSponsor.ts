@@ -251,7 +251,7 @@ export const TokenSponsorTest = (config: TokenSponsorTestConfig) => {
                 token: paymasterToken,
                 usePermit: true
             }
-            // await configureEnvironment(options)
+            //
             await runActionWithTokenSponsorPermit(wallet, options)
             await runActionWithTokenSponsorApprove(approveWallet, options)
         })

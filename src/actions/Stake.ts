@@ -16,7 +16,7 @@ export const isFinishUnstakeParams = (input: any): boolean => {
 }
 export const stakeTransactionParams = async (params: StakeParams, txOptions: GlobalEnvOption): Promise<TransactionParams> => {
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-    const lidoAddress = getSteth(await chain.getChainId())
+    const lidoAddress = getSteth(chain.getChainId())
     return { to: lidoAddress, value: parseEther(`${params.amount}`), data: "0x" }
 }
 
@@ -35,7 +35,7 @@ export const requestUnstakeTransactionParams = async (
     }
     // Approve steth
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-    const chainId = await chain.getChainId()
+    const chainId = chain.getChainId()
     const steth = getSteth(chainId)
     const withdrawalQueue: Address = getWithdrawalQueue(chainId)
     if (!steth || !withdrawalQueue || steth.length === 0 || withdrawalQueue.length === 0) {
@@ -58,7 +58,7 @@ export const requestUnstakeTransactionParams = async (
         params.amounts.map((amount) => parseEther(`${amount}`)),
         params.recipient
     ])
-    const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    const approveAndExecAddress = chain.getAddress("approveAndExecAddress")
     return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [
         withdrawalQueue,
         0,
@@ -82,7 +82,7 @@ export const finishUnstakeTransactionParams = async (
         )
     }
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-    const withdrawQueueAddress = getWithdrawalQueue(await chain.getChainId())
+    const withdrawQueueAddress = getWithdrawalQueue(chain.getChainId())
     const readyToWithdrawRequestIds = (await getReadyToWithdrawRequests(params, txOptions)).slice(0, 5)
     if (readyToWithdrawRequestIds.length === 0) {
         throw new InvalidParameterError(
@@ -130,7 +130,7 @@ const getReadyToWithdrawRequests = async (params: FinishUnstakeParams, txOptions
     }
     // check withdrawal requests
     const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
-    const withdrawalQueueAddr: Address = getWithdrawalQueue(await chain.getChainId())
+    const withdrawalQueueAddr: Address = getWithdrawalQueue(chain.getChainId())
 
     const withdrawalRequests: bigint[] = await withdrawQueueInterface.readFromChain(
         withdrawalQueueAddr,

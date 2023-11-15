@@ -31,7 +31,7 @@ export const isAddress = (address: string): boolean => {
 
 export const fundWallet = async (auth: Auth, wallet: FunWallet, value: number) => {
     const chain = wallet.getChain()
-    const chainId = await chain.getChainId()
+    const chainId = chain.getChainId()
     const to = await wallet.getAddress()
     let txData
     if ((gasSpecificChain as any)[chainId]) {

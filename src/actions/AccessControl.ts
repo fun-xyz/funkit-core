@@ -70,7 +70,7 @@ export const createSessionKeyTransactionParams = async (
     const setRuleCallData = RBAC_CONTRACT_INTERFACE.encodeData("setRule", [ruleId, ruleStruct])
     const connectRuleAndRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addRuleToRole", [roleId, ruleId])
     const connectUserToRoleCallData = RBAC_CONTRACT_INTERFACE.encodeData("addUserToRole", [roleId, userId])
-    const rbacAddress = await chain.getAddress("rbacAddress")
+    const rbacAddress = chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "multiCall", [
         [setRuleCallData, connectRuleAndRoleCallData, connectUserToRoleCallData]
     ])
@@ -84,13 +84,15 @@ export const createSessionUser = async (auth: AuthInput, params: SessionKeyParam
     return new SessionKeyAuth(auth, params.ruleId, params.roleId, targetSelectorMerkleTree, feeRecipientAndTokenMerkleTree, apiKey)
 }
 
-export const addOwnerTxParams = async (params: AddOwnerParams, chain: Chain): Promise<TransactionParams> => {
-    const rbacAddress = await chain.getAddress("rbacAddress")
+export const addOwnerTxParams = async (params: AddOwnerParams, txOptions: GlobalEnvOption): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
+    const rbacAddress = chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "addOwner", [pad(params.ownerId, { size: 32 })])
 }
 
-export const removeOwnerTxParams = async (params: RemoveOwnerParams, chain: Chain): Promise<TransactionParams> => {
-    const rbacAddress = await chain.getAddress("rbacAddress")
+export const removeOwnerTxParams = async (params: RemoveOwnerParams, txOptions: GlobalEnvOption): Promise<TransactionParams> => {
+    const chain = await Chain.getChain({ chainIdentifier: txOptions.chain }, txOptions.apiKey)
+    const rbacAddress = chain.getAddress("rbacAddress")
     return RBAC_CONTRACT_INTERFACE.encodeTransactionParams(rbacAddress, "removeOwner", [pad(params.ownerId, { size: 32 })])
 }
 

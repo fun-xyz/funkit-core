@@ -54,7 +54,7 @@ export const RBACTest = (config: RBACTestConfig) => {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
 
-            rbacContractAddr = await chain.getAddress("rbacAddress")
+            rbacContractAddr = chain.getAddress("rbacAddress")
             ownerId = randomBytes(32)
         })
 

@@ -26,9 +26,9 @@ export abstract class Sponsor {
 
     async getPaymasterAddress(options: GlobalEnvOption = this.options): Promise<Address> {
         const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
-        const chainId = await chain.getChainId()
+        const chainId = chain.getChainId()
         if (!this.paymasterAddress && chainId !== this.chainId) {
-            this.paymasterAddress = await chain.getAddress(this.name)
+            this.paymasterAddress = chain.getAddress(this.name)
             this.chainId = chainId
         }
         return this.paymasterAddress!

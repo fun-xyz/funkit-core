@@ -11,8 +11,8 @@ import { sendGetRequest } from "../utils/ApiUtils"
  *    "name": "Anatomy Science Ape Club"
  * }
  */
-export async function getNftName(chainId: string, nftAddress: string): Promise<any> {
-    return await sendGetRequest(API_URL, `asset/nft/${chainId}/${nftAddress}`)
+export async function getNftName(chainId: string, nftAddress: string, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `asset/nft/${chainId}/${nftAddress}`, apiKey)
 }
 
 /**
@@ -25,6 +25,6 @@ export async function getNftName(chainId: string, nftAddress: string): Promise<a
  *    "chain": "1"
  * }
  */
-export async function getNftAddress(name: string): Promise<any> {
-    return await sendGetRequest(API_URL, `asset/nft?name=${name}`)
+export async function getNftAddress(name: string, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `asset/nft?name=${name}`, apiKey)
 }

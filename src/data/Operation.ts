@@ -66,7 +66,7 @@ export class Operation {
     }
 
     async getOpHash(chain: Chain): Promise<Hex> {
-        const entryPointAddress = await chain.getAddress("entryPointAddress")
+        const entryPointAddress = chain.getAddress("entryPointAddress")
         return await ENTRYPOINT_CONTRACT_INTERFACE.readFromChain(entryPointAddress, "getUserOpHash", [this.userOp], chain)
     }
 

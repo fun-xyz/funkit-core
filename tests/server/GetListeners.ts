@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import { createListener, deleteListener } from "../../src/apis/ListenerApis"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { GlobalEnvOption } from "../../src/config"
 import { getTestApiKey } from "../getAWSSecrets"
 const chainId = "5"
 import "../../fetch-polyfill"
@@ -15,7 +15,6 @@ describe("Get Operations", function () {
             apiKey: apiKey,
             gasSponsor: {}
         }
-        await configureEnvironment(options)
     })
 
     describe("Listeners", () => {

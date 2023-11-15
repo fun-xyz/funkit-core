@@ -250,7 +250,7 @@ export class Auth {
             txClient = createWalletClient({
                 account: this.signer!,
                 transport: http(client.transport.url),
-                chain: chains[preProcessesChains[await chain.getChainId()]]
+                chain: chains[preProcessesChains[chain.getChainId()]]
             })
         }
         let maxPriorityFee, maxFee
@@ -281,7 +281,7 @@ export class Auth {
         const action = {
             ...tx,
             account: this.signer ?? this.account,
-            chain: chains[preProcessesChains[await chain.getChainId()]]
+            chain: chains[preProcessesChains[chain.getChainId()]]
         }
         const hash = await txClient.sendTransaction(action)
 
