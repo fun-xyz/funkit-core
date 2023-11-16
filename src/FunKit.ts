@@ -7,7 +7,7 @@ import { getOps } from "./apis/OperationApis"
 import { Auth } from "./auth"
 import { AuthInput } from "./auth/types"
 import { GlobalEnvOption } from "./config"
-import { Chain, NFT, Token } from "./data"
+import { Chain, NFT, Operation, Token } from "./data"
 import { GaslessSponsor, TokenSponsor } from "./sponsors"
 import { FunWallet } from "./wallet"
 
@@ -94,7 +94,7 @@ export class FunKit {
 
     async getWallet(address: string, chainId?: number): Promise<FunWallet> {
         const wallet = new FunWallet(address, this.options, await this.getChain(chainId))
-        wallet.getAddress()
+        await wallet.getAddress()
         return wallet
     }
 
@@ -109,7 +109,7 @@ export class FunKit {
         return await Token.getBalance(tokenAddress, walletAddress, await this.getChain(chain), this.options.apiKey)
     }
 
-    async getOps(opIds: Hex[], chainId?: string): Promise<any> {
+    async getOps(opIds: Hex[], chainId?: string): Promise<Operation[]> {
         return await getOps(opIds, (await this.getChain(chainId)).getChainId(), this.options.apiKey)
     }
 
