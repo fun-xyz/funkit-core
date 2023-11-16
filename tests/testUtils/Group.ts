@@ -1,8 +1,9 @@
 import { expect } from "chai"
 import { Hex, pad } from "viem"
 import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, Token } from "../../src/data"
+import { GlobalEnvOption } from "../../src/config"
+import { Chain } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
 import { getOnChainGroupData } from "../../src/utils/GroupUtils"
 import { FunWallet } from "../../src/wallet"
@@ -25,22 +26,23 @@ export const GroupTest = (config: GroupTestConfig) => {
         let chain: Chain
         let groupId: Hex
         let memberIds: Hex[] = []
+        let fun: FunKit
+
         const threshold = 2
         const newUserId = randomBytes(20)
         before(async function () {
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
-                chain: config.chainId,
+                chain: chainId,
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 179709)
-            })
-            chain = await Chain.getChain({ chainIdentifier: chainId })
+
+            fun = new FunKit(options)
+            auth = new FunKit(options).getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = await fun.createWalletWithAuth(auth, config.index ? config.index : 179709)
+            chain = wallet.getChain()
+
             memberIds = [
                 pad(randomBytes(20), { size: 32 }),
                 pad(randomBytes(20), { size: 32 }),
@@ -51,7 +53,8 @@ export const GroupTest = (config: GroupTestConfig) => {
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
+
+            if (Number(await wallet.getToken(baseToken).getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
             groupId = generateRandomGroupId()

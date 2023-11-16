@@ -5,8 +5,8 @@ import { ExecutionReceipt } from "../common/types"
 import { Operation, OperationStatus } from "../data"
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
-export async function createOp(op: Operation): Promise<string> {
-    return (await sendPostRequest(API_URL, "operation", { ...op })).opId
+export async function createOp(op: Operation, apiKey: string): Promise<Hex> {
+    return (await sendPostRequest(API_URL, "operation", { ...op }, apiKey)).opId
 }
 
 export async function getOpsOfGroup(groupId: Hex, chainId: string, status: OperationStatus): Promise<Operation[]> {
@@ -17,43 +17,50 @@ export async function getOpsOfGroup(groupId: Hex, chainId: string, status: Opera
     return (await sendGetRequest(API_URL, endpoint)).operations
 }
 
-export async function getOpsOfWallet(walletAddr: Address, chainId: string, status?: OperationStatus): Promise<Operation[]> {
+export async function getOpsOfWallet(walletAddr: Address, chainId: string, apiKey: string, status?: OperationStatus): Promise<Operation[]> {
     const endpoint = status
         ? `operation/wallet/${walletAddr}/chain/${chainId}?status=${status}`
         : `operation/wallet/${walletAddr}/chain/${chainId}`
-    return (await sendGetRequest(API_URL, endpoint)).operations
+    return (await sendGetRequest(API_URL, endpoint, apiKey)).operations
 }
 
-export async function getOps(opIds: Hex[], chainId: string): Promise<Operation[]> {
-    return (await sendPostRequest(API_URL, "operation/get-operations", { opIds, chainId })).operations
+export async function getOps(opIds: Hex[], chainId: string, apiKey: string): Promise<Operation[]> {
+    return (await sendPostRequest(API_URL, "operation/get-operations", { opIds, chainId }, apiKey)).operations
 }
 
-export async function deleteOp(opId: Hex, chainId: string): Promise<void> {
-    await sendDeleteRequest(API_URL, `operation/${opId}/chain/${chainId}`)
+export async function deleteOp(opId: Hex, chainId: string, apiKey: string): Promise<void> {
+    await sendDeleteRequest(API_URL, `operation/${opId}/chain/${chainId}`, apiKey)
 }
 
-export async function signOp(opId: Hex, chainId: string, signature: Hex, signedBy: Address, threshold?: number): Promise<void> {
-    await sendPostRequest(API_URL, "operation/sign", { opId, chainId, signature, signedBy, threshold })
+export async function signOp(
+    opId: Hex,
+    chainId: string,
+    signature: Hex,
+    signedBy: Address,
+    apiKey: string,
+    threshold?: number
+): Promise<void> {
+    await sendPostRequest(API_URL, "operation/sign", { opId, chainId, signature, signedBy, threshold }, apiKey)
 }
 
-export async function executeOp(executeOpInput: ExecuteOpInput): Promise<ExecutionReceipt> {
-    return await sendPostRequest(API_URL, "operation/execute", executeOpInput)
+export async function executeOp(executeOpInput: ExecuteOpInput, apiKey: string): Promise<ExecutionReceipt> {
+    return await sendPostRequest(API_URL, "operation/execute", executeOpInput, apiKey)
 }
 
-export async function estimateOp(estimateOpInput: EstimateOpInput): Promise<EstimatedGas> {
-    return await sendPostRequest(API_URL, "operation/estimate", estimateOpInput)
+export async function estimateOp(estimateOpInput: EstimateOpInput, apiKey: string): Promise<EstimatedGas> {
+    return await sendPostRequest(API_URL, "operation/estimate", estimateOpInput, apiKey)
 }
 
-export async function scheduleOp(scheduleOpInput: ScheduleOpInput): Promise<void> {
-    await sendPostRequest(API_URL, "operation/schedule", scheduleOpInput)
+export async function scheduleOp(scheduleOpInput: ScheduleOpInput, apiKey: string): Promise<void> {
+    await sendPostRequest(API_URL, "operation/schedule", scheduleOpInput, apiKey)
 }
 
-export const getFullReceipt = async (opId, chainId, userOpHash): Promise<ExecutionReceipt> => {
+export const getFullReceipt = async (opId: Hex, chainId: string, userOpHash: string, apiKey: string): Promise<ExecutionReceipt> => {
     const retries = 20
     let result: any
     for (let i = 0; i < retries; i++) {
         try {
-            result = await sendGetRequest(API_URL, `operation/${opId}/chain/${chainId}/receipt?userOpHash=${userOpHash}`)
+            result = await sendGetRequest(API_URL, `operation/${opId}/chain/${chainId}/receipt?userOpHash=${userOpHash}`, apiKey)
             if (result.status === "included") {
                 break
             }

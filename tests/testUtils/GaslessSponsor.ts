@@ -2,9 +2,10 @@ import { assert, expect } from "chai"
 import { Address, Hex, parseEther } from "viem"
 import { Auth } from "../../src/auth"
 import { ERC721_CONTRACT_INTERFACE } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, NFT, Token } from "../../src/data"
+import { GlobalEnvOption } from "../../src/config"
+import { Chain } from "../../src/data"
 import { UserOpFailureError } from "../../src/errors"
+import { FunKit } from "../../src/FunKit"
 import { GaslessSponsor } from "../../src/sponsors"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -35,66 +36,63 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         let funderAddress: Address
         let walletAddress: Address
         let walletAddress1: Address
+        let fun: FunKit
+
+        let chain: Chain
+
         before(async function () {
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            funder = new Auth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
             const apiKey = await getTestApiKey()
             const options: GlobalEnvOption = {
                 chain: config.chainId,
                 apiKey: apiKey
             }
-            await configureEnvironment(options)
 
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.walletIndex ? config.walletIndex : 99999)
-            })
+            fun = new FunKit(options)
+            funder = fun.getAuth({ privateKey: (await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2")) as Hex })
+            funderAddress = await funder.getAddress()
+            sponsor = fun.setGaslessSponsor(funderAddress)
 
-            wallet1 = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.funderIndex ? config.funderIndex : 99990)
-            })
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+
+            chain = await fun.getChain(config.chainId)
+            wallet = await fun.createWalletWithAuth(auth, config.walletIndex ? config.walletIndex : 99999)
+            wallet1 = await fun.createWalletWithAuth(auth, config.funderIndex ? config.funderIndex : 99990)
 
             walletAddress = await wallet.getAddress()
             walletAddress1 = await wallet1.getAddress()
 
-            funderAddress = await funder.getAddress()
-            await configureEnvironment({
-                ...options,
-                gasSponsor: {
-                    sponsorAddress: funderAddress
-                }
-            })
-            sponsor = new GaslessSponsor()
             await sponsor.getBalance(funderAddress), parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)
             if ((await sponsor.getBalance(funderAddress)) < parseEther(`${config.sponsorBalance ? config.sponsorBalance : 0.01}`)) {
                 const depositInfo1S = await sponsor.getBalance(funderAddress)
                 const stake = await sponsor.stake(funderAddress, stakeAmount / 2)
-                await funder.sendTx(stake)
+                await funder.sendTx(stake, chain)
                 const depositInfo1E = await sponsor.getBalance(funderAddress)
                 assert(depositInfo1E > depositInfo1S, "Stake Failed")
             }
         })
 
-        const runActionWithGaslessSponsor = async (wallet: FunWallet) => {
-            const chain = await Chain.getChain({ chainIdentifier: config.chainId })
-            const nftAddress = await chain.getAddress("TestNFT")
+        const runActionWithGaslessSponsor = async (currentWallet: FunWallet) => {
+            const nftAddress = chain.getAddress("TestNFT")
             const nftId = Math.floor(Math.random() * 10_000_000_000)
-            const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [await wallet.getAddress(), nftId])
-            expect(await Token.getBalance(config.baseToken, walletAddress, chain)).to.be.equal("0")
-            const mintOperation = await wallet.createOperation(auth, await auth.getUserId(), mintTxParams)
-            expect(await wallet.executeOperation(auth, mintOperation)).to.not.throw
-            const nft = new NFT(nftAddress)
+            const mintTxParams = ERC721_CONTRACT_INTERFACE.encodeTransactionParams(nftAddress, "mint", [
+                await currentWallet.getAddress(),
+                nftId
+            ])
+
+            expect(await currentWallet.getToken(config.baseToken).getBalance()).to.be.equal("0")
+            const mintOperation = await currentWallet.createOperation(auth, await auth.getUserId(), mintTxParams)
+            expect(await currentWallet.executeOperation(auth, mintOperation)).to.not.throw
+            const nft = fun.getNFT(nftAddress)
             const owner = await nft.ownerOf(nftId)
-            expect(owner).to.equal(await wallet.getAddress())
+            expect(owner).to.equal(await currentWallet.getAddress())
         }
 
         it("Only User Whitelisted", async () => {
-            await funder.sendTx(await sponsor.lockDeposit())
-            await funder.sendTx(await sponsor.setToWhitelistMode())
-            await funder.sendTx(await sponsor.addSpenderToWhitelist(walletAddress))
+            await funder.sendTx(await sponsor.lockDeposit(), chain)
+            await funder.sendTx(await sponsor.setToWhitelistMode(), chain)
+            await funder.sendTx(await sponsor.addSpenderToWhitelist(walletAddress), chain)
             await runActionWithGaslessSponsor(wallet)
-            await funder.sendTx(await sponsor.removeSpenderFromWhitelist(walletAddress1))
+            await funder.sendTx(await sponsor.removeSpenderFromWhitelist(walletAddress1), chain)
 
             try {
                 await runActionWithGaslessSponsor(wallet1)
@@ -109,13 +107,13 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Blacklist Mode Approved", async () => {
-            await funder.sendTx(await sponsor.setToBlacklistMode())
+            await funder.sendTx(await sponsor.setToBlacklistMode(), chain)
             expect(await sponsor.getListMode(funderAddress)).to.be.true
 
-            await funder.sendTx(await sponsor.addSpenderToBlacklist(walletAddress1))
+            await funder.sendTx(await sponsor.addSpenderToBlacklist(walletAddress1), chain)
             expect(await sponsor.getSpenderBlacklistMode(walletAddress1, funderAddress)).to.be.true
 
-            await funder.sendTx(await sponsor.removeSpenderFromBlacklist(walletAddress))
+            await funder.sendTx(await sponsor.removeSpenderFromBlacklist(walletAddress), chain)
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.false
 
             await runActionWithGaslessSponsor(wallet)
@@ -132,12 +130,12 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Lock/Unlock Base Tokens", async () => {
-            await funder.sendTx(await sponsor.unlockDepositAfter(0))
+            await funder.sendTx(await sponsor.unlockDepositAfter(0), chain)
             await new Promise((resolve) => {
                 setTimeout(resolve, 10_000)
             })
             expect(await sponsor.getLockState(funderAddress)).to.be.false
-            await funder.sendTx(await sponsor.lockDeposit())
+            await funder.sendTx(await sponsor.lockDeposit(), chain)
             await new Promise((resolve) => {
                 setTimeout(resolve, 10_000)
             })
@@ -145,20 +143,20 @@ export const GaslessSponsorTest = (config: GaslessSponsorTestConfig) => {
         })
 
         it("Batch Blacklist/Whitelist Users", async () => {
-            await funder.sendTx(await sponsor.setToBlacklistMode())
+            await funder.sendTx(await sponsor.setToBlacklistMode(), chain)
 
-            await funder.sendTx(await sponsor.batchBlacklistSpenders([walletAddress, walletAddress1], [false, false]))
+            await funder.sendTx(await sponsor.batchBlacklistSpenders([walletAddress, walletAddress1], [false, false]), chain)
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.false
             expect(await sponsor.getSpenderBlacklistMode(walletAddress1, funderAddress)).to.be.false
-            await funder.sendTx(await sponsor.batchBlacklistSpenders([walletAddress, walletAddress1], [true, true]))
+            await funder.sendTx(await sponsor.batchBlacklistSpenders([walletAddress, walletAddress1], [true, true]), chain)
             expect(await sponsor.getSpenderBlacklistMode(walletAddress, funderAddress)).to.be.true
             expect(await sponsor.getSpenderBlacklistMode(walletAddress1, funderAddress)).to.be.true
 
-            await funder.sendTx(await sponsor.setToWhitelistMode())
-            await funder.sendTx(await sponsor.batchWhitelistSpenders([walletAddress, walletAddress1], [false, false]))
+            await funder.sendTx(await sponsor.setToWhitelistMode(), chain)
+            await funder.sendTx(await sponsor.batchWhitelistSpenders([walletAddress, walletAddress1], [false, false]), chain)
             expect(await sponsor.getSpenderWhitelistMode(walletAddress, funderAddress)).to.be.false
             expect(await sponsor.getSpenderWhitelistMode(walletAddress1, funderAddress)).to.be.false
-            await funder.sendTx(await sponsor.batchWhitelistSpenders([walletAddress, walletAddress1], [true, true]))
+            await funder.sendTx(await sponsor.batchWhitelistSpenders([walletAddress, walletAddress1], [true, true]), chain)
             expect(await sponsor.getSpenderWhitelistMode(walletAddress, funderAddress)).to.be.true
             expect(await sponsor.getSpenderWhitelistMode(walletAddress1, funderAddress)).to.be.true
         })

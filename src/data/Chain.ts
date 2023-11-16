@@ -9,7 +9,7 @@ import {
     EstimateGasResult,
     OPTIMISM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
 } from "../common"
-import { ErrorCode, InternalFailureError, InvalidParameterError, ResourceNotFoundError } from "../errors"
+import { ErrorCode, InternalFailureError, InvalidActionError, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { isContract } from "../utils"
 
 export class Chain {
@@ -20,10 +20,12 @@ export class Chain {
     private currency?: string
     private rpcUrl?: string
     private client?: PublicClient
+    private apiKey: string
 
     private static chain: Chain
 
-    private constructor(chainInput: ChainInput) {
+    private constructor(chainInput: ChainInput, apiKey: string) {
+        this.apiKey = apiKey
         if (!chainInput.chainIdentifier && !chainInput.rpcUrl) {
             throw new InvalidParameterError(
                 ErrorCode.InvalidChainIdentifier,
@@ -45,7 +47,7 @@ export class Chain {
         }
     }
 
-    public static async getChain(chainInput: ChainInput): Promise<Chain> {
+    public static async getChain(chainInput: ChainInput, apiKey: string): Promise<Chain> {
         if (chainInput.chainIdentifier instanceof Chain) {
             return chainInput.chainIdentifier
         } else if (
@@ -64,8 +66,9 @@ export class Chain {
                 chainInput.chainIdentifier = "polygon-mainnet"
             }
 
-            Chain.chain = new Chain(chainInput)
+            Chain.chain = new Chain(chainInput, apiKey)
         }
+        await Chain.chain.init()
         return Chain.chain
     }
 
@@ -79,7 +82,6 @@ export class Chain {
         } else if (this.rpcUrl) {
             await this.loadChainFromRpc()
         }
-
         this.initialized = true
     }
 
@@ -96,7 +98,7 @@ export class Chain {
         if (!Number(identifier)) {
             chain = await getChainFromName(identifier)
         } else {
-            chain = await getChainFromId(identifier)
+            chain = await getChainFromId(identifier, this.apiKey)
         }
         this.id = chain.id
         this.name = chain.name
@@ -113,53 +115,57 @@ export class Chain {
         Object.assign(this, { ...this, addresses })
     }
 
-    async getChainId(): Promise<string> {
-        await this.init()
+    getChainId(): string {
         return this.id!
     }
 
     async getChainName(): Promise<string> {
-        await this.init()
         return this.name!
     }
 
     async getRpcUrl(): Promise<string> {
-        await this.init()
         return this.rpcUrl!
     }
 
-    async getAddress(name: string): Promise<Address> {
-        await this.init()
-        const res = this.addresses![name]
-        if (!res) {
-            throw new ResourceNotFoundError(
-                ErrorCode.AddressNotFound,
-                "address not found",
-                { name },
-                "Provide correct name to query address",
+    getAddress(name: string): Address {
+        if (!this.addresses) {
+            throw new InvalidActionError(
+                ErrorCode.ChainNotInitialized,
+                "Chain is not properly initialized",
+                {},
+                "Initialize the chain properly before querying an address",
                 "https://docs.fun.xyz"
             )
         }
+
+        const res = this.addresses[name]
+
+        if (!res) {
+            throw new ResourceNotFoundError(
+                ErrorCode.AddressNotFound,
+                "Address not found",
+                { name },
+                "Provide a correct name to query the address",
+                "https://docs.fun.xyz"
+            )
+        }
+
         return res
     }
 
     async getModuleAddresses(name: string): Promise<string[]> {
-        await this.init()
         return await getModuleInfo(name, this.id!)
     }
 
     async getCurrency(): Promise<string> {
-        await this.init()
         return this.currency!
     }
 
     async getClient(): Promise<PublicClient> {
-        await this.init()
         return this.client!
     }
 
     async getFeeData(): Promise<UserOperationGasPrice> {
-        await this.init()
         let result
         try {
             result = await getGasPrice(this.id!)
@@ -174,7 +180,6 @@ export class Chain {
     }
 
     async estimateOpGas(partialOp: UserOperation): Promise<EstimateGasResult> {
-        await this.init()
         if (!this.addresses || !this.addresses.entryPointAddress) {
             throw new InternalFailureError(
                 ErrorCode.AddressNotFound,
@@ -194,11 +199,14 @@ export class Chain {
             estimationUserOp.paymasterAndData = ETHEREUM_PIMLICO_PAYMASTER_AND_DATA_ESTIMATION
         }
 
-        let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp({
-            chainId: this.id!,
-            entryPointAddress: this.addresses.entryPointAddress,
-            userOp: estimationUserOp
-        })
+        let { preVerificationGas, callGasLimit, verificationGasLimit } = await estimateOp(
+            {
+                chainId: this.id!,
+                entryPointAddress: this.addresses.entryPointAddress,
+                userOp: estimationUserOp
+            },
+            this.apiKey
+        )
         if (!preVerificationGas || !verificationGasLimit || !callGasLimit) {
             throw new Error(JSON.stringify({ preVerificationGas, callGasLimit, verificationGasLimit }))
         }

@@ -35,7 +35,7 @@ export const generateRandomNonce = (): bigint => {
 
 export const getWalletAddress = async (chain: Chain, walletUniqueId: Hex): Promise<Address> => {
     const data = encodeLoginData({ salt: walletUniqueId })
-    const factoryAddress = await chain.getAddress("factoryAddress")
+    const factoryAddress = chain.getAddress("factoryAddress")
     return await FACTORY_CONTRACT_INTERFACE.readFromChain(factoryAddress, "getAddress", [data], chain)
 }
 

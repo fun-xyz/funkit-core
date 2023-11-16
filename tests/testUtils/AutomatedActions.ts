@@ -1,12 +1,13 @@
 import { assert, expect } from "chai"
-import { getOps } from "../../src/apis/OperationApis"
 import { Auth } from "../../src/auth"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { GlobalEnvOption } from "../../src/config"
 import { Chain, Token } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
 import "../../fetch-polyfill"
+
 export interface AutomatedActionsConfig {
     chainId: number
     baseToken: string
@@ -25,6 +26,8 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
         let wallet: FunWallet
         let opId
         let chain: Chain
+        let fun: FunKit
+        let baseTokenObj: Token
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
@@ -34,20 +37,20 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811340)
-            })
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+
+            wallet = await fun.createWalletWithAuth(auth, config.index ? config.index : 1792811340, config.chainId)
 
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
 
-            chain = await Chain.getChain({ chainIdentifier: config.chainId })
+            chain = wallet.getChain()
 
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
+            baseTokenObj = wallet.getToken(baseToken)
+
+            if (Number(await baseTokenObj.getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -59,17 +62,17 @@ export const AutomatedActionsTest = (config: AutomatedActionsConfig) => {
                 token: "eth"
             })
             opId = await wallet.scheduleOperation(auth, userOp)
-            const operation = await getOps([opId], config.chainId.toString())
+            const operation = await fun.getOps([opId], config.chainId.toString())
             expect(operation[0].opId).to.equal(opId)
             expect(operation[0].userOp.sender).to.equal(await wallet.getAddress())
         })
 
         it("transfer baseToken(ETH) executed", async () => {
-            const balBefore = await Token.getBalanceBN("eth", await auth.getAddress(), chain)
+            const balBefore = await fun.getTokenBalance("eth", await auth.getAddress(), chain)
             await new Promise((resolve) => {
                 setTimeout(resolve, 300_000)
             })
-            const balAfter = await Token.getBalanceBN("eth", await auth.getAddress(), chain)
+            const balAfter = await fun.getTokenBalance("eth", await auth.getAddress(), chain)
             assert(balAfter > balBefore, `Balance not equal to amount ${balAfter} ${balBefore}`)
         })
     })

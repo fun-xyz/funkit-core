@@ -4,7 +4,7 @@ import { Chain } from "../data"
 import { GroupInfo } from "../wallet"
 
 export async function getOnChainGroupData(groupId: Hex, chain: Chain, walletAddr: Address): Promise<GroupInfo> {
-    const userAuthContractAddr = await chain.getAddress("userAuthAddress")
+    const userAuthContractAddr = chain.getAddress("userAuthAddress")
     const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
     const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(walletAddr, "getState", [groupKey], chain)
     if (storedGroupData === "0x") {

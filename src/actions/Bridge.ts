@@ -7,13 +7,22 @@ import {
     getSocketBridgeTransaction
 } from "../apis/BridgeApis"
 import { APPROVE_AND_EXEC_CONTRACT_INTERFACE, TransactionParams } from "../common"
+import { GlobalEnvOption } from "../config"
 import { Chain, Token } from "../data"
 import { ErrorCode, InvalidParameterError } from "../errors"
 
-export const bridgeTransactionParams = async (params: BridgeParams, walletAddress: Address, chain: Chain): Promise<TransactionParams> => {
+export const bridgeTransactionParams = async (
+    params: BridgeParams,
+    walletAddress: Address,
+    txOptions: GlobalEnvOption
+): Promise<TransactionParams> => {
     const { recipient, fromToken, toToken, sort } = params
-    const fromTokenObj = new Token(fromToken, chain)
-    const toTokenObj = new Token(toToken, chain)
+    const fromChain = await Chain.getChain({ chainIdentifier: params.fromChain }, txOptions.apiKey)
+    const fromTokenObj = new Token(fromToken, fromChain, walletAddress, txOptions.apiKey)
+
+    const toChain = await Chain.getChain({ chainIdentifier: params.toChain }, txOptions.apiKey)
+    const toTokenObj = new Token(toToken, toChain, walletAddress, txOptions.apiKey)
+
     const amount = await fromTokenObj.getDecimalAmount(params.amount)
     if (!recipient) {
         throw new InvalidParameterError(
@@ -24,10 +33,8 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
             "https://docs.fun.xyz"
         )
     }
-    const fromChain = await Chain.getChain({ chainIdentifier: params.fromChain })
-    const toChain = await Chain.getChain({ chainIdentifier: params.toChain })
-    const fromChainId = await fromChain.getChainId()
-    const approveAndExecAddress = await fromChain.getAddress("approveAndExecAddress")
+    const fromChainId = fromChain.getChainId()
+    const approveAndExecAddress = fromChain.getAddress("approveAndExecAddress")
     const route = await getSocketBridgeQuote(
         recipient,
         walletAddress,
@@ -36,16 +43,18 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
         await fromTokenObj.getAddress(),
         await toTokenObj.getAddress(),
         amount,
-        sort ?? SocketSort.output
+        sort ?? SocketSort.output,
+        txOptions.apiKey
     )
-    const socketTx = await getSocketBridgeTransaction(route)
+    const socketTx = await getSocketBridgeTransaction(route, txOptions.apiKey)
     if (socketTx.result.approvalData !== null) {
         const { allowanceTarget, minimumApprovalAmount } = socketTx.result.approvalData
         const allowanceStatusCheck = await getSocketBridgeAllowance(
             fromChainId,
             walletAddress,
             allowanceTarget,
-            await fromTokenObj.getAddress()
+            await fromTokenObj.getAddress(),
+            txOptions.apiKey
         )
         const allowanceValue = allowanceStatusCheck.result.value
         if (minimumApprovalAmount > allowanceValue) {
@@ -54,7 +63,8 @@ export const bridgeTransactionParams = async (params: BridgeParams, walletAddres
                 walletAddress,
                 allowanceTarget,
                 await fromTokenObj.getAddress(),
-                amount
+                amount,
+                txOptions.apiKey
             )
             const approveData = approveTxData.result.data
             return APPROVE_AND_EXEC_CONTRACT_INTERFACE.encodeTransactionParams(approveAndExecAddress, "approveAndExecute", [

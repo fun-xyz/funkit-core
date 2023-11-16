@@ -17,8 +17,15 @@ export class SessionKeyAuth extends Auth {
     targetSelectorMerkleTree: MerkleTree
     feeRecipientMerkleTree: MerkleTree
 
-    constructor(authInput: AuthInput, ruleId: Hex, roleId: Hex, targetSelectorMerkleTree: MerkleTree, feeRecipientMerkleTree: MerkleTree) {
-        super(authInput)
+    constructor(
+        authInput: AuthInput,
+        ruleId: Hex,
+        roleId: Hex,
+        targetSelectorMerkleTree: MerkleTree,
+        feeRecipientMerkleTree: MerkleTree,
+        apiKey: string
+    ) {
+        super(authInput, apiKey)
         this.ruleId = ruleId
         this.roleId = roleId
         this.targetSelectorMerkleTree = targetSelectorMerkleTree

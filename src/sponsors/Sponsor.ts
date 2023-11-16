@@ -1,7 +1,7 @@
 import { Address } from "viem"
 import { PaymasterType } from "./types"
 import { TransactionParams } from "../common"
-import { EnvOption } from "../config"
+import { GlobalEnvOption } from "../config"
 import { Chain } from "../data"
 import { ContractInterface } from "../viem/ContractInterface"
 
@@ -12,44 +12,41 @@ export abstract class Sponsor {
     paymasterAddress?: Address
     paymasterType: PaymasterType
     chainId?: string
+    options: GlobalEnvOption
 
-    constructor(
-        options: EnvOption = (globalThis as any).globalEnvOption,
-        contractInterface: ContractInterface,
-        name: string,
-        paymasterType: PaymasterType
-    ) {
+    constructor(options: GlobalEnvOption, contractInterface: ContractInterface, name: string, paymasterType: PaymasterType) {
         if (options.gasSponsor !== undefined && options.gasSponsor.sponsorAddress !== undefined) {
             this.sponsorAddress = options.gasSponsor.sponsorAddress
         }
         this.contractInterface = contractInterface
         this.name = name
         this.paymasterType = paymasterType
+        this.options = options
     }
 
-    async getPaymasterAddress(options: EnvOption = (globalThis as any).globalEnvOption): Promise<Address> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        const chainId = await chain.getChainId()
+    async getPaymasterAddress(options: GlobalEnvOption = this.options): Promise<Address> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
+        const chainId = chain.getChainId()
         if (!this.paymasterAddress && chainId !== this.chainId) {
-            this.paymasterAddress = await chain.getAddress(this.name)
+            this.paymasterAddress = chain.getAddress(this.name)
             this.chainId = chainId
         }
         return this.paymasterAddress!
     }
 
-    abstract getPaymasterAndData(options: EnvOption): Promise<string>
+    abstract getPaymasterAndData(options: GlobalEnvOption): Promise<string>
 
-    abstract stake(sponsor: string, amount: number, options: EnvOption): Promise<TransactionParams>
+    abstract stake(sponsor: string, amount: number, options: GlobalEnvOption): Promise<TransactionParams>
 
-    abstract unstake(receiver: string, amount: number, options: EnvOption): Promise<TransactionParams>
+    abstract unstake(receiver: string, amount: number, options: GlobalEnvOption): Promise<TransactionParams>
 
     abstract lockDeposit(): Promise<TransactionParams>
 
     abstract unlockDepositAfter(blocksToWait: number): Promise<TransactionParams>
 
     /** True if the specified sponsor is in blacklist mode. **/
-    async getListMode(sponsor: string, options: EnvOption = (globalThis as any).globalEnvOption): Promise<boolean> {
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
+    async getListMode(sponsor: string, options: GlobalEnvOption = this.options): Promise<boolean> {
+        const chain = await Chain.getChain({ chainIdentifier: options.chain }, options.apiKey)
         return await this.contractInterface.readFromChain(await this.getPaymasterAddress(options), "getListMode", [sponsor], chain)
     }
 

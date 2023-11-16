@@ -17,8 +17,8 @@ import { sendGetRequest } from "../utils/ApiUtils"
  *     }
  * }
  */
-export async function getTokens(chainId: string, holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    return await sendGetRequest(API_URL, `assets/erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
+export async function getTokens(chainId: string, holderAddr: string, onlyVerifiedTokens: boolean, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `assets/erc20s/${holderAddr}/${chainId}?onlyVerifiedTokens=${onlyVerifiedTokens}`, apiKey)
 }
 
 /**
@@ -34,8 +34,8 @@ export async function getTokens(chainId: string, holderAddr: string, onlyVerifie
  *     }
  *  ]
  */
-export async function getNFTs(chainId: string, holderAddr: string): Promise<any> {
-    return await sendGetRequest(API_URL, `assets/nfts/${holderAddr}/${chainId}`)
+export async function getNFTs(chainId: string, holderAddr: string, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `assets/nfts/${holderAddr}/${chainId}`, apiKey)
 }
 
 /**
@@ -71,8 +71,8 @@ export async function getAllNFTs(holderAddr: string): Promise<any> {
  *   }
  * }
  */
-export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boolean): Promise<any> {
-    return await sendGetRequest(API_URL, `assets/erc20s/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`)
+export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boolean, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `assets/erc20s/${holderAddr}?onlyVerifiedTokens=${onlyVerifiedTokens}`, apiKey)
 }
 
 /**
@@ -91,6 +91,6 @@ export async function getAllTokens(holderAddr: string, onlyVerifiedTokens: boole
  *   ]
  * ]
  */
-export async function getLidoWithdrawals(chainId: string, holderAddr: string): Promise<any> {
-    return await sendGetRequest(API_URL, `assets/lido-withdrawals/${holderAddr}/${chainId}`)
+export async function getLidoWithdrawals(chainId: string, holderAddr: string, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `assets/lido-withdrawals/${holderAddr}/${chainId}`, apiKey)
 }

@@ -1,18 +1,14 @@
 import { assert, expect } from "chai"
 import { Hex, concat, decodeAbiParameters, keccak256, pad } from "viem"
 import { randInt } from "./utils"
-import {
-    addOwnerTxParams,
-    createGroupTxParams,
-    erc20ApproveTransactionParams,
-    removeOwnerTxParams,
-    uniswapV3SwapTransactionParams,
-    updateGroupTxParams
-} from "../../src/actions"
+import { addOwnerTxParams, removeOwnerTxParams } from "../../src/actions"
+import { GroupAction } from "../../src/actions/GroupAction"
+import { TokenAction } from "../../src/actions/TokenAction"
 import { Auth } from "../../src/auth"
 import { ERC20_CONTRACT_INTERFACE, HashZero, WALLET_CONTRACT_INTERFACE } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
+import { GlobalEnvOption } from "../../src/config"
 import { Chain, Token } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet, generateRandomGroupId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -36,27 +32,37 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         let auth: Auth
         let wallet: FunWallet
         let chain: Chain
+        let fun: FunKit
+        let baseTokenObj: Token
+        let outTokenObj: Token
+        let tokenAction: TokenAction
+
+        let options: GlobalEnvOption
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
-            const options: GlobalEnvOption = {
+            options = {
                 chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1792811349)
-            })
-            chain = await Chain.getChain({ chainIdentifier: config.chainId })
+
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            tokenAction = await fun.getTokenAction()
+
+            wallet = await fun.createWalletWithAuth(auth, config.index ? config.index : 1792811340, config.chainId)
+
+            baseTokenObj = wallet.getToken(baseToken)
+            outTokenObj = wallet.getToken(outToken)
+
+            chain = wallet.getChain()
 
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
+            if (Number(await baseTokenObj.getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -65,10 +71,11 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
-            const outTokenAddress = await Token.getAddress(outToken, chain)
+            const outTokenAddress = await outTokenObj.getAddress()
+
             const txParams = await Promise.all(
-                randomAddresses.map((randomAddress) => {
-                    return erc20ApproveTransactionParams({
+                randomAddresses.map(async (randomAddress) => {
+                    return tokenAction.erc20ApproveTransactionParams({
                         spender: randomAddress,
                         amount: approveAmount,
                         token: outTokenAddress
@@ -84,22 +91,19 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     [walletAddress, randomAddr],
                     chain
                 )
-                assert(
-                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(approveAmount)),
-                    "BatchActions failed"
-                )
+                assert(BigInt(approvedAmount) === BigInt(await outTokenObj.getDecimalAmount(approveAmount)), "BatchActions failed")
             }
         })
 
         it("Incorrect Auth", async () => {
-            const randAuth = new Auth({ privateKey: randomBytes(32) })
+            const randAuth = fun.getAuth({ privateKey: randomBytes(32) })
             const randomAddresses = new Array(5).fill(randomBytes(20))
             const approveAmount = randInt(10000)
-            const outTokenAddress = await Token.getAddress(outToken, chain)
+            const outTokenAddress = await outTokenObj.getAddress()
 
             const txParams = await Promise.all(
                 randomAddresses.map((randomAddress) => {
-                    return erc20ApproveTransactionParams({
+                    return tokenAction.erc20ApproveTransactionParams({
                         spender: randomAddress,
                         amount: approveAmount,
                         token: outTokenAddress
@@ -116,17 +120,18 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         })
 
         it("Swap, Approve", async () => {
+            const swapAction = await fun.getSwapAction()
             if (config.chainId !== 8453) {
                 const randomAddress = randomBytes(20)
                 const approveAmount = randInt(10000)
-                const swapParams = await uniswapV3SwapTransactionParams({
+                const swapParams = await swapAction.uniswapV3SwapTransactionParams({
                     tokenIn: config.baseToken,
                     tokenOut: outToken,
                     inAmount: 0.001,
                     recipient: randomAddress
                 })
-                const outTokenAddress = await Token.getAddress(outToken, chain)
-                const approveParams = await erc20ApproveTransactionParams({
+                const outTokenAddress = await outTokenObj.getAddress()
+                const approveParams = await tokenAction.erc20ApproveTransactionParams({
                     spender: randomAddress,
                     amount: approveAmount,
                     token: outTokenAddress
@@ -140,10 +145,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     [walletAddress, randomAddress],
                     chain
                 )
-                assert(
-                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(approveAmount)),
-                    "BatchActions failed"
-                )
+                assert(BigInt(approvedAmount) === BigInt(await outTokenObj.getDecimalAmount(approveAmount)), "BatchActions failed")
                 const swappedAmount = await ERC20_CONTRACT_INTERFACE.readFromChain(outTokenAddress, "balanceOf", [randomAddress], chain)
                 assert(BigInt(swappedAmount) > 0, "Swap unsuccesful")
             }
@@ -159,14 +161,16 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             ].sort((a, b) => b.localeCompare(a))
             const newUserId = randomBytes(20)
 
-            const createGroupParams = await createGroupTxParams({
+            const groupAction: GroupAction = await fun.getGroupAction()
+
+            const createGroupParams = await groupAction.createGroupTxParams({
                 groupId: groupId,
                 group: {
                     userIds: memberIds,
                     threshold: threshold
                 }
             })
-            const addUserToGroupParams = await updateGroupTxParams({
+            const addUserToGroupParams = await groupAction.updateGroupTxParams({
                 groupId: groupId,
                 group: {
                     userIds: memberIds.concat([newUserId]),
@@ -177,7 +181,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [createGroupParams, addUserToGroupParams])
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const userAuthContractAddr = await chain.getAddress("userAuthAddress")
+            const userAuthContractAddr = chain.getAddress("userAuthAddress")
             const groupKey = keccak256(concat([groupId, userAuthContractAddr]))
 
             const storedGroupData: Hex = await WALLET_CONTRACT_INTERFACE.readFromChain(
@@ -203,15 +207,24 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         it("add owner, remove owner", async () => {
             const newOwnerId1 = randomBytes(20)
             const newOwnerId2 = randomBytes(20)
-            const addOwner1Params = await addOwnerTxParams({
-                ownerId: newOwnerId1
-            })
-            const addOwner2Params = await addOwnerTxParams({
-                ownerId: newOwnerId2
-            })
-            const removeOwner1Params = await removeOwnerTxParams({
-                ownerId: newOwnerId1
-            })
+            const addOwner1Params = await addOwnerTxParams(
+                {
+                    ownerId: newOwnerId1
+                },
+                options
+            )
+            const addOwner2Params = await addOwnerTxParams(
+                {
+                    ownerId: newOwnerId2
+                },
+                options
+            )
+            const removeOwner1Params = await removeOwnerTxParams(
+                {
+                    ownerId: newOwnerId1
+                },
+                options
+            )
 
             const operation = await wallet.createBatchOperation(auth, await auth.getAddress(), [
                 addOwner1Params,
@@ -220,7 +233,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
             ])
             expect(await wallet.executeOperation(auth, operation)).to.not.throw
 
-            const rbacContractAddr = await chain.getAddress("rbacAddress")
+            const rbacContractAddr = chain.getAddress("rbacAddress")
             const storedOwner1Rule = await WALLET_CONTRACT_INTERFACE.readFromChain(
                 await wallet.getAddress(),
                 "getState32WithAddr",
@@ -248,6 +261,8 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
         let auth2: Auth
         let wallet: FunWallet
         let chain: Chain
+        let fun: FunKit
+
         const groupId: Hex = "0x2a9ac7208e6c38cb5fc71b3b0dedb4892c002bdd9757e2951604f77ebffc26ee" // generateRandomGroupId()
 
         before(async function () {
@@ -258,27 +273,30 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth1 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            auth2 = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
-            wallet = new FunWallet({
-                users: [
-                    {
-                        userId: groupId,
-                        groupInfo: {
-                            memberIds: [await auth1.getAddress(), await auth2.getAddress(), "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"],
-                            threshold: 2
-                        }
+            fun = new FunKit(options)
+            auth1 = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            auth2 = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY_2") })
+
+            const users = [
+                {
+                    userId: groupId,
+                    groupInfo: {
+                        memberIds: [await auth1.getAddress(), await auth2.getAddress(), "0x38e97Eb79F727Fe9F64Ccb21779eefe6e1A783F4"],
+                        threshold: 2
                     }
-                ],
-                uniqueId: await auth1.getWalletUniqueId(config.index ? config.index : 16611867)
-            })
-            chain = await Chain.getChain({ chainIdentifier: config.chainId })
+                }
+            ]
+
+            const uniqueId = await auth1.getWalletUniqueId(config.index ? config.index : 16611867)
+            wallet = await fun.createWalletWithUsersAndId(users, uniqueId)
+
+            chain = wallet.getChain()
 
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.2)
             }
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
+
+            if (Number(await wallet.getToken(baseToken).getBalance()) < prefundAmt) {
                 await fundWallet(auth1, wallet, prefundAmt ? prefundAmt : 0.1)
             }
         })
@@ -290,17 +308,20 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
 
             const walletAddress = await wallet.getAddress()
             const approveAmount = randInt(10000)
-            const outTokenAddress = await Token.getAddress(outToken, chain)
+            const outTokenObj = wallet.getToken(outToken)
+            const outTokenAddress = await outTokenObj.getAddress()
+
+            const tokenAction = await fun.getTokenAction()
             const txParams = await Promise.all(
-                randomAddresses.map((randomAddress) => {
-                    return erc20ApproveTransactionParams({
+                randomAddresses.map(async (randomAddress) => {
+                    return tokenAction.erc20ApproveTransactionParams({
                         spender: randomAddress,
                         amount: approveAmount,
                         token: outTokenAddress
                     })
                 })
             )
-            const operation1 = await wallet.createBatchOperation(auth1, await groupId, txParams)
+            const operation1 = await wallet.createBatchOperation(auth1, groupId, txParams)
 
             const operation = await wallet.getOperation(operation1.opId!)
             await wallet.executeOperation(auth2, operation)
@@ -312,10 +333,7 @@ export const BatchActionsTest = (config: BatchActionsTestConfig) => {
                     [walletAddress, randomAddr],
                     chain
                 )
-                assert(
-                    BigInt(approvedAmount) === BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(approveAmount)),
-                    "BatchActions failed"
-                )
+                assert(BigInt(approvedAmount) === BigInt(await outTokenObj.getDecimalAmount(approveAmount)), "BatchActions failed")
             }
         })
     })

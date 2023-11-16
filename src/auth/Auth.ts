@@ -23,7 +23,6 @@ import { AuthInput } from "./types"
 import { Wallet } from "../apis/types"
 import { getUserWalletIdentities, getUserWalletsByAddr } from "../apis/UserApis"
 import { TransactionData, TransactionParams, VALID_PRIVATE_KEY_LENGTH } from "../common"
-import { EnvOption } from "../config"
 import { Chain, Operation, WalletSignature, encodeWalletSignature } from "../data"
 import { ErrorCode, InvalidParameterError, ResourceNotFoundError } from "../errors"
 import { getAuthUniqueId, getGasStation } from "../utils"
@@ -74,7 +73,9 @@ export class Auth {
     client?: WalletClient
     inited = false
     account?: Address
-    constructor(authInput: AuthInput) {
+    apiKey: string
+    constructor(authInput: AuthInput, apiKey: string) {
+        this.apiKey = apiKey
         if (authInput.web2AuthId) {
             this.authId = authInput.web2AuthId
         }
@@ -216,7 +217,7 @@ export class Auth {
      */
     async getWalletUniqueId(index = 0, skipDBActions = false): Promise<Hex> {
         await this.init()
-        const authUniqueId = await getAuthUniqueId(this.authId!, await this.getAddress(), skipDBActions)
+        const authUniqueId = await getAuthUniqueId(this.authId!, this.apiKey, await this.getAddress(), skipDBActions)
         return keccak256(toBytes(`${authUniqueId}-${index}`))
     }
 
@@ -226,17 +227,16 @@ export class Auth {
      * @param {EnvOption} options - The environment options (default: globalEnvOption).
      * @returns {Promise<TransactionReceipt>} The transaction receipt.
      */
-    async sendTx(txData: TransactionParams, options: EnvOption = (globalThis as any).globalEnvOption): Promise<TransactionReceipt> {
+    async sendTx(txData: TransactionParams, chain: Chain): Promise<TransactionReceipt> {
         await this.init()
-        const chain = await Chain.getChain({ chainIdentifier: options.chain })
-        const chainId = await chain.getChainId()
+        const chainId = chain.getChainId()
         const { to, data } = txData
         let { value } = txData
         if (!chain || !chainId) {
             throw new InvalidParameterError(
                 ErrorCode.MissingParameter,
                 "chain object is missing or incorrect",
-                { options, chainId },
+                { chainId },
                 "Provide proper chain information from options field",
                 "https://docs.fun.xyz"
             )
@@ -250,7 +250,7 @@ export class Auth {
             txClient = createWalletClient({
                 account: this.signer!,
                 transport: http(client.transport.url),
-                chain: chains[preProcessesChains[await chain.getChainId()]]
+                chain: chains[preProcessesChains[chain.getChainId()]]
             })
         }
         let maxPriorityFee, maxFee
@@ -281,7 +281,7 @@ export class Auth {
         const action = {
             ...tx,
             account: this.signer ?? this.account,
-            chain: chains[preProcessesChains[await chain.getChainId()]]
+            chain: chains[preProcessesChains[chain.getChainId()]]
         }
         const hash = await txClient.sendTransaction(action)
 
@@ -314,9 +314,15 @@ export class Auth {
         const receipts: TransactionReceipt[] = []
         for (const tx of txs) {
             if (tx.chain) {
-                receipts.push(await this.sendTx(tx, { chain: tx.chain }))
+                receipts.push(await this.sendTx(tx, tx.chain))
             } else {
-                receipts.push(await this.sendTx(tx))
+                throw new InvalidParameterError(
+                    ErrorCode.MissingParameter,
+                    "chain object is missing or incorrect",
+                    tx,
+                    "Provide proper chain object to the chain field",
+                    "https://docs.fun.xyz"
+                )
             }
         }
         return receipts
@@ -330,7 +336,7 @@ export class Auth {
      */
     async getUserIds(wallet: Address, chainId: string): Promise<Hex[]> {
         await this.init()
-        return await getUserWalletIdentities(this.authId!, chainId, wallet)
+        return await getUserWalletIdentities(this.authId!, chainId, wallet, this.apiKey)
     }
 
     /**
@@ -341,7 +347,7 @@ export class Auth {
     async getWallets(chainId?: string): Promise<Wallet[]> {
         await this.init()
         try {
-            return await getUserWalletsByAddr(await this.getAddress(), chainId)
+            return await getUserWalletsByAddr(await this.getAddress(), this.apiKey, chainId)
         } catch (err) {
             if (err instanceof ResourceNotFoundError) {
                 return []

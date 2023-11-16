@@ -1,6 +1,6 @@
 import { Address, Hex } from "viem"
 import { TransactionParams } from "../common"
-import { Chain } from "../data"
+import { Chain, Token } from "../data"
 
 export interface ApproveAndExecParams {
     approve: ApproveERC20Params
@@ -15,7 +15,7 @@ export interface ERC721TransferParams {
 }
 
 export interface TokenTransferParams {
-    token: string
+    token: string | Token
     amount: number
     from?: string
     to: string
@@ -29,7 +29,7 @@ export type ApproveParams = ApproveERC20Params | ApproveERC721Params
 export interface ApproveERC20Params {
     spender: string
     amount: number
-    token: string
+    token: string | Token
 }
 
 export interface ApproveERC721Params {
@@ -60,8 +60,8 @@ export enum UniswapPoolFeeOptions {
 }
 
 export type SwapParams = {
-    tokenIn: string
-    tokenOut: string
+    tokenIn: string | Token
+    tokenOut: string | Token
     inAmount: number
     slippage?: number
     recipient?: string

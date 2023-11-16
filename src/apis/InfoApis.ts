@@ -3,7 +3,7 @@ import { API_URL, BASE_WRAP_TOKEN_ADDR } from "../common/constants"
 import { ErrorCode, ResourceNotFoundError } from "../errors"
 import { sendGetRequest, sendPostRequest } from "../utils/ApiUtils"
 
-export async function getTokenInfo(symbol: string, chainId: string): Promise<Address> {
+export async function getTokenInfo(symbol: string, chainId: string, apiKey: string): Promise<any> {
     symbol = symbol.toLowerCase()
     const body = {
         symbol,
@@ -15,7 +15,7 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
         return (BASE_WRAP_TOKEN_ADDR as any)[chainId][symbol]
     }
 
-    const tokenInfo = await sendGetRequest(API_URL, `asset/erc20/${body.chain}/${body.symbol}`)
+    const tokenInfo = await sendGetRequest(API_URL, `asset/erc20/${body.chain}/${body.symbol}`, apiKey)
 
     if (tokenInfo.address) {
         return tokenInfo.address
@@ -29,8 +29,8 @@ export async function getTokenInfo(symbol: string, chainId: string): Promise<Add
     )
 }
 
-export async function getChainFromId(chainId: string): Promise<any> {
-    return await sendGetRequest(API_URL, `chain-info/${chainId}`).then((r) => {
+export async function getChainFromId(chainId: string, apiKey: string): Promise<any> {
+    return await sendGetRequest(API_URL, `chain-info/${chainId}`, apiKey).then((r) => {
         if (!r) {
             throw new Error(JSON.stringify(r))
         }
@@ -58,12 +58,12 @@ export async function getModuleInfo(moduleName: string, chainId: string): Promis
     })
 }
 
-export async function getPaymasterAddress(chainId: string): Promise<any> {
+export async function getPaymasterAddress(chainId: string, apiKey: string): Promise<Address> {
     const {
         moduleAddresses: {
             paymaster: { paymasterAddress }
         }
-    } = await getChainFromId(chainId)
+    } = await getChainFromId(chainId, apiKey)
 
     return paymasterAddress
 }

@@ -16,14 +16,20 @@ const fees = {
     high: FeeAmount.HIGH
 }
 
-export const limitSwapOrderTransactionParams = async (params: LimitOrderParam, chain: Chain): Promise<TransactionParams> => {
+export const limitSwapOrderTransactionParams = async (
+    params: LimitOrderParam,
+    chain: Chain,
+    apiKey: string
+): Promise<TransactionParams> => {
     const { tokenIn, tokenOut, tokenInAmount, tokenOutAmount, poolFee } = params
-    const tokenInAddress = await new Token(tokenIn, chain).getAddress()
-    const tokenOutAddress = await new Token(tokenOut, chain).getAddress()
-    const amountIn = await new Token(tokenIn, chain).getDecimalAmount(tokenInAmount)
-    const amountOut = await new Token(tokenOut, chain).getDecimalAmount(tokenOutAmount)
-    const uniswapv3LimitOrderAddress = await chain.getAddress("uniswapv3LimitOrder")
-    const approveAndExecAddress = await chain.getAddress("approveAndExecAddress")
+    const tokenInObj = new Token(tokenIn, chain, "0x", apiKey)
+    const tokenOutObj = new Token(tokenOut, chain, "0x", apiKey)
+    const tokenInAddress = await tokenInObj.getAddress()
+    const tokenOutAddress = await tokenOutObj.getAddress()
+    const amountIn = await tokenInObj.getDecimalAmount(tokenInAmount)
+    const amountOut = await tokenOutObj.getDecimalAmount(tokenOutAmount)
+    const uniswapv3LimitOrderAddress = chain.getAddress("uniswapv3LimitOrder")
+    const approveAndExecAddress = chain.getAddress("approveAndExecAddress")
     const _poolFee = poolFee ? fees[poolFee] : FeeAmount.MEDIUM
     const data = encodeAbiParameters(
         [

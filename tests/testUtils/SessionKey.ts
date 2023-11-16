@@ -3,8 +3,9 @@ import { randInt } from "./utils"
 import { SessionKeyParams, createSessionUser } from "../../src/actions"
 import { Auth, SessionKeyAuth } from "../../src/auth"
 import { AddressZero, ERC20_ABI } from "../../src/common"
-import { GlobalEnvOption, configureEnvironment } from "../../src/config"
-import { Chain, Token } from "../../src/data"
+import { GlobalEnvOption } from "../../src/config"
+import { Token } from "../../src/data"
+import { FunKit } from "../../src/FunKit"
 import { fundWallet, generateRoleId, generateRuleId, randomBytes } from "../../src/utils"
 import { FunWallet } from "../../src/wallet"
 import { getAwsSecret, getTestApiKey } from "../getAWSSecrets"
@@ -27,29 +28,34 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
         this.timeout(300_000)
         let auth: Auth
         let wallet: FunWallet
-        let chain: Chain
+        let fun: FunKit
+
+        let baseTokenObj: Token
+        let outTokenObj: Token
+
+        let options: GlobalEnvOption
 
         before(async function () {
             this.retries(config.numRetry ? config.numRetry : 0)
             const apiKey = await getTestApiKey()
-            const options: GlobalEnvOption = {
+            options = {
                 chain: config.chainId,
                 apiKey: apiKey,
                 gasSponsor: {}
             }
-            await configureEnvironment(options)
-            auth = new Auth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
-            wallet = new FunWallet({
-                users: [{ userId: await auth.getAddress() }],
-                uniqueId: await auth.getWalletUniqueId(config.index ? config.index : 1992811349)
-            })
+
+            fun = new FunKit(options)
+            auth = fun.getAuth({ privateKey: await getAwsSecret("PrivateKeys", "WALLET_PRIVATE_KEY") })
+            wallet = await fun.createWalletWithAuth(auth, config.index ? config.index : 1992811349)
 
             if (!(await wallet.getDeploymentStatus())) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
 
-            chain = await Chain.getChain({ chainIdentifier: config.chainId })
-            if (Number(await Token.getBalance(baseToken, await wallet.getAddress(), chain)) < prefundAmt) {
+            baseTokenObj = wallet.getToken(baseToken)
+            outTokenObj = wallet.getToken(outToken)
+
+            if (Number(await baseTokenObj.getBalance()) < prefundAmt) {
                 await fundWallet(auth, wallet, prefundAmt ? prefundAmt : 0.2)
             }
         })
@@ -66,8 +72,8 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
             const feeRecip = randomBytes(20)
             before(async () => {
                 deadline = (Date.now() + 3 * minute) / 1000
-                basetokenAddr = await Token.getAddress(baseToken, chain)
-                outtokenAddr = await Token.getAddress(outToken, chain)
+                basetokenAddr = await baseTokenObj.getAddress()
+                outtokenAddr = await outTokenObj.getAddress()
                 const sessionKeyParams: SessionKeyParams = {
                     targetWhitelist: [outtokenAddr, basetokenAddr],
                     actionWhitelist: [
@@ -82,7 +88,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     ruleId: ruleId,
                     roleId: roleId
                 }
-                user = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams)
+                user = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams, options)
                 sessionKeyParams.userId = await user.getUserId()
                 const operation = await wallet.createSessionKey(auth, await auth.getAddress(), sessionKeyParams)
                 await wallet.executeOperation(auth, operation)
@@ -90,8 +96,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
 
             it("wallet should have lower allowance of specified token", async () => {
                 const randomAddress = randomBytes(20)
-                const walletAddress = await wallet.getAddress()
-                const outTokenAddress = await new Token(outToken, chain).getAddress()
+                const outTokenAddress = await outTokenObj.getAddress()
                 const randomApproveAmount = randInt(10000)
                 const operation = await wallet.tokenApprove(user, await user.getAddress(), {
                     spender: randomAddress,
@@ -102,12 +107,9 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 await new Promise((resolve) => {
                     setTimeout(resolve, 5000)
                 })
-                const postApprove = await Token.getApproval(outToken, walletAddress, randomAddress, chain)
+                const postApprove = await outTokenObj.getApproval(randomAddress)
 
-                assert(
-                    BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(randomApproveAmount)) === postApprove,
-                    "Approve failed"
-                )
+                assert(BigInt(await outTokenObj.getDecimalAmount(randomApproveAmount)) === postApprove, "Approve failed")
             })
 
             it("use a regenerated session key with the same parameters", async () => {
@@ -125,11 +127,10 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     ruleId: ruleId,
                     roleId: roleId
                 }
-                const newuser = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams)
+                const newuser = await createSessionUser({ privateKey: sessionKeyPrivateKey }, sessionKeyParams, options)
 
                 const randomAddress = randomBytes(20)
-                const walletAddress = await wallet.getAddress()
-                const outTokenAddress = await new Token(outToken, chain).getAddress()
+                const outTokenAddress = await outTokenObj.getAddress()
                 const randomApproveAmount = randInt(10000)
                 const operation = await wallet.tokenApprove(newuser, await newuser.getAddress(), {
                     spender: randomAddress,
@@ -140,18 +141,15 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 await new Promise((resolve) => {
                     setTimeout(resolve, 5000)
                 })
-                const postApprove = await Token.getApproval(outToken, walletAddress, randomAddress, chain)
+                const postApprove = await outTokenObj.getApproval(randomAddress)
 
-                assert(
-                    BigInt(await new Token(outTokenAddress, chain).getDecimalAmount(randomApproveAmount)) === postApprove,
-                    "Approve failed"
-                )
+                assert(BigInt(await outTokenObj.getDecimalAmount(randomApproveAmount)) === postApprove, "Approve failed")
             })
 
             it("Session key function out of scope", async () => {
                 it("Session key selector out of scope", async () => {
                     const randomAddress = randomBytes(20)
-                    const outTokenAddress = await new Token(outToken, chain).getAddress()
+                    const outTokenAddress = await outTokenObj.getAddress()
                     try {
                         const operation = await wallet.transfer(user, await user.getAddress(), {
                             to: randomAddress,
@@ -170,7 +168,8 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                 const randomAddress = randomBytes(20)
                 let outTokenAddress: string
                 if (config.chainId !== 8453) {
-                    outTokenAddress = await new Token("usdc", chain).getAddress()
+                    const usdcTokenObject = wallet.getToken("usdc")
+                    outTokenAddress = await usdcTokenObject.getAddress()
                 } else {
                     outTokenAddress = "0x434769c82fB928150B87C4Ae6320Bf71F92dCCa5"
                 }
@@ -196,7 +195,7 @@ export const SessionKeyTest = (config: SessionKeyTestConfig) => {
                     await new Promise((resolve) => setTimeout(resolve, Number(diff) * 1.2))
                 }
                 const randomAddress = randomBytes(20)
-                const outTokenAddress = await new Token(outToken, chain).getAddress()
+                const outTokenAddress = await outTokenObj.getAddress()
                 try {
                     const operation = await wallet.tokenApprove(user, await user.getAddress(), {
                         spender: randomAddress,
